@@ -365,7 +365,7 @@ get_long(const char *buf, long *lvp)
 
 	errno = 0;
 	lv = strtol(buf, &ep, 10);
-	if (buf[0] == '\0' || *ep != '\0')
+	if (buf[0] == '\0' || (*ep != '\0' && *ep != '\n'))
 		return (-1);
 	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN))
 		return (-1);
