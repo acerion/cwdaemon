@@ -1,3 +1,19 @@
+cwdaemon (0.9.5-1) unstable; urgency=low
+
+  * New version of upstream package;
+  * cwdaemon project has new home page (cwdaemon.sf.net);
+  * Debian patches 01-06 from 0.9.4-9 applied, debian/patch/* files removed;
+  * cwdaemon now has git repository, so adding watch file to debian/*;
+  * other necessary changes in debian/*;
+
+    This upstream version (0.9.5) is essentially an official upstream
+    release of Debian package 0.9.4-9, with Debian patches applied.
+    No new features and no new fixes were added to 0.9.5, compared to
+    0.9.4-9. Purpose of upstream release 0.9.5 is to establish a starting
+    point for revived cwdaemon project.
+
+ -- Kamil Ignacak <acerion@wp.pl>  Thu, 05 Apr 2012 19:33:45 +0100
+
 cwdaemon (0.9.4-9) unstable; urgency=low
 
   * New maintainer/upstream: Kamil Ignacak <acerion@wp.pl>; there is no
