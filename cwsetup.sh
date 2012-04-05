@@ -3,7 +3,7 @@
 PATH="/bin:/sbin:/usr/bin:/usr/bin:/usr/local/bin:/usr/local/sbin:."
 
 # check if we are root
-if [ "$EUID" != "0" ]; then
+if [ "$(id -u)" != "0" ]; then
 	echo "You must run this script as root..."
 	exit 1
 fi
