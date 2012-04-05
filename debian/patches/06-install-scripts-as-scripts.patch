@@ -1,0 +1,29 @@
+Description: Install scripts with INSTALL_SCRIPT to get correct permissions
+Author: Kamal Mostafa <kamal@whence.com
+
+--- cwdaemon-0.9.4.orig/Makefile.in
++++ cwdaemon-0.9.4/Makefile.in
+@@ -601,8 +601,8 @@ install-data-local:
+ 	$(INSTALL_DATA) schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+-	$(INSTALL_DATA) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
+-	$(INSTALL_DATA) cwsetup.sh $(DESTDIR)$(pkgdatadir)
++	$(INSTALL_SCRIPT) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
++	$(INSTALL_SCRIPT) cwsetup.sh $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) test/cwtest.c $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) cwdaemon.png $(DESTDIR)$(pkgdatadir)
+ 
+--- cwdaemon-0.9.4.orig/Makefile.am
++++ cwdaemon-0.9.4/Makefile.am
+@@ -21,8 +21,8 @@ install-data-local:
+ 	$(INSTALL_DATA) schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+-	$(INSTALL_DATA) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
+-	$(INSTALL_DATA) cwsetup.sh $(DESTDIR)$(pkgdatadir)
++	$(INSTALL_SCRIPT) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
++	$(INSTALL_SCRIPT) cwsetup.sh $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) test/cwtest.c $(DESTDIR)$(pkgdatadir)
+ 	$(INSTALL_DATA) cwdaemon.png $(DESTDIR)$(pkgdatadir)
+  

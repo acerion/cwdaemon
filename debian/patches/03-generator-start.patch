@@ -1,0 +1,29 @@
+Description: Added missing call to cw_generator_start()
+Author: Jenö Vago <ha5se@ha5hrk.hu>
+Reviewed-By: Kamil Ignacak <acerion@wp.pl>
+
+--- cwdaemon-0.9.4.orig/cwdaemon.c	2012-01-22 17:40:09.000000000 +0100
++++ cwdaemon-0.9.4/cwdaemon.c	2012-01-22 17:44:36.000000000 +0100
+@@ -330,12 +330,20 @@
+ {
+ 	int rv = 0;
+ 	if (soundcard_sound && !console_sound)
+-       {
+-		rv = cw_generator_new (CW_AUDIO_SOUNDCARD, NULL);
++	{
++		rv = cw_generator_new (CW_AUDIO_ALSA, NULL);
++		if (rv != CW_FAILURE)
++		{
++			rv = cw_generator_start();
++                }
+ 	}
+ 	else if (!soundcard_sound && console_sound)
+ 	{
+ 		rv = cw_generator_new (CW_AUDIO_CONSOLE, NULL);
++		if (rv != CW_FAILURE)
++		{
++			rv = cw_generator_start();
++                }
+ 	}
+ 	else
+ 	{

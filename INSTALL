@@ -1,0 +1,17 @@
+You will need to have the the unixcw-2.3 development libraries and headers
+installed to install cwdaemon.
+
+Try http://www.ibiblio.org/pub/linux/Incoming/unixcw-2.3.tgz or
+http://www.ibiblio.org/pub/linux/apps/ham/morse/unixcw-2.3.tgz
+to get unixcw.
+
+After installing unixcw do:
+
+1: ./configure
+2: make
+3: make install (as root)
+
+The cwdaemon program is installed in /usr/local/sbin.
+
+See the provided README for more details. The manual page will tell you
+some more about startup options, you could also type cwdaemon -h.

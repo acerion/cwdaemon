@@ -1,0 +1,19 @@
+Here is a release plan for future versions of cwdaemon:
+
+1.0: - Add support for straight key input, the functionality is already there, 
+       see cwlib.c.
+     - Parallel port paddle input.
+
+PATCHES
+-------
+The patches directory containes patches which did not make it (yet) into this
+cwdaemon release.
+
+1) Sergei's patch for version 0.5 which adds parallel port paddle input.
+2) A large patch from Lada, OK1ZIA, to eliminate delays in version 0.7.
+   Lada sent me his patch just before I released 0.8beta1. There were so many
+   changes in this beta, that lada's patch could not be applied.
+3) Another patch by Lada, to improve aborting of Morse while sending. A better
+   solution was found by using the select() function.
+
+Joop Stakenborg, PG4I Apr 23, 2004

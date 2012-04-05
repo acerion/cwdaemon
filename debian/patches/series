@@ -1,0 +1,6 @@
+01-Removed-bashism-from-cwsetup.patch
+02-libcw3-transition.patch
+03-generator-start.patch
+04-buffer-end.patch
+05-ptt-off-wait.patch
+06-install-scripts-as-scripts.patch

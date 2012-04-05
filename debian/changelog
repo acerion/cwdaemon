@@ -1,0 +1,232 @@
+cwdaemon (0.9.4-9) unstable; urgency=low
+
+  * New maintainer/upstream: Kamil Ignacak <acerion@wp.pl>; there is no
+    new project page yet.
+  * Applying patches from Jenö Vago <ha5se@ha5hrk.hu>, with small changes
+    from Kamil Ignacak.
+  * Install /usr/share/cwdaemon/*.sh scripts with correct permissions.
+
+ -- Kamil Ignacak <acerion@wp.pl>  Fri, 27 Jan 2012 20:59:43 +0100
+
+cwdaemon (0.9.4-8) unstable; urgency=medium
+
+  * Replace build-depends on unixcw-dev with libcw3-dev (Closes: #652618).
+  * Minor changes for transition to libcw3.
+  * Set urgency to medium due to rc bug fix.
+  * New Debian maintainer (Closes: #553396).
+  * Debian packaging cleanup: 3.0 (quilt) format, lintian fixes, dh compat
+    and standards versions bumped.
+
+ -- Kamal Mostafa <kamal@whence.com>  Thu, 22 Dec 2011 16:50:47 -0800
+
+cwdaemon (0.9.4-7.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Removed bashism from cwsetup.sh script.
+  * Bumped Standards-Version to 3.8.3, no changes needed.
+
+ -- Michael Meskes <meskes@debian.org>  Sat, 23 Jan 2010 14:37:26 +0100
+
+cwdaemon (0.9.4-7) unstable; urgency=low
+
+  * Retiring - set the package maintainer to Debian QA Group.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Fri, 30 Oct 2009 21:09:11 +0000
+
+cwdaemon (0.9.4-6) unstable; urgency=low
+
+  * Rebuild the package now that hppa generates the correct libcw.pc.
+    Depends on unixcw 2.3-10 or greater.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 20 Jul 2008 14:23:37 +0200
+
+cwdaemon (0.9.4-5) unstable; urgency=low
+
+  * Add LSB formatted dependency info in init.d script. Closes: #468863.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Tue, 04 Mar 2008 09:46:13 +0100
+
+cwdaemon (0.9.4-4) unstable; urgency=low
+
+  * Build-depends unixcw 2.3-9, now that libcw.pc is created correctly
+    on ia64. Closes: #462900.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 10 Feb 2008 18:21:12 +0100
+
+cwdaemon (0.9.4-3) unstable; urgency=low
+
+  * Conflicts winkeydaemon.
+  * Lintian fixes.
+  * Bump standards version.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 27 Jan 2008 20:35:02 +0100
+
+cwdaemon (0.9.4-2) unstable; urgency=low
+
+  * Build depend on pkg-config.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Mon,  4 Dec 2006 18:34:09 +0100
+
+cwdaemon (0.9.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Wed, 29 Nov 2006 19:52:19 +0100
+
+cwdaemon (0.9.3-1) unstable; urgency=low
+
+  * No longer distribute as debian-native.
+  * Migrate to debhelper.
+  * Explain configuration of the Debian package in README.Debian.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 19 Feb 2006 12:04:16 +0100
+
+cwdaemon (0.9.2) unstable; urgency=low
+
+  * Many patches by Jason L. Wright, AI4JW, which brings us OpenBSD support
+    (you will need OpenBSD-current or the upcoming OpenBSD-3.7) and the
+    following:
+  * Better command line parsing and error checking added.
+  * The 'none' sound device had been added in case you don't want a sidetone.
+  * Free entry of portnames has been added, together with autodetection of
+    ports. This should give is support for more platforms.
+  * Many minor bugfixes.
+  * A null device has been added, in case you want sidetone, but no keying
+    (see 'man cwdaemon').
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 30 Jan 2005 09:40:29 +0100
+
+cwdaemon (0.9.1) unstable; urgency=low
+
+  * Small patch by Vincent Arkesteijn, which fixes a buffer overflow.
+    Closes: #288639.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sat,  8 Jan 2005 16:14:48 +0100
+
+cwdaemon (0.9) unstable; urgency=low
+
+  * A tiny fix for the init script. Closes: #275359.
+  * ESCh will send echo to the program using cwdaemon when CW playing is done,
+    using the '^' character. Added by Lada, OK1ZIA. This is used by tucnak,
+    a VHF contest logging program, see http://tucnak.nagano.cz.
+  * Debian init.d bootscript added by Lada, together with /etc/default/cwdaemon,
+    which you can use to configure cwdaemon. Set START_CWDAEMON=no in
+    /etc/default/cwdaemon to disable start at boottime.
+  * Serial and parallel port now supported on FreeBSD. Parallel port and various
+    BSD fixes thanks to Diane Bruce, VA3DB.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Mon, 24 Aug 2004 09:25:25 +0200
+
+cwdaemon (0.8) unstable; urgency=low
+
+  * Cwdaemon is now integrated with unixcw, see cwlib.c and cwlib.h.
+    Weighting has been added to unixcw and some special characters needed
+    by cwdaemon. The choppiness reported in previous versions of cwdaemon is
+    fixed. And we have soundcard support!
+  * Better handling of aborting messages.
+  * Weighting now uses a value of -50 to 50.
+  * 2 extra command line options: -v for volume and -x for sound device.
+  * 2 extra escape sequences for controlling cwdaemon: ESCfx for switching the
+    sound output on the fly and ESCgx for setting the soundcard volume.
+  * Tune (ESCc) now uses seconds as an argument, e.g. ESCc1 tunes 1 second,
+    ESCc10 tunes 10 seconds. Maximum tune value is 10 seconds.
+  * A fix by Lada, OK1ZIA for big endian systems.
+  * Footswitch support by Wolf, DL2WRJ (pin 15 of the parallel port).
+  * New morse character '@' has been added.
+  * Process priority of cwdaemon can be set with the -P flag. You can try this
+    if you experience timing problems.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Mon, 26 Apr 2004 21:27:29 +0200
+
+cwdaemon (0.7) unstable; urgency=low
+
+  * Band info output on pins 2, 7, 8, 9 of the parallel port
+    (pin 2 = lsb, 9 = msb, e.g. 1000 = 160m, 1001 = 10m).
+    Patch by Rein Couperus, PA0R.
+  * Corrected the parallel port schematic for PTT switching.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 26 Oct 2003 16:37:51 +0100
+
+cwdaemon (0.6) unstable; urgency=low
+
+  * POSIX compliant in/output is now used for the serial and parallel port,
+    which means that cwdaemon should now run on any hardware that runs linux.
+    Please read the README for serial/parallel port setup.
+  * Debian: set architecture to 'any'.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Fri, 27 Jun 2003 20:46:20 +0200
+
+cwdaemon (0.5) unstable; urgency=low
+
+  * Patch by Ladislav Vaiz, OK1ZIA <ok1zia@nagano.cz>:
+  * Adds a pin to the lpt port for switching between a soundcard and
+    microphone, uses ESCb escape code.
+  * Lada has also split the code into separate files for the serial and
+    parallel port.
+  * Buffer overflows were fixed.
+  * New escape codes: ESC8: device type, ESC9: base port number.
+  * Work by Rolf, DL2WRJ:
+  * ESCa: PTT on/off, ESCc: tuning on/off, ESCd: PTT delay.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 11 May 2003 15:48:47 +0200
+
+cwdaemon (0.4) unstable; urgency=low
+
+  * Support for /dev/lp1 parallel port added.
+  * Add weighting. This can be set from the command line (-w switch) or
+    from an application using ESC7. Values are from -5 to 5. Contributed by
+    DL2WRJ.
+  * Speed in/decrease is set at 2 wpm intervals.
+  * Halfspace delay has been added, which simply adds half of the dash time
+    to the delay after each sign send. You have to use the '~' for that.
+    See the README. Contributed by DL2WRJ. Thanks Wolf!
+  * New serial schematic with port protection and better keying.
+  * Also build a debian package on alpha.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Tue,  8 Apr 2003 20:57:20 +0200
+
+cwdaemon (0.3) unstable; urgency=low
+
+  * Support added for serial ports, contributed by Wolf-Ruediger Juergens,
+    DL2WRJ <WJuergens at t-online.de>. This brings a new command line option:
+    -d <device>. Device should be one of ttyS0, ttyS1 or lp0.
+  * New function: errmsg for writing to the syslog or console when not forked.
+  * Getopt is now used for command line parsing. Some checks added for correct
+    UDP port values.
+  * The dot-dash delay has been adjusted, so it sounds a bit better.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sat,  5 Apr 2003 12:41:49 +0200
+
+cwdaemon (0.2.3) unstable; urgency=low
+
+  * Fix a bug reported by Wilbert Knol <zl2bsj at zl2tze.ath.cx>, cwdaemon
+    would 'remember' previous lines, if they are longer than the current one.
+  * Add some command line arguments (see cwdaemon -h). The default port can
+    now be changed with '-p', '-n' will cause cwdaemon not to fork and print
+    debug information to stdout.
+  * Many cleanups (up till here 0.2.2 test release).
+  * Fixed a divide by zero which would crash cwdaemon.
+  * Use nanosleep instead of usleep.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun,  9 Mar 2003 21:26:24 +0100
+
+cwdaemon (0.2.1) unstable; urgency=low
+
+  * Use automake and autoconf.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sat, 18 Jan 2003 14:40:15 +0100
+
+cwdaemon (0.2) unstable; urgency=low
+
+  * Initial release for debian.
+  * Added support for german umlauts, "ringed a" and "n tilde".
+  * Now installs by default in /usr/sbin.
+  * Many cosmetic fixes.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sat, 11 Jan 2003 11:03:19 +0100
+
+cwdaemon (0.1) unstable; urgency=low
+
+  * First public release by Rein, PA0RCT.
+
+ -- Joop Stakenborg <pa3aba@debian.org>  Sun, 17 Nov 2002 21:15:11 +0100

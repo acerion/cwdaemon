@@ -1,0 +1,17 @@
+This package was debianized by Joop Stakenborg pa3aba@debian.org on
+Sat, 11 Jan 2003 11:03:19 +0100.
+
+It was downloaded from http://people.debian.org/~pa3aba/cwdaemon.html
+
+Copyright:
+
+Code parts were taken from cwbeacon by EA4RJ and morse by GW4PTS.
+Cwbeacon is part of the beacon project by ea4rj@amsat.org
+and it is based on the original:
+GW4PTS Morse tutor for Linux, by Alan Cox (morse.c 1.00, 21/09/93)
+
+Cwdaemon is copyright (C) 2002-2003 by Joop Stakenborg <pa4tu@amsat.org>
+and Rein Couperus <pa0rct@amsat.org>.
+
+All of this software is distributed under the GPL, see
+/usr/share/common-licenses/GPL

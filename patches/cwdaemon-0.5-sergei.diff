@@ -1,0 +1,133 @@
+diff -u -r cwdaemon-0.5/cwdaemon.c cwdaemon-0.5-mod/cwdaemon.c
+--- cwdaemon-0.5/cwdaemon.c	2003-05-19 10:58:40.000000000 -0600
++++ cwdaemon-0.5-mod/cwdaemon.c	2003-07-19 16:02:10.000000000 -0600
+@@ -54,6 +54,8 @@
+ unsigned int ptt_delay = 0; /* default = off*/
+ int ptt_timer_running = 0;
+ 
++int keyer_data;		/* status of the automatic keyer */
++
+ struct timeval now,end,left;
+ 
+ #define MAXMORSE 4000
+@@ -125,6 +127,7 @@
+   init : ttys_init,
+   free : ttys_free,
+   reset : ttys_reset,
++  status : ttys_status,
+   cw_on   : ttys_cw_on,
+   cw_off  : ttys_cw_off,
+   ptt_on  : ttys_ptt_on,
+@@ -138,6 +141,7 @@
+   init : lp_init,
+   free : lp_free,
+   reset : lp_reset,
++  status : lp_status,
+   cw_on   : lp_cw_on,
+   cw_off  : lp_cw_off,
+   ptt_on  : lp_ptt_on,
+@@ -900,6 +904,27 @@
+   while (1)
+     {
+       udelay (1000); /*prevent 100% CPU */
++      
++      keyer_data = cwdev->status(cwdev);
++      if (keyer_data == 13) 			/* dash */
++      {
++        debug("dash");
++        playbeep(dash);
++	udelay (eldelay / morse_speed); 	/* delay after the element */
++	continue; 				/* don't let cwdaemon do anything else if the key is still in use */
++      }
++      else
++      {
++        if (keyer_data == 12) 			/* dot */
++	{
++	  debug("dot");
++	  playbeep(dot);
++	  udelay (eldelay / morse_speed); 	/* delay after the element */
++	  continue;				/* don't let cwdaemon do anything else if the key is still in use */
++	}  
++      }
++      
++      
+       if (recv_code ())
+         playmorsestring (morsetext);
+       /* check for ptt off timer */
+diff -u -r cwdaemon-0.5/cwdaemon.h cwdaemon-0.5-mod/cwdaemon.h
+--- cwdaemon-0.5/cwdaemon.h	2003-05-05 14:09:41.000000000 -0600
++++ cwdaemon-0.5-mod/cwdaemon.h	2003-07-19 16:08:33.000000000 -0600
+@@ -90,6 +90,7 @@
+     int (*init)(struct cwdev_s *);
+     int (*free)(struct cwdev_s *);
+     int (*reset)(struct cwdev_s *);
++    int (*status)(struct cwdev_s *);
+     int (*cw_on)(struct cwdev_s *);
+     int (*cw_off)(struct cwdev_s *);
+     int (*ptt_on)(struct cwdev_s *);
+@@ -108,6 +109,7 @@
+ int lp_init(cwdevice *dev);
+ int lp_free(cwdevice *dev);
+ int lp_reset(cwdevice *dev);
++int lp_status(cwdevice *dev);
+ int lp_cw_on(cwdevice *dev);
+ int lp_cw_off(cwdevice *dev);
+ int lp_ptt_on(cwdevice *dev);
+@@ -120,6 +122,7 @@
+ int ttys_init(cwdevice *dev);
+ int ttys_free(cwdevice *dev);
+ int ttys_reset(cwdevice *dev);
++int ttys_status(cwdevice *dev);
+ int ttys_cw_on(cwdevice *dev);
+ int ttys_cw_off(cwdevice *dev);
+ int ttys_ptt_on(cwdevice *dev);
+diff -u -r cwdaemon-0.5/lp.c cwdaemon-0.5-mod/lp.c
+--- cwdaemon-0.5/lp.c	2003-05-05 14:09:41.000000000 -0600
++++ cwdaemon-0.5-mod/lp.c	2003-07-19 16:11:31.000000000 -0600
+@@ -3,6 +3,29 @@
+ 
+ /* LP functions */
+ 
++int lp_status(cwdevice *dev)
++{
++  int port_data;
++  
++  if (ioperm (dev->base+1, 3, 1) == -1)
++    {
++      errmsg ("Open lp port 0x%x, %d", dev->base, dev->base);
++      exit (1);
++    }
++
++
++  port_data = inb(dev->base+1);
++  if ((port_data & 0x10) != 0x10)	/* Check for pin 13 */
++    return 13;	/* dash */
++  else
++  {
++    if ((port_data & 0x20) != 0x20)	/* Check for pin 12 */
++      return 12;	/* dot */
++    else
++      return 0;		/* nothing */
++  }
++}
++
+ int lp_init(cwdevice *dev)
+ {
+   if (ioperm (dev->base+2, 1, 1) == -1)
+diff -u -r cwdaemon-0.5/ttys.c cwdaemon-0.5-mod/ttys.c
+--- cwdaemon-0.5/ttys.c	2003-05-17 04:24:01.000000000 -0600
++++ cwdaemon-0.5-mod/ttys.c	2003-07-19 16:05:52.000000000 -0600
+@@ -21,6 +21,12 @@
+ 
+ /* ttyS functions */
+ 
++int ttys_status(cwdevice *dev)
++{
++  /* Dummy function */
++  return 0;
++}
++
+ int ttys_init(cwdevice *dev)
+ {
+   if (ioperm (dev->base, 8, 1) == -1)
+

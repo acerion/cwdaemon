@@ -1,0 +1,16 @@
+Source: cwdaemon
+Section: hamradio
+Priority: optional
+Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
+Uploaders: Kamil Ignacak <acerion@wp.pl>, Kamal Mostafa <kamal@whence.com>
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>=7), autotools-dev, libcw3-dev (>=3.0-2), pkg-config
+
+Package: cwdaemon
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: winkeydaemon
+Description: morse daemon for the parallel or serial port
+ Cwdaemon is a small daemon which uses the pc parallel or serial port
+ and a simple transistor switch to output morse code to a transmitter
+ from a text message sent to it via the udp internet protocol.

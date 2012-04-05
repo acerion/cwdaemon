@@ -1,0 +1,285 @@
+diff -ruN cwdaemon-0.9.2/ChangeLog cwdaemon-0.9.2mt/ChangeLog
+--- cwdaemon-0.9.2/ChangeLog	2005-02-10 17:59:41.000000000 +0100
++++ cwdaemon-0.9.2mt/ChangeLog	2006-04-02 17:54:18.738950764 +0200
+@@ -1,3 +1,5 @@
++  * Reader thread for immediate stop after ESC0, OK1ZIA
++
+ cwdaemon (0.9.2)
+ 
+   * Many patches by Jason L. Wright, AI4JW, which brings us OpenBSD support
+diff -ruN cwdaemon-0.9.2/configure.in cwdaemon-0.9.2mt/configure.in
+--- cwdaemon-0.9.2/configure.in	2005-03-09 15:56:44.000000000 +0100
++++ cwdaemon-0.9.2mt/configure.in	2006-04-02 18:11:34.328774214 +0200
+@@ -1,7 +1,7 @@
+ # Process this file with autoconf to produce a configure script.
+ 
+ AC_PREREQ(2.57)
+-AC_INIT(cwdaemon, 0.9.2, pg4i@amsat.org)
++AC_INIT(cwdaemon, 0.9.2mt, pg4i@amsat.org)
+ AM_INIT_AUTOMAKE
+ AM_MAINTAINER_MODE
+ AC_CONFIG_SRCDIR([cwdaemon.c])
+@@ -46,6 +46,11 @@
+ AC_CHECK_LIB([m],[floorf],[AC_DEFINE([HAVE_FLOORF],[1],[libm includes floorf])])
+ AC_CHECK_LIB([m],[sin])
+ AC_CHECK_LIB([ossaudio],[_oss_ioctl])
++AC_CHECK_LIB([pthread],[pthread_create])
++if test x"$ac_cv_lib_pthread_pthread_create" = x"no"; then
++	AC_MSG_ERROR(You need library pthread to compile cwdaemon)
++fi
++CFLAGS="$CFLAGS -DREENTRANT"
+ 
+ if test "${ac_cv_c_compiler_gnu}" = "yes"; then
+   CFLAGS="${CFLAGS} -Wall"
+diff -ruN cwdaemon-0.9.2/cwdaemon.c cwdaemon-0.9.2mt/cwdaemon.c
+--- cwdaemon-0.9.2/cwdaemon.c	2005-03-14 18:02:29.000000000 +0100
++++ cwdaemon-0.9.2mt/cwdaemon.c	2006-04-02 18:07:23.047292861 +0200
+@@ -88,6 +88,7 @@
+ # include <sys/param.h>
+ #endif
+ #include <limits.h>
++#include <pthread.h>
+ 
+ #include "cwlib.h"
+ #include "cwdaemon.h"
+@@ -95,7 +96,7 @@
+ /* network vars */
+ int sin_len, reply_socklen;
+ int socket_descriptor;
+-struct sockaddr_in k_sin, reply_sin;
++struct sockaddr_in k_sin, reply_sin; /* k_sin is protected by k_sin_mutex */
+ int port = 6789;		/* default UDP port we listen on */
+ char reply_data[256];
+ 
+@@ -110,7 +111,7 @@
+ int soundcard_sound = 0;	/* soundcard off */
+ 
+ /* various variables */
+-int forking = 1; 		/* we fork by default */
++int forking = 1;		/* we fork by default */
+ int bandswitch;
+ int priority = 0;
+ 
+@@ -163,6 +164,13 @@
+ #endif
+ cwdevice *cwdev;
+ 
++/* variables for reader thread */
++pthread_t reader_thread;
++pthread_mutex_t k_sin_mutex; /* for k_sin */
++int reader_pipe[2];
++int async_abort;
++
++
+ /* catch ^C when running in foreground */
+ static RETSIGTYPE
+ catchint (int signal)
+@@ -336,15 +344,13 @@
+ 	int valid_sdevice = 0, fd;
+ 	long lv;
+ 
+-	recv_rc = recvfrom (socket_descriptor, message, sizeof (message) - 1,
+-		0, (struct sockaddr *) &k_sin, &sin_len);
++	recv_rc = read (reader_pipe[0], message, sizeof (message) - 1);
+ 
+ 	if (recv_rc == -1 && errno != EAGAIN)
+ 	{
+ 		errmsg ("Recvfrom");
+ 		exit (1);
+ 	}
+-
+ 	if (recv_rc > 0)
+ 	{
+ 		message[recv_rc] = '\0';
+@@ -367,6 +373,7 @@
+ 				soundcard_sound = 0;
+ 				initmorse ();
+ 				wordmode = 0;
++                async_abort = 0;
+ 				cwdev->reset (cwdev);
+ 				debug ("Reset all values");
+ 				break;
+@@ -565,14 +572,16 @@
+ 					cw_set_volume (morse_volume);
+ 				}
+ 				break;
+-	    case 'h':   /* send echo to main program when CW playing is done */
+-		memcpy(&reply_sin, &k_sin, sizeof(reply_sin)); /* remember sender */
+-		reply_socklen = sin_len;
+-		strncpy(reply_data+1, message, sizeof(reply_data) - 2);
+-		reply_data[sizeof(reply_data) - 1] = '\0';
+-		reply_data[0]='h';
+-		if (strlen (message) + 1 <= MAXMORSE - 1) strcat (morsetext, "^");
+-		break;
++			case 'h':   /* send echo to main program when CW playing is done */
++				pthread_mutex_lock(&k_sin_mutex);
++				memcpy(&reply_sin, &k_sin, sizeof(reply_sin)); /* remember sender */
++		                pthread_mutex_unlock(&k_sin_mutex);
++				reply_socklen = sin_len;
++				strncpy(reply_data+1, message, sizeof(reply_data) - 2);
++				reply_data[sizeof(reply_data) - 1] = '\0';
++				reply_data[0]='h';
++				if (strlen (message) + 1 <= MAXMORSE - 1) strcat (morsetext, "^");
++				break;
+ 			}
+ 			return 0;
+ 		}
+@@ -606,15 +615,15 @@
+ 		}
+ 		else if (c == '~')
+ 			cw_set_gap (2); /* 2 dots time additional for the next char */
+-	else if (c == '^'){
+-	    debug("Echo '%s'", reply_data);
+-	    if (strlen(reply_data)==0) return;
+-	    sendto(socket_descriptor, reply_data, strlen(reply_data), 0, 
+-		(struct sockaddr *)&reply_sin, reply_socklen);
+-	    strcpy(reply_data,"");
+-	    break;
+-  
+-	}
++		else if (c == '^')
++		{
++			debug("Echo '%s'", reply_data);
++			if (strlen(reply_data)==0) return;
++			sendto(socket_descriptor, reply_data, strlen(reply_data), 0, 
++			(struct sockaddr *)&reply_sin, reply_socklen);
++			strcpy(reply_data,"");
++			break;
++		}
+ 		else
+ 		{
+ 			validchar = 1;
+@@ -636,6 +645,7 @@
+ 			debug ("Morse = %c", c);
+ 			cw_send_character (c);
+ 			cw_tone_queue_wait_critical (1);
++            if (async_abort) break;
+ 			if (cw_get_gap () == 2) cw_set_gap (0);
+ 		}
+ 		x++;
+@@ -818,6 +828,44 @@
+ 	}
+ }
+ 
++/* Reader thread. Reads data from socket_descriptor and send to main thread throug reader_pipe 
++ * Sets async_abort when abort command is received */
++
++void *reader(void *arg)
++{
++	int esc, recv_rc, i;
++	char buf[257];
++	struct sockaddr_in reader_sin;
++
++	esc=0;
++	while(1)
++	{
++		recv_rc = recvfrom (socket_descriptor, buf, sizeof (buf) - 1,
++					0, (struct sockaddr *) &reader_sin, &sin_len);
++    
++		printf("recvfrom: %d\n", recv_rc);
++		if (recv_rc<=0) continue;
++
++		pthread_mutex_lock(&k_sin_mutex);
++		memcpy(&k_sin, &reader_sin, sizeof(k_sin)); 
++		pthread_mutex_unlock(&k_sin_mutex);
++     
++		for (i=0;i<recv_rc;i++)
++		{
++			if (esc && buf[i]=='0')
++			{
++				printf("reader: abort\n");
++				async_abort=1;
++			}
++			esc=buf[i]==27;
++		}
++		write(reader_pipe[1], buf, recv_rc);
++	}
++	/* unreached */
++	return NULL;
++}
++    
++
+ /* main program: fork, open network connection and go into an endless loop
+    waiting for something to happen on the UDP port */
+ int
+@@ -948,8 +996,27 @@
+ 		errmsg ("Bind");
+ 		exit (1);
+ 	}
++    
++	if (socketpair(AF_UNIX, SOCK_DGRAM, 0, reader_pipe)) /* [0] for reading, [1] for writing */
++	{
++		errmsg ("Creating pipe");
++		exit (1);
++	}
++            
++	async_abort = 0;
++	if (pthread_create(&reader_thread, NULL, reader, NULL))
++	{
++		errmsg ("Creating thread");
++		exit (1);
++	}
++	if (pthread_mutex_init(&k_sin_mutex, NULL))
++	{
++		errmsg ("Creating mutex");
++		exit (1);
++	}
++
+ 
+-	save_file_flags = fcntl (socket_descriptor, F_GETFL);
++	save_file_flags = fcntl (reader_pipe[0], F_GETFL);
+ 	if (save_file_flags == -1)
+ 	{
+ 		errmsg("Trying get flags");
+@@ -957,7 +1024,7 @@
+ 	}
+ 	save_file_flags |= O_NONBLOCK;
+ 
+-	if (fcntl (socket_descriptor, F_SETFL, save_file_flags) == -1)
++	if (fcntl (reader_pipe[0], F_SETFL, save_file_flags) == -1)
+ 	{
+ 		errmsg ("Trying non-blocking");
+ 		exit (1);
+@@ -994,6 +1061,8 @@
+ 			}
+ 		}
+ 	}
++	/* unreached */
++	pthread_mutex_destroy(&k_sin_mutex);
+ 
+ 	cwdev->free (cwdev);
+ 	if (close (socket_descriptor) == -1)
+@@ -1001,5 +1070,11 @@
+ 		errmsg ("Close socket");
+ 		exit (1);
+ 	}
++	if (close (reader_pipe[0]) == -1 ||
++        close (reader_pipe[1]) == -1)
++	{
++		errmsg ("Close socket");
++		exit (1);
++	}
+ 	exit (0);
+ }
+diff -ruN cwdaemon-0.9.2/cwlib.c cwdaemon-0.9.2mt/cwlib.c
+--- cwdaemon-0.9.2/cwlib.c	2005-02-03 18:40:59.000000000 +0100
++++ cwdaemon-0.9.2mt/cwlib.c	2006-04-02 18:13:03.501329694 +0200
+@@ -423,6 +423,7 @@
+  */
+ static int	cw_sk_key_down		= FALSE;/* Indicates key up or down */
+ 
++extern int async_abort;
+ 
+ /**
+  * cw_version()
+@@ -2875,6 +2876,10 @@
+ 	while (queue_length > level)
+ 	    {
+ 		cw_signal_wait_internal ();
++		if (async_abort){
++		    cw_flush_tone_queue();
++		    return RC_SUCCESS;
++		}
+ 
+ 		/* Calculate the current queue length again. */
+ 		if (cw_tq_head >= cw_tq_tail)

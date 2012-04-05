@@ -1,0 +1,33 @@
+# /etc/default/cwdaemon
+# OK1ZIA 17 Aug 2004
+
+#
+# Start cwdaemon at boot? yes or no
+START_CWDAEMON=yes
+
+# device without /dev/ e.g. ttyS0, ttyS1, ttyUSB0, ttyd0 (FreeBSD), parport0,
+# parport1, ... or null for no port keying.
+# Default for linux: parport0 with ppdev driver
+DEVICE="parport0"
+
+# default 6789
+#UDPPORT="6789"
+
+# priority -20 to +20 
+#PRIORITY="0"
+
+# CW speed in WPM. Default 24
+#SPEED="24"
+
+# default 0
+#PTTDELAY="0"
+
+# volume for soundcard. 0 to 100, default 70
+#VOLUME="70"
+
+# weight -50 to 50. Default 0
+#WEIGHT="0"
+
+# sound device:
+# c: console, s: soundcard, b: both, n: none. Default is c.
+#SDEVICE="c"

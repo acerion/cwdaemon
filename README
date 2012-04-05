@@ -1,0 +1,213 @@
+Cwdaemon-0.9
+============
+
+Cwdaemon is a small daemon which uses the pc parallel or serial port and a 
+simple transistor switch to output morse code to a transmitter from a text 
+message sent to it via the udp internet protocol. The program uses the
+soundcard or PC speaker to generate a sidetone.
+
+It is called as root, with "cwdaemon -p <portnumber> -d <device>". If no 
+portnumber is given, the default portnumber 6789 is used. Device can be one of 
+the serial (ttyS0, ttyS1, etc) or parallel (parport0, parport1, etc) ports.
+Default is parport0.
+
+For FreeBSD, use ttyd0, ttyd1, etc. for the serial ports and ppi0, ppi1, etc.
+for the parallel ports. Default is the first parallel port.
+
+Cwdaemon also handles PTT, and band index output for automatic switching of
+antennas, filters etc. Pinout is compatible with the standard (CT, TRlog).
+
+
+Please note
+-----------
+BSD and/or Linux are not real-time operating systems. e.g. the timer resolution
+of the kernel is 10 milliseconds. You may especially notice this when using PTT
+and setting the PTT delay value. If you experience timing problems, you might
+try using the -P flag. This will set cwdaemon's priority. The default is zero,
+any negative value will be a higher priority, the maximum being -20.
+
+
+Quickstart
+----------
+On linux run the cwsetup.sh script and next run cwdaemon with the -n flag.
+If this does not work, read the next paragraphs....
+
+
+Setting up parallel port(s) on linux for cwdaemon
+-------------------------------------------------
+You need the parport devices to use cwdaemon. Check if you have them:
+
+  ls -al /dev/parport*
+
+If you don't see any files, create the with MAKEDEV (as root user):
+
+  cd /dev; ./MAKEDEV parport
+
+Next, check whether the parport and parport_pc kernel modules are loaded: when
+you type 'lsmod', you should (on the i386 architecture) see something like:
+
+  parport_pc             23304   0 (autoclean)
+  parport                25992   0 (autoclean) [parport_pc]
+
+The lp module should not be loaded, it is only needed if you want to use a 
+printer and it will block the parallel port if you use cwdaemon. You can unload
+it with the command 'rmmod lp' as root.
+
+If you don't see any parport modules please check whether you have the line:
+
+  alias parport_lowlevel parport_pc
+
+in your /etc/modules.conf file and load the modules with:
+
+  modprobe parport
+  modprobe parport_pc
+
+Be sure that parallel port support is enabled in your BIOS! If you use odd 
+ioports or interrupts, you can do things like:
+
+  modprobe parport_pc io=0x3bc,0x378,0x278 irq=none,7,auto
+
+which configures 3 parallel ports with the second port using irq 7 and the
+third port some auto-detected irq.
+
+When cwdaemon is run, the ppdev kernel module should be loaded automatically. 
+In case it doesn't, just type:
+
+  modprobe ppdev
+
+PLEASE NOTE: you should probably run a 2.4 kernel to use the ppdev device with
+cwdaemon.
+
+Setting up serial port(s) on linux for cwdaemon
+-----------------------------------------------
+Setting up your serial ports is straightforward. Here are some commands to get
+you started:
+
+  setserial -g /dev/ttyS*
+
+will tell you what serial lines are configured. If you see a line with 
+"UART: unknown", this probably means there is no serial port for the device.
+
+  setserial /dev/ttyS0 -v autoconfig
+
+will try to autoconfigure your first serial port. You need to run this command
+as root.
+
+Other valid commands are:
+
+  setserial /dev/ttyS1 auto_irq skip_test autoconfig
+  setserial /dev/ttyS3 irq 5 uart 16550A skip_test
+
+Newer distributions use a file called '/etc/serial.conf' where the information
+for your serial ports are stored.
+
+
+Setting up parallel port(s) on FreeBSD for cwdaemon
+---------------------------------------------------
+You will need ppbus and ppi either defined in the kernel or loaded at boot time
+as kernel modules. ppbus and ppi are defined in the GENERIC kernel hence should
+work as is unless you have removed them from your kernel. If not, you can add
+the following in the kernel config, recompiling and reloading a kernel as
+outlined in the FreeBSD handbook.
+
+# Parallel port
+device          ppbus           # Parallel port bus (required)
+device          ppi             # Parallel port interface device
+
+You can also load ppbus.ko and ppi.ko at boot time instead of rebuilding your 
+kernel. This is also outlined in the FreeBSD handbook.
+
+e.g. In /boot add
+
+ppbus_load="YES"
+ppi_load="YES"
+
+
+Setting up serial port(s) on FreeBSD for cwdaemon
+-------------------------------------------------
+The serial port driver is loaded by default in the GENERIC kernel. If not 
+configured in the kernel, you can add to the kernel config and rebuild the
+kernel as outlined in the FreeBSD handbook.
+
+# Serial (COM) ports
+device          sio             # 8250, 16[45]50 based serial ports
+
+
+How cwdaemon works
+------------------
+After starting, the program detaches from its controlling terminal,
+after that the program can be controlled via its network udp input port.
+
+The message formats are:
+
+<ESC>"0"                 Reset to default values
+<ESC>"2"<"speed value">  Set keying speed (5 ... 60 wpm)
+<ESC>"3"<"tone value">   Set sidetone (300 ... 1000 Hz)
+<ESC>"3"<"0">            Sound off
+<ESC>"4"                 Abort message
+<ESC>"5"                 Stop (Exit) the daemon
+<ESC>"6"                 Set uninterruptable (word- ) mode for simulator
+<ESC>"7"<"weight value"> Set weighting (-50 ... 50)
+<ESC>"8"<"device">       Set device for keying (same as -d)
+<ESC>"9"<"port number">  Obsolete
+<ESC>"a"<"0|1">          PTT keying off or on
+<ESC>"b"<"0|1">          SSB signal from microphone or soundcard
+<ESC>"c"<"x">            Tune x seconds long (limit = 10 seconds)
+<ESC>"d"<"delay">        PTT on delay 0..50 (0 .. 50ms)
+<ESC>"e"<"bandindex">	 Band info output on pins 2, 7, 8, 9 of the parport
+                         (pin 2 = lsb, 9 = msb, e.g. 1000 = 160m, 1001 = 10m)
+<ESC>"f"<"sound device"> Set sound device, same as -x.
+<ESC>"g"<"volume">       Set soundcard volume (0 .. 100).
+<ESC>"h"<"opt.text">     Cwdaemon replies "h" and optionaly text to logging
+                         program when playing is done.
+Any message              Send morse code message  (max 1 packet!)
+qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps
+de d~l~2~w~r~j pse k     Add half-space delay after each character
+
+
+Default startup values
+----------------------
+Speed = 24 wpm
+Tone = 800 Hz
+Sound = on
+Wordmode = off
+Weight = 0
+UDP port = 6789
+PTT delay = 0 (off)
+Device = parport0
+Sound Device = console
+
+
+Cwdaemon supports the following special characters
+--------------------------------------------------
+*	AR
+=	BT
+<	SK
+(	KN
+!	SN
+&	AS
+>	BK
+
+
+Cwdaemon parallel and serial port circuitry
+-------------------------------------------
+See the examples in the schematics directory.
+
+
+Testing cwdaemon
+----------------
+Please review and run the test/cwtest.sh test program. It only works with
+netcat installed.
+
+
+Credits
+-------
+Conversion to stand-alone utility, basic work, POSIX porting, integration
+with unixcw and initial FreeBSD support by PG4I.
+Networking, daemon mode and band switching by PA0R.
+Rework of the device handling, echo-ing and Debian init.d support by OK1ZIA.
+Many contributions by DL2WRJ. Unixcw library by G0FRD. FreeBSD support by
+Diane Bruce, VA3DB. OpenBSD and multi-platform support by Jason L. Wright,
+AI4JW.
+
+All of this code is distributed under the GNU GPL license.

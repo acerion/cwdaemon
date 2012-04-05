@@ -1,0 +1,15 @@
+Description: Checking for '\n' char that may occur at the end of TCP buffer.
+Author: Jenö Vago <ha5se@ha5hrk.hu>
+Reviewed-By: Kamil Ignacak <acerion@wp.pl>
+
+--- cwdaemon-0.9.4.orig/cwdaemon.c  2012-01-12 15:51:37.000000000 +0100
++++ cwdaemon-0.9.4/cwdaemon.c  2012-01-16 16:34:22.385389437 +0100
+@@ -365,7 +365,7 @@
+
+ 	errno = 0;
+ 	lv = strtol(buf, &ep, 10);
+-	if (buf[0] == '\0' || *ep != '\0')
++	if (buf[0] == '\0' || (*ep != '\0' && *ep != '\n'))
+ 		return (-1);
+ 	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN))
+ 		return (-1);

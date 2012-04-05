@@ -1,0 +1,1046 @@
+diff -ruN cwdaemon-0.7/Makefile.am cwdaemon-0.7-zia/Makefile.am
+--- cwdaemon-0.7/Makefile.am	2003-05-14 19:45:57.000000000 +0200
++++ cwdaemon-0.7-zia/Makefile.am	2003-11-24 17:39:48.000000000 +0100
+@@ -6,7 +6,7 @@
+ 
+ man_MANS = cwdaemon.8
+ 
+-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c
++cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c select.c ttys.c
+ 
+ install-data-local:
+ 	@$(NORMAL_INSTALL)
+diff -ruN cwdaemon-0.7/cwdaemon.c cwdaemon-0.7-zia/cwdaemon.c
+--- cwdaemon-0.7/cwdaemon.c	2003-10-26 20:17:40.000000000 +0100
++++ cwdaemon-0.7-zia/cwdaemon.c	2003-11-25 12:35:50.000000000 +0100
+@@ -112,10 +112,12 @@
+ int forking = 1;
+ 
+ /* network vars */
+-int sin_len;
++int sin_len, reply_socklen;
+ int socket_descriptor;
+-struct sockaddr_in k_sin;
++struct sockaddr_in k_sin, reply_sin;
+ int port = 6789;
++char reply_data[256];
++int last_id=-1;
+ 
+ /* morse defaults */
+ int morse_gap = 0;		/* TODO: Set with -d delay */
+@@ -126,10 +128,7 @@
+ long int dot = 1000000;		/* dot length = unit */
+ long int dash = 3000000;	/* dash length = 3-dot */
+ long int eldelay = 1000000;	/* pause between elements equals to dot time */
+-unsigned int ptt_delay = 0;	/* default = off */
+-
+-/* various variables */
+-int ptt_timer_running = 0;
++unsigned int ptt_delay = 1000000;	/* default = off */
+ unsigned int bandswitch;
+ 
+ struct timeval now, end, left;
+@@ -150,6 +149,7 @@
+ }
+ morse;
+ 
++/* WARNING! Character '^' is used for command 'e' */
+ morse morsetable[] = {
+ 	{' ', {NIL, NIL, NIL, NIL, NIL, NIL, NIL, NIL}},
+ 	{'A', {DIH, DAH, NIL, NIL, NIL, NIL, NIL, NIL}},
+@@ -238,6 +238,9 @@
+ cwdevice *cwdev = &cwdevice_ttys;
+ #endif
+ 
++static morse *morse_playing=NULL;
++static int morse_i=0;
++
+ /*
+   int weight [-5...0...+5]
+   0 = dot/space ratio 1:3, element space = dot time
+@@ -314,42 +317,6 @@
+ 		errmsg ("Nanosleep");
+ }
+ 
+-/*
+-   this is sample code shameless :-) stolen from
+-   http://www.erlenstar.demon.co.uk/unix/faq_8.html
+-*/
+-
+-/* some simple timing utilities */
+-
+-void
+-timer_add (struct timeval *tv, long secs, long usecs)
+-{
+-	tv->tv_sec += secs;
+-	if ((tv->tv_usec += usecs) >= 1000000)
+-	{
+-		tv->tv_sec += tv->tv_usec / 1000000;
+-		tv->tv_usec %= 1000000;
+-	}
+-}
+-
+-/* Set *RES = *A - *B, returning the sign of the result */
+-
+-int
+-timer_sub (struct timeval *res, const struct timeval *a,
+-	   const struct timeval *b)
+-{
+-	long sec = a->tv_sec - b->tv_sec;
+-	long usec = a->tv_usec - b->tv_usec;
+-
+-	if (usec < 0)
+-		usec += 1000000, --sec;
+-
+-	res->tv_sec = sec;
+-	res->tv_usec = usec;
+-
+-	return (sec < 0) ? (-1) : ((sec == 0 && usec == 0) ? 0 : 1);
+-}
+-
+ 
+ void
+ set_switch (unsigned int bandswitch)		// band switch function
+@@ -367,82 +334,6 @@
+ 		debug ("Band switch output not implemented");
+ }
+ 
+-void
+-tune (int onoff)
+-{
+-	int fd;
+-
+-	if (onoff)
+-	{
+-		if (ptt_delay)
+-		{
+-			cwdev->ptt (cwdev, ON);
+-			debug ("PTT (TUNE) on");
+-			/* TOD */
+-			udelay (ptt_delay);
+-		}
+-		cwdev->cw (cwdev, ON);
+-		debug ("CW (TUNE) on");
+-		/* sidetone on if morsetone !=0 */
+-		fd = open ("/dev/tty1", O_WRONLY);
+-		if (fd != -1)
+-		{
+-			if (ioctl (fd, KIOCSOUND, morse_tone) != 0)
+-			{
+-				errmsg ("Ioctl console speaker");
+-				exit (1);
+-			}
+-			close (fd);
+-		}
+-		else
+-		{
+-			errmsg ("Open console speaker");
+-			exit (1);
+-		}
+-	}
+-	else
+-	{
+-		if (ptt_delay)
+-		{
+-			gettimeofday (&end, NULL);
+-			timer_add (&end, 0, dash / morse_speed);
+-			ptt_timer_running = 1;
+-		}
+-		cwdev->cw (cwdev, OFF);
+-		debug ("CW (TUNE) off");
+-		fd = open ("/dev/tty1", O_WRONLY);
+-		if (fd != -1)
+-		{
+-			if (ioctl (fd, KIOCSOUND, 0) != 0)
+-			{
+-				errmsg ("Ioctl console speaker");
+-				exit (1);
+-			}
+-			close (fd);
+-		}
+-		else
+-		{
+-			errmsg ("Open console speaker");
+-			exit (1);
+-		}
+-		/* delayed ptt off */
+-		if (1 == ptt_timer_running)
+-		{
+-			while (1)
+-			{
+-				udelay (1000);	/*prevent 100% CPU */
+-				gettimeofday (&now, NULL);
+-				if (timer_sub (&left, &end, &now) <= 0)
+-				{
+-					cwdev->ptt (cwdev, OFF);
+-					debug ("PTT (TUNE) off");
+-					ptt_timer_running = 0;
+-					break;
+-				}
+-			}
+-		}
+-	}
+-}
+ 
+ /* convert character to morse by searching the morsetable */
+ morse *
+@@ -459,95 +350,130 @@
+ 	return (NULL);
+ }
+ 
+-/* output to console and serial/parallel port */
+-void
+-playbeep (long duration)
++
++
++void sound(int tone)
+ {
+ 	int fd;
+ 
+-	if (morse_sound)
++	fd = open ("/dev/tty1", O_WRONLY);
++	if (fd < 0)
++    {
++        errmsg ("Open console speaker");
++        exit (1);
++    }
++    
++	if (ioctl (fd, KIOCSOUND, tone) != 0)
+ 	{
+-		signal (SIGINT, SIG_IGN);
+-		signal (SIGQUIT, SIG_IGN);
+-		fd = open ("/dev/tty1", O_WRONLY);
+-		if (fd != -1)
+-		{
+-			if (ioctl (fd, KIOCSOUND, morse_tone) != 0)
+-			{
+-				errmsg ("Ioctl console speaker");
+-				exit (1);
+-			}
+-			close (fd);
+-		}
+-		else
+-		{
+-			errmsg ("Open console speaker");
+-			exit (1);
+-		}
++		errmsg ("Ioctl console speaker");
++		exit (1);
+ 	}
++	close (fd);
++}
+ 
+-	cwdev->cw (cwdev, ON);
+-	udelay (duration / morse_speed);
+ 
+-	if (morse_sound)
+-	{
+-		fd = open ("/dev/tty1", O_WRONLY);
+-		if (fd != -1)
+-		{
+-			if (ioctl (fd, KIOCSOUND, 0) != 0)
+-			{
+-				errmsg ("Ioctl console speaker");
+-				exit (1);
+-			}
+-			close (fd);
+-		}
+-		else
+-		{
+-			errmsg ("Open console speaker");
+-			exit (1);
+-		}
+-		if (forking)
+-			signal (SIGINT, SIG_DFL);
+-		else
+-			signal (SIGINT, catchint);
+-		signal (SIGQUIT, SIG_DFL);
+-	}
+-	cwdev->cw (cwdev, OFF);
+-}
+ 
+-/* play dot, dash and use a delay */
+-void
+-playmorse (morse * m)
++void playmorse (void *xxx)
+ {
+-	int d = 0;
++    if (!morse_playing) {
++        debug("playmorse: morse_playing= NULL");
++        last_id=install_timer(ptt_delay, offdelay, NULL); /* ptt delay can be 0 */
++        return;
++    }
++    debug("playmorse morse_playing='%c' i=%d", morse_playing->code, morse_i);
++
++    switch(morse_playing->data[morse_i++]){
++        case NIL:
++            debug("     NIL");
++            get_next_char(); /* NOT first character, we don't need ptt */
++            last_id=install_timer((dash + ((dot / 10) * morse_gap))/morse_speed, playmorse, NULL);
++            morse_gap = 0;
++            break;
++            
++        case DIH:
++            debug("     DIH");
++	        if (morse_sound) sound(morse_tone);
++	        cwdev->cw (cwdev, ON);
++	        last_id=install_timer (dot / morse_speed, playpause, NULL);
++            break;
++            
++        case DAH:
++            debug("     DAH");
++	        if (morse_sound) sound(morse_tone);
++	        cwdev->cw (cwdev, OFF);
++	        last_id=install_timer (dash / morse_speed, playpause, NULL);
++            break;
++    }
++}
++
++void playpause (void *xxx){                      
++    debug("playpause");
++
++	if (morse_sound) sound(0);
++    if (morse_playing) last_id=install_timer(eldelay/morse_speed, playmorse, NULL);
++}
++
++void pttdelay (void *xxx){
++    debug("pttdelay");
++    if (ptt_delay) cwdev->ptt (cwdev, ON);
++    /* morse_playing and morse_i must be set before */
++    last_id=install_timer(0, playmorse, NULL);
++}
++
++void offdelay (void *xxx){
++    debug("offdelay");
++    if (ptt_delay) cwdev->ptt (cwdev, OFF);
++	debug ("PTT off");
++}
++
++void tune(int onoff){
++    debug("tune(%d)", onoff);
++    if (onoff){
++        if (ptt_delay) cwdev->ptt (cwdev, ON);
++        debug ("PTT (TUNE) on");
++        last_id=install_timer(ptt_delay, tune_pttdelay, NULL); /* ptt_delay can be 0 */
++    }else{
++		cwdev->cw (cwdev, OFF);
++		debug ("CW (TUNE) off");
++	    sound(0);
++        if (ptt_delay)
++            last_id=install_timer(dash/morse_speed, tune_offdelay, NULL);    
++        else
++            last_id=install_timer(0, tune_offdelay, NULL);    
++    }
++}
++
++void tune_pttdelay (void *xxx){
++    debug("tune_pttdelay");
++    cwdev->cw (cwdev, ON);
++	debug ("CW (TUNE) on");
++	if (morse_sound) sound(morse_tone);
++}
+ 
+-	while (d < 8 && m->data[d] != NIL)
+-	{
+-		if (m->data[d] == DIH)
+-			playbeep (dot);
+-		if (m->data[d] == DAH)
+-			playbeep (dash);
+-		d++;
+-		udelay (eldelay / morse_speed);	/* element spacing */
+-	}			/* morse signs delay */
+-	udelay ((dash + ((dot / 10) * morse_gap)) / morse_speed);
+-	morse_gap = 0;		/* gap for one sign only */
++
++void tune_offdelay (void *xxx){
++    debug("tune_offdelay");
++    if (ptt_delay) cwdev->ptt (cwdev, OFF);
++	debug ("PTT (TUNE) off");
+ }
+ 
++
++
+ /*
+  * watch the socket and if there is an escape character check what it is,
+  * otherwise play morse. Return 0 with escape characters and empty messages.
+  */
+-int
+-recv_code (void)
++void recv_code (void *xxx)
+ {
+-	char message[257];
++	char message1[257];
++    char *message;
++    char *token_ptr;
+ 	ssize_t recv_rc;
+ 	int speed = 0;
+ 	int weight = 0;
+ 
+ 	recv_rc =
+-		recvfrom (socket_descriptor, message, sizeof (message) - 1, 0,
++		recvfrom (socket_descriptor, message1, sizeof (message1) - 1, 0,
+ 			  (struct sockaddr *) &k_sin, &sin_len);
+ 
+ 	if (recv_rc == -1 && errno != EAGAIN)
+@@ -555,16 +481,21 @@
+ 		errmsg ("Recvfrom");
+ 		exit (1);
+ 	}
++    
++    if (recv_rc>=0) message1[recv_rc]='\0';
+ 
+-	if (recv_rc > 0)
+-	{
++    for (message = strtok_r(message1, "\n", &token_ptr); 
++         message!=NULL; 
++         message=strtok_r(NULL, "\n", &token_ptr)){
++    
+ 		if (message[0] != 27)
+ 		{		/* no ESCAPE */
+ 			message[recv_rc] = '\0';
+-			debug ("Message: %s, length: %d", message, recv_rc);
++			debug ("Message: %s, length: %d", message, strlen(message));
+ 			if ((strlen (message) + strlen (morsetext)) <= MAXMORSE - 1)
+ 				strcat (morsetext, message);
+-			return 1;
++            debug(" Morsetext: %s, length: %d", morsetext, strlen(morsetext));
++			continue;
+ 		}
+ 		else
+ 		{		/* check ESCAPE characters */
+@@ -577,6 +508,10 @@
+ 				morse_tone = 1500;
+ 				morse_sound = 1;
+ 				wordmode = 0;
++                if (last_id>=0) {
++                    kill_timer(last_id);
++                    last_id=-1;    
++                }
+ 				cwdev->reset (cwdev);
+ 				debug ("Reset all values");
+ 				break;
+@@ -704,66 +639,86 @@
+ 					if (bandswitch <= 15 && bandswitch >= 0) 
+             set_switch (bandswitch);
+ 				break;
+-			}
+-			return 0;
+-		}
+-	}
+-	return 0;
++            case 'f':   /* send echo to main program when CW playing is done */
++                memcpy(&reply_sin, &k_sin, sizeof(reply_sin)); /* remember sender */
++                reply_socklen = sin_len;
++                strncpy(reply_data, message, sizeof(reply_data) - 1);
++                reply_data[sizeof(reply_data) - 1] = '\0';
++                if (strlen (message) + 1 <= MAXMORSE - 1) strcat (morsetext, "^");
++                break;
++			}
++			continue;
++		}
++        
++    }
++    if (!morse_playing) { /* No chars in queue. Maybe active pttoff. We start playing */
++        get_next_char();
++        if (ptt_delay){
++            if (last_id>=0){
++                kill_timer(last_id);
++                /* last_id=-1; NO! */
++            }
++			cwdev->ptt (cwdev, ON);
++            debug("PTT_delay on (%d)", ptt_delay);
++            if (last_id>=0) /* waiting for pttoff, we don't need pttdelay */
++                last_id=install_timer(0, playmorse, NULL); /* start immediatelly */
++            else
++                last_id=install_timer(ptt_delay,  pttdelay, NULL); /* start after pttdelay */
++        }else{
++            last_id=install_timer(0, playmorse, NULL); /* start immediatelly */
++        }
++    }
++
++	return;
+ }
+ 
++
++
+ /* check every character for speed increase or decrease, convert other
+-   characters to morse and play them */
+-void
+-playmorsestring (char *x)
+-{
++   characters to morse and store it into morse_playing and morse_i */
+ 
+-	int i = 0;
+-	/* stop ptt timer */
+-	if (ptt_delay)
+-	{
+-		cwdev->ptt (cwdev, ON);
+-		debug ("PTT on");
+-		/* TOD */
+-		udelay (ptt_delay);
+-	}
+-	while (*x)
+-	{
+-		char c = islower (*x) ? toupper (*x) : *x;
+-		if ((c == '+') || (c == '-'))
+-		{		/* speed in- & decrease */
+-			if ((c == '+') && (morse_speed <= 58))
+-				morse_speed += 2;
+-			if ((c == '-') && (morse_speed >= 10))
+-				morse_speed -= 2;
+-		}
+-		else if (c == '~')
+-			morse_gap = 15;	/* half dash time additional for the next char */
+-		else
+-		{
+-			morse *m = chartomorse (c);
+-			if (m != NULL)
+-				playmorse (m);
+-		}
+-		x++;
+-		i++;
+-		if (i >= strlen (morsetext))
+-		{
+-			i = 0;
+-			break;
+-		}
+-		if (wordmode == 0)
+-			recv_code ();
+-	}
+-	morsetext[0] = '\0';
+-	/* start ptt off timer */
+-	if (ptt_delay)
+-	{
+-		gettimeofday (&end, NULL);
+-		timer_add (&end, 0, dash / morse_speed);
+-		ptt_timer_running = 1;
+-	}
++void get_next_char(void){
++    char *x;
++    
++    for (x=morsetext; *x!='\0'; x++){
++        switch(toupper(*x)){
++            case '+':
++                if (morse_speed<=58) morse_speed+=2;
++                break;
++                
++            case '-':
++                if (morse_speed>=10) morse_speed-=2;
++                break;
++                
++            case '~':
++                morse_gap = 15;	/* half dash time additional for the next char */
++                break;
++                
++            case '^':
++                if (strlen(reply_data)==0) return;
++                sendto(socket_descriptor, reply_data, strlen(reply_data), 0, 
++                    (struct sockaddr *)&reply_sin, reply_socklen);
++                strcpy(reply_data,"");
++                break;
++                
++            default:            
++                morse_playing = chartomorse (toupper(*x));
++                morse_i=0;
++                if (strlen(morsetext)>0) memmove(morsetext, morsetext+1, strlen(morsetext));
++                
++                if (!morse_playing) debug("get_next_char: NULL");
++                else debug("get_next_char: '%c'", morse_playing->code);
++                
++                return;
++                
++        }
++    }
++    morse_playing = NULL;
++    morse_i = 0;
++    return;  /* no morse found */
+ }
+ 
++
+ /* parse the command line and check for options, do some error checking */
+ void
+ parsecommandline (int argc, char *argv[])
+@@ -874,13 +829,30 @@
+ 	}
+ }
+ 
++void terminate_all_subsystems(void){
++	int close_rc;
++
++    cwdev->free (cwdev);
++	close_rc = close (socket_descriptor);
++	if (close_rc == -1)
++	{
++		errmsg ("Close socket");
++		exit (1);
++	}
++}
++
++void initialize(void){
++    set_handlers(socket_descriptor, recv_code, NULL, NULL, NULL);
++}
++
++
+ /* main program: fork, open network connection and go into an endless loop
+    waiting for something to happen on the UDP port */
+ int
+ main (int argc, char *argv[])
+ {
+ 	pid_t pid, sid;
+-	int bind_rc, close_rc;
++	int bind_rc;
+ 	long save_file_flags;
+ 
+ #ifdef HAVE_LINUX_PPDEV_H
+@@ -961,31 +933,10 @@
+ 		exit (1);
+ 	}
+ 
++    
+ 	morsetext[0] = '\0';
+-	while (1)
+-	{
+-		udelay (1000);	/*prevent 100% CPU */
+-		if (recv_code ())
+-			playmorsestring (morsetext);
+-		/* check for ptt off timer */
+-		if (1 == ptt_timer_running)
+-		{
+-			gettimeofday (&now, NULL);
+-			if (timer_sub (&left, &end, &now) <= 0)
+-			{
+-				cwdev->ptt (cwdev, OFF);
+-				debug ("PTT off");
+-				ptt_timer_running = 0;
+-			}
+-		}
+-	}
++    select_loop(initialize);   
+ 
+-	cwdev->free (cwdev);
+-	close_rc = close (socket_descriptor);
+-	if (close_rc == -1)
+-	{
+-		errmsg ("Close socket");
+-		exit (1);
+-	}
++    terminate_all_subsystems();
+ 	exit (0);
+ }
+diff -ruN cwdaemon-0.7/cwdaemon.h cwdaemon-0.7-zia/cwdaemon.h
+--- cwdaemon-0.7/cwdaemon.h	2003-10-26 20:18:03.000000000 +0100
++++ cwdaemon-0.7-zia/cwdaemon.h	2003-11-25 12:07:53.000000000 +0100
+@@ -30,6 +30,27 @@
+ #define MICROPHONE 0
+ #define SOUNDCARD 1
+ 
++#include <errno.h>
++#include <signal.h>
++
++#ifdef HAVE_SYS_TIME_H
++#include <sys/time.h>
++#endif
++
++#include <sys/types.h>
++
++#ifdef HAVE_TIME_H
++#include <time.h>
++#endif
++
++#ifdef HAVE_SYS_WAIT_H
++#include <sys/wait.h>
++#endif
++
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
+ typedef struct cwdev_s
+ {
+ 	int (*init) (struct cwdev_s *);
+@@ -47,6 +68,16 @@
+ void errmsg (char *info, ...);
+ void debug (char *info, ...);
+ 
++void get_next_char(void);
++void playmorse (void *xxx);
++void playpause (void *xxx);
++void pttdelay (void *xxx);
++void offdelay (void *xxx);
++void tune(int onoff);
++void tune_pttdelay (void *xxx);
++void tune_offdelay (void *xxx);
++
++	
+ #ifdef HAVE_LINUX_PPDEV_H
+ int lp_init (cwdevice * dev);
+ int lp_free (cwdevice * dev);
+@@ -63,4 +94,88 @@
+ int ttys_cw (cwdevice * dev, int onoff);
+ int ttys_ptt (cwdevice * dev, int onoff);
+ 
++
++/* select.c */
++struct list_head {
++    void *next;
++    void *prev;
++};
++
++#ifndef HAVE_TYPEOF
++
++struct xlist_head {
++    struct xlist_head *next;
++    struct xlist_head *prev;
++};
++
++#endif
++
++#define init_list(x) {(x).next=&(x); (x).prev=&(x);}
++#define list_empty(x) ((x).next == &(x))
++#define del_from_list(x) {((struct list_head *)(x)->next)->prev=(x)->prev; ((struct list_head *)(x)->prev)->next=(x)->next;}
++/*#define add_to_list(l,x) {(x)->next=(l).next; (x)->prev=(typeof(x))&(l); (l).next=(x); if ((l).prev==&(l)) (l).prev=(x);}*/
++#define add_at_pos(p,x) do {(x)->next=(p)->next; (x)->prev=(p); (p)->next=(x); (x)->next->prev=(x);} while(0)
++
++#ifdef HAVE_TYPEOF
++#define add_to_list(l,x) add_at_pos((typeof(x))&(l),(x))
++#define foreach(e,l) for ((e)=(l).next; (e)!=(typeof(e))&(l); (e)=(e)->next)
++#define foreachback(e,l) for ((e)=(l).prev; (e)!=(typeof(e))&(l); (e)=(e)->prev)
++#else
++#define add_to_list(l,x) add_at_pos((struct xlist_head *)(void*)&(l),(struct xlist_head *)(x))
++#define foreach(e,l) for ((e)=(l).next; (e)!=(void *)&(l); (e)=(e)->next)
++#define foreachback(e,l) for ((e)=(l).prev; (e)!=(void *)&(l); (e)=(e)->prev)
++#endif
++#define free_list(l) {while ((l).next != &(l)) {struct list_head *a=(l).next; del_from_list(a); mem_free(a); }}
++
++typedef long ttime;
++typedef unsigned tcount;
++
++extern int terminate;
++
++long select_info(int);
++void select_loop(void (*)());
++int register_bottom_half(void (*)(void *), void *);
++void check_bottom_halves();
++int install_timer(ttime, void (*)(void *), void *);
++void kill_timer(int);
++ttime get_timer_time(int);
++
++#if 0
++#define H_READ  0
++#define H_WRITE 1
++#define H_ERROR 2
++#define H_DATA  3
++
++void *get_handler(int, int);
++#endif
++void set_handlers(int, void (*)(void *), void (*)(void *), void (*)(void *), void *);
++void install_signal_handler(int, void (*)(void *), void *, int);
++void set_sigcld();
++void st_start();
++void st_stop();
++
++extern struct timeval start;
++#define ST_START gettimeofday(&start, NULL)
++#define ST_STOP {\
++    struct timeval stop;\
++    int sec, usec;\
++    gettimeofday(&stop, NULL);\
++    usec=stop.tv_usec-start.tv_usec;\
++    sec=stop.tv_sec-start.tv_sec;\
++    if (usec<0){usec+=1000000;sec--;}\
++    dbg("stopky: %s: %d.%06d \n", __FUNCTION__, sec,usec);\
++}
++
++#define ST_START gettimeofday(&start, NULL)
++#define ST_STOP {\
++    struct timeval stop;\
++    int sec, usec;\
++    gettimeofday(&stop, NULL);\
++    usec=stop.tv_usec-start.tv_usec;\
++    sec=stop.tv_sec-start.tv_sec;\
++    if (usec<0){usec+=1000000;sec--;}\
++    dbg("stopky: %s: %d.%06d \n", __FUNCTION__, sec,usec);\
++}
++
++
+ #endif /* _CWDAEMON_H */
+--- cwdaemon-0.7/select.c	1970-01-01 01:00:00.000000000 +0100
++++ cwdaemon-0.7-zia/select.c	2003-11-25 12:15:59.000000000 +0100
+@@ -0,0 +1,277 @@
++#include "cwdaemon.h"
++
++/*
++   This file is stolen from links
++*/   
++struct timeval start;
++
++struct thread {
++    void (*read_func)(void *);
++    void (*write_func)(void *);
++    void (*error_func)(void *);
++    void *data;
++};
++
++struct thread threads[FD_SETSIZE];
++
++fd_set w_read;
++fd_set w_write;
++fd_set w_error;
++
++fd_set x_read;
++fd_set x_write;
++fd_set x_error;
++
++int w_max;
++
++static int timer_id = 1;
++
++struct timer {
++    struct timer *next;
++    struct timer *prev;
++    ttime interval;
++    void (*func)(void *);
++    void *data;
++    int id;
++};
++
++struct list_head timers = {&timers, &timers};
++
++ttime get_time()
++{
++    struct timeval tv;
++    gettimeofday(&tv, NULL);
++    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
++}
++
++struct bottom_half {
++    struct bottom_half *next;
++    struct bottom_half *prev;
++    void (*fn)(void *);
++    void *data;
++};
++
++struct list_head bottom_halves = { &bottom_halves, &bottom_halves };
++
++int register_bottom_half(void (*fn)(void *), void *data)
++{
++    struct bottom_half *bh;
++    foreach(bh, bottom_halves) if (bh->fn == fn && bh->data == data) return 0;
++    if (!(bh = malloc(sizeof(struct bottom_half)))) return -1;
++    bh->fn = fn;
++    bh->data = data;
++    add_to_list(bottom_halves, bh);
++    return 0;
++}
++
++void check_bottom_halves()
++{
++    struct bottom_half *bh;
++    void (*fn)(void *);
++    void *data;
++    rep:
++    if (list_empty(bottom_halves)) return;
++    bh = bottom_halves.prev;
++    fn = bh->fn;
++    data = bh->data;
++    del_from_list(bh);
++    free(bh);
++    fn(data);
++    goto rep;
++}
++
++#define CHK_BH if (!list_empty(bottom_halves)) check_bottom_halves();
++        
++ttime last_time;
++
++void check_timers()
++{
++    ttime interval = get_time() - last_time;
++    struct timer *t;
++    foreach(t, timers) t->interval -= interval;
++    ch:
++    foreach(t, timers) if (t->interval <= 0) {
++        struct timer *tt = t;
++        del_from_list(tt);
++        tt->func(tt->data);
++        free(tt);
++        CHK_BH;
++        goto ch;
++    } else break;
++    last_time += interval;
++}
++
++int install_timer(ttime t, void (*func)(void *), void *data)
++{
++    struct timer *tm, *tt;
++
++	t/=1000;
++	//debug("install_timer(%ld.%06ld, %p)", t/1000000, t%1000000, func);
++    if (!(tm = malloc(sizeof(struct timer)))) return -1;
++    tm->interval = t;
++    tm->func = func;
++    tm->data = data;
++    tm->id = timer_id++;
++    foreach(tt, timers) if (tt->interval >= t) break;
++    add_at_pos(tt->prev, tm);
++    return tm->id;
++}
++
++ttime get_timer_time(int id)
++{
++    struct timer *tm;
++    foreach(tm, timers) if (tm->id == id) {
++        return tm->interval;
++    }
++    return -1;
++}
++
++
++void kill_timer(int id)
++{
++    struct timer *tm;
++    int k = 0;
++    foreach(tm, timers) if (tm->id == id) {
++        struct timer *tt = tm;
++        del_from_list(tm);
++        tm = tm->prev;
++        free(tt);
++        k++;
++    }
++}
++
++
++void set_handlers(int fd, void (*read_func)(void *), void (*write_func)(void *), void (*error_func)(void *), void *data)
++{
++/*    errmsg("set_handlers(%d,%p,%p,%p,%p)\n",fd,read_func,write_func,error_func,data);*/
++    
++    if (fd < 0 || fd >= FD_SETSIZE) {
++        return;
++    }
++    threads[fd].read_func = read_func;
++    threads[fd].write_func = write_func;
++    threads[fd].error_func = error_func;
++    threads[fd].data = data;
++    if (read_func) FD_SET(fd, &w_read);
++    else {
++        FD_CLR(fd, &w_read);
++        FD_CLR(fd, &x_read);
++    }
++    if (write_func) FD_SET(fd, &w_write);
++    else {
++        FD_CLR(fd, &w_write);
++        FD_CLR(fd, &x_write);
++    }
++    if (error_func) FD_SET(fd, &w_error);
++    else {
++        FD_CLR(fd, &w_error);
++        FD_CLR(fd, &x_error);
++    }
++    if (read_func || write_func || error_func) {
++        if (fd >= w_max) w_max = fd + 1;
++    } else if (fd == w_max - 1) {
++        int i;
++        for (i = fd - 1; i >= 0; i--)
++            if (FD_ISSET(i, &w_read) || FD_ISSET(i, &w_write) ||
++                FD_ISSET(i, &w_error)) break;
++        w_max = i + 1;
++    }
++}
++
++
++int terminate = 0;
++
++void select_loop(void (*init)())
++{
++    FD_ZERO(&w_read);
++    FD_ZERO(&w_write);
++    FD_ZERO(&w_error);
++    w_max = 0;
++    last_time = get_time();
++    signal(SIGPIPE, SIG_IGN);
++    if (init) init();
++    CHK_BH;
++    while (!terminate) {
++        int n, i;
++        struct timeval tv;
++        struct timeval *tm = NULL;
++        check_timers();
++        if (!list_empty(timers)) {
++            ttime tt = ((struct timer *)(void*)&timers)->next->interval + 1;
++            if (tt < 0) tt = 0;
++            tv.tv_sec = tt / 1000;
++            tv.tv_usec = (tt % 1000) * 1000;
++            tm = &tv;
++        }
++        memcpy(&x_read, &w_read, sizeof(fd_set));
++        memcpy(&x_write, &w_write, sizeof(fd_set));
++        memcpy(&x_error, &w_error, sizeof(fd_set));
++        if (terminate) break;
++        if (!w_max && list_empty(timers)) break;
++        CHK_BH;
++
++/*		if (tm) debug("select() tm=%ld.%06ld", tm->tv_sec, tm->tv_usec);*/
++        n = select(w_max, &x_read, &x_write, &x_error, tm);
++        if (n < 0) {
++            if (errno != EINTR) {
++                errmsg("ERROR: select failed: %d", errno);
++                if (errno == EBADF){
++                    int i;
++                    fd_set x;
++                    struct timeval tv;
++                    
++                    errmsg("\nR:");
++                    for (i = 0; i < 256; i++) if (FD_ISSET(i, &x_read)) errmsg("%d,", i);
++                    errmsg("\nW:");
++                    for (i = 0; i < 256; i++) if (FD_ISSET(i, &x_write)) errmsg("%d,", i);
++                    errmsg("\nE:");
++                    for (i = 0; i < 256; i++) if (FD_ISSET(i, &x_error)) errmsg("%d,", i);
++                    errmsg("\n_:");
++
++                    for (i = 0; i < 256; i++) {
++                        FD_ZERO(&x);
++                        FD_SET(i, &x);
++                        tv.tv_sec=0;
++                        tv.tv_usec=1;
++                        if (select(i+1, &x, NULL, NULL, &tv)==0) 
++                            errmsg("%d,", i);
++                    }
++                    
++                    errmsg("DIE\n");
++                    raise(SIGSEGV);
++                }
++            }
++            
++            continue;
++        }
++        check_timers();
++        i = -1;
++        while (n > 0 && ++i < w_max) {
++            int k = 0;
++            if (FD_ISSET(i, &x_read)) {
++                if (threads[i].read_func) {
++                    threads[i].read_func(threads[i].data);
++                    CHK_BH;
++                }
++                k = 1;
++            }
++            if (FD_ISSET(i, &x_write)) {
++                if (threads[i].write_func) {
++                    threads[i].write_func(threads[i].data);
++                    CHK_BH;
++                }
++                k = 1;
++            }
++            if (FD_ISSET(i, &x_error)) {
++                if (threads[i].error_func) {
++                    threads[i].error_func(threads[i].data);
++                    CHK_BH;
++                }
++                k = 1;
++            }
++            n -= k;
++        }
++    }
++
++}
++
