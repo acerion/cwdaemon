@@ -330,12 +330,20 @@ set_libcw_output (void)
 {
 	int rv = 0;
 	if (soundcard_sound && !console_sound)
-       {
-		rv = cw_generator_new (CW_AUDIO_SOUNDCARD, NULL);
+	{
+		rv = cw_generator_new (CW_AUDIO_ALSA, NULL);
+		if (rv != CW_FAILURE)
+		{
+			rv = cw_generator_start();
+                }
 	}
 	else if (!soundcard_sound && console_sound)
 	{
 		rv = cw_generator_new (CW_AUDIO_CONSOLE, NULL);
+		if (rv != CW_FAILURE)
+		{
+			rv = cw_generator_start();
+                }
 	}
 	else
 	{
