@@ -1,17 +1,42 @@
-This package was debianized by Joop Stakenborg pa3aba@debian.org on
+This package was initially debianized by Joop Stakenborg pa3aba@debian.org on
 Sat, 11 Jan 2003 11:03:19 +0100.
+This package has been updated by Kamil Ignacak acerion@wp.pl on
+Thu, 5.04.2012 19:51:45 +0100
 
-It was downloaded from http://people.debian.org/~pa3aba/cwdaemon.html
+It was downloaded from http://cwdaemon.sourceforge.net
 
-Copyright:
-
+Copyright notice:
 Code parts were taken from cwbeacon by EA4RJ and morse by GW4PTS.
 Cwbeacon is part of the beacon project by ea4rj@amsat.org
 and it is based on the original:
 GW4PTS Morse tutor for Linux, by Alan Cox (morse.c 1.00, 21/09/93)
 
-Cwdaemon is copyright (C) 2002-2003 by Joop Stakenborg <pa4tu@amsat.org>
-and Rein Couperus <pa0rct@amsat.org>.
 
-All of this software is distributed under the GPL, see
-/usr/share/common-licenses/GPL
+
+
+Upstream-Name: cwdaemon
+Upstream-Contact: Kamil Ignacak <acerion@wp.pl>
+Source: http://unixcw.sourceforge.net
+
+Files: *
+Copyright: Copyright (C) 2002-2003  Joop Stakenborg (pa4tu@amsat.org)
+           Copyright (C) 2002-2003  Rein Couperus (pa0rct@amsat.org)
+           Copyright (C) 2012       Kamil Ignacak (acerion@wp.pl)
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 2 can be found in the file
+ `/usr/share/common-licenses/GPL-2'.
