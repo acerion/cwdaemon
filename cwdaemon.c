@@ -684,6 +684,7 @@ playmorsestring (char *x)
 			debug ("Morse = %c", c);
 			cw_send_character (c);
 			if (cw_get_gap () == 2) cw_set_gap (0);
+			cw_wait_for_tone_queue();
 		}
 		x++;
 		i++;
