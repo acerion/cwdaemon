@@ -1,12 +1,12 @@
 cwdaemon for Debian
 -------------------
-The README for this package is in /usr/share/cwdaemon.
+The README for this software is in /usr/share/cwdaemon.
 
-I case you are using the debian package and want to make changes
+In case you are using the debian package and want to make changes
 to the initial startup settings of cwdaemon, please change
-/etc/default/cwdaemon. 
+/etc/default/cwdaemon.
 Restart cwdaemon after making changes with the command
 '/etc/init.d/cwdaemon restart'.
 
-I am also the upstream maintainer for cwdaemon.
-Joop Stakenborg <pa3aba@debian.org>, Sat, 11 Jan 2003 11:03:19 +0100
+Current upstream maintainer for cwdaemon: Kamil Ignacak <acerion@wp.pl>
+Previous upstream maintainer for cwdaemon: Joop Stakenborg <pa3aba@debian.org>
