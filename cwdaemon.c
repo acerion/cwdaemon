@@ -133,10 +133,12 @@ cwdevice cwdevice_ttys = {
 	free:ttys_free,
 	reset:ttys_reset,
 	cw:ttys_cw,
-	ptt:ttys_ptt,
-	ssbway:NULL,
+	ptt:ttys_ptt
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+	,ssbway:NULL,
 	switchband:NULL,
 	footswitch:NULL
+#endif
 };
 
 cwdevice cwdevice_null = {
@@ -144,10 +146,12 @@ cwdevice cwdevice_null = {
    free:null_free,
    reset:null_reset,
    cw:null_cw,
-   ptt:null_ptt,
-   ssbway:NULL,
+   ptt:null_ptt
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+   ,ssbway:NULL,
    switchband:NULL,
    footswitch:NULL
+#endif
 };
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
@@ -227,7 +231,7 @@ udelay (unsigned long us)
 }
 
 
-/* some simple timing utilities, see 
+/* some simple timing utilities, see
  * http://www.erlenstar.demon.co.uk/unix/faq_8.html */
 static void
 timer_add (struct timeval *tv, long secs, long usecs)
@@ -258,6 +262,7 @@ timer_sub (struct timeval *res, const struct timeval *a,
 }
 
 /* band switch function,  pin 2, 7, 8, 9 */
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 static void
 set_switch (unsigned int bandswitch)
 {
@@ -272,6 +277,7 @@ set_switch (unsigned int bandswitch)
 	else
 		debug ("Bandswitch output not implemented");
 }
+#endif
 
 /* tune a number of seconds */
 static void
@@ -292,7 +298,7 @@ tune (int seconds)
 		us = seconds * 1000000;
 		debug ("CW (TUNE) on");
 		cw_queue_tone (us, morse_tone);
-		
+
 		if (ptt_delay)
 		{
 			udelay (us + ptt_delay);
@@ -311,12 +317,12 @@ reset_libcw (void)
 
 	set_libcw_output ();
 
-	cw_set_frequency (morse_tone);	
+	cw_set_frequency (morse_tone);
 	cw_set_send_speed (morse_speed);
 	cw_set_volume (morse_volume);
 	cw_set_gap (0);
 }
- 
+
 static void
 close_libcw (void)
 {
@@ -452,10 +458,10 @@ recv_code (void)
 				}
 				break;
 			case '4':	/* message abort */
-				debug ("Message abort");
+					debug ("Message abort");
 				strcpy (morsetext, "");
-				cw_flush_tone_queue ();
-				cw_wait_for_tone_queue ();
+					cw_flush_tone_queue ();
+					cw_wait_for_tone_queue ();
 				aborting = 1;
 				break;
 			case '5':	/* exit */
@@ -474,7 +480,7 @@ recv_code (void)
 				if (get_long(message + 2, &lv))
 					break;
 				if ((lv > -51) && (lv < 51))	/* only allowed range */
-				{	
+				{
 					cw_set_weighting (lv * 0.6 + 50);
 					debug ("Weight: %ld", lv);
 				}
@@ -517,14 +523,15 @@ recv_code (void)
 				{
 					cwdev->ptt (cwdev, ON);
 					debug ("PTT on");
-				}
-				else
-				{
+						}
+						else
+						{
 					cwdev->ptt (cwdev, OFF);
 					debug ("PTT off");
 				}
 				break;
 			case 'b':	/* SSB way */
+#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
 				if (get_long(message + 2, &lv))
 					break;
 				if (lv)
@@ -547,6 +554,9 @@ recv_code (void)
 					else
 						debug ("SSB way to MICROPHONE unimplemented");
 				}
+#else
+				debug ("Unavailable");
+#endif
 				break;
 			case 'c':	/* Tune for a number of seconds */
 				if (get_long(message + 2, &lv))
@@ -569,12 +579,16 @@ recv_code (void)
 				}
 				break;
 			case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
+#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
 				if (get_long(message + 2, &lv))
 					break;
 				if (lv <= 15 && lv >= 0) {
 					bandswitch = lv;
 					set_switch(bandswitch);
 				}
+#else
+				debug ("Unavailable");
+#endif
 				break;
 			case 'f':	/* switch console/soundcard */
 				if (!strncmp (message + 2, "n", 1))
@@ -657,13 +671,13 @@ playmorsestring (char *x)
 		{
 			debug ("Echo '%s'", reply_data);
 			if (strlen (reply_data) == 0) return;
-			sendto (socket_descriptor, reply_data, strlen (reply_data), 0, 
+			sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
 				(struct sockaddr *)&reply_sin, reply_socklen);
 			strcpy (reply_data,"");
 			break;
 		}
 		else
-		{
+			{
 			validchar = 1;
 			if (ptt_delay)
 			{
@@ -685,7 +699,7 @@ playmorsestring (char *x)
 			cw_send_character (c);
 			if (cw_get_gap () == 2) cw_set_gap (0);
 			cw_wait_for_tone_queue();
-		}
+			}
 		x++;
 		i++;
 		if (i >= strlen (morsetext))
@@ -772,7 +786,7 @@ parsecommandline (int argc, char *argv[])
 			keydev = optarg;
 			break;
 		case 'n':
-			forking = 0;
+				forking = 0;
 			printf ("%s: Not forking...\n", PACKAGE);
 			break;
 		case 'p':
@@ -1004,7 +1018,7 @@ main (int argc, char *argv[])
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (priority != 0)
 	{
-		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0) 
+		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0)
 		{
 			errmsg ("Setting priority");
 			exit (1);
@@ -1028,8 +1042,10 @@ main (int argc, char *argv[])
 		else
 			recv_code ();
 
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 		if (cwdev->footswitch)
 			cwdev->ptt (cwdev, !((cwdev->footswitch(cwdev))));
+#endif
 
 		/* check for ptt off timer */
 		if (1 == ptt_timer_running)
