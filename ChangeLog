@@ -1,3 +1,13 @@
+2012-06-04 Kamil Ignacak
+	* Jenö Vágó has sent me a set of changes that he has made to cwdaemon.
+	The changes improve cwdaemon in many ways and have been tested by
+	Jenö during his work with cwdaemon. I owe him many thanks for the
+	changes and for insightful comments about the application and about
+	operation of HAM stations in general.
+	During application of the changes to git source tree I have also
+	modified formatting, spaces, names and other minor items. I think
+	that I've applied all changes, but I will check this again later.
+
 2012-04-05 Kamil Ignacak
 	* general: committing files from cwdaemon_0.9.4.orig.tar.gz and
 	cwdaemon_0.9.4-9.debian.tar.gz to git repository on Sourceforge.
