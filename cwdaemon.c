@@ -100,6 +100,11 @@ int port = 6789;		/* default UDP port we listen on */
 char reply_data[256];
 
 /* morse defaults */
+#define CWDAEMON_DEFAULT_MORSE_SPEED           24
+#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN
+#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX
+
+/* minimal and maximal speed values will be taken from libcw.h */
 int morse_speed = 24;		/* speed (wpm) */
 int morse_tone = 800;		/* tone (Hz) */
 int morse_sound = 1;		/* speaker on */
@@ -133,6 +138,10 @@ static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
 
 void cwdaemon_set_ptt_on(char *msg);
 void cwdaemon_set_ptt_off(char *msg);
+
+
+
+void cwdaemon_tune(int seconds);
 
 
 
@@ -343,34 +352,32 @@ void cwdaemon_set_ptt_off(char *msg)
 
 
 
-/* tune a number of seconds */
-static void
-tune (int seconds)
+/**
+   \brief Tune for a number of seconds
+
+   \param seconds - time of tuning
+*/
+void cwdaemon_tune(int seconds)
 {
-	int us;
+	if (seconds > 0) {
+		cw_flush_tone_queue();
+		cwdaemon_set_ptt_on("PTT (TUNE) on");
 
-	if (seconds > 0)
-	{
-		cw_flush_tone_queue ();
-		if (ptt_delay)
-		{
-			cwdev->ptt (cwdev, ON);
-			debug ("PTT (TUNE) on");
-			/* TOD */
-			udelay (ptt_delay);
+		/* make it similar to normal CW, allowing interrupt */
+		int i = 0;
+		for (i = 0; i < seconds; i++) {
+			cw_queue_tone(1000000, morse_tone);
 		}
-		us = seconds * 1000000;
-		debug ("CW (TUNE) on");
-		cw_queue_tone (us, morse_tone);
 
-		if (ptt_delay)
-		{
-			udelay (us + ptt_delay);
-			cwdev->ptt (cwdev, OFF);
-			debug ("PTT (TUNE) off");
-		}
+		cw_send_character('e');	/* append minimal tone to return to normal flow */
 	}
+
+	return;
 }
+
+
+
+
 
 /* (re)set initial parameters of libcw */
 static void
@@ -490,12 +497,13 @@ recv_code (void)
 				wordmode = 0;
 				async_abort = 0;
 				cwdev->reset (cwdev);
+				ptt_flag = 0;
 				debug ("Reset all values");
 				break;
 			case '2':	/*speed */
 				if (get_long(message + 2, &lv))
 					break;
-				if (lv > 4 && lv < 61)
+				if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED)
 				{
 					morse_speed = lv;
 					cw_set_send_speed (morse_speed);
@@ -626,7 +634,7 @@ recv_code (void)
 				if (get_long(message + 2, &lv))
 					break;
 				if (lv <= 10)
-					tune(lv);
+					cwdaemon_tune(lv);
 				break;
 			case 'd':	/* set ptt delay (TOD, Turn On Delay) */
 				if (get_long(message + 2, &lv))
@@ -637,10 +645,7 @@ recv_code (void)
 					ptt_delay = 50000;
 				debug ("PTT delay(TOD): %d ms", ptt_delay / 1000);
 				if (ptt_delay == 0)
-				{
-					cwdev->ptt (cwdev, OFF);
-					debug ("PTT off");
-				}
+					cwdaemon_set_ptt_off("ensure PTT off");
 				break;
 			case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
@@ -756,7 +761,7 @@ playmorsestring (char *x)
 					debug ("PTT on");
 					/* TOD */
 					udelay (ptt_delay);
-				}
+			}
 			}
 			if (c == '*') c = '+';
 			debug ("Morse = %c", c);
@@ -833,7 +838,8 @@ parsecommandline (int argc, char *argv[])
 			printf ("Set cwdaemon priority (-20 ... 20, default = 0)\n");
 #endif
 			printf ("       -s <speed>    ");
-			printf ("Set morse speed (4 ... 60 wpm, default = 24)\n");
+			printf ("Set morse speed (%d ... %d wpm, default = %d)\n",
+				CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
 			printf ("       -t <time>     ");
 			printf ("Set PTT delay (0 ... 50 ms, default = 0)\n");
 			printf ("       -v <volume>   ");
