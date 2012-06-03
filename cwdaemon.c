@@ -120,6 +120,22 @@ int ptt_timer_running = 0;	/* flag for PTT state */
 int aborting = 0;
 int sendingmorse = 0;
 
+
+
+static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
+/* PTT on while sending, delay performed, switch PTT off when
+   libcw's queue of characters becomes empty. */
+#define PTT_ACTIVE_AUTO		0x01
+/* PTT manually activated, switch off manually. */
+#define PTT_ACTIVE_MANUAL	0x02
+/* We must return an echo when libcw's queue of characters becomes empty. */
+#define PTT_ACTIVE_ECHO		0x04
+
+void cwdaemon_set_ptt_on(char *msg);
+void cwdaemon_set_ptt_off(char *msg);
+
+
+
 struct timeval now, end, left;	/* PTT timers */
 struct timespec sleeptime, time_remainder; /* delay timers */
 
@@ -278,6 +294,54 @@ set_switch (unsigned int bandswitch)
 		debug ("Bandswitch output not implemented");
 }
 #endif
+
+
+
+
+
+/**
+   \brief Switch PTT on
+
+   \param msg - debug message displayed when performing the switching
+*/
+void cwdaemon_set_ptt_on(char *msg)
+{
+	if (ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
+		cwdev->ptt(cwdev, ON);
+		debug (msg);
+		int rv = cw_queue_tone(ptt_delay * 20, 0);	/* try to 'enqueue' delay */
+		if (rv == CW_FAILURE) {			/* old libcw may reject freq=0 */
+			debug ("cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
+			       rv, strerror(errno));
+			udelay(ptt_delay);
+		}
+		ptt_flag |= PTT_ACTIVE_AUTO;
+	}
+
+	return;
+}
+
+
+
+
+
+/**
+   \brief Switch PTT off
+
+   \param msg - debug message displayed when performing the switching
+*/
+void cwdaemon_set_ptt_off(char *msg)
+{
+	cwdev->ptt(cwdev, OFF);
+	ptt_flag = 0;
+	debug (msg);
+
+	return;
+}
+
+
+
+
 
 /* tune a number of seconds */
 static void
