@@ -144,6 +144,7 @@ void cwdaemon_set_ptt_off(char *msg);
 
 void cwdaemon_tune(int seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
+void cwdaemon_prepare_reply_text(char *buf);
 
 
 struct timeval now, end, left;	/* PTT timers */
@@ -458,6 +459,29 @@ get_long(const char *buf, long *lvp)
 	return (0);
 }
 
+
+
+
+
+/**
+   \brief Prepare reply text that the caller is awaiting on when we finished
+*/
+void cwdaemon_prepare_reply_text(char *buf)
+{
+	memcpy(&reply_sin, &k_sin, sizeof(reply_sin));		/* remember sender */
+	reply_socklen = sin_len;
+	strcpy(reply_data, buf);
+	cwdaemon_debug(2, "reply-data='%s', morsetext='%s'", reply_data, morsetext);
+	cwdaemon_debug(1, "now waiting for end of transmission before echo");
+	ptt_flag |= PTT_ACTIVE_ECHO;				/* wait for tone queue to become empty, then echo back */
+
+	return;
+}
+
+
+
+
+
 /* watch the socket and if there is an escape character check what it is,
    otherwise play morse. Return 0 with escape characters and empty messages.*/
 static int
@@ -709,13 +733,8 @@ recv_code (void)
 				}
 				break;
 			case 'h':   /* send echo to main program when CW playing is done */
-				memcpy (&reply_sin, &k_sin, sizeof(reply_sin)); /* remember sender */
-				reply_socklen = sin_len;
-				strncpy (reply_data + 1, message, sizeof(reply_data) - 2);
-				reply_data[sizeof(reply_data) - 1] = '\0';
-				reply_data[0]='h';
-				if (strlen (message) + 1 <= MAXMORSE - 1)
-					strcat (morsetext, "^");
+				cwdaemon_prepare_reply_text(message + 2);	/* +2: ignore leading ESC+h */
+				/* wait for queue-empty callback */
 				break;
 			}
 			return 0;
@@ -1010,11 +1029,11 @@ main (int argc, char *argv[])
 	}
 
 
-	if (geteuid () != 0)
-	{
-		printf ("You must run this program as root\n");
-		exit (1);
-	}
+		if (geteuid () != 0)
+		{
+			printf ("You must run this program as root\n");
+			exit (1);
+		}
 
 	if ((fd = dev_is_tty(keydev)) != -1)
 		cwdev = &cwdevice_ttys;
