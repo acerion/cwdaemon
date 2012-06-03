@@ -104,15 +104,20 @@ char reply_data[256];
 #define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN
 #define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX
 
-
-int morse_speed = 24;		/* speed (wpm) */
+int default_morse_speed = CWDAEMON_DEFAULT_MORSE_SPEED;	/* speed (wpm) */
 int morse_tone = 800;		/* tone (Hz) */
-int morse_sound = 1;		/* speaker on */
 int morse_volume = 70;		/* initial volume */
 int wordmode = 0;		/* start in character mode */
-int ptt_delay = 0;		/* default = 0 ms */
-int console_sound = 1;		/* speaker on */
-int soundcard_sound = 0;	/* soundcard off */
+int default_ptt_delay = 0;		/* default = 0 ms */
+int default_console_sound = 1;		/* speaker on */
+int default_soundcard_sound = 0;	/* soundcard off */
+int default_weighting = 0;		/* weighting */
+
+/* actual values, reset by the "reset" command */
+int morse_speed;
+int ptt_delay;
+int console_sound;
+int soundcard_sound;
 
 /* various variables */
 int forking = 1; 		/* we fork by default */
@@ -120,6 +125,7 @@ int debuglevel = 0;		/* only debug when not forking */
 int bandswitch;
 int priority = 0;
 int async_abort = 0;
+int inactivity_seconds = 9999;		/* inactive since nnn seconds */
 
 /* flags for different states */
 int ptt_timer_running = 0;	/* flag for PTT state */
@@ -377,7 +383,7 @@ void cwdaemon_tune(int seconds)
 		int i = 0;
 		for (i = 0; i < seconds; i++) {
 			cw_queue_tone(1000000, morse_tone);
-		}
+	}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */
 	}
@@ -393,6 +399,13 @@ void cwdaemon_tune(int seconds)
 static void
 reset_libcw (void)
 {
+	morse_speed = default_morse_speed;
+	morse_tone = 800;
+	morse_volume = 70;
+	console_sound = default_console_sound;
+	soundcard_sound = default_soundcard_sound;
+	ptt_delay = default_ptt_delay;
+
 	/* just in case if an old generator exists */
 	close_libcw ();
 
@@ -403,6 +416,7 @@ reset_libcw (void)
 	cw_set_send_speed (morse_speed);
 	cw_set_volume (morse_volume);
 	cw_set_gap (0);
+	cw_set_weighting (default_weighting * 0.6 + 50);
 }
 
 static void
@@ -1009,7 +1023,7 @@ parsecommandline (int argc, char *argv[])
 				    PACKAGE, optarg);
 				exit(1);
 			}
-			morse_speed = lv;
+			default_morse_speed = lv;
 			break;
 		case 't':
 			if (get_long(optarg, &lv) || lv < 0 || lv > 50) {
@@ -1017,7 +1031,7 @@ parsecommandline (int argc, char *argv[])
 				    PACKAGE, optarg);
 				exit(1);
 			}
-			ptt_delay = 1000 * lv;
+			default_ptt_delay = 1000 * lv;
 			break;
 		case 'v':
 			if (get_long(optarg, &lv) || lv < 0 || lv > 100) {
@@ -1036,27 +1050,27 @@ parsecommandline (int argc, char *argv[])
 				    PACKAGE, optarg);
 				exit(1);
 			}
-			cw_set_weighting (lv);
+			default_weighting = lv;
 			break;
 		case 'x':
 			if (!strncmp(optarg, "n", 1)) {
-				console_sound = 0;
-				soundcard_sound = 0;
+				default_console_sound = 0;
+				default_soundcard_sound = 0;
 			}
 			else if (!strncmp(optarg, "c", 1))
 			{
-				console_sound = 1;
-				soundcard_sound = 0;
+				default_console_sound = 1;
+				default_soundcard_sound = 0;
 			}
 			else if (!strncmp(optarg, "s", 1))
 			{
-				console_sound = 0;
-				soundcard_sound = 1;
+				default_console_sound = 0;
+				default_soundcard_sound = 1;
 			}
 			else if (!strncmp(optarg, "b", 1))
 			{
-				console_sound = 1;
-				soundcard_sound = 1;
+				default_console_sound = 1;
+				default_soundcard_sound = 1;
 			}
 			else
 			{
