@@ -257,8 +257,8 @@ lp_init (cwdevice * dev, int fd)
 	if (ioctl (fd, PPCLAIM, NULL) == -1)
 	{
 		errmsg ("Claiming parallel port %s", dev->desc);
-		debug ("HINT: did you unload the lp kernel module?");
-		debug ("HINT: perhaps there is another cwdaemon running?");
+		cwdaemon_debug(1, "HINT: did you unload the lp kernel module?");
+		cwdaemon_debug(1, "HINT: perhaps there is another cwdaemon running?");
 		close (fd);
 		exit (1);
 	}
