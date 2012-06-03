@@ -143,7 +143,7 @@ void cwdaemon_set_ptt_off(char *msg);
 
 
 void cwdaemon_tune(int seconds);
-
+void cwdaemon_keyingevent(void *arg, int keystate);
 
 
 struct timeval now, end, left;	/* PTT timers */
@@ -224,24 +224,27 @@ errmsg (char *info, ...)
 		printf ("%s: %s failed: %s\n", PACKAGE, s, strerror (errno));
 }
 
-/* print only debug message to the console */
-#define debug(...)  debug_(1, __VA_ARGS__)
-#define debug2(...) debug_(2, __VA_ARGS__)
-#define debug3(...) debug_(3, __VA_ARGS__)
-void
-debug_ (int lvl, char *info, ...)
+
+/* FIXME: come up with nice symbolic names for debug
+   levels - don't use magic numbers. */
+void cwdaemon_debug(int level, char *info, ...)
 {
 	va_list ap;
-	char s[1025];
+	char s[1024 + 1];
 
-	if (lvl <= debuglevel)
-	{
-		va_start (ap, info);
-		vsnprintf (s, 1024, info, ap);
-		va_end (ap);
-		printf ("%s: %s \n", PACKAGE, s);
+	if (level <= debuglevel) {
+		va_start(ap, info);
+		vsnprintf(s, 1024, info, ap);
+		va_end(ap);
+		printf("%s: %s \n", PACKAGE, s);
 	}
+
+	return;
 }
+
+
+
+
 
 /* delay in microseconds */
 static void
@@ -301,10 +304,10 @@ set_switch (unsigned int bandswitch)
 	if (cwdev->switchband)
 	{
 		cwdev->switchband (cwdev, lp_switchbyte);
-		debug ("Set bandswitch to %x", bandswitch);
+		cwdaemon_debug(1, "Set bandswitch to %x", bandswitch);
 	}
 	else
-		debug ("Bandswitch output not implemented");
+		cwdaemon_debug(1, "Bandswitch output not implemented");
 }
 #endif
 
@@ -321,11 +324,11 @@ void cwdaemon_set_ptt_on(char *msg)
 {
 	if (ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		cwdev->ptt(cwdev, ON);
-		debug (msg);
+		cwdaemon_debug(1, msg);
 		int rv = cw_queue_tone(ptt_delay * 20, 0);	/* try to 'enqueue' delay */
-		if (rv == CW_FAILURE) {			/* old libcw may reject freq=0 */
-			debug ("cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
-			       rv, strerror(errno));
+		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
+			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
+				       rv, strerror(errno));
 			udelay(ptt_delay);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
@@ -347,7 +350,7 @@ void cwdaemon_set_ptt_off(char *msg)
 {
 	cwdev->ptt(cwdev, OFF);
 	ptt_flag = 0;
-	debug (msg);
+	cwdaemon_debug(1, msg);
 
 	return;
 }
@@ -371,7 +374,7 @@ void cwdaemon_tune(int seconds)
 		int i = 0;
 		for (i = 0; i < seconds; i++) {
 			cw_queue_tone(1000000, morse_tone);
-	}
+		}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */
 	}
@@ -390,7 +393,7 @@ reset_libcw (void)
 	/* just in case if an old generator exists */
 	close_libcw ();
 
-	debug3 ("Setting console_sound=%d, soundcard_sound=%d", console_sound, soundcard_sound);
+	cwdaemon_debug(3, "Setting console_sound=%d, soundcard_sound=%d", console_sound, soundcard_sound);
 	set_libcw_output ();
 
 	cw_set_frequency (morse_tone);
@@ -479,7 +482,7 @@ recv_code (void)
 		message[recv_rc] = '\0';
 		if (message[0] != 27)
 		{	/* no ESCAPE */
-			debug ("Message = %s", message);
+			cwdaemon_debug(1, "Message = %s", message);
 			if ((strlen (message) + strlen (morsetext)) <= MAXMORSE - 1)
 			{
 				strcat (morsetext, message);
@@ -503,7 +506,7 @@ recv_code (void)
 				async_abort = 0;
 				cwdev->reset (cwdev);
 				ptt_flag = 0;
-				debug ("Reset all values");
+				cwdaemon_debug(1, "Reset all values");
 				break;
 			case '2':	/*speed */
 				if (get_long(message + 2, &lv))
@@ -512,7 +515,7 @@ recv_code (void)
 				{
 					morse_speed = lv;
 					cw_set_send_speed (morse_speed);
-					debug ("Speed: %d wpm", morse_speed);
+					cwdaemon_debug(1, "Speed: %d wpm", morse_speed);
 				}
 				break;
 			case '3':	/* tone */
@@ -524,18 +527,18 @@ recv_code (void)
 					cw_set_frequency (morse_tone);
 					cw_set_volume (70);
 					morse_sound = 1;
-					debug ("Tone: %s Hz, volume 70%", message + 2);
+					cwdaemon_debug(1, "Tone: %s Hz, volume 70%", message + 2);
 				}
 				else if (lv == 0)	/* sidetone off */
 				{
 					morse_tone = 0;
 					cw_set_volume (0);
 					morse_sound = 0;
-					debug ("Volume off");
+					cwdaemon_debug(1, "Volume off");
 				}
 				break;
 			case '4':	/* message abort */
-					debug ("Message abort");
+				cwdaemon_debug(1, "Message abort");
 				strcpy (morsetext, "");
 					cw_flush_tone_queue ();
 					cw_wait_for_tone_queue ();
@@ -551,7 +554,7 @@ recv_code (void)
 				message[0] = '\0';
 				morsetext[0] = '\0';
 				wordmode = 1;
-				debug ("Wordmode set");
+				cwdaemon_debug(1, "Wordmode set");
 				break;
 			case '7':	/* set weighting */
 				if (get_long(message + 2, &lv))
@@ -559,12 +562,12 @@ recv_code (void)
 				if ((lv > -51) && (lv < 51))	/* only allowed range */
 				{
 					cw_set_weighting (lv * 0.6 + 50);
-					debug ("Weight: %ld", lv);
+					cwdaemon_debug(1, "Weight: %ld", lv);
 				}
 				break;
 			case '8':	/* device type */
 				ndev = message + 2;
-				debug ("Device: %s", ndev);
+				cwdaemon_debug(1, "Device: %s", ndev);
 				if ((fd = dev_is_tty(ndev)) != -1)
 				{
 					cwdev->free(cwdev);
@@ -588,10 +591,11 @@ recv_code (void)
 					keydev = cwdev->desc = ndev;
 					cwdev->init(cwdev, fd);
 				}
-				else debug ("Unknown device");
+				else
+					cwdaemon_debug(1, "Unknown device");
 				break;
 			case '9':	/* base port number */
-				debug ("Obsolete");
+				cwdaemon_debug(1, "Obsolete");
 				break;
 			case 'a':	/* PTT keying on or off */
 				if (get_long(message + 2, &lv))
@@ -599,12 +603,12 @@ recv_code (void)
 				if (lv)
 				{
 					cwdev->ptt (cwdev, ON);
-					debug ("PTT on");
+					cwdaemon_debug(1, "PTT on");
 						}
 						else
 						{
 					cwdev->ptt (cwdev, OFF);
-					debug ("PTT off");
+					cwdaemon_debug(1, "PTT off");
 				}
 				break;
 			case 'b':	/* SSB way */
@@ -616,23 +620,23 @@ recv_code (void)
 					if (cwdev->ssbway)
 					{
 						cwdev->ssbway (cwdev, SOUNDCARD);
-						debug ("SSB way set to SOUNDCARD", PACKAGE);
+						cwdaemon_debug(1, "SSB way set to SOUNDCARD", PACKAGE);
 					}
 					else
-						debug ("SSB way to SOUNDCARD unimplemented");
+						cwdaemon_debug(1, "SSB way to SOUNDCARD unimplemented");
 				}
 				else
 				{
 					if (cwdev->ssbway)
 					{
 						cwdev->ssbway (cwdev, MICROPHONE);
-						debug ("SSB way set to MIC");
+						cwdaemon_debug(1, "SSB way set to MIC");
 					}
 					else
-						debug ("SSB way to MICROPHONE unimplemented");
+						cwdaemon_debug(1, "SSB way to MICROPHONE unimplemented");
 				}
 #else
-				debug ("Unavailable");
+				cwdaemon_debug(1, "Unavailable");
 #endif
 				break;
 			case 'c':	/* Tune for a number of seconds */
@@ -648,7 +652,7 @@ recv_code (void)
 					ptt_delay = lv * 1000;
 				else
 					ptt_delay = 50000;
-				debug ("PTT delay(TOD): %d ms", ptt_delay / 1000);
+				cwdaemon_debug(1, "PTT delay(TOD): %d ms", ptt_delay / 1000);
 				if (ptt_delay == 0)
 					cwdaemon_set_ptt_off("ensure PTT off");
 				break;
@@ -661,7 +665,7 @@ recv_code (void)
 					set_switch(bandswitch);
 				}
 #else
-				debug ("Unavailable");
+				cwdaemon_debug(1, "Parallel port unavailable");
 #endif
 				break;
 			case 'f':	/* switch console/soundcard */
@@ -691,7 +695,7 @@ recv_code (void)
 				}
 				if (valid_sdevice == 1)
 				{
-					debug ("Sound device: %s", message + 2);
+					cwdaemon_debug(1, "Sound device: %s", message + 2);
 					set_libcw_output ();
 				}
 				break;
@@ -718,7 +722,7 @@ recv_code (void)
 		}
 	}
 	else
-		debug2 ( "...recv_from (no data)");
+		cwdaemon_debug(2, "...recv_from (no data)");
 	return 0;
 }
 
@@ -745,7 +749,7 @@ playmorsestring (char *x)
 			cw_set_gap (2); /* 2 dots time additional for the next char */
 		else if (c == '^')
 		{
-			debug ("Echo '%s'", reply_data);
+			cwdaemon_debug(1, "Echo '%s'", reply_data);
 			if (strlen (reply_data) == 0) return;
 			sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
 				(struct sockaddr *)&reply_sin, reply_socklen);
@@ -765,13 +769,13 @@ playmorsestring (char *x)
 				else
 				{
 					cwdev->ptt (cwdev, ON);
-					debug ("PTT on");
+					cwdaemon_debug(1, "PTT on");
 					/* TOD */
 					udelay (ptt_delay);
 			}
 			}
 			if (c == '*') c = '+';
-			debug ("Morse = %c", c);
+			cwdaemon_debug(1, "Morse = %c", c);
 			cw_send_character (c);
 			if (cw_get_gap () == 2) cw_set_gap (0);
 			cw_wait_for_tone_queue();
@@ -798,15 +802,35 @@ playmorsestring (char *x)
 	sendingmorse = 0;
 }
 
-static void keyingevent (void *arg, int keystate)
-{
-	if (keystate == 1)
-		cwdev->cw (cwdev, ON);
-	else
-		cwdev->cw (cwdev, OFF);
 
-	debug3 ("keyingevent %d", keystate);
+
+
+
+/**
+   Function passed to libcw, will be called every time libcw notices
+   change of a key state.
+   When key is closed (dit or dah), \p keystate is 1.
+   Otherwise \p keystate is 0.
+
+   \param unused argument
+   \param keystate - state of a key, as seen by libcw
+*/
+void cwdaemon_keyingevent(void *arg, int keystate)
+{
+	if (keystate == 1) {
+		cwdev->cw(cwdev, ON);
+	} else {
+		cwdev->cw(cwdev, OFF);
+	}
+
+	cwdaemon_debug(3, "keying event %d", keystate);
+
+	return;
 }
+
+
+
+
 
 /* parse the command line and check for options, do some error checking */
 static void
@@ -1011,9 +1035,9 @@ main (int argc, char *argv[])
 	reset_libcw ();
 	atexit (close_libcw);
 
-	cw_register_keying_callback (keyingevent, NULL);
+	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
 
-	debug ("Device used: %s", cwdev->desc);
+	cwdaemon_debug(1, "Device used: %s", cwdev->desc);
 	cwdev->init (cwdev, fd);
 
 	if (forking)
@@ -1068,7 +1092,7 @@ main (int argc, char *argv[])
 	}
 	else
 	{
-		debug ("Press ^C to quit");
+		cwdaemon_debug(1, "Press ^C to quit");
 		signal (SIGINT, catchint);
 	}
 
@@ -1145,7 +1169,7 @@ main (int argc, char *argv[])
 			if (timer_sub (&left, &end, &now) <= 0)
 			{
 				cwdev->ptt (cwdev, OFF);
-				debug ("PTT off");
+				cwdaemon_debug(1, "PTT off");
 				ptt_timer_running = 0;
 			}
 		}
