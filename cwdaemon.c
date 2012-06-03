@@ -202,7 +202,7 @@ cwdevice cwdevice_lp = {
 };
 #endif
 cwdevice *cwdev;
-static void playmorsestring (char *x);
+static void playmorsestring (void);
 
 static int set_libcw_output (void);
 static void close_libcw (void);
@@ -378,7 +378,7 @@ void cwdaemon_tune(int seconds)
 	if (seconds > 0) {
 		cw_flush_tone_queue();
 		cwdaemon_set_ptt_on("PTT (TUNE) on");
-
+		
 		/* make it similar to normal CW, allowing interrupt */
 		int i = 0;
 		for (i = 0; i < seconds; i++) {
@@ -467,7 +467,7 @@ get_long(const char *buf, long *lvp)
 
 	errno = 0;
 	lv = strtol(buf, &ep, 10);
-	if (buf[0] == '\0' || (*ep != '\0' && *ep != '\n'))
+	if (buf[0] == '\0' || *ep != '\0')
 		return (-1);
 	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN))
 		return (-1);
@@ -533,7 +533,7 @@ recv_code (void)
 			if ((strlen (message) + strlen (morsetext)) <= MAXMORSE - 1)
 			{
 				strcat (morsetext, message);
-				playmorsestring (morsetext);
+				playmorsestring ();
 			}
 			return 1;
 		}
@@ -587,7 +587,7 @@ recv_code (void)
 					{
 						cwdaemon_debug(1, "Echo 'break'");
 						strcpy(reply_data, "break\r\n");
-						sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
+						sendto (socket_descriptor, reply_data, strlen (reply_data), 0, 
 							(struct sockaddr *)&reply_sin, reply_socklen);
 						reply_data[0] = '\0';
 					}
@@ -796,78 +796,57 @@ recv_code (void)
 
 /* check every character for speed increase or decrease, and play others */
 static void
-playmorsestring (char *x)
+playmorsestring (void)
 {
-	int i = 0, validchar = 0;
-	char c;
+	char *x = morsetext;
 
-	sendingmorse = 1;
 	while (*x)
 	{
-		c = *x;
-		if ((c == '+') || (c == '-'))
-		{		/* speed in- & decrease */
-			if ((c == '+') && (morse_speed <= 58))
-				morse_speed += 2;
-			if ((c == '-') && (morse_speed >= 10))
-				morse_speed -= 2;
+		switch ((int) *x)
+		{
+		case '+':
+		case '-':
+				/* speed in- & decrease */
+			do
+			{
+				morse_speed += (*x == '+') ? 2 : -2;
+				x++;
+			} while (*x == '+' || *x == '-');
+			
+			if (morse_speed < MIN_MORSE_SPEED)
+				morse_speed = MIN_MORSE_SPEED;
+			else if (morse_speed > MAX_MORSE_SPEED)
+				morse_speed = MAX_MORSE_SPEED;
 			cw_set_send_speed (morse_speed);
-		}
-		else if (c == '~')
+			break;
+		case '~':
 			cw_set_gap (2); /* 2 dots time additional for the next char */
-		else if (c == '^')
-		{
-			cwdaemon_debug(1, "Echo '%s'", reply_data);
-			if (strlen (reply_data) == 0) return;
-			sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
-				(struct sockaddr *)&reply_sin, reply_socklen);
-			strcpy (reply_data,"");
+			x++;
 			break;
-		}
-		else
+		case '^':		/* send echo to main program when CW playing is done */
+			*x = '\0';		/* remove '^' and possible trailing garbage */
+			prepare_reply_text (morsetext);		/* wait for queue-empty callback */
+			break;
+
+
+		case '*':
+			*x = '+';
+		default:
+			set_PTT_on ("PTT (auto) on");
+			debug ("Morse = %c", *x);
+			cw_send_character (*x);
+			x++;
+			if (cw_get_gap () == 2)
 			{
-			validchar = 1;
-			if (ptt_delay)
-			{
-				if (ptt_timer_running == 1)
-				{
-					gettimeofday (&end, NULL);
-					timer_add (&end, 0, ptt_delay);
-				}
+				if (*x == '^')
+					x++;
 				else
-				{
-					cwdev->ptt (cwdev, ON);
-					cwdaemon_debug(1, "PTT on");
-					/* TOD */
-					udelay (ptt_delay);
+					cw_set_gap (0);
 			}
-			}
-			if (c == '*') c = '+';
-			cwdaemon_debug(1, "Morse = %c", c);
-			cw_send_character (c);
-			if (cw_get_gap () == 2) cw_set_gap (0);
-			cw_wait_for_tone_queue();
-			}
-		x++;
-		i++;
-		if (i >= strlen (morsetext))
-		{
-			i = 0;
 			break;
 		}
-		if (wordmode == 0)
-			recv_code ();
 	}
 	morsetext[0] = '\0';
-
-	/* start ptt off timer */
-	if (ptt_delay && validchar)
-	{
-		gettimeofday (&end, NULL);
-		timer_add (&end, 0, ptt_delay);
-		ptt_timer_running = 1;
-	}
-	sendingmorse = 0;
 }
 
 
@@ -919,9 +898,9 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 		sendto(socket_descriptor, reply_data, strlen(reply_data), 0,
 		       (struct sockaddr *) &reply_sin, reply_socklen);
 		reply_data[0] = '\0';
-
+		
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-
+		
 		/* wit a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
@@ -1240,7 +1219,7 @@ main (int argc, char *argv[])
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (priority != 0)
 	{
-		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0)
+		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0) 
 		{
 			errmsg ("Setting priority");
 			exit (1);
@@ -1256,7 +1235,7 @@ main (int argc, char *argv[])
 
 		FD_ZERO (&readfd);
 		FD_SET (socket_descriptor, &readfd);
-
+		
 		if (inactivity_seconds < 30)
 		{
 			udptime.tv_sec = 1;
