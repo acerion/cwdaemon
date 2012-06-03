@@ -488,6 +488,7 @@ static int
 recv_code (void)
 {
 	char message[257], *ndev;
+	char z;
 	ssize_t recv_rc;
 	int valid_sdevice = 0, fd;
 	long lv;
@@ -499,6 +500,12 @@ recv_code (void)
 	{
 		errmsg ("Recvfrom");
 		exit (1);
+	}
+
+	while (recv_rc > 0 &&
+			( (z = (int) message[recv_rc - 1]) == '\n' || z == '\r') )
+	{
+		message[--recv_rc] = '\0';		/* remove CRLF if present */
 	}
 
 	if (recv_rc > 0)
@@ -520,11 +527,6 @@ recv_code (void)
 			{
 			case '0':	/* reset  all values */
 				morsetext[0] = '\0';
-				morse_speed = 24;
-				morse_tone = 800;
-				morse_volume = 70;
-				console_sound = 1;
-				soundcard_sound = 0;
 				reset_libcw ();
 				wordmode = 0;
 				async_abort = 0;
@@ -550,23 +552,36 @@ recv_code (void)
 					morse_tone = lv;
 					cw_set_frequency (morse_tone);
 					cw_set_volume (70);
-					morse_sound = 1;
 					cwdaemon_debug(1, "Tone: %s Hz, volume 70%", message + 2);
 				}
 				else if (lv == 0)	/* sidetone off */
 				{
 					morse_tone = 0;
 					cw_set_volume (0);
-					morse_sound = 0;
 					cwdaemon_debug(1, "Volume off");
 				}
 				break;
 			case '4':	/* message abort */
-				cwdaemon_debug(1, "Message abort");
-				strcpy (morsetext, "");
+				if (wordmode)
+					cwdaemon_debug(1, "Ignoring Message abort request");
+				else
+				{
+					cwdaemon_debug(1, "Message abort");
+					if (ptt_flag & PTT_ACTIVE_ECHO)		/* if echo pending */
+					{
+						cwdaemon_debug(1, "Echo 'break'");
+						strcpy(reply_data, "break\r\n");
+						sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
+							(struct sockaddr *)&reply_sin, reply_socklen);
+						reply_data[0] = '\0';
+					}
+					morsetext[0] = '\0';
 					cw_flush_tone_queue ();
 					cw_wait_for_tone_queue ();
-				aborting = 1;
+					if (ptt_flag)
+						cwdaemon_set_ptt_off("PTT off");
+					ptt_flag &= 0;
+				}
 				break;
 			case '5':	/* exit */
 				cwdev->free (cwdev);
@@ -627,12 +642,29 @@ recv_code (void)
 				if (lv)
 				{
 					cwdev->ptt (cwdev, ON);
-					cwdaemon_debug(1, "PTT on");
+					if (ptt_delay)
+						cwdaemon_set_ptt_on("PTT (manual, delay) on");
+					else
+						cwdaemon_debug(1, "PTT (manual, immediate) on");
+					ptt_flag |= PTT_ACTIVE_MANUAL;
+				}
+				else if (ptt_flag & PTT_ACTIVE_MANUAL)	/* only if manually activated */
+				{
+					ptt_flag &= ~PTT_ACTIVE_MANUAL;
+					if (!(ptt_flag & !PTT_ACTIVE_AUTO))	/* no PTT modifiers */
+					{
+						if (morsetext[0] == '\0' &&	/* no new text in the meantime */
+							cw_get_tone_queue_length() <= 1)
+						{
+							cwdaemon_set_ptt_off("PTT (manual, immediate) off");
 						}
 						else
 						{
-					cwdev->ptt (cwdev, OFF);
-					cwdaemon_debug(1, "PTT off");
+							/* still sending, cannot yet switch PTT off */
+							ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
+							cwdaemon_debug(1, "reverting from PTT (manual) to PTT (auto) now");
+						}
+					}
 				}
 				break;
 			case 'b':	/* SSB way */
@@ -720,6 +752,7 @@ recv_code (void)
 				if (valid_sdevice == 1)
 				{
 					cwdaemon_debug(1, "Sound device: %s", message + 2);
+					close_libcw ();
 					set_libcw_output ();
 				}
 				break;
@@ -734,7 +767,7 @@ recv_code (void)
 				break;
 			case 'h':   /* send echo to main program when CW playing is done */
 				cwdaemon_prepare_reply_text(message + 2);	/* +2: ignore leading ESC+h */
-				/* wait for queue-empty callback */
+								/* wait for queue-empty callback */
 				break;
 			}
 			return 0;
