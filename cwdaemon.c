@@ -104,7 +104,7 @@ char reply_data[256];
 #define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN
 #define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX
 
-/* minimal and maximal speed values will be taken from libcw.h */
+
 int morse_speed = 24;		/* speed (wpm) */
 int morse_tone = 800;		/* tone (Hz) */
 int morse_sound = 1;		/* speaker on */
@@ -116,6 +116,7 @@ int soundcard_sound = 0;	/* soundcard off */
 
 /* various variables */
 int forking = 1; 		/* we fork by default */
+int debuglevel = 0;		/* only debug when not forking */
 int bandswitch;
 int priority = 0;
 int async_abort = 0;
@@ -224,13 +225,16 @@ errmsg (char *info, ...)
 }
 
 /* print only debug message to the console */
+#define debug(...)  debug_(1, __VA_ARGS__)
+#define debug2(...) debug_(2, __VA_ARGS__)
+#define debug3(...) debug_(3, __VA_ARGS__)
 void
-debug (char *info, ...)
+debug_ (int lvl, char *info, ...)
 {
 	va_list ap;
 	char s[1025];
 
-	if (!forking)
+	if (lvl <= debuglevel)
 	{
 		va_start (ap, info);
 		vsnprintf (s, 1024, info, ap);
@@ -367,7 +371,7 @@ void cwdaemon_tune(int seconds)
 		int i = 0;
 		for (i = 0; i < seconds; i++) {
 			cw_queue_tone(1000000, morse_tone);
-		}
+	}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */
 	}
@@ -386,6 +390,7 @@ reset_libcw (void)
 	/* just in case if an old generator exists */
 	close_libcw ();
 
+	debug3 ("Setting console_sound=%d, soundcard_sound=%d", console_sound, soundcard_sound);
 	set_libcw_output ();
 
 	cw_set_frequency (morse_tone);
@@ -712,6 +717,8 @@ recv_code (void)
 			return 0;
 		}
 	}
+	else
+		debug2 ( "...recv_from (no data)");
 	return 0;
 }
 
@@ -797,6 +804,8 @@ static void keyingevent (void *arg, int keystate)
 		cwdev->cw (cwdev, ON);
 	else
 		cwdev->cw (cwdev, OFF);
+
+	debug3 ("keyingevent %d", keystate);
 }
 
 /* parse the command line and check for options, do some error checking */
@@ -856,8 +865,12 @@ parsecommandline (int argc, char *argv[])
 			keydev = optarg;
 			break;
 		case 'n':
+			if (forking)
+			{
+				printf ("%s: Not forking...\n", PACKAGE);
 				forking = 0;
-			printf ("%s: Not forking...\n", PACKAGE);
+			}
+			debuglevel++;		/* increase debug level */
 			break;
 		case 'p':
 			if (get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
@@ -878,7 +891,8 @@ parsecommandline (int argc, char *argv[])
 			break;
 #endif
 		case 's':
-			if (get_long(optarg, &lv) || lv < 4 || lv > 60) {
+			if (get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED)
+			{
 				printf("%s: bad speed %s (should be between 4 and 60 inclusive)\n",
 				    PACKAGE, optarg);
 				exit(1);
@@ -965,6 +979,13 @@ main (int argc, char *argv[])
 #endif
 
 	parsecommandline (argc, argv);
+
+	if (debuglevel > 3) {		/* debugging cwlib as well */
+		/* FIXME: pass correct libcw debug flags. */
+		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
+	}
+
+
 	if (geteuid () != 0)
 	{
 		printf ("You must run this program as root\n");
