@@ -891,6 +891,8 @@ void cwdaemon_keyingevent(void *arg, int keystate)
 		cwdev->cw(cwdev, OFF);
 	}
 
+	inactivity_seconds = 0;
+
 	cwdaemon_debug(3, "keying event %d", keystate);
 
 	return;
@@ -1112,17 +1114,18 @@ main (int argc, char *argv[])
 	}
 
 
+	if ((fd = dev_is_tty(keydev)) != -1)
+		cwdev = &cwdevice_ttys;
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+	else if ((fd = dev_is_parport(keydev)) != -1)
+	{
+		cwdev = &cwdevice_lp;
 		if (geteuid () != 0)
 		{
 			printf ("You must run this program as root\n");
 			exit (1);
 		}
-
-	if ((fd = dev_is_tty(keydev)) != -1)
-		cwdev = &cwdevice_ttys;
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	else if ((fd = dev_is_parport(keydev)) != -1)
-		cwdev = &cwdevice_lp;
+	}
 #endif
 	else if ((fd = dev_is_null(keydev)) != -1)
 		cwdev = &cwdevice_null;
@@ -1253,9 +1256,18 @@ main (int argc, char *argv[])
 
 		FD_ZERO (&readfd);
 		FD_SET (socket_descriptor, &readfd);
-		udptime.tv_sec = 0;
-		udptime.tv_usec = 500;
+
+		if (inactivity_seconds < 30)
+		{
+			udptime.tv_sec = 1;
+			inactivity_seconds++;
+		}
+		else
+			udptime.tv_sec = 86400;
+		udptime.tv_usec = 0;
+		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
 		fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
+		/* fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
 		if (fd_count == -1 && errno != EINTR)
 			errmsg ("Select");
 		else
@@ -1266,17 +1278,6 @@ main (int argc, char *argv[])
 			cwdev->ptt (cwdev, !((cwdev->footswitch(cwdev))));
 #endif
 
-		/* check for ptt off timer */
-		if (1 == ptt_timer_running)
-		{
-			gettimeofday (&now, NULL);
-			if (timer_sub (&left, &end, &now) <= 0)
-			{
-				cwdev->ptt (cwdev, OFF);
-				cwdaemon_debug(1, "PTT off");
-				ptt_timer_running = 0;
-			}
-		}
 	} while (1);
 
 	cwdev->free (cwdev);
