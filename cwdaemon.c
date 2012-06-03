@@ -145,6 +145,8 @@ void cwdaemon_set_ptt_off(char *msg);
 void cwdaemon_tune(int seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
 void cwdaemon_prepare_reply_text(char *buf);
+void cwdaemon_tone_queue_low_callback(void *arg);
+
 
 
 struct timeval now, end, left;	/* PTT timers */
@@ -884,6 +886,40 @@ void cwdaemon_keyingevent(void *arg, int keystate)
 
 
 
+/* Callback routine when tone queue is empty */
+void cwdaemon_tone_queue_low_callback(void *arg)
+{
+	cwdaemon_debug(2, "entering-Q-empty ptt_flag=%02x", ptt_flag);
+	if (ptt_flag == PTT_ACTIVE_AUTO &&		/* PTT on, w/o manual PTT or similar */
+		morsetext[0] == '\0' &&			/* no new text in the meantime */
+	    cw_get_tone_queue_length() <= 1) {
+
+		cwdaemon_set_ptt_off("PTT (auto) off");
+
+	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
+
+		cwdaemon_debug(1, "Echo '%s'", reply_data);
+		strcat(reply_data, "\r\n");		/* Ensure exactly one CRLF */
+		sendto(socket_descriptor, reply_data, strlen(reply_data), 0,
+		       (struct sockaddr *) &reply_sin, reply_socklen);
+		reply_data[0] = '\0';
+
+		ptt_flag &= ~PTT_ACTIVE_ECHO;
+
+		/* wit a bit more since we expect to get more text to send */
+		if (ptt_flag == PTT_ACTIVE_AUTO) {
+			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
+			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
+		}
+	}
+
+	return;
+}
+
+
+
+
+
 /* parse the command line and check for options, do some error checking */
 static void
 parsecommandline (int argc, char *argv[])
@@ -1088,6 +1124,8 @@ main (int argc, char *argv[])
 	atexit (close_libcw);
 
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+
+	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
 
 	cwdaemon_debug(1, "Device used: %s", cwdev->desc);
 	cwdev->init (cwdev, fd);
