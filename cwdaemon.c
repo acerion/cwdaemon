@@ -92,32 +92,53 @@
 #include <libcw.h>
 #include "cwdaemon.h"
 
-/* network vars */
+
+/* cwdaemon constants. */
+#define CWDAEMON_DEFAULT_MORSE_SPEED           24 /* [wpm] */
+#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN /* from libcw.h */
+#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX /* from libcw.h */
+#define CWDAEMON_DEFAULT_MORSE_TONE           800 /* [Hz] */
+#define CWDAEMON_DEFAULT_MORSE_VOLUME          70 /* [%] */
+#define CWDAEMON_DEFAULT_PTT_DELAY              0 /* [microseconds]; TODO: convert PTT delay values to ms, and convert to usecs only when passing to libcw and udelay(). */
+#define CWDAEMON_DEFAULT_MORSE_WEIGHTING        0 /* in range -50/+50 */
+
+#define CWDAEMON_DEFAULT_NETWORK_PORT        6789
+
+#define CWDAEMON_USECS_PER_MSEC              1000 /* just to avoid magic numbers */
+
+
+/* Default values of parameters, may be modified only through
+   commandline arguments passed to cwdaemon.
+   These values are used when resetting libcw and cwdaemon to
+   initial state. */
+static int default_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
+static int default_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;    /* TODO: add command line option for initial tone? */
+static int default_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
+static int default_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
+static int default_weighting    = CWDAEMON_DEFAULT_MORSE_WEIGHTING;
+static int default_console_sound = 1;	/* console buzzer on */
+static int default_soundcard_sound = 0;	/* soundcard off */
+
+
+/* Actual values of parameters, used to generate morse code. These can be
+   modified through messages received from socket in recv_code(). */
+static int current_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
+static int current_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
+static int current_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
+static int current_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
+static int wordmode = 0;   /* start in character mode */
+static int console_sound = 1;
+static int soundcard_sound = 0;
+
+
+/* Network variables. */
 socklen_t sin_len, reply_socklen;
 int socket_descriptor;
 struct sockaddr_in k_sin, reply_sin;
-int port = 6789;		/* default UDP port we listen on */
+static int port = CWDAEMON_DEFAULT_NETWORK_PORT;  /* default UDP port we listen on */
 char reply_data[256];
 
-/* morse defaults */
-#define CWDAEMON_DEFAULT_MORSE_SPEED           24
-#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN
-#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX
 
-int default_morse_speed = CWDAEMON_DEFAULT_MORSE_SPEED;	/* speed (wpm) */
-int morse_tone = 800;		/* tone (Hz) */
-int morse_volume = 70;		/* initial volume */
-int wordmode = 0;		/* start in character mode */
-int default_ptt_delay = 0;		/* default = 0 ms */
-int default_console_sound = 1;		/* speaker on */
-int default_soundcard_sound = 0;	/* soundcard off */
-int default_weighting = 0;		/* weighting */
-
-/* actual values, reset by the "reset" command */
-int morse_speed;
-int ptt_delay;
-int console_sound;
-int soundcard_sound;
 
 /* various variables */
 int forking = 1; 		/* we fork by default */
@@ -127,13 +148,8 @@ int priority = 0;
 int async_abort = 0;
 int inactivity_seconds = 9999;		/* inactive since nnn seconds */
 
+
 /* flags for different states */
-int ptt_timer_running = 0;	/* flag for PTT state */
-int aborting = 0;
-int sendingmorse = 0;
-
-
-
 static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
 /* PTT on while sending, delay performed, switch PTT off when
    libcw's queue of characters becomes empty. */
@@ -272,35 +288,6 @@ udelay (unsigned long us)
 }
 
 
-/* some simple timing utilities, see
- * http://www.erlenstar.demon.co.uk/unix/faq_8.html */
-static void
-timer_add (struct timeval *tv, long secs, long usecs)
-{
-	tv->tv_sec += secs;
-	if ((tv->tv_usec += usecs) >= 1000000)
-	{
-		tv->tv_sec += tv->tv_usec / 1000000;
-		tv->tv_usec %= 1000000;
-	}
-}
-
-/* Set *RES = *A - *B, returning the sign of the result */
-static int
-timer_sub (struct timeval *res, const struct timeval *a,
-	   const struct timeval *b)
-{
-	long sec = a->tv_sec - b->tv_sec;
-	long usec = a->tv_usec - b->tv_usec;
-
-	if (usec < 0)
-		usec += 1000000, --sec;
-
-	res->tv_sec = sec;
-	res->tv_usec = usec;
-
-	return (sec < 0) ? (-1) : ((sec == 0 && usec == 0) ? 0 : 1);
-}
 
 /* band switch function,  pin 2, 7, 8, 9 */
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
@@ -331,14 +318,14 @@ set_switch (unsigned int bandswitch)
 */
 void cwdaemon_set_ptt_on(char *msg)
 {
-	if (ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
+	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		cwdev->ptt(cwdev, ON);
 		cwdaemon_debug(1, msg);
-		int rv = cw_queue_tone(ptt_delay * 20, 0);	/* try to 'enqueue' delay */
+		int rv = cw_queue_tone(current_ptt_delay * 20, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
 			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
 				       rv, strerror(errno));
-			udelay(ptt_delay);
+			udelay(current_ptt_delay);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
 	}
@@ -378,12 +365,12 @@ void cwdaemon_tune(int seconds)
 	if (seconds > 0) {
 		cw_flush_tone_queue();
 		cwdaemon_set_ptt_on("PTT (TUNE) on");
-		
+
 		/* make it similar to normal CW, allowing interrupt */
 		int i = 0;
 		for (i = 0; i < seconds; i++) {
-			cw_queue_tone(1000000, morse_tone);
-	}
+			cw_queue_tone(1000000, current_morse_tone);
+		}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */
 	}
@@ -399,12 +386,12 @@ void cwdaemon_tune(int seconds)
 static void
 reset_libcw (void)
 {
-	morse_speed = default_morse_speed;
-	morse_tone = 800;
-	morse_volume = 70;
+	current_morse_speed = default_morse_speed;
+	current_morse_tone = default_morse_tone;
+	current_morse_volume = default_morse_volume;
 	console_sound = default_console_sound;
 	soundcard_sound = default_soundcard_sound;
-	ptt_delay = default_ptt_delay;
+	current_ptt_delay = default_ptt_delay;
 
 	/* just in case if an old generator exists */
 	close_libcw ();
@@ -412,9 +399,9 @@ reset_libcw (void)
 	cwdaemon_debug(3, "Setting console_sound=%d, soundcard_sound=%d", console_sound, soundcard_sound);
 	set_libcw_output ();
 
-	cw_set_frequency (morse_tone);
-	cw_set_send_speed (morse_speed);
-	cw_set_volume (morse_volume);
+	cw_set_frequency(current_morse_tone);
+	cw_set_send_speed(current_morse_speed);
+	cw_set_volume(current_morse_volume);
 	cw_set_gap (0);
 	cw_set_weighting (default_weighting * 0.6 + 50);
 }
@@ -550,34 +537,44 @@ recv_code (void)
 				ptt_flag = 0;
 				cwdaemon_debug(1, "Reset all values");
 				break;
-			case '2':	/*speed */
-				if (get_long(message + 2, &lv))
+			case '2':
+				/* Set speed of morse code, in words per minute. */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED)
-				{
-					morse_speed = lv;
-					cw_set_send_speed (morse_speed);
-					cwdaemon_debug(1, "Speed: %d wpm", morse_speed);
 				}
+
+				if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED) {
+					current_morse_speed = lv;
+					cw_set_send_speed(current_morse_speed);
+					cwdaemon_debug(1, "Speed: %d wpm", current_morse_speed);
+				}
+
 				break;
-			case '3':	/* tone */
-				if (get_long(message + 2, &lv))
+			case '3':
+				/* Set tone (frequency) of morse code, in Hz. */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if (lv > 0 && lv < 4001)
-				{
-					morse_tone = lv;
-					cw_set_frequency (morse_tone);
-					cw_set_volume (70);
-					cwdaemon_debug(1, "Tone: %s Hz, volume 70%", message + 2);
 				}
-				else if (lv == 0)	/* sidetone off */
-				{
-					morse_tone = 0;
-					cw_set_volume (0);
+
+				if (lv > 0 && lv <= CW_FREQUENCY_MAX) {
+					current_morse_tone = lv;
+					cw_set_frequency(current_morse_tone);
+					/* TODO: should we modify volume when modifying tone? This doesn't seem right. */
+					cw_set_volume(default_morse_volume);
+					cwdaemon_debug(1, "Tone: %s Hz, volume %d%", message + 2, default_morse_volume);
+
+				} else if (lv == 0) {	/* sidetone off */
+					current_morse_tone = 0;
+					cw_set_volume(0);
 					cwdaemon_debug(1, "Volume off");
+
+				} else {
+					;
 				}
+
 				break;
-			case '4':	/* message abort */
+			case '4':
+				/* Abort currently sent message. */
 				if (wordmode)
 					cwdaemon_debug(1, "Ignoring Message abort request");
 				else
@@ -587,7 +584,7 @@ recv_code (void)
 					{
 						cwdaemon_debug(1, "Echo 'break'");
 						strcpy(reply_data, "break\r\n");
-						sendto (socket_descriptor, reply_data, strlen (reply_data), 0, 
+						sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
 							(struct sockaddr *)&reply_sin, reply_socklen);
 						reply_data[0] = '\0';
 					}
@@ -599,11 +596,12 @@ recv_code (void)
 					ptt_flag &= 0;
 				}
 				break;
-			case '5':	/* exit */
-				cwdev->free (cwdev);
+			case '5':
+				/* Exit cwdaemon. */
+				cwdev->free(cwdev);
 				errno = 0;
-				errmsg ("Sender has told me to end the connection");
-				exit (0);
+				errmsg("Sender has told me to end the connection");
+				exit(0);
 				break;
 			case '6':	/* set uninterruptable */
 				message[0] = '\0';
@@ -611,16 +609,23 @@ recv_code (void)
 				wordmode = 1;
 				cwdaemon_debug(1, "Wordmode set");
 				break;
-			case '7':	/* set weighting */
-				if (get_long(message + 2, &lv))
+			case '7':
+				/* Set weighting of morse code dits and dashes.
+				   Remember that cwdaemon uses values in range
+				   -50/+50, but libcw accepts values in range
+				   20/80. This is why you have the calculation
+				   when calling cw_set_weighting(). */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if ((lv > -51) && (lv < 51))	/* only allowed range */
-				{
-					cw_set_weighting (lv * 0.6 + 50);
+				}
+
+				if ((lv > -51) && (lv < 51)) {
+					cw_set_weighting(lv * 0.6 + 50);
 					cwdaemon_debug(1, "Weight: %ld", lv);
 				}
 				break;
-			case '8':	/* device type */
+			case '8':
+				/* Set device type. */
 				ndev = message + 2;
 				cwdaemon_debug(1, "Device: %s", ndev);
 				if ((fd = dev_is_tty(ndev)) != -1)
@@ -658,7 +663,7 @@ recv_code (void)
 				if (lv)
 				{
 					cwdev->ptt (cwdev, ON);
-					if (ptt_delay)
+					if (current_ptt_delay)
 						cwdaemon_set_ptt_on("PTT (manual, delay) on");
 					else
 						cwdaemon_debug(1, "PTT (manual, immediate) on");
@@ -717,16 +722,24 @@ recv_code (void)
 				if (lv <= 10)
 					cwdaemon_tune(lv);
 				break;
-			case 'd':	/* set ptt delay (TOD, Turn On Delay) */
-				if (get_long(message + 2, &lv))
+			case 'd':
+				/* Set PTT delay (TOD, Turn On Delay).
+				   The value is milliseconds. */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if (lv >= 0 && lv < 51)
-					ptt_delay = lv * 1000;
-				else
-					ptt_delay = 50000;
-				cwdaemon_debug(1, "PTT delay(TOD): %d ms", ptt_delay / 1000);
-				if (ptt_delay == 0)
+				}
+
+				if (lv >= 0 && lv < 51) {
+					current_ptt_delay = lv * CWDAEMON_USECS_PER_MSEC;
+				} else {
+					current_ptt_delay = 50000;
+				}
+
+				cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay / CWDAEMON_USECS_PER_MSEC);
+
+				if (current_ptt_delay == 0) {
 					cwdaemon_set_ptt_off("ensure PTT off");
+				}
 				break;
 			case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
@@ -772,13 +785,15 @@ recv_code (void)
 					set_libcw_output ();
 				}
 				break;
-			case 'g':	/* volume */
-				if (get_long(message + 2, &lv))
+			case 'g':
+				/* Set volume of sound, in percents. */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if (lv <= 100 && lv >= 0)
-				{
-					morse_volume = lv;
-					cw_set_volume (morse_volume);
+				}
+
+				if (lv >= 0 && lv <= 100) {
+					current_morse_volume = lv;
+					cw_set_volume(current_morse_volume);
 				}
 				break;
 			case 'h':   /* send echo to main program when CW playing is done */
@@ -788,9 +803,10 @@ recv_code (void)
 			}
 			return 0;
 		}
-	}
-	else
+	} else {
 		cwdaemon_debug(2, "...recv_from (no data)");
+	}
+
 	return 0;
 }
 
@@ -806,18 +822,22 @@ playmorsestring (void)
 		{
 		case '+':
 		case '-':
-				/* speed in- & decrease */
-			do
-			{
-				morse_speed += (*x == '+') ? 2 : -2;
+			/* speed in- & decrease */
+			/* TODO: it seems that multiple '+' and '-' are allowed.
+			   Is it described anywhere? */
+			do {
+				current_morse_speed += (*x == '+') ? 2 : -2;
 				x++;
 			} while (*x == '+' || *x == '-');
-			
-			if (morse_speed < MIN_MORSE_SPEED)
-				morse_speed = MIN_MORSE_SPEED;
-			else if (morse_speed > MAX_MORSE_SPEED)
-				morse_speed = MAX_MORSE_SPEED;
-			cw_set_send_speed (morse_speed);
+
+			if (current_morse_speed < CWDAEMON_MIN_MORSE_SPEED) {
+				current_morse_speed = CWDAEMON_MIN_MORSE_SPEED;
+			} else if (current_morse_speed > CWDAEMON_MAX_MORSE_SPEED) {
+				current_morse_speed = CWDAEMON_MAX_MORSE_SPEED;
+			} else {
+				;
+			}
+			cw_set_send_speed(current_morse_speed);
 			break;
 		case '~':
 			cw_set_gap (2); /* 2 dots time additional for the next char */
@@ -825,15 +845,15 @@ playmorsestring (void)
 			break;
 		case '^':		/* send echo to main program when CW playing is done */
 			*x = '\0';		/* remove '^' and possible trailing garbage */
-			prepare_reply_text (morsetext);		/* wait for queue-empty callback */
+			cwdaemon_prepare_reply_text(morsetext);		/* wait for queue-empty callback */
 			break;
 
 
 		case '*':
 			*x = '+';
 		default:
-			set_PTT_on ("PTT (auto) on");
-			debug ("Morse = %c", *x);
+			cwdaemon_set_ptt_on("PTT (auto) on");
+			cwdaemon_debug(1, "Morse = %c", *x);
 			cw_send_character (*x);
 			x++;
 			if (cw_get_gap () == 2)
@@ -898,9 +918,9 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 		sendto(socket_descriptor, reply_data, strlen(reply_data), 0,
 		       (struct sockaddr *) &reply_sin, reply_socklen);
 		reply_data[0] = '\0';
-		
+
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-		
+
 		/* wit a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
@@ -948,7 +968,7 @@ parsecommandline (int argc, char *argv[])
 			printf ("       -n            ");
 			printf ("Do not fork and print debug information to stdout\n");
 			printf ("       -p <port>     ");
-			printf ("Use a different UDP port number (> 1023, default = 6789)\n");
+			printf ("Use a different UDP port number (> 1023, default = %d)\n", CWDAEMON_DEFAULT_NETWORK_PORT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 			printf ("       -P <priority> ");
 			printf ("Set cwdaemon priority (-20 ... 20, default = 0)\n");
@@ -972,17 +992,16 @@ parsecommandline (int argc, char *argv[])
 			keydev = optarg;
 			break;
 		case 'n':
-			if (forking)
-			{
+			if (forking) {
 				printf ("%s: Not forking...\n", PACKAGE);
 				forking = 0;
 			}
-			debuglevel++;		/* increase debug level */
+			debuglevel++;
 			break;
 		case 'p':
 			if (get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
 				printf("%s: invalid port number - %s\n",
-				    PACKAGE, optarg);
+				       PACKAGE, optarg);
 				exit(1);
 			}
 			port = lv;
@@ -991,17 +1010,17 @@ parsecommandline (int argc, char *argv[])
 		case 'P':
 			if (get_long(optarg, &lv) || lv < -20 || lv > 20) {
 				printf("%s: bad priority %s (should be between -20 and 20 inclusive)\n",
-				    PACKAGE, optarg);
+				       PACKAGE, optarg);
 				exit(1);
 			}
 			priority = lv;
 			break;
 #endif
 		case 's':
-			if (get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED)
-			{
-				printf("%s: bad speed %s (should be between 4 and 60 inclusive)\n",
-				    PACKAGE, optarg);
+			if (get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
+				printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
+				       PACKAGE, optarg,
+				       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
 				exit(1);
 			}
 			default_morse_speed = lv;
@@ -1009,18 +1028,18 @@ parsecommandline (int argc, char *argv[])
 		case 't':
 			if (get_long(optarg, &lv) || lv < 0 || lv > 50) {
 				printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
-				    PACKAGE, optarg);
+				       PACKAGE, optarg);
 				exit(1);
 			}
-			default_ptt_delay = 1000 * lv;
+			default_ptt_delay = CWDAEMON_USECS_PER_MSEC * lv;
 			break;
 		case 'v':
 			if (get_long(optarg, &lv) || lv < 0 || lv > 100) {
 				printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
-				    PACKAGE, optarg);
+				       PACKAGE, optarg);
 				exit(1);
 			}
-			morse_volume = lv;
+			default_morse_volume = lv;
 			break;
 		case 'V':
 			printf ("%s version %s\n", PACKAGE, VERSION);
@@ -1028,7 +1047,7 @@ parsecommandline (int argc, char *argv[])
 		case 'w':
 			if (get_long(optarg, &lv) || lv < -50 || lv > 50) {
 				printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
-				    PACKAGE, optarg);
+				       PACKAGE, optarg);
 				exit(1);
 			}
 			default_weighting = lv;
@@ -1219,7 +1238,7 @@ main (int argc, char *argv[])
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (priority != 0)
 	{
-		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0) 
+		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0)
 		{
 			errmsg ("Setting priority");
 			exit (1);
@@ -1235,7 +1254,7 @@ main (int argc, char *argv[])
 
 		FD_ZERO (&readfd);
 		FD_SET (socket_descriptor, &readfd);
-		
+
 		if (inactivity_seconds < 30)
 		{
 			udptime.tv_sec = 1;
@@ -1267,3 +1286,47 @@ main (int argc, char *argv[])
 	}
 	exit (0);
 }
+
+
+
+
+
+/* *** unused code *** */
+
+
+
+
+
+#if 0
+
+/* some simple timing utilities, see
+ * http://www.erlenstar.demon.co.uk/unix/faq_8.html */
+static void
+timer_add (struct timeval *tv, long secs, long usecs)
+{
+	tv->tv_sec += secs;
+	if ((tv->tv_usec += usecs) >= 1000000)
+	{
+		tv->tv_sec += tv->tv_usec / 1000000;
+		tv->tv_usec %= 1000000;
+	}
+}
+
+/* Set *RES = *A - *B, returning the sign of the result */
+static int
+timer_sub (struct timeval *res, const struct timeval *a,
+	   const struct timeval *b)
+{
+	long sec = a->tv_sec - b->tv_sec;
+	long usec = a->tv_usec - b->tv_usec;
+
+	if (usec < 0)
+		usec += 1000000, --sec;
+
+	res->tv_sec = sec;
+	res->tv_usec = usec;
+
+	return (sec < 0) ? (-1) : ((sec == 0 && usec == 0) ? 0 : 1);
+}
+
+#endif
