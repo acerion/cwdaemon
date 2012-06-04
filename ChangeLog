@@ -1,4 +1,8 @@
 2012-06-04 Kamil Ignacak
+	* It seems that all changes from Jenö have been added to source code
+	three. Proceeding with small improvements and comments.
+
+2012-06-04 Kamil Ignacak
 	* Jenö Vágó has sent me a set of changes that he has made to cwdaemon.
 	The changes improve cwdaemon in many ways and have been tested by
 	Jenö during his work with cwdaemon. I owe him many thanks for the
