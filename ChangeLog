@@ -1,3 +1,9 @@
+2012-06-05 Kamil Ignacak
+	* audio system: improving selection/control of audio system: user can
+	now specify (through command line arguments or through control data
+	sent via socket) audio system: OSS, ALSA or PulseAudio (in addition to
+	options available until now: console, soundcard, none).
+
 2012-06-04 Kamil Ignacak
 	* It seems that all changes from Jenö have been added to source code
 	three. Proceeding with small improvements and comments.
