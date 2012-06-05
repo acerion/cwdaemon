@@ -7,8 +7,8 @@ cwdaemon \- morse daemon for the serial or parallel port
 .B cwdaemon [options] ...
 
 .SH "DESCRIPTION"
-Cwdaemon is a small daemon which uses the pc parallel or serial port and a 
-simple transistor switch to output morse code to a transmitter from a text 
+Cwdaemon is a small daemon which uses the pc parallel or serial port and a
+simple transistor switch to output morse code to a transmitter from a text
 message sent to it via udp port 6789.
 
 .SH "OPTIONS"
@@ -33,7 +33,7 @@ message sent to it via udp port 6789.
 .TP
 \fB\-w <weight>\fR Set weighting, value from -50 to 50 (default = 0).
 .TP
-\fB\-x <sdevice>\fR Set sound device to be used.
+\fB\-x <sound system>\fR Set sound system to be used.
 
 .SH DEVICES
 Any serial device that supports getting and setting the modem
@@ -49,10 +49,24 @@ port operation, and defaults to 'tty00'.
 For completeness, a 'null' device is provided.  This device does
 exactly nothing (no rig keying, no ssb keying, etc.).
 
-.SH "SOUND DEVICES"
-Sdevice should be one of 'c' (console), 's' (soundcard), 'b' (both),
-or 'n' (none).
-The default is console, which is the PC speaker.
+
+
+.SH "SOUND SYSTEM"
+\'sound system\' should be one of following:
+.TP
+\'c\' - console buzzer (PC speaker) - default system,
+.TP
+\'o\' - OSS,
+.TP
+\'a\' - ALSA,
+.TP
+\'p\' - PulseAudio,
+.TP
+\'n\' - none - no audio,
+.TP
+\'s\' - soundcard - autoselect from OSS/ALSA/PulseAudio.
+
+
 
 .SH "SEE ALSO"
 The provided README in \fI@prefix@/share/cwdaemon\fR
@@ -62,7 +76,7 @@ of cwdaemon.
 .SH AUTHOR
 Cwdaemon was written by Joop Stakenborg <pg4i at amsat.org>,
 Rein Couperus <pa0r at amsat.org>, Wolf-Ruediger Juergens,
-DL2WRJ <WJuergens at t-online.de> and Ladislav Vaiz, OK1ZIA 
+DL2WRJ <WJuergens at t-online.de> and Ladislav Vaiz, OK1ZIA
 <ok1zia at nagano.cz>. Cwlib is taken and adapted from
 the unixcw package, version 2.2 by Simon Baldwin, G0FRD.
 FreeBSD support mostly done by Diane Bruce, VA3DB.
