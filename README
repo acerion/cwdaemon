@@ -1,13 +1,13 @@
 Cwdaemon-0.9
 ============
 
-Cwdaemon is a small daemon which uses the pc parallel or serial port and a 
-simple transistor switch to output morse code to a transmitter from a text 
+Cwdaemon is a small daemon which uses the pc parallel or serial port and a
+simple transistor switch to output morse code to a transmitter from a text
 message sent to it via the udp internet protocol. The program uses the
-soundcard or PC speaker to generate a sidetone.
+soundcard or PC speaker (console buzzer) to generate a sidetone.
 
-It is called as root, with "cwdaemon -p <portnumber> -d <device>". If no 
-portnumber is given, the default portnumber 6789 is used. Device can be one of 
+It is called as root, with "cwdaemon -p <portnumber> -d <device>". If no
+portnumber is given, the default portnumber 6789 is used. Device can be one of
 the serial (ttyS0, ttyS1, etc) or parallel (parport0, parport1, etc) ports.
 Default is parport0.
 
@@ -49,7 +49,7 @@ you type 'lsmod', you should (on the i386 architecture) see something like:
   parport_pc             23304   0 (autoclean)
   parport                25992   0 (autoclean) [parport_pc]
 
-The lp module should not be loaded, it is only needed if you want to use a 
+The lp module should not be loaded, it is only needed if you want to use a
 printer and it will block the parallel port if you use cwdaemon. You can unload
 it with the command 'rmmod lp' as root.
 
@@ -62,7 +62,7 @@ in your /etc/modules.conf file and load the modules with:
   modprobe parport
   modprobe parport_pc
 
-Be sure that parallel port support is enabled in your BIOS! If you use odd 
+Be sure that parallel port support is enabled in your BIOS! If you use odd
 ioports or interrupts, you can do things like:
 
   modprobe parport_pc io=0x3bc,0x378,0x278 irq=none,7,auto
@@ -70,7 +70,7 @@ ioports or interrupts, you can do things like:
 which configures 3 parallel ports with the second port using irq 7 and the
 third port some auto-detected irq.
 
-When cwdaemon is run, the ppdev kernel module should be loaded automatically. 
+When cwdaemon is run, the ppdev kernel module should be loaded automatically.
 In case it doesn't, just type:
 
   modprobe ppdev
@@ -85,7 +85,7 @@ you started:
 
   setserial -g /dev/ttyS*
 
-will tell you what serial lines are configured. If you see a line with 
+will tell you what serial lines are configured. If you see a line with
 "UART: unknown", this probably means there is no serial port for the device.
 
   setserial /dev/ttyS0 -v autoconfig
@@ -114,7 +114,7 @@ outlined in the FreeBSD handbook.
 device          ppbus           # Parallel port bus (required)
 device          ppi             # Parallel port interface device
 
-You can also load ppbus.ko and ppi.ko at boot time instead of rebuilding your 
+You can also load ppbus.ko and ppi.ko at boot time instead of rebuilding your
 kernel. This is also outlined in the FreeBSD handbook.
 
 e.g. In /boot add
@@ -125,7 +125,7 @@ ppi_load="YES"
 
 Setting up serial port(s) on FreeBSD for cwdaemon
 -------------------------------------------------
-The serial port driver is loaded by default in the GENERIC kernel. If not 
+The serial port driver is loaded by default in the GENERIC kernel. If not
 configured in the kernel, you can add to the kernel config and rebuild the
 kernel as outlined in the FreeBSD handbook.
 
@@ -156,7 +156,18 @@ The message formats are:
 <ESC>"d"<"delay">        PTT on delay 0..50 (0 .. 50ms)
 <ESC>"e"<"bandindex">	 Band info output on pins 2, 7, 8, 9 of the parport
                          (pin 2 = lsb, 9 = msb, e.g. 1000 = 160m, 1001 = 10m)
-<ESC>"f"<"sound device"> Set sound device, same as -x.
+<ESC>"f"<"sound system"> Set sound system, same as '-x' command line option.
+                         Recognized values are:
+                         c - console buzzer (PC speaker) - default system,
+                         o - OSS,
+                         a - ALSA,
+                         p - PulseAudio,
+                         n - none - no audio,
+                         s - soundcard - autoselect from OSS/ALSA/PulseAudio.
+                         You may experience few seconds of delay (~4 s) when
+                         switching from ALSA or PulseAudio to OSS audio
+                         system. This is because OSS waits until audio device
+                         stops being blocked by ALSA or PulseAudio.
 <ESC>"g"<"volume">       Set soundcard volume (0 .. 100).
 <ESC>"h"<"opt.text">     Cwdaemon replies "h" and optionaly text to logging
                          program when playing is done.
@@ -175,7 +186,7 @@ Weight = 0
 UDP port = 6789
 PTT delay = 0 (off)
 Device = parport0
-Sound Device = console
+Sound device = console buzzer
 
 
 Cwdaemon supports the following special characters
