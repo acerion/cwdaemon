@@ -102,9 +102,11 @@
 #define CWDAEMON_DEFAULT_PTT_DELAY              0 /* [microseconds]; TODO: convert PTT delay values to ms, and convert to usecs only when passing to libcw and udelay(). */
 #define CWDAEMON_DEFAULT_MORSE_WEIGHTING        0 /* in range -50/+50 */
 
-#define CWDAEMON_DEFAULT_NETWORK_PORT        6789
+#define CWDAEMON_DEFAULT_NETWORK_PORT              6789
+#define CWDAEMON_DEFAULT_AUDIO_SYSTEM  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 
 #define CWDAEMON_USECS_PER_MSEC              1000 /* just to avoid magic numbers */
+
 
 
 /* Default values of parameters, may be modified only through
@@ -115,20 +117,19 @@ static int default_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
 static int default_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;    /* TODO: add command line option for initial tone? */
 static int default_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
 static int default_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
+static int default_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
 static int default_weighting    = CWDAEMON_DEFAULT_MORSE_WEIGHTING;
-static int default_console_sound = 1;	/* console buzzer on */
-static int default_soundcard_sound = 0;	/* soundcard off */
 
 
-/* Actual values of parameters, used to generate morse code. These can be
-   modified through messages received from socket in recv_code(). */
+/* Actual values of parameters, used to control ongoing operation of
+   cwdaemon+libcw. These values can be modified through messages
+   received from socket in recv_code(). */
 static int current_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
 static int current_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
 static int current_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
 static int current_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
-static int wordmode = 0;   /* start in character mode */
-static int console_sound = 1;
-static int soundcard_sound = 0;
+static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
+
 
 
 /* Network variables. */
@@ -141,12 +142,13 @@ char reply_data[256];
 
 
 /* various variables */
-int forking = 1; 		/* we fork by default */
-int debuglevel = 0;		/* only debug when not forking */
-int bandswitch;
-int priority = 0;
-int async_abort = 0;
-int inactivity_seconds = 9999;		/* inactive since nnn seconds */
+static int wordmode = 0;               /* start in character mode */
+static int forking = 1;                /* we fork by default */
+static int debuglevel = 0;             /* only debug when not forking */
+static int bandswitch;
+static int priority = 0;
+static int async_abort = 0;
+static int inactivity_seconds = 9999;  /* inactive since nnn seconds */
 
 
 /* flags for different states */
@@ -168,6 +170,13 @@ void cwdaemon_tune(int seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
 void cwdaemon_prepare_reply_text(char *buf);
 void cwdaemon_tone_queue_low_callback(void *arg);
+
+
+void cwdaemon_reset_amost_all(void);
+
+int  cwdaemon_open_libcw_output(int audio_system);
+void cwdaemon_close_libcw_output(void);
+void cwdaemon_reset_libcw_output(void);
 
 
 
@@ -220,8 +229,8 @@ cwdevice cwdevice_lp = {
 cwdevice *cwdev;
 static void playmorsestring (void);
 
-static int set_libcw_output (void);
-static void close_libcw (void);
+
+
 
 /* catch ^C when running in foreground */
 static RETSIGTYPE
@@ -382,68 +391,103 @@ void cwdaemon_tune(int seconds)
 
 
 
-/* (re)set initial parameters of libcw */
-static void
-reset_libcw (void)
+/**
+   \brief Reset some initial parameters of cwdaemon and libcw
+*/
+void cwdaemon_reset_amost_all(void)
 {
 	current_morse_speed = default_morse_speed;
 	current_morse_tone = default_morse_tone;
 	current_morse_volume = default_morse_volume;
-	console_sound = default_console_sound;
-	soundcard_sound = default_soundcard_sound;
+	current_audio_system = default_audio_system;
 	current_ptt_delay = default_ptt_delay;
 
-	/* just in case if an old generator exists */
-	close_libcw ();
+	cwdaemon_reset_libcw_output();
 
-	cwdaemon_debug(3, "Setting console_sound=%d, soundcard_sound=%d", console_sound, soundcard_sound);
-	set_libcw_output ();
+	return;
+}
+
+
+
+
+
+
+
+/**
+   \brief Open audio sink using libcw
+
+   \param audio_system - audio system to be used by libcw
+
+   \return -1 on failure
+   \return 0 otherwise
+*/
+int cwdaemon_open_libcw_output(int audio_system)
+{
+	int rv = cw_generator_new(audio_system, NULL);
+	if (audio_system == CW_AUDIO_OSS && rv == CW_FAILURE) {
+		/* When reopening libcw output, previous audio system may
+		   block audio device for a short period of time after the
+		   output has been closed. In such a situation OSS may fail
+		   to open audio device. Let's give it some time. */
+		int i = 0;
+		for (i = 0; i < 5; i++) {
+			sleep(4);
+			rv = cw_generator_new(audio_system, NULL);
+			if (rv == CW_SUCCESS) {
+				break;
+			}
+		}
+	}
+	if (rv != CW_FAILURE) {
+		rv = cw_generator_start();
+		fprintf(stderr, "switching to audio %d: %d\n", audio_system, rv);
+	} else {
+		/* FIXME:
+		   When cwdaemon failed to create a generator, and user
+		   kills non-forked cwdaemon through Ctrl+C, there is
+		   a memory protection error. */
+		cwdaemon_debug(1, "failed to create generator with audio system %d\n", audio_system);
+	}
+
+	return rv == CW_FAILURE ? -1 : 0;
+}
+
+
+
+
+
+void cwdaemon_close_libcw_output(void)
+{
+	cw_generator_stop();
+	cw_generator_delete();
+
+	return;
+}
+
+
+
+
+
+void cwdaemon_reset_libcw_output(void)
+{
+	/* Delete old generator (if it exists). */
+	cwdaemon_close_libcw_output();
+
+	cwdaemon_debug(3, "Setting audio system=%d", current_audio_system); /* TODO: get human-readable label */
+	cwdaemon_open_libcw_output(current_audio_system);
 
 	cw_set_frequency(current_morse_tone);
 	cw_set_send_speed(current_morse_speed);
 	cw_set_volume(current_morse_volume);
-	cw_set_gap (0);
+	cw_set_gap(0);
 	cw_set_weighting (default_weighting * 0.6 + 50);
+
+	return;
 }
 
-static void
-close_libcw (void)
-{
-	cw_generator_stop ();
-	cw_generator_delete ();
-}
 
-/* set up output of libcw */
-static int
-set_libcw_output (void)
-{
-	int rv = 0;
-	if (soundcard_sound && !console_sound)
-	{
-		rv = cw_generator_new (CW_AUDIO_ALSA, NULL);
-		if (rv != CW_FAILURE)
-		{
-			rv = cw_generator_start();
-                }
-	}
-	else if (!soundcard_sound && console_sound)
-	{
-		rv = cw_generator_new (CW_AUDIO_CONSOLE, NULL);
-		if (rv != CW_FAILURE)
-		{
-			rv = cw_generator_start();
-                }
-	}
-	else
-	{
-		/* libcw can't do both soundcard and console,
-		   and it has to have one and only one sound
-		   system specified */
-		errmsg ("Sound output specified incorrectly");
-	        rv = CW_FAILURE;
-	}
-	return rv == CW_FAILURE ? -1 : 0;
-}
+
+
 
 /* properly parse a 'long' integer */
 static int
@@ -493,7 +537,7 @@ recv_code (void)
 	char message[257], *ndev;
 	char z;
 	ssize_t recv_rc;
-	int valid_sdevice = 0, fd;
+	int fd;
 	long lv;
 
 	recv_rc = recvfrom (socket_descriptor, message, sizeof (message) - 1,
@@ -530,7 +574,7 @@ recv_code (void)
 			{
 			case '0':	/* reset  all values */
 				morsetext[0] = '\0';
-				reset_libcw ();
+				cwdaemon_reset_amost_all();
 				wordmode = 0;
 				async_abort = 0;
 				cwdev->reset (cwdev);
@@ -753,37 +797,29 @@ recv_code (void)
 				cwdaemon_debug(1, "Parallel port unavailable");
 #endif
 				break;
-			case 'f':	/* switch console/soundcard */
-				if (!strncmp (message + 2, "n", 1))
-				{
-					console_sound = 0;
-					soundcard_sound = 0;
-					valid_sdevice = 1;
+			case 'f':
+				/* Change sound system used by libcw. */
+				if (!strncmp (message + 2, "n", 1)) {
+					current_audio_system = CW_AUDIO_NULL;
+				} else if (!strncmp (message + 2, "c", 1)) {
+					current_audio_system = CW_AUDIO_CONSOLE;
+				} else if (!strncmp (message + 2, "s", 1)) {
+					current_audio_system = CW_AUDIO_SOUNDCARD;
+				} else if (!strncmp (message + 2, "a", 1)) {
+					current_audio_system = CW_AUDIO_ALSA;
+				} else if (!strncmp (message + 2, "p", 1)) {
+					current_audio_system = CW_AUDIO_PA;
+				} else if (!strncmp (message + 2, "o", 1)) {
+					current_audio_system = CW_AUDIO_OSS;
+				} else {
+					cwdaemon_debug(1, "Invalid sound system: %s", message + 2);
+					break;
 				}
-				else if (!strncmp (message + 2, "c", 1))
-				{
-					console_sound = 1;
-					soundcard_sound = 0;
-					valid_sdevice = 1;
-				}
-				else if (!strncmp (message + 2, "s", 1))
-				{
-					console_sound = 0;
-					soundcard_sound = 1;
-					valid_sdevice = 1;
-				}
-				else if (!strncmp (message + 2, "b", 1))
-				{
-					console_sound = 1;
-					soundcard_sound = 1;
-					valid_sdevice = 1;
-				}
-				if (valid_sdevice == 1)
-				{
-					cwdaemon_debug(1, "Sound device: %s", message + 2);
-					close_libcw ();
-					set_libcw_output ();
-				}
+
+				/* Handle valid request for changing sound system. */
+				cwdaemon_debug(1, "Sound device: %s", message + 2);
+				cwdaemon_close_libcw_output();
+				cwdaemon_open_libcw_output(current_audio_system);
 				break;
 			case 'g':
 				/* Set volume of sound, in percents. */
@@ -985,8 +1021,13 @@ parsecommandline (int argc, char *argv[])
 			printf ("       -w <weight>   ");
 			printf ("Set weighting (-50 ... 50, default = 0)\n");
 			printf ("       -x <sdevice>  ");
-			printf ("Use a different sound device\n		     ");
-			printf ("(c = console (default), s = soundcard, b = both, n = none)\n");
+			printf("Use a specific sound system:\n");
+			printf("        c = console buzzer (default)\n");
+			printf("        o = OSS\n");
+			printf("        a = ALSA\n");
+			printf("        p = PulseAudio\n");
+			printf("        n = none (no audio)\n");
+			printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
 			exit (0);
 		case 'd':
 			keydev = optarg;
@@ -1054,33 +1095,29 @@ parsecommandline (int argc, char *argv[])
 			break;
 		case 'x':
 			if (!strncmp(optarg, "n", 1)) {
-				default_console_sound = 0;
-				default_soundcard_sound = 0;
-			}
-			else if (!strncmp(optarg, "c", 1))
-			{
-				default_console_sound = 1;
-				default_soundcard_sound = 0;
-			}
-			else if (!strncmp(optarg, "s", 1))
-			{
-				default_console_sound = 0;
-				default_soundcard_sound = 1;
-			}
-			else if (!strncmp(optarg, "b", 1))
-			{
-				default_console_sound = 1;
-				default_soundcard_sound = 1;
-			}
-			else
-			{
-				printf ("Wrong sound device, use c(onsole), s(oundcard), b(oth), or n(one)\n");
-				exit (1);
+				default_audio_system = CW_AUDIO_NULL;
+			} else if (!strncmp(optarg, "c", 1)) {
+				default_audio_system = CW_AUDIO_CONSOLE;
+			} else if (!strncmp(optarg, "s", 1)) {
+				default_audio_system = CW_AUDIO_SOUNDCARD;
+			} else if (!strncmp(optarg, "a", 1)) {
+				default_audio_system = CW_AUDIO_ALSA;
+			} else if (!strncmp(optarg, "p", 1)) {
+				default_audio_system = CW_AUDIO_PA;
+			} else if (!strncmp(optarg, "o", 1)) {
+				default_audio_system = CW_AUDIO_OSS;
+			} else {
+				printf("Wrong sound device, use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio)\n");
+				exit(1);
 			}
 			break;
 		}
 	}
 }
+
+
+
+
 
 /* main program: fork, open network connection and go into an endless loop
    waiting for something to happen on the UDP port */
@@ -1135,8 +1172,8 @@ main (int argc, char *argv[])
 	}
 	cwdev->desc = keydev;
 
-	reset_libcw ();
-	atexit (close_libcw);
+	cwdaemon_reset_amost_all();
+	atexit(cwdaemon_close_libcw_output);
 
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
 
