@@ -14,6 +14,9 @@ Default is parport0.
 For FreeBSD, use ttyd0, ttyd1, etc. for the serial ports and ppi0, ppi1, etc.
 for the parallel ports. Default is the first parallel port.
 
+You can also use dummy device "null" instead of parallel or serial port.
+This device does exactly nothing (no rig keying, no ssb keying, etc.).
+
 Cwdaemon also handles PTT, and band index output for automatic switching of
 antennas, filters etc. Pinout is compatible with the standard (CT, TRlog).
 
