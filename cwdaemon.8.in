@@ -46,7 +46,7 @@ For parallel ports on Linux try parport0 (default) or parport1, and on
 FreeBSD, ppi0 (default), ppi1, etc.  OpenBSD does not support parallel
 port operation, and defaults to 'tty00'.
 
-For completeness, a 'null' device is provided.  This device does
+For completeness, a dummy 'null' device is provided.  This device does
 exactly nothing (no rig keying, no ssb keying, etc.).
 
 
