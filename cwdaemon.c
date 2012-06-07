@@ -178,26 +178,29 @@ void cwdaemon_play_message(char *x);
 
 void cwdaemon_tune(int seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
-void cwdaemon_prepare_reply_message(char *message);
+void cwdaemon_prepare_reply_message(char *reply, const char *message, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
-int  cwdaemon_sendto(const char *message);
-int  cwdaemon_recvfrom(char *message, int n);
-int  cwdaemon_receive(void);
+ssize_t cwdaemon_sendto(const char *message);
+int     cwdaemon_recvfrom(char *message, int n);
+int     cwdaemon_receive(void);
+int     cwdaemon_handle_escaped_message(char *message);
 
-void cwdaemon_reset_amost_all(void);
+void cwdaemon_reset_almost_all(void);
 
 int  cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
+void cwdaemon_parse_command_line(int argc, char *argv[]);
+void cwdaemon_print_help(void);
 
 
 struct timeval now, end, left;	/* PTT timers */
 struct timespec sleeptime, time_remainder; /* delay timers */
 
 #define MAXMORSE 4000
-char message_queue[MAXMORSE];
+static char message_queue[MAXMORSE];
 
 char *keydev;
 
@@ -276,10 +279,10 @@ errmsg (char *info, ...)
    levels - don't use magic numbers. */
 void cwdaemon_debug(int level, char *info, ...)
 {
-	va_list ap;
-	char s[1024 + 1];
-
 	if (level <= debuglevel) {
+		va_list ap;
+		char s[1024 + 1];
+
 		va_start(ap, info);
 		vsnprintf(s, 1024, info, ap);
 		va_end(ap);
@@ -407,7 +410,7 @@ void cwdaemon_tune(int seconds)
 /**
    \brief Reset some initial parameters of cwdaemon and libcw
 */
-void cwdaemon_reset_amost_all(void)
+void cwdaemon_reset_almost_all(void)
 {
 	current_morse_speed = default_morse_speed;
 	current_morse_tone = default_morse_tone;
@@ -419,8 +422,6 @@ void cwdaemon_reset_amost_all(void)
 
 	return;
 }
-
-
 
 
 
@@ -525,15 +526,37 @@ get_long(const char *buf, long *lvp)
 
 
 /**
-   \brief Prepare reply message that the caller is awaiting on when we finished
+   \brief Prepare reply message for the caller
+
+   Fill \p reply buffer with data from given \p request, prepare some
+   other variables for sending reply message to the client.
+
+   The reply message is usually defined by caller, i.e. it is sent by client
+   to cwdaemon and marked by the client as message to be used as reply.
+
+   The reply should be sent back to client as soon as cwdaemon
+   finishes processing/playing received request.
+
+   There are two different procedures for recognizing what should be sent
+   back as reply and when:
+   \li received request ending with '^' character: the text of the request
+       should be played, but it also should be used as a reply. The reply
+       should be sent back to the client as soon as cwdaemon finishes playing
+       text of request.
+       Think about it as a form of "confirm by copy".
+   \li received request starting with "<ESC>h" escape code: the text of
+       request should be sent back to the client after sending *next*
+       message. So there are two requests sent by client to cwdaemon:
+       first defines reply, and the second defines text to be played.
+       First should be echoed back (but not played), second should be played.
 */
-void cwdaemon_prepare_reply_message(char *message)
+void cwdaemon_prepare_reply_message(char *reply, const char *message, size_t n)
 {
-	memcpy(&reply_addr, &src_addr, sizeof(reply_addr));		/* remember sender */
+	memcpy(&reply_addr, &src_addr, sizeof(reply_addr)); /* Remember sender. */
 	reply_addrlen = src_addrlen;
 
-	strcpy(reply_message, message);
-	cwdaemon_debug(2, "reply-data='%s', morsetext='%s'", reply_message, message_queue);
+	strncpy(reply, message, n);
+	cwdaemon_debug(2, "received message='%s', reply='%s'", message, reply);
 	cwdaemon_debug(1, "now waiting for end of transmission before echo");
 
 	ptt_flag |= PTT_ACTIVE_ECHO;				/* wait for tone queue to become empty, then echo back */
@@ -545,21 +568,53 @@ void cwdaemon_prepare_reply_message(char *message)
 
 
 
-int cwdaemon_sendto(const char *message)
+/**
+   \brief Wrapper around sendto()
+
+   Wrapper around sendto(), sending a \p message to client
+   specified by reply_* network variables.
+
+   \param message - message to be sent
+
+   \return -1 on failure
+   \return number of characters sent on success
+*/
+ssize_t cwdaemon_sendto(const char *message)
 {
 	size_t len = strlen(message);
+	/* TODO: Do we *really* need to end messages with CRLF? */
 	assert(message[len - 2] == '\r' && message[len - 1] == '\n');
 
-	sendto(socket_descriptor, message, len, 0,
-	       (struct sockaddr *) &reply_addr, reply_addrlen);
+	ssize_t rv = sendto(socket_descriptor, message, len, 0,
+			    (struct sockaddr *) &reply_addr, reply_addrlen);
 
-	return 0;
+	if (rv == -1) {
+		cwdaemon_debug(1, "sendto: %s\n", strerror(errno));
+		return -1;
+	} else {
+		return rv;
+	}
 }
 
 
 
 
 
+/**
+   \brief Receive message sent through socket
+
+   Received message is returned through \p message.
+   Possible trailing '\r' and '\n' characters are stripped.
+   Message is ended with '\0'.
+
+   \param message - buffer for received message
+   \param n - size of buffer
+
+   \return -2 if peer has performed an orderly shutdown
+   \return -1 if an error occurred during call to recvfrom
+   \return  0 if no message has been received
+   \return length of received message otherwise
+ */
 int cwdaemon_recvfrom(char *message, int n)
 {
 	ssize_t recv_rc = recvfrom(socket_descriptor,
@@ -587,7 +642,7 @@ int cwdaemon_recvfrom(char *message, int n)
 		/* "peer has performed an orderly shutdown" */
 		return -2;
 	} else {
-		;
+		; /* pass */
 	}
 
 	/* Remove CRLF if present. TCP buffer may end with '\n', so make
@@ -633,310 +688,314 @@ int cwdaemon_receive(void)
 		cwdaemon_debug(2, "...recv_from (no data)");
 		return 0;
 	} else { /* TODO: remove 'else', re-indent */
-		message[recv_rc] = '\0';
-
-		if (message[0] != 27) {
-			/* No ESCAPE. All received data should be treated
-			   as text/message to be sent using Morse code. */
-			cwdaemon_debug(1, "Message = %s", message);
-			if ((strlen(message) + strlen(message_queue)) <= MAXMORSE - 1) {
-				/* Hmm, seems that 'message_queue' is a kind of
-				   simple FIFO for text to be played. Would
-				   a better FIFO be a good thing? */
-				strcat(message_queue, message);
-				cwdaemon_play_message(message_queue);
-			} else {
-				; /* TODO */
-			}
-			return 1;
-		} else {
-			long lv;
-
-			/* Check ESCAPE code. */
-			switch ((int) message[1]) {
-			case '0':	/* reset  all values */
-				message_queue[0] = '\0';
-				cwdaemon_reset_amost_all();
-				wordmode = 0;
-				async_abort = 0;
-				cwdev->reset(cwdev);
-				ptt_flag = 0;
-				cwdaemon_debug(1, "Reset all values");
-				break;
-			case '2':
-				/* Set speed of morse code, in words per minute. */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED) {
-					current_morse_speed = lv;
-					cw_set_send_speed(current_morse_speed);
-					cwdaemon_debug(1, "Speed: %d wpm", current_morse_speed);
-				}
-
-				break;
-			case '3':
-				/* Set tone (frequency) of morse code, in Hz. */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if (lv > 0 && lv <= CW_FREQUENCY_MAX) {
-					current_morse_tone = lv;
-					cw_set_frequency(current_morse_tone);
-					/* TODO: should we modify volume when modifying tone? This doesn't seem right. */
-					cw_set_volume(default_morse_volume);
-					cwdaemon_debug(1, "Tone: %s Hz, volume %d%", message + 2, default_morse_volume);
-
-				} else if (lv == 0) {	/* sidetone off */
-					current_morse_tone = 0;
-					cw_set_volume(0);
-					cwdaemon_debug(1, "Volume off");
-
-				} else {
-					;
-				}
-
-				break;
-			case '4':
-				/* Abort currently sent message. */
-				if (wordmode) {
-					cwdaemon_debug(1, "Ignoring Message abort request");
-				} else {
-					cwdaemon_debug(1, "Message abort");
-					if (ptt_flag & PTT_ACTIVE_ECHO) {		/* if echo pending */
-						cwdaemon_debug(1, "Echo 'break'");
-						cwdaemon_sendto("break\r\n");
-					}
-					message_queue[0] = '\0';
-					cw_flush_tone_queue();
-					cw_wait_for_tone_queue();
-					if (ptt_flag) {
-						cwdaemon_set_ptt_off("PTT off");
-					}
-					ptt_flag &= 0;
-				}
-				break;
-			case '5':
-				/* Exit cwdaemon. */
-				cwdev->free(cwdev);
-				errno = 0;
-				errmsg("Sender has told me to end the connection");
-				exit(EXIT_SUCCESS);
-
-			case '6':	/* set uninterruptable */
-				message[0] = '\0';
-				message_queue[0] = '\0';
-				wordmode = 1;
-				cwdaemon_debug(1, "Wordmode set");
-				break;
-			case '7':
-				/* Set weighting of morse code dits and dashes.
-				   Remember that cwdaemon uses values in range
-				   -50/+50, but libcw accepts values in range
-				   20/80. This is why you have the calculation
-				   when calling cw_set_weighting(). */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if ((lv > -51) && (lv < 51)) {
-					cw_set_weighting(lv * 0.6 + 50);
-					cwdaemon_debug(1, "Weight: %ld", lv);
-				}
-				break;
-			case '8': {
-				/* Set device type. */
-				char *ndev = message + 2;
-				int fd;
-				cwdaemon_debug(1, "Device: %s", ndev);
-				if ((fd = dev_is_tty(ndev)) != -1)
-				{
-					cwdev->free(cwdev);
-					cwdev = &cwdevice_ttys;
-					keydev = cwdev->desc = ndev;
-					cwdev->init(cwdev, fd);
-				}
-#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-				else if ((fd = dev_is_parport(ndev)) != -1)
-				{
-					cwdev->free(cwdev);
-					cwdev = &cwdevice_lp;
-					keydev = cwdev->desc = ndev;
-					cwdev->init(cwdev, fd);
-				}
-#endif
-				else if ((fd = dev_is_null(ndev)) != -1)
-				{
-					cwdev->free(cwdev);
-					cwdev = &cwdevice_null;
-					keydev = cwdev->desc = ndev;
-					cwdev->init(cwdev, fd);
-				}
-				else
-					cwdaemon_debug(1, "Unknown device");
-				break;
-			}
-			case '9':
-				/* Base port number.
-				   TODO: why this is obsolete? */
-				cwdaemon_debug(1, "Obsolete control data '9'.");
-				break;
-			case 'a':	/* PTT keying on or off */
-				if (get_long(message + 2, &lv))
-					break;
-				if (lv)
-				{
-					cwdev->ptt (cwdev, ON);
-					if (current_ptt_delay)
-						cwdaemon_set_ptt_on("PTT (manual, delay) on");
-					else
-						cwdaemon_debug(1, "PTT (manual, immediate) on");
-					ptt_flag |= PTT_ACTIVE_MANUAL;
-				}
-				else if (ptt_flag & PTT_ACTIVE_MANUAL)	/* only if manually activated */
-				{
-					ptt_flag &= ~PTT_ACTIVE_MANUAL;
-					if (!(ptt_flag & !PTT_ACTIVE_AUTO))	/* no PTT modifiers */
-					{
-						if (message_queue[0] == '\0' &&	/* no new text in the meantime */
-							cw_get_tone_queue_length() <= 1)
-						{
-							cwdaemon_set_ptt_off("PTT (manual, immediate) off");
-						}
-						else
-						{
-							/* still sending, cannot yet switch PTT off */
-							ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
-							cwdaemon_debug(1, "reverting from PTT (manual) to PTT (auto) now");
-						}
-					}
-				}
-				break;
-			case 'b':	/* SSB way */
-#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-				if (get_long(message + 2, &lv))
-					break;
-				if (lv)
-				{
-					if (cwdev->ssbway)
-					{
-						cwdev->ssbway (cwdev, SOUNDCARD);
-						cwdaemon_debug(1, "SSB way set to SOUNDCARD", PACKAGE);
-					}
-					else
-						cwdaemon_debug(1, "SSB way to SOUNDCARD unimplemented");
-				}
-				else
-				{
-					if (cwdev->ssbway)
-					{
-						cwdev->ssbway (cwdev, MICROPHONE);
-						cwdaemon_debug(1, "SSB way set to MIC");
-					}
-					else
-						cwdaemon_debug(1, "SSB way to MICROPHONE unimplemented");
-				}
-#else
-				cwdaemon_debug(1, "Unavailable");
-#endif
-				break;
-			case 'c':
-				/* Tune for a number of seconds */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if (lv <= 10) {
-					cwdaemon_tune(lv);
-				}
-				break;
-			case 'd':
-				/* Set PTT delay (TOD, Turn On Delay).
-				   The value is milliseconds. */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if (lv >= 0 && lv < 51) {
-					current_ptt_delay = lv * CWDAEMON_USECS_PER_MSEC;
-				} else {
-					current_ptt_delay = 50000;
-				}
-
-				cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay / CWDAEMON_USECS_PER_MSEC);
-
-				if (current_ptt_delay == 0) {
-					cwdaemon_set_ptt_off("ensure PTT off");
-				}
-				break;
-			case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
-#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-				if (get_long(message + 2, &lv))
-					break;
-				if (lv <= 15 && lv >= 0) {
-					bandswitch = lv;
-					set_switch(bandswitch);
-				}
-#else
-				cwdaemon_debug(1, "Parallel port unavailable");
-#endif
-				break;
-			case 'f': {
-				/* Change sound system used by libcw. */
-				int c = message[2];
-				if (c == 'n') {
-					current_audio_system = CW_AUDIO_NULL;
-				} else if (c == 'c') {
-					current_audio_system = CW_AUDIO_CONSOLE;
-				} else if (c == 's') {
-					current_audio_system = CW_AUDIO_SOUNDCARD;
-				} else if (c == 'a') {
-					current_audio_system = CW_AUDIO_ALSA;
-				} else if (c == 'p') {
-					current_audio_system = CW_AUDIO_PA;
-				} else if (c == 'o') {
-					current_audio_system = CW_AUDIO_OSS;
-				} else {
-					cwdaemon_debug(1, "Invalid sound system: %s", message + 2);
-					break;
-				}
-
-				/* Handle valid request for changing sound system. */
-				cwdaemon_debug(1, "Sound device: %s", message + 2);
-				cwdaemon_close_libcw_output();
-				cwdaemon_open_libcw_output(current_audio_system);
-				break;
-			}
-			case 'g':
-				/* Set volume of sound, in percents. */
-				if (get_long(message + 2, &lv)) {
-					break;
-				}
-
-				if (lv >= 0 && lv <= 100) {
-					current_morse_volume = lv;
-					cw_set_volume(current_morse_volume);
-				}
-				break;
-			case 'h':
-				/* Data after '<ESC>h' is a reply message.
-				   It shouldn't be echoed back to client
-				   immediately.
-				   Instead, cwdaemon should wait for another
-				   message (I assume that it will be a
-				   regular text message to be played), play
-				   it, and then send prepared reply back to
-				   the client.
-				   So this is a reply message with delay. */
-				cwdaemon_prepare_reply_message(message + 2);
-				/* wait for queue-empty callback */
-				break;
-			} /* switch ((int) message[1]) */
-		} /* if (message[0] != 27) / else */
-		return 0;
+		; /* pass */
 	}
+
+	message[recv_rc] = '\0';
+
+	if (message[0] != 27) {
+		/* No ESCAPE. All received data should be treated
+		   as text/message to be sent using Morse code. */
+		cwdaemon_debug(1, "Message = %s", message);
+		if ((strlen(message) + strlen(message_queue)) <= MAXMORSE - 1) {
+			/* Hmm, seems that 'message_queue' is a kind of
+			   simple FIFO for text to be played. Would
+			   a better FIFO be a good thing? */
+			strcat(message_queue, message);
+			cwdaemon_play_message(message_queue);
+		} else {
+			; /* TODO */
+		}
+		return 1;
+	} else {
+		return cwdaemon_handle_escaped_message(message);
+	}
+}
+
+
+
+
+
+int cwdaemon_handle_escaped_message(char *message)
+{
+	long lv;
+
+	/* Take action depending on Escape code. */
+	switch ((int) message[1]) {
+	case '0':	/* reset  all values */
+		message_queue[0] = '\0';
+		cwdaemon_reset_almost_all();
+		wordmode = 0;
+		async_abort = 0;
+		cwdev->reset(cwdev);
+		ptt_flag = 0;
+		cwdaemon_debug(1, "Reset all values");
+		break;
+	case '2':
+		/* Set speed of morse code, in words per minute. */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED) {
+			current_morse_speed = lv;
+			cw_set_send_speed(current_morse_speed);
+			cwdaemon_debug(1, "Speed: %d wpm", current_morse_speed);
+		}
+
+		break;
+	case '3':
+		/* Set tone (frequency) of morse code, in Hz. */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv > 0 && lv <= CW_FREQUENCY_MAX) {
+			current_morse_tone = lv;
+			cw_set_frequency(current_morse_tone);
+			/* TODO: should we modify volume when modifying tone? This doesn't seem right. */
+			cw_set_volume(default_morse_volume);
+			cwdaemon_debug(1, "Tone: %s Hz, volume %d%", message + 2, default_morse_volume);
+
+		} else if (lv == 0) {	/* sidetone off */
+			current_morse_tone = 0;
+			cw_set_volume(0);
+			cwdaemon_debug(1, "Volume off");
+
+		} else {
+			;
+		}
+
+		break;
+	case '4':
+		/* Abort currently sent message. */
+		if (wordmode) {
+			cwdaemon_debug(1, "Ignoring Message abort request");
+		} else {
+			cwdaemon_debug(1, "Message abort");
+			if (ptt_flag & PTT_ACTIVE_ECHO) {		/* if echo pending */
+				cwdaemon_debug(1, "Echo 'break'");
+				cwdaemon_sendto("break\r\n");
+			}
+			message_queue[0] = '\0';
+			cw_flush_tone_queue();
+			cw_wait_for_tone_queue();
+			if (ptt_flag) {
+				cwdaemon_set_ptt_off("PTT off");
+			}
+			ptt_flag &= 0;
+		}
+		break;
+	case '5':
+		/* Exit cwdaemon. */
+		cwdev->free(cwdev);
+		errno = 0;
+		errmsg("Sender has told me to end the connection");
+		exit(EXIT_SUCCESS);
+
+	case '6':	/* set uninterruptable */
+		message[0] = '\0';
+		message_queue[0] = '\0';
+		wordmode = 1;
+		cwdaemon_debug(1, "Wordmode set");
+		break;
+	case '7':
+		/* Set weighting of morse code dits and dashes.
+		   Remember that cwdaemon uses values in range
+		   -50/+50, but libcw accepts values in range
+		   20/80. This is why you have the calculation
+		   when calling cw_set_weighting(). */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if ((lv > -51) && (lv < 51)) {
+			cw_set_weighting(lv * 0.6 + 50);
+			cwdaemon_debug(1, "Weight: %ld", lv);
+		}
+		break;
+	case '8': {
+		/* Set device type. */
+		char *ndev = message + 2;
+		int fd;
+		cwdaemon_debug(1, "Device: %s", ndev);
+		if ((fd = dev_is_tty(ndev)) != -1) {
+			cwdev->free(cwdev);
+			cwdev = &cwdevice_ttys;
+			keydev = cwdev->desc = ndev;
+			cwdev->init(cwdev, fd);
+		}
+#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
+		else if ((fd = dev_is_parport(ndev)) != -1) {
+			cwdev->free(cwdev);
+			cwdev = &cwdevice_lp;
+			keydev = cwdev->desc = ndev;
+			cwdev->init(cwdev, fd);
+		}
+#endif
+		else if ((fd = dev_is_null(ndev)) != -1) {
+			cwdev->free(cwdev);
+			cwdev = &cwdevice_null;
+			keydev = cwdev->desc = ndev;
+			cwdev->init(cwdev, fd);
+		} else {
+			cwdaemon_debug(1, "Unknown device");
+		}
+		break;
+	}
+	case '9':
+		/* Base port number.
+		   TODO: why this is obsolete? */
+		cwdaemon_debug(1, "Obsolete control data '9'.");
+		break;
+	case 'a':	/* PTT keying on or off */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv) {
+			cwdev->ptt (cwdev, ON);
+			if (current_ptt_delay) {
+				cwdaemon_set_ptt_on("PTT (manual, delay) on");
+			} else {
+				cwdaemon_debug(1, "PTT (manual, immediate) on");
+			}
+			ptt_flag |= PTT_ACTIVE_MANUAL;
+		} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
+			ptt_flag &= ~PTT_ACTIVE_MANUAL;
+			if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
+
+				if (message_queue[0] == '\0'/* no new text in the meantime */
+				    && cw_get_tone_queue_length() <= 1) {
+
+					cwdaemon_set_ptt_off("PTT (manual, immediate) off");
+				} else {
+					/* still sending, cannot yet switch PTT off */
+					ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
+					cwdaemon_debug(1, "reverting from PTT (manual) to PTT (auto) now");
+				}
+			}
+		}
+		break;
+	case 'b':	/* SSB way */
+#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv) {
+			if (cwdev->ssbway) {
+				cwdev->ssbway (cwdev, SOUNDCARD);
+				cwdaemon_debug(1, "SSB way set to SOUNDCARD", PACKAGE);
+			} else {
+				cwdaemon_debug(1, "SSB way to SOUNDCARD unimplemented");
+			}
+		} else {
+			if (cwdev->ssbway) {
+				cwdev->ssbway (cwdev, MICROPHONE);
+				cwdaemon_debug(1, "SSB way set to MIC");
+			} else {
+				cwdaemon_debug(1, "SSB way to MICROPHONE unimplemented");
+			}
+		}
+#else
+		cwdaemon_debug(1, "Unavailable");
+#endif
+		break;
+	case 'c':
+		/* Tune for a number of seconds */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv <= 10) {
+			cwdaemon_tune(lv);
+		}
+		break;
+	case 'd':
+		/* Set PTT delay (TOD, Turn On Delay).
+		   The value is milliseconds. */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv >= 0 && lv < 51) {
+			current_ptt_delay = lv * CWDAEMON_USECS_PER_MSEC;
+		} else {
+			current_ptt_delay = 50000;
+		}
+
+		cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay / CWDAEMON_USECS_PER_MSEC);
+
+		if (current_ptt_delay == 0) {
+			cwdaemon_set_ptt_off("ensure PTT off");
+		}
+		break;
+	case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
+#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
+		if (get_long(message + 2, &lv))
+			break;
+		if (lv <= 15 && lv >= 0) {
+			bandswitch = lv;
+			set_switch(bandswitch);
+		}
+#else
+		cwdaemon_debug(1, "Parallel port unavailable");
+#endif
+		break;
+	case 'f': {
+		/* Change sound system used by libcw. */
+		int c = message[2];
+		if (c == 'n') {
+			current_audio_system = CW_AUDIO_NULL;
+		} else if (c == 'c') {
+			current_audio_system = CW_AUDIO_CONSOLE;
+		} else if (c == 's') {
+			current_audio_system = CW_AUDIO_SOUNDCARD;
+		} else if (c == 'a') {
+			current_audio_system = CW_AUDIO_ALSA;
+		} else if (c == 'p') {
+			current_audio_system = CW_AUDIO_PA;
+		} else if (c == 'o') {
+			current_audio_system = CW_AUDIO_OSS;
+		} else {
+			cwdaemon_debug(1, "Invalid sound system: %s", message + 2);
+			break;
+		}
+
+		/* Handle valid request for changing sound system. */
+		cwdaemon_debug(1, "Sound device: %s", message + 2);
+		cwdaemon_close_libcw_output();
+		cwdaemon_open_libcw_output(current_audio_system);
+		break;
+	}
+	case 'g':
+		/* Set volume of sound, in percents. */
+		if (get_long(message + 2, &lv)) {
+			break;
+		}
+
+		if (lv >= 0 && lv <= 100) {
+			current_morse_volume = lv;
+			cw_set_volume(current_morse_volume);
+		}
+		break;
+	case 'h':
+		/* Data after '<ESC>h' is a reply message.
+		   It shouldn't be echoed back to client
+		   immediately.
+		   Instead, cwdaemon should wait for another
+		   message (I assume that it will be a
+		   regular text message to be played), play
+		   it, and then send prepared reply back to
+		   the client.
+		   So this is a reply message with delay. */
+		cwdaemon_prepare_reply_message(reply_message, message + 2, strlen(message) - 2);
+		/* wait for queue-empty callback */
+		break;
+	} /* switch ((int) message[1]) */
+
+	return 0;
 }
 
 
@@ -987,7 +1046,7 @@ void cwdaemon_play_message(char *message)
 			/* I'm guessing here that '^' can be found at
 			   the end of message, and it means "echo current
 			   message back to sender once you finish playing it". */
-			cwdaemon_prepare_reply_message(message);
+			cwdaemon_prepare_reply_message(reply_message, message, strlen(message) - 2);
 			/* wait for queue-empty callback */
 			break;
 		case '*':
@@ -1081,69 +1140,24 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 
 
 /* parse the command line and check for options, do some error checking */
-static void
-parsecommandline (int argc, char *argv[])
+void cwdaemon_parse_command_line(int argc, char *argv[])
 {
 	long lv;
 	int p;
 
-	while ((p = getopt (argc, argv, "d:hnp:P:s:t:v:Vw:x:")) != -1)
-	{
-		switch (p)
-		{
+	while ((p = getopt(argc, argv, "d:hnp:P:s:t:v:Vw:x:")) != -1) {
+		switch (p) {
 		case ':':
 		case '?':
 		case 'h':
-			printf ("Usage: %s [option]...\n", PACKAGE);
-			printf ("       -d <device>   ");
-			printf ("Use a different device\n                     ");
-#if defined (HAVE_LINUX_PPDEV_H)
-			printf ("(e.g. ttyS0,1,2, parport0,1, etc. default = parport0)\n");
-#elif defined (HAVE_DEV_PPBUS_PPI_H)
-			printf ("(e.g. ttyd0,1,2, ppi0,1, etc. default = ppi0)\n");
-#else
-#ifdef BSD
-			printf ("(e.g. ttyd0,1,2, etc. default = ttyd0)\n");
-#else
-			printf ("(e.g. ttyS0,1,2, etc. default = ttyS0)\n");
-#endif
-#endif
-			printf ("       -h            ");
-			printf ("Display this help and exit\n");
-			printf ("       -n            ");
-			printf ("Do not fork and print debug information to stdout\n");
-			printf ("       -p <port>     ");
-			printf ("Use a different UDP port number (> 1023, default = %d)\n", CWDAEMON_DEFAULT_NETWORK_PORT);
-#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
-			printf ("       -P <priority> ");
-			printf ("Set cwdaemon priority (-20 ... 20, default = 0)\n");
-#endif
-			printf ("       -s <speed>    ");
-			printf ("Set morse speed (%d ... %d wpm, default = %d)\n",
-				CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
-			printf ("       -t <time>     ");
-			printf ("Set PTT delay (0 ... 50 ms, default = 0)\n");
-			printf ("       -v <volume>   ");
-			printf ("Set volume for soundcard output\n");
-			printf ("       -V            ");
-			printf ("Output version information and exit\n");
-			printf ("       -w <weight>   ");
-			printf ("Set weighting (-50 ... 50, default = 0)\n");
-			printf ("       -x <sdevice>  ");
-			printf("Use a specific sound system:\n");
-			printf("        c = console buzzer (default)\n");
-			printf("        o = OSS\n");
-			printf("        a = ALSA\n");
-			printf("        p = PulseAudio\n");
-			printf("        n = none (no audio)\n");
-			printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
-			exit (0);
+			cwdaemon_print_help();
+			exit(EXIT_SUCCESS);
 		case 'd':
 			keydev = optarg;
 			break;
 		case 'n':
 			if (forking) {
-				printf ("%s: Not forking...\n", PACKAGE);
+				printf("%s: Not forking...\n", PACKAGE);
 				forking = 0;
 			}
 			debuglevel++;
@@ -1152,7 +1166,7 @@ parsecommandline (int argc, char *argv[])
 			if (get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
 				printf("%s: invalid port number - %s\n",
 				       PACKAGE, optarg);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			port = lv;
 			break;
@@ -1161,7 +1175,7 @@ parsecommandline (int argc, char *argv[])
 			if (get_long(optarg, &lv) || lv < -20 || lv > 20) {
 				printf("%s: bad priority %s (should be between -20 and 20 inclusive)\n",
 				       PACKAGE, optarg);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			priority = lv;
 			break;
@@ -1171,7 +1185,7 @@ parsecommandline (int argc, char *argv[])
 				printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
 				       PACKAGE, optarg,
 				       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			default_morse_speed = lv;
 			break;
@@ -1179,7 +1193,7 @@ parsecommandline (int argc, char *argv[])
 			if (get_long(optarg, &lv) || lv < 0 || lv > 50) {
 				printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
 				       PACKAGE, optarg);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			default_ptt_delay = CWDAEMON_USECS_PER_MSEC * lv;
 			break;
@@ -1187,18 +1201,18 @@ parsecommandline (int argc, char *argv[])
 			if (get_long(optarg, &lv) || lv < 0 || lv > 100) {
 				printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
 				       PACKAGE, optarg);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			default_morse_volume = lv;
 			break;
 		case 'V':
-			printf ("%s version %s\n", PACKAGE, VERSION);
-			exit (0);
+			printf("%s version %s\n", PACKAGE, VERSION);
+			exit(EXIT_SUCCESS);
 		case 'w':
 			if (get_long(optarg, &lv) || lv < -50 || lv > 50) {
 				printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
 				       PACKAGE, optarg);
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			default_weighting = lv;
 			break;
@@ -1217,11 +1231,70 @@ parsecommandline (int argc, char *argv[])
 				default_audio_system = CW_AUDIO_OSS;
 			} else {
 				printf("Wrong sound device, use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio)\n");
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			break;
-		}
-	}
+		} /* switch (p) */
+	} /* while ((p = getopt()) */
+
+	return;
+}
+
+
+
+
+
+void cwdaemon_print_help(void)
+{
+	printf("Usage: %s [option]...\n\n", PACKAGE);
+
+	printf("-h\n");
+	printf("        Display this help and exit\n");
+	printf("-V\n");
+	printf("        Output version information and exit\n");
+
+	printf("-d <device>\n");
+	printf("        Use a different device\n");
+#if defined (HAVE_LINUX_PPDEV_H)
+	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default = parport0)\n");
+#elif defined (HAVE_DEV_PPBUS_PPI_H)
+	printf("        (e.g. ttyd0,1,2, ppi0,1, etc. default = ppi0)\n");
+#else
+#ifdef BSD
+	printf("        (e.g. ttyd0,1,2, etc. default = ttyd0)\n");
+#else
+	printf("        (e.g. ttyS0,1,2, etc. default = ttyS0)\n");
+#endif
+#endif
+	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
+
+	printf("-n\n");
+	printf("        Do not fork. Print debug information to stdout.\n");
+	printf("-p <port>\n");
+	printf("        Use a different UDP port number (> 1023, default = %d)\n", CWDAEMON_DEFAULT_NETWORK_PORT);
+#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
+	printf("-P <priority>\n");
+	printf("        Set cwdaemon priority (-20 ... 20, default = 0)\n");
+#endif
+	printf("-s <speed>\n");
+	printf("        Set morse speed (%d ... %d wpm, default = %d)\n",
+	       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
+	printf("-t <time>\n");
+	printf("        Set PTT delay (0 ... 50 ms, default = 0)\n");
+	printf("-v <volume>\n");
+	printf("        Set volume for soundcard output\n");
+	printf("-w <weight>\n");
+	printf("        Set weighting (-50 ... 50, default = 0)\n");
+	printf("-x <sound system>\n");
+	printf("        Use a specific sound system:\n");
+	printf("        c = console buzzer (default)\n");
+	printf("        o = OSS\n");
+	printf("        a = ALSA\n");
+	printf("        p = PulseAudio\n");
+	printf("        n = none (no audio)\n");
+	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
+
+	return;
 }
 
 
@@ -1250,7 +1323,7 @@ main (int argc, char *argv[])
 # endif
 #endif
 
-	parsecommandline (argc, argv);
+	cwdaemon_parse_command_line(argc, argv);
 
 	if (debuglevel > 3) {		/* debugging cwlib as well */
 		/* FIXME: pass correct libcw debug flags. */
@@ -1281,7 +1354,7 @@ main (int argc, char *argv[])
 	}
 	cwdev->desc = keydev;
 
-	cwdaemon_reset_amost_all();
+	cwdaemon_reset_almost_all();
 	atexit(cwdaemon_close_libcw_output);
 
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
