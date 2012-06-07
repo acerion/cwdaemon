@@ -88,6 +88,7 @@
 # include <sys/param.h>
 #endif
 #include <limits.h>
+#include <assert.h>
 
 #include <libcw.h>
 #include "cwdaemon.h"
@@ -123,7 +124,7 @@ static int default_weighting    = CWDAEMON_DEFAULT_MORSE_WEIGHTING;
 
 /* Actual values of parameters, used to control ongoing operation of
    cwdaemon+libcw. These values can be modified through messages
-   received from socket in recv_code(). */
+   received from socket in cwdaemon_receive(). */
 static int current_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
 static int current_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
 static int current_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
@@ -133,11 +134,20 @@ static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
 
 
 /* Network variables. */
-socklen_t sin_len, reply_socklen;
+/* cwdaemon usually receives message from client, but on occasions
+   it needs to send some message back. This is why in addition to
+   src_* we also have reply_* */
 int socket_descriptor;
-struct sockaddr_in k_sin, reply_sin;
 static int port = CWDAEMON_DEFAULT_NETWORK_PORT;  /* default UDP port we listen on */
-char reply_data[256];
+
+struct sockaddr_in src_addr;
+socklen_t          src_addrlen;
+
+struct sockaddr_in reply_addr;
+socklen_t          reply_addrlen;
+
+#define CWDAEMON_MESSAGE_SIZE_MAX 256
+char reply_message[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
 
@@ -164,13 +174,16 @@ static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
 void cwdaemon_set_ptt_on(char *msg);
 void cwdaemon_set_ptt_off(char *msg);
 
-
+void cwdaemon_play_message(char *x);
 
 void cwdaemon_tune(int seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
-void cwdaemon_prepare_reply_text(char *buf);
+void cwdaemon_prepare_reply_message(char *message);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
+int  cwdaemon_sendto(const char *message);
+int  cwdaemon_recvfrom(char *message, int n);
+int  cwdaemon_receive(void);
 
 void cwdaemon_reset_amost_all(void);
 
@@ -184,7 +197,7 @@ struct timeval now, end, left;	/* PTT timers */
 struct timespec sleeptime, time_remainder; /* delay timers */
 
 #define MAXMORSE 4000
-char morsetext[MAXMORSE];
+char message_queue[MAXMORSE];
 
 char *keydev;
 
@@ -227,7 +240,7 @@ cwdevice cwdevice_lp = {
 };
 #endif
 cwdevice *cwdev;
-static void playmorsestring (void);
+
 
 
 
@@ -476,6 +489,7 @@ void cwdaemon_reset_libcw_output(void)
 	cwdaemon_debug(3, "Setting audio system=%d", current_audio_system); /* TODO: get human-readable label */
 	cwdaemon_open_libcw_output(current_audio_system);
 
+	/* FIXME: current_* or default_* ? */
 	cw_set_frequency(current_morse_tone);
 	cw_set_send_speed(current_morse_speed);
 	cw_set_volume(current_morse_volume);
@@ -511,15 +525,17 @@ get_long(const char *buf, long *lvp)
 
 
 /**
-   \brief Prepare reply text that the caller is awaiting on when we finished
+   \brief Prepare reply message that the caller is awaiting on when we finished
 */
-void cwdaemon_prepare_reply_text(char *buf)
+void cwdaemon_prepare_reply_message(char *message)
 {
-	memcpy(&reply_sin, &k_sin, sizeof(reply_sin));		/* remember sender */
-	reply_socklen = sin_len;
-	strcpy(reply_data, buf);
-	cwdaemon_debug(2, "reply-data='%s', morsetext='%s'", reply_data, morsetext);
+	memcpy(&reply_addr, &src_addr, sizeof(reply_addr));		/* remember sender */
+	reply_addrlen = src_addrlen;
+
+	strcpy(reply_message, message);
+	cwdaemon_debug(2, "reply-data='%s', morsetext='%s'", reply_message, message_queue);
 	cwdaemon_debug(1, "now waiting for end of transmission before echo");
+
 	ptt_flag |= PTT_ACTIVE_ECHO;				/* wait for tone queue to become empty, then echo back */
 
 	return;
@@ -529,55 +545,121 @@ void cwdaemon_prepare_reply_text(char *buf)
 
 
 
-/* watch the socket and if there is an escape character check what it is,
-   otherwise play morse. Return 0 with escape characters and empty messages.*/
-static int
-recv_code (void)
+int cwdaemon_sendto(const char *message)
 {
-	char message[257], *ndev;
-	char z;
-	ssize_t recv_rc;
-	int fd;
-	long lv;
+	size_t len = strlen(message);
+	assert(message[len - 2] == '\r' && message[len - 1] == '\n');
 
-	recv_rc = recvfrom (socket_descriptor, message, sizeof (message) - 1,
-		0, (struct sockaddr *) &k_sin, &sin_len);
+	sendto(socket_descriptor, message, len, 0,
+	       (struct sockaddr *) &reply_addr, reply_addrlen);
 
-	if (recv_rc == -1 && errno != EAGAIN)
-	{
-		errmsg ("Recvfrom");
-		exit (1);
+	return 0;
+}
+
+
+
+
+
+int cwdaemon_recvfrom(char *message, int n)
+{
+	ssize_t recv_rc = recvfrom(socket_descriptor,
+				   message,
+				   n,
+				   0, /* flags */
+				   (struct sockaddr *) &src_addr,
+				   &src_addrlen);
+
+	if (recv_rc == -1) { /* No messages available? */
+
+		if (errno == EAGAIN || errno == EWOULDBLOCK) { /* "a portable application should check for both possibilities" */
+			/* Yup, no messages available from non-blocking socket. Good luck next time. */
+			/* TODO: how much CPU time does it cost to loop waiting for a message?
+			   Would it be reasonable to configure the socket as blocking?
+			   How large is receive timeout? */
+
+			return 0;
+		} else {
+			/* Some other error. May be a serious error. */
+			errmsg("Recvfrom");
+			return -1;
+		}
+	} else if (recv_rc == 0) {
+		/* "peer has performed an orderly shutdown" */
+		return -2;
+	} else {
+		;
 	}
 
-	while (recv_rc > 0 &&
-			( (z = (int) message[recv_rc - 1]) == '\n' || z == '\r') )
-	{
-		message[--recv_rc] = '\0';		/* remove CRLF if present */
+	/* Remove CRLF if present. TCP buffer may end with '\n', so make
+	   sure that every message is consistently ended with NUL.
+	   Do it early, do it now. */
+	int z;
+	while (recv_rc > 0
+	       && ( (z = message[recv_rc - 1]) == '\n' || z == '\r') ) {
+
+		message[--recv_rc] = '\0';
 	}
 
-	if (recv_rc > 0)
-	{
+	return recv_rc;
+}
+
+
+
+
+
+/* watch the socket and if there is an escape character check what it is,
+   otherwise play morse.
+
+   \return 0 when an escape code has been received
+   \return 0 when no message or an empty message has been received
+   \return 1 when a text message has been played
+*/
+int cwdaemon_receive(void)
+{
+	/* We may treat message as printable string, so +1 for
+	   ending NUL added somewhere below is necessary. */
+	char message[CWDAEMON_MESSAGE_SIZE_MAX + 1];
+
+	ssize_t recv_rc = cwdaemon_recvfrom(message, CWDAEMON_MESSAGE_SIZE_MAX);
+
+	if (recv_rc == -2) {
+		/* Sender has closed connection. */
+		return 0;
+	} else if (recv_rc == -1) {
+		/* TODO: should we really exit?
+		   Shouldn't we recover from the error? */
+		exit(EXIT_FAILURE);
+	} else if (recv_rc == 0) {
+		cwdaemon_debug(2, "...recv_from (no data)");
+		return 0;
+	} else { /* TODO: remove 'else', re-indent */
 		message[recv_rc] = '\0';
-		if (message[0] != 27)
-		{	/* no ESCAPE */
+
+		if (message[0] != 27) {
+			/* No ESCAPE. All received data should be treated
+			   as text/message to be sent using Morse code. */
 			cwdaemon_debug(1, "Message = %s", message);
-			if ((strlen (message) + strlen (morsetext)) <= MAXMORSE - 1)
-			{
-				strcat (morsetext, message);
-				playmorsestring ();
+			if ((strlen(message) + strlen(message_queue)) <= MAXMORSE - 1) {
+				/* Hmm, seems that 'message_queue' is a kind of
+				   simple FIFO for text to be played. Would
+				   a better FIFO be a good thing? */
+				strcat(message_queue, message);
+				cwdaemon_play_message(message_queue);
+			} else {
+				; /* TODO */
 			}
 			return 1;
-		}
-		else
-		{	/* check ESCAPE characters */
-			switch ((int) message[1])
-			{
+		} else {
+			long lv;
+
+			/* Check ESCAPE code. */
+			switch ((int) message[1]) {
 			case '0':	/* reset  all values */
-				morsetext[0] = '\0';
+				message_queue[0] = '\0';
 				cwdaemon_reset_amost_all();
 				wordmode = 0;
 				async_abort = 0;
-				cwdev->reset (cwdev);
+				cwdev->reset(cwdev);
 				ptt_flag = 0;
 				cwdaemon_debug(1, "Reset all values");
 				break;
@@ -619,24 +701,20 @@ recv_code (void)
 				break;
 			case '4':
 				/* Abort currently sent message. */
-				if (wordmode)
+				if (wordmode) {
 					cwdaemon_debug(1, "Ignoring Message abort request");
-				else
-				{
+				} else {
 					cwdaemon_debug(1, "Message abort");
-					if (ptt_flag & PTT_ACTIVE_ECHO)		/* if echo pending */
-					{
+					if (ptt_flag & PTT_ACTIVE_ECHO) {		/* if echo pending */
 						cwdaemon_debug(1, "Echo 'break'");
-						strcpy(reply_data, "break\r\n");
-						sendto (socket_descriptor, reply_data, strlen (reply_data), 0,
-							(struct sockaddr *)&reply_sin, reply_socklen);
-						reply_data[0] = '\0';
+						cwdaemon_sendto("break\r\n");
 					}
-					morsetext[0] = '\0';
-					cw_flush_tone_queue ();
-					cw_wait_for_tone_queue ();
-					if (ptt_flag)
+					message_queue[0] = '\0';
+					cw_flush_tone_queue();
+					cw_wait_for_tone_queue();
+					if (ptt_flag) {
 						cwdaemon_set_ptt_off("PTT off");
+					}
 					ptt_flag &= 0;
 				}
 				break;
@@ -645,11 +723,11 @@ recv_code (void)
 				cwdev->free(cwdev);
 				errno = 0;
 				errmsg("Sender has told me to end the connection");
-				exit(0);
-				break;
+				exit(EXIT_SUCCESS);
+
 			case '6':	/* set uninterruptable */
 				message[0] = '\0';
-				morsetext[0] = '\0';
+				message_queue[0] = '\0';
 				wordmode = 1;
 				cwdaemon_debug(1, "Wordmode set");
 				break;
@@ -668,9 +746,10 @@ recv_code (void)
 					cwdaemon_debug(1, "Weight: %ld", lv);
 				}
 				break;
-			case '8':
+			case '8': {
 				/* Set device type. */
-				ndev = message + 2;
+				char *ndev = message + 2;
+				int fd;
 				cwdaemon_debug(1, "Device: %s", ndev);
 				if ((fd = dev_is_tty(ndev)) != -1)
 				{
@@ -698,8 +777,11 @@ recv_code (void)
 				else
 					cwdaemon_debug(1, "Unknown device");
 				break;
-			case '9':	/* base port number */
-				cwdaemon_debug(1, "Obsolete");
+			}
+			case '9':
+				/* Base port number.
+				   TODO: why this is obsolete? */
+				cwdaemon_debug(1, "Obsolete control data '9'.");
 				break;
 			case 'a':	/* PTT keying on or off */
 				if (get_long(message + 2, &lv))
@@ -718,7 +800,7 @@ recv_code (void)
 					ptt_flag &= ~PTT_ACTIVE_MANUAL;
 					if (!(ptt_flag & !PTT_ACTIVE_AUTO))	/* no PTT modifiers */
 					{
-						if (morsetext[0] == '\0' &&	/* no new text in the meantime */
+						if (message_queue[0] == '\0' &&	/* no new text in the meantime */
 							cw_get_tone_queue_length() <= 1)
 						{
 							cwdaemon_set_ptt_off("PTT (manual, immediate) off");
@@ -760,11 +842,15 @@ recv_code (void)
 				cwdaemon_debug(1, "Unavailable");
 #endif
 				break;
-			case 'c':	/* Tune for a number of seconds */
-				if (get_long(message + 2, &lv))
+			case 'c':
+				/* Tune for a number of seconds */
+				if (get_long(message + 2, &lv)) {
 					break;
-				if (lv <= 10)
+				}
+
+				if (lv <= 10) {
 					cwdaemon_tune(lv);
+				}
 				break;
 			case 'd':
 				/* Set PTT delay (TOD, Turn On Delay).
@@ -797,19 +883,20 @@ recv_code (void)
 				cwdaemon_debug(1, "Parallel port unavailable");
 #endif
 				break;
-			case 'f':
+			case 'f': {
 				/* Change sound system used by libcw. */
-				if (!strncmp (message + 2, "n", 1)) {
+				int c = message[2];
+				if (c == 'n') {
 					current_audio_system = CW_AUDIO_NULL;
-				} else if (!strncmp (message + 2, "c", 1)) {
+				} else if (c == 'c') {
 					current_audio_system = CW_AUDIO_CONSOLE;
-				} else if (!strncmp (message + 2, "s", 1)) {
+				} else if (c == 's') {
 					current_audio_system = CW_AUDIO_SOUNDCARD;
-				} else if (!strncmp (message + 2, "a", 1)) {
+				} else if (c == 'a') {
 					current_audio_system = CW_AUDIO_ALSA;
-				} else if (!strncmp (message + 2, "p", 1)) {
+				} else if (c == 'p') {
 					current_audio_system = CW_AUDIO_PA;
-				} else if (!strncmp (message + 2, "o", 1)) {
+				} else if (c == 'o') {
 					current_audio_system = CW_AUDIO_OSS;
 				} else {
 					cwdaemon_debug(1, "Invalid sound system: %s", message + 2);
@@ -821,6 +908,7 @@ recv_code (void)
 				cwdaemon_close_libcw_output();
 				cwdaemon_open_libcw_output(current_audio_system);
 				break;
+			}
 			case 'g':
 				/* Set volume of sound, in percents. */
 				if (get_long(message + 2, &lv)) {
@@ -832,30 +920,45 @@ recv_code (void)
 					cw_set_volume(current_morse_volume);
 				}
 				break;
-			case 'h':   /* send echo to main program when CW playing is done */
-				cwdaemon_prepare_reply_text(message + 2);	/* +2: ignore leading ESC+h */
-								/* wait for queue-empty callback */
+			case 'h':
+				/* Data after '<ESC>h' is a reply message.
+				   It shouldn't be echoed back to client
+				   immediately.
+				   Instead, cwdaemon should wait for another
+				   message (I assume that it will be a
+				   regular text message to be played), play
+				   it, and then send prepared reply back to
+				   the client.
+				   So this is a reply message with delay. */
+				cwdaemon_prepare_reply_message(message + 2);
+				/* wait for queue-empty callback */
 				break;
-			}
-			return 0;
-		}
-	} else {
-		cwdaemon_debug(2, "...recv_from (no data)");
+			} /* switch ((int) message[1]) */
+		} /* if (message[0] != 27) / else */
+		return 0;
 	}
-
-	return 0;
 }
 
-/* check every character for speed increase or decrease, and play others */
-static void
-playmorsestring (void)
-{
-	char *x = morsetext;
 
-	while (*x)
-	{
-		switch ((int) *x)
-		{
+
+
+
+/**
+   \brief Process received message, play relevant characters
+
+   Check every character in given message, act upon markers
+   for speed increase or decrease, and play other characters.
+
+   Function modifies contents of buffer \p message.
+
+   \param message - message to be processed
+*/
+void cwdaemon_play_message(char *message)
+{
+	char *x = message;
+
+	while (*x) {
+		switch ((int) *x) {
 		case '+':
 		case '-':
 			/* speed in- & decrease */
@@ -876,33 +979,40 @@ playmorsestring (void)
 			cw_set_send_speed(current_morse_speed);
 			break;
 		case '~':
-			cw_set_gap (2); /* 2 dots time additional for the next char */
+			cw_set_gap(2); /* 2 dots time additional for the next char */
 			x++;
 			break;
-		case '^':		/* send echo to main program when CW playing is done */
-			*x = '\0';		/* remove '^' and possible trailing garbage */
-			cwdaemon_prepare_reply_text(morsetext);		/* wait for queue-empty callback */
+		case '^':              /* Send echo to main program when CW playing is done. */
+			*x = '\0';     /* Remove '^' and possible trailing garbage. */
+			/* I'm guessing here that '^' can be found at
+			   the end of message, and it means "echo current
+			   message back to sender once you finish playing it". */
+			cwdaemon_prepare_reply_message(message);
+			/* wait for queue-empty callback */
 			break;
-
-
 		case '*':
 			*x = '+';
 		default:
 			cwdaemon_set_ptt_on("PTT (auto) on");
 			cwdaemon_debug(1, "Morse = %c", *x);
-			cw_send_character (*x);
+			cw_send_character(*x);
 			x++;
-			if (cw_get_gap () == 2)
-			{
-				if (*x == '^')
+			if (cw_get_gap() == 2) {
+				if (*x == '^') { /* TODO: ??? */
 					x++;
-				else
-					cw_set_gap (0);
+				} else {
+					cw_set_gap(0);
+				}
 			}
 			break;
 		}
 	}
-	morsetext[0] = '\0';
+
+	/* All characters processed, mark queue of characters
+	   as empty. */
+	*message = '\0';
+
+	return;
 }
 
 
@@ -942,22 +1052,21 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 {
 	cwdaemon_debug(2, "entering-Q-empty ptt_flag=%02x", ptt_flag);
 	if (ptt_flag == PTT_ACTIVE_AUTO &&		/* PTT on, w/o manual PTT or similar */
-		morsetext[0] == '\0' &&			/* no new text in the meantime */
+		message_queue[0] == '\0' &&			/* no new text in the meantime */
 	    cw_get_tone_queue_length() <= 1) {
 
 		cwdaemon_set_ptt_off("PTT (auto) off");
 
 	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
 
-		cwdaemon_debug(1, "Echo '%s'", reply_data);
-		strcat(reply_data, "\r\n");		/* Ensure exactly one CRLF */
-		sendto(socket_descriptor, reply_data, strlen(reply_data), 0,
-		       (struct sockaddr *) &reply_sin, reply_socklen);
-		reply_data[0] = '\0';
+		cwdaemon_debug(1, "Echo '%s'", reply_message);
+		strcat(reply_message, "\r\n"); /* Ensure exactly one CRLF */
+		cwdaemon_sendto(reply_message);
+		reply_message[0] = '\0';
 
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
 
-		/* wit a bit more since we expect to get more text to send */
+		/* wait a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
@@ -1238,11 +1347,11 @@ main (int argc, char *argv[])
 		signal (SIGINT, catchint);
 	}
 
-	bzero (&k_sin, sizeof (k_sin));
-	k_sin.sin_family = AF_INET;
-	k_sin.sin_addr.s_addr = htonl (INADDR_ANY);
-	k_sin.sin_port = htons (port);
-	sin_len = sizeof (k_sin);
+	bzero (&src_addr, sizeof (src_addr));
+	src_addr.sin_family = AF_INET;
+	src_addr.sin_addr.s_addr = htonl (INADDR_ANY);
+	src_addr.sin_port = htons (port);
+	src_addrlen = sizeof (src_addr);
 
 	socket_descriptor = socket (AF_INET, SOCK_DGRAM, 0);
 	if (socket_descriptor == -1)
@@ -1251,8 +1360,8 @@ main (int argc, char *argv[])
 		exit (1);
 	}
 
-	if (bind(socket_descriptor, (struct sockaddr *) &k_sin,
-		sizeof (k_sin)) == -1)
+	if (bind(socket_descriptor, (struct sockaddr *) &src_addr,
+		 sizeof (src_addr)) == -1)
 	{
 		errmsg ("Bind");
 		exit (1);
@@ -1283,7 +1392,7 @@ main (int argc, char *argv[])
 	}
 #endif
 
-	morsetext[0] = '\0';
+	message_queue[0] = '\0';
 	do
 	{
 		fd_set readfd;
@@ -1306,7 +1415,7 @@ main (int argc, char *argv[])
 		if (fd_count == -1 && errno != EINTR)
 			errmsg ("Select");
 		else
-			recv_code ();
+			cwdaemon_receive();
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 		if (cwdev->footswitch)
