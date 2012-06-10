@@ -1,17 +1,19 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(cwdaemon, 0.9.4, pg4i@amsat.org)
+AC_INIT(cwdaemon, 0.9.6, acerion@wp.pl)
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
-AC_CONFIG_SRCDIR([cwdaemon.c])
+AC_CONFIG_SRCDIR([src/cwdaemon.c])
 AC_PROG_GCC_TRADITIONAL
+
 
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
 AM_PROG_CC_STDC
 AC_CHECK_PROGS(RPMBUILD, rpmbuild, rpm)
+AM_PROG_CC_C_O # per-target flags in src/Makefile.am
 
 # Checks for libraries.
 
@@ -60,6 +62,7 @@ AC_SUBST(UNIXCW_CFLAGS)
 AC_SUBST(UNIXCW_LIBS)
 
 AC_OUTPUT([Makefile
-cwdaemon.8
-cwdaemon.spec
-])
+	src/Makefile
+	doc/Makefile
+	doc/cwdaemon.8
+	cwdaemon.spec])
