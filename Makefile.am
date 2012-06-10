@@ -1,31 +1,27 @@
+SUBDIRS=src doc
+
 INCLUDES = @UNIXCW_CFLAGS@
-
-cwdaemon_LDADD = @UNIXCW_LIBS@
-
-sbin_PROGRAMS = cwdaemon
 
 CLEANFILES =  *~
 
 EXTRA_DIST = cwdaemon.spec.in cwdaemon.spec test/cwtest.sh test/cwtest.c \
   cwdaemon.png TODO cwsetup.sh
 
-man_MANS = cwdaemon.8
 
-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c null.c
 
 install-data-local:
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) README $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) schematics/parallelport_circuit.ps $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) doc/schematics/parallelport_circuit.ps $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) doc/schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) doc/schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) doc/schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) cwsetup.sh $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) test/cwtest.c $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) cwdaemon.png $(DESTDIR)$(pkgdatadir)
- 
+
 dist-hook:
 	if test -d schematics; then \
 		mkdir $(distdir)/schematics; \
@@ -56,5 +52,5 @@ rpm: Makefile
 	make dist
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
- 
+
 
