@@ -1,3 +1,7 @@
+2012-06-10 Kamil Ignacak
+	* build system: introducing directories "src" and "doc", moving few
+	files to the directories.
+
 2012-06-05 Kamil Ignacak
 	* audio system: improving selection/control of audio system: user can
 	now specify (through command line arguments or through control data
