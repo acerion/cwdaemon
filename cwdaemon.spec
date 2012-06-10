@@ -3,7 +3,7 @@
 # Copyright (c) 2003 -2004 Joop Stakenborg pg4i@amsat.org
 #
 %define name cwdaemon
-%define version 0.9.4
+%define version 0.9.6
 %define release 1
 
 # required items
