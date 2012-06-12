@@ -175,7 +175,10 @@ The message formats are:
 <ESC>"h"<"opt.text">     Cwdaemon replies "h" and optionaly text to logging
                          program when playing is done.
 Any message              Send morse code message  (max 1 packet!)
-qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps
+qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps.
+                         Repeated '+' and '-' characters are allowed,
+                         in such cases increase and decrease of speed is
+                         multiple of 2 wpm.
 de d~l~2~w~r~j pse k     Add half-space delay after each character
 
 
