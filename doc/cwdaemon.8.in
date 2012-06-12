@@ -34,6 +34,8 @@ message sent to it via udp port 6789.
 \fB\-w <weight>\fR Set weighting, value from -50 to 50 (default = 0).
 .TP
 \fB\-x <sound system>\fR Set sound system to be used.
+.TP
+\fB\-T <tone>\fR Set initial tone, value in range 0 to 4000 Hz (default = 800).
 
 .SH DEVICES
 Any serial device that supports getting and setting the modem
