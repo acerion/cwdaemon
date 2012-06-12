@@ -1,3 +1,13 @@
+2012-06-12 Kamil Ignacak
+	* escape codes: until now, whenever client has sent request to
+	change tone, cwdaemon has been also resetting volume to default value.
+	This has been changed - in such situation volume is not reset, you
+	need to send separate escape code to change volume.
+
+2012-06-11 Kamil Ignacak
+	* options: implementing option '-T', setting initial tone used by
+	cwdaemon.
+
 2012-06-10 Kamil Ignacak
 	* build system: introducing directories "src" and "doc", moving few
 	files to the directories.
