@@ -116,18 +116,19 @@
 
 /* cwdaemon constants. */
 #define CWDAEMON_DEFAULT_MORSE_SPEED           24 /* [wpm] */
-#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN /* from libcw.h */
-#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX /* from libcw.h */
+#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN /* [wpm], from libcw.h */
+#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX /* [wpm], from libcw.h */
 #define CWDAEMON_DEFAULT_MORSE_TONE           800 /* [Hz] */
 #define CWDAEMON_DEFAULT_MORSE_VOLUME          70 /* [%] */
-#define CWDAEMON_DEFAULT_PTT_DELAY              0 /* [microseconds]; TODO: convert PTT delay values to ms, and convert to usecs only when passing to libcw and cwdaemon_udelay(). */
+#define CWDAEMON_DEFAULT_PTT_DELAY              0 /* [ms] */
 #define CWDAEMON_DEFAULT_MORSE_WEIGHTING        0 /* in range -50/+50 */
 
 #define CWDAEMON_DEFAULT_NETWORK_PORT              6789
 #define CWDAEMON_DEFAULT_AUDIO_SYSTEM  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 
-#define CWDAEMON_USECS_PER_MSEC    1000 /* just to avoid magic numbers */
-#define CWDAEMON_MESSAGE_SIZE_MAX   256
+#define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
+#define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
+#define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
 
 /* Default values of parameters, may be modified only through
@@ -135,7 +136,7 @@
    These values are used when resetting libcw and cwdaemon to
    initial state. */
 static int default_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
-static int default_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;    /* TODO: add command line option for initial tone? */
+static int default_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
 static int default_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
 static int default_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
 static int default_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
@@ -170,13 +171,13 @@ char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
 
-/* various variables */
+/* Various variables. */
 static int wordmode = 0;               /* start in character mode */
 static int forking = 1;                /* we fork by default */
 static int debuglevel = 0;             /* only debug when not forking */
 static int bandswitch;
-static int priority = 0;
-static int async_abort = 0;
+static int process_priority = 0;       /* Scheduling priority of cwdaemon process. */
+static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
 static int inactivity_seconds = 9999;  /* inactive since nnn seconds */
 
 
@@ -207,6 +208,9 @@ int     cwdaemon_handle_escaped_request(char *request);
 
 void cwdaemon_reset_almost_all(void);
 void cwdaemon_udelay(unsigned long us);
+int  cwdaemon_set_default_keydev(void);
+int  cwdaemon_set_cwdev(char *keying_device);
+int  cwdaemon_initialize_socket(void);
 
 int  cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
@@ -216,53 +220,55 @@ void cwdaemon_parse_command_line(int argc, char *argv[]);
 void cwdaemon_print_help(void);
 
 
-struct timeval now, end, left;	/* PTT timers */
+//struct timeval now, end, left;	/* PTT timers */
 
 
-#define MAXMORSE 4000
-static char request_queue[MAXMORSE];
 
-char *keydev;
+static char request_queue[CWDAEMON_REQUEST_QUEUE_SIZE_MAX];
+
+/* Name of keying device: parallel port || serial port || null port. */
+char *keydev = NULL;
+
 
 cwdevice cwdevice_ttys = {
-	init:ttys_init,
-	free:ttys_free,
-	reset:ttys_reset,
-	cw:ttys_cw,
-	ptt:ttys_ptt
+	.init       = ttys_init,
+	.free       = ttys_free,
+	.reset      = ttys_reset,
+	.cw         = ttys_cw,
+	.ptt        = ttys_ptt
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	,ssbway:NULL,
-	switchband:NULL,
-	footswitch:NULL
+	,.ssbway     = NULL,
+	.switchband = NULL,
+	.footswitch = NULL
 #endif
 };
 
 cwdevice cwdevice_null = {
-   init:null_init,
-   free:null_free,
-   reset:null_reset,
-   cw:null_cw,
-   ptt:null_ptt
+	.init       = null_init,
+	.free       = null_free,
+	.reset      = null_reset,
+	.cw         = null_cw,
+	.ptt        = null_ptt
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-   ,ssbway:NULL,
-   switchband:NULL,
-   footswitch:NULL
+	,.ssbway    = NULL,
+	.switchband = NULL,
+	.footswitch = NULL
 #endif
 };
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 cwdevice cwdevice_lp = {
-	init:lp_init,
-	free:lp_free,
-	reset:lp_reset,
-	cw:lp_cw,
-	ptt:lp_ptt,
-	ssbway:lp_ssbway,
-	switchband:lp_switchband,
-	footswitch:lp_footswitch
+	.init       = lp_init,
+	.free       = lp_free,
+	.reset      = lp_reset,
+	.cw         = lp_cw,
+	.ptt        = lp_ptt,
+	.ssbway     = lp_ssbway,
+	.switchband = lp_switchband,
+	.footswitch = lp_footswitch
 };
 #endif
-cwdevice *cwdev;
+cwdevice *cwdev = NULL;
 
 
 
@@ -371,11 +377,11 @@ void cwdaemon_set_ptt_on(char *msg)
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		cwdev->ptt(cwdev, ON);
 		cwdaemon_debug(1, msg);
-		int rv = cw_queue_tone(current_ptt_delay * 20, 0);	/* try to 'enqueue' delay */
+		int rv = cw_queue_tone((current_ptt_delay * CWDAEMON_USECS_PER_MSEC) * 20, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
 			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
 				       rv, strerror(errno));
-			cwdaemon_udelay(current_ptt_delay);
+			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
 	}
@@ -470,6 +476,7 @@ int cwdaemon_open_libcw_output(int audio_system)
 		   to open audio device. Let's give it some time. */
 		int i = 0;
 		for (i = 0; i < 5; i++) {
+			cwdaemon_debug(1, "Delaying switching to OSS, please wait few seconds.");
 			sleep(4);
 			rv = cw_generator_new(audio_system, NULL);
 			if (rv == CW_SUCCESS) {
@@ -479,13 +486,13 @@ int cwdaemon_open_libcw_output(int audio_system)
 	}
 	if (rv != CW_FAILURE) {
 		rv = cw_generator_start();
-		fprintf(stderr, "switching to audio %d: %d\n", audio_system, rv);
+		cwdaemon_debug(1, "Starting generator with audio system '%s': %s", cw_get_audio_system_label(audio_system), rv ? "success" : "failure");
 	} else {
 		/* FIXME:
 		   When cwdaemon failed to create a generator, and user
 		   kills non-forked cwdaemon through Ctrl+C, there is
 		   a memory protection error. */
-		cwdaemon_debug(1, "failed to create generator with audio system %d\n", audio_system);
+		cwdaemon_debug(1, "Failed to create generator with audio system '%s'", cw_get_audio_system_label(audio_system));
 	}
 
 	return rv == CW_FAILURE ? -1 : 0;
@@ -507,20 +514,29 @@ void cwdaemon_close_libcw_output(void)
 
 
 
+/**
+   \brief Reset parameters of libcw to default values
+
+   Function uses values of cwdaemon's global 'default_' variables, and some
+   other values to reset state of libcw.
+*/
 void cwdaemon_reset_libcw_output(void)
 {
+	/* This function is called when cwdaemon receives '0' escape code.
+	   README describes this code as "Reset to default values".
+	   Therefore we use default_* below. */
+
 	/* Delete old generator (if it exists). */
 	cwdaemon_close_libcw_output();
 
-	cwdaemon_debug(3, "Setting audio system=%d", current_audio_system); /* TODO: get human-readable label */
-	cwdaemon_open_libcw_output(current_audio_system);
+	cwdaemon_debug(3, "Setting audio system='%s'", cw_get_audio_system_label(default_audio_system));
+	cwdaemon_open_libcw_output(default_audio_system);
 
-	/* FIXME: current_* or default_* ? */
-	cw_set_frequency(current_morse_tone);
-	cw_set_send_speed(current_morse_speed);
-	cw_set_volume(current_morse_volume);
+	cw_set_frequency(default_morse_tone);
+	cw_set_send_speed(default_morse_speed);
+	cw_set_volume(default_morse_volume);
 	cw_set_gap(0);
-	cw_set_weighting (default_weighting * 0.6 + 50);
+	cw_set_weighting(default_weighting * 0.6 + 50);
 
 	return;
 }
@@ -574,6 +590,10 @@ get_long(const char *buf, long *lvp)
        request. So there are two requests sent by client to cwdaemon:
        first defines reply, and the second defines text to be played.
        First should be echoed back (but not played), second should be played.
+
+   \param reply - buffer for reply (allocated by caller)
+   \param request - buffer with request
+   \param n - size of data in request
 */
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 {
@@ -584,7 +604,7 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 	cwdaemon_debug(2, "request='%s', reply='%s'", request, reply);
 	cwdaemon_debug(1, "now waiting for end of transmission before echo");
 
-	ptt_flag |= PTT_ACTIVE_ECHO;				/* wait for tone queue to become empty, then echo back */
+	ptt_flag |= PTT_ACTIVE_ECHO; /* wait for tone queue to become empty, then echo back */
 
 	return;
 }
@@ -647,6 +667,7 @@ int cwdaemon_recvfrom(char *request, int n)
 				   n,
 				   0, /* flags */
 				   (struct sockaddr *) &request_addr,
+				   /* TODO: request_addrlen may be modified. Check it. */
 				   &request_addrlen);
 
 	if (recv_rc == -1) { /* No requests available? */
@@ -712,7 +733,7 @@ int cwdaemon_receive(void)
 	} else if (recv_rc == 0) {
 		cwdaemon_debug(2, "...recv_from (no data)");
 		return 0;
-	} else { /* TODO: remove 'else', re-indent */
+	} else {
 		; /* pass */
 	}
 
@@ -722,7 +743,7 @@ int cwdaemon_receive(void)
 		/* No ESCAPE. All received data should be treated
 		   as text to be sent using Morse code. */
 		cwdaemon_debug(1, "Request = %s", request_buffer);
-		if ((strlen(request_buffer) + strlen(request_queue)) <= MAXMORSE - 1) {
+		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			/* Hmm, seems that 'request_queue' is a kind of
 			   simple FIFO for text to be played. Would
 			   a better FIFO be a good thing? */
@@ -778,9 +799,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		if (lv > 0 && lv <= CW_FREQUENCY_MAX) {
 			current_morse_tone = lv;
 			cw_set_frequency(current_morse_tone);
-			/* TODO: should we modify volume when modifying tone? This doesn't seem right. */
-			cw_set_volume(default_morse_volume);
-			cwdaemon_debug(1, "Tone: %s Hz, volume %d%", request + 2, default_morse_volume);
+			cwdaemon_debug(1, "Tone: %s Hz", request + 2);
 
 		} else if (lv == 0) {	/* sidetone off */
 			current_morse_tone = 0;
@@ -840,7 +859,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 		break;
 	case '8': {
-		/* Set device type. */
+		/* Set type of keying device. */
 		char *ndev = request + 2;
 		int fd;
 		cwdaemon_debug(1, "Device: %s", ndev);
@@ -945,12 +964,12 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 
 		if (lv >= 0 && lv < 51) {
-			current_ptt_delay = lv * CWDAEMON_USECS_PER_MSEC;
+			current_ptt_delay = lv;
 		} else {
-			current_ptt_delay = 50000;
+			current_ptt_delay = 50;
 		}
 
-		cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay / CWDAEMON_USECS_PER_MSEC);
+		cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay);
 
 		if (current_ptt_delay == 0) {
 			cwdaemon_set_ptt_off("ensure PTT off");
@@ -989,7 +1008,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 
 		/* Handle valid request for changing sound system. */
-		cwdaemon_debug(1, "Sound device: %s", request + 2);
+		cwdaemon_debug(1, "Switching to sound system '%s'", cw_get_audio_system_label(current_audio_system));
 		cwdaemon_close_libcw_output();
 		cwdaemon_open_libcw_output(current_audio_system);
 		break;
@@ -1045,9 +1064,10 @@ void cwdaemon_play_request(char *request)
 		switch ((int) *x) {
 		case '+':
 		case '-':
-			/* speed in- & decrease */
-			/* TODO: it seems that multiple '+' and '-' are allowed.
-			   Is it described anywhere? */
+			/* Speed increase & decrease */
+			/* Repeated '+' and '-' characters are allowed,
+			   in such cases increase and decrease of speed is
+			   multiple of 2 wpm. */
 			do {
 				current_morse_speed += (*x == '+') ? 2 : -2;
 				x++;
@@ -1169,7 +1189,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 	long lv;
 	int p;
 
-	while ((p = getopt(argc, argv, "d:hnp:P:s:t:v:Vw:x:")) != -1) {
+	while ((p = getopt(argc, argv, "d:hnp:P:s:t:T:v:Vw:x:")) != -1) {
 		switch (p) {
 		case ':':
 		case '?':
@@ -1201,7 +1221,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
 			}
-			priority = lv;
+			process_priority = lv;
 			break;
 #endif
 		case 's':
@@ -1219,7 +1239,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
 			}
-			default_ptt_delay = CWDAEMON_USECS_PER_MSEC * lv;
+			default_ptt_delay = lv;
 			break;
 		case 'v':
 			if (get_long(optarg, &lv) || lv < 0 || lv > 100) {
@@ -1239,6 +1259,14 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 				exit(EXIT_FAILURE);
 			}
 			default_weighting = lv;
+			break;
+		case 'T':
+			if (get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
+				printf("%s: bad tone %s (should be between %d and %d inclusive)\n",
+				       PACKAGE, optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
+				exit(EXIT_FAILURE);
+			}
+			default_morse_tone = lv;
 			break;
 		case 'x':
 			if (!strncmp(optarg, "n", 1)) {
@@ -1305,10 +1333,6 @@ void cwdaemon_print_help(void)
 	       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
 	printf("-t <time>\n");
 	printf("        Set PTT delay (0 ... 50 ms, default = 0)\n");
-	printf("-v <volume>\n");
-	printf("        Set volume for soundcard output\n");
-	printf("-w <weight>\n");
-	printf("        Set weighting (-50 ... 50, default = 0)\n");
 	printf("-x <sound system>\n");
 	printf("        Use a specific sound system:\n");
 	printf("        c = console buzzer (default)\n");
@@ -1317,6 +1341,14 @@ void cwdaemon_print_help(void)
 	printf("        p = PulseAudio\n");
 	printf("        n = none (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
+	printf("-v <volume>\n");
+	printf("        Set volume for soundcard output\n");
+	printf("-w <weight>\n");
+	printf("        Set weighting (-50 ... 50, default = 0)\n");
+	printf("-T <tone>\n");
+	printf("        Set initial tone to 'tone' (%d - %d Hz, default: %d).\n",
+	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_DEFAULT_MORSE_TONE);
+
 
 	return;
 }
@@ -1327,12 +1359,147 @@ void cwdaemon_print_help(void)
 
 /* main program: fork, open network connection and go into an endless loop
    waiting for something to happen on the UDP port */
-int
-main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-	pid_t pid, sid;
-	int fd, fd_count, save_flags;
+	cwdaemon_set_default_keydev();
 
+	cwdaemon_parse_command_line(argc, argv);
+
+	if (debuglevel > 3) {		/* debugging cwlib as well */
+		/* FIXME: pass correct libcw debug flags. */
+		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
+	}
+
+	int rv = cwdaemon_set_cwdev(keydev);
+	if (rv == -1) {
+		exit(EXIT_FAILURE);
+	}
+
+	cwdaemon_reset_almost_all();
+	atexit(cwdaemon_close_libcw_output);
+
+	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
+
+	if (forking) {
+		pid_t pid = fork();
+		if (pid < 0) {
+			printf("%s: Fork failed: %s\n", PACKAGE,
+			       strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		if (pid > 0) {
+			/* We are the parent process. The process is
+			   no longer needed at this point. */
+			exit(EXIT_SUCCESS);
+		}
+
+		openlog("netkeyer", LOG_PID, LOG_DAEMON);
+		pid_t sid = setsid();
+		if (sid < 0) {
+			syslog(LOG_ERR, "%s\n", "setsid");
+			exit(EXIT_FAILURE);
+		}
+
+		if ((chdir("/")) < 0)
+		{
+			syslog(LOG_ERR, "%s\n", "chdir");
+			exit(EXIT_FAILURE);
+		}
+		umask(0);
+
+		int fd;
+		/* Replace stdin/stdout/stderr with /dev/null. */
+		if ((fd = open("/dev/null", O_RDWR, 0)) == -1) {
+			syslog(LOG_ERR, "%s\n", "open /dev/null");
+			exit(EXIT_FAILURE);
+		}
+		if (dup2(fd, STDIN_FILENO) == -1) {
+			syslog(LOG_ERR, "%s\n", "dup2 stdin");
+			exit(EXIT_FAILURE);
+		}
+		if (dup2(fd, STDOUT_FILENO) == -1) {
+			syslog(LOG_ERR, "%s\n", "dup2 stdout");
+			exit(EXIT_FAILURE);
+		}
+		if (dup2(fd, STDERR_FILENO) == -1) {
+			syslog(LOG_ERR, "%s\n", "dup2 stderr");
+			exit(EXIT_FAILURE);
+		}
+		if (fd != STDIN_FILENO && fd != STDOUT_FILENO && fd != STDERR_FILENO) {
+			(void) close(fd);
+		}
+	} else {
+		cwdaemon_debug(1, "Press ^C to quit");
+		signal(SIGINT, catchint);
+	}
+
+
+	rv = cwdaemon_initialize_socket();
+	if (rv == -1) {
+		exit(CW_FAILURE);
+	}
+
+#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
+	if (process_priority != 0) {
+		if (setpriority(PRIO_PROCESS, getpid(), process_priority) < 0) {
+			errmsg("Setting process priority: \"%s\"", strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+	}
+#endif
+
+	request_queue[0] = '\0';
+	do {
+		fd_set readfd;
+		struct timeval udptime;
+
+		FD_ZERO(&readfd);
+		FD_SET(socket_descriptor, &readfd);
+
+		if (inactivity_seconds < 30) {
+			udptime.tv_sec = 1;
+			inactivity_seconds++;
+		} else {
+			udptime.tv_sec = 86400;
+		}
+
+		udptime.tv_usec = 0;
+		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
+		int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
+		/* fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
+		if (fd_count == -1 && errno != EINTR) {
+			errmsg("Select");
+		} else {
+			cwdaemon_receive();
+		}
+
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+		if (cwdev->footswitch) {
+			cwdev->ptt(cwdev, !((cwdev->footswitch(cwdev))));
+		}
+#endif
+
+	} while (1);
+
+	cwdev->free(cwdev);
+	if (close(socket_descriptor) == -1) {
+		errmsg("Close socket");
+		exit(EXIT_FAILURE);
+	}
+	exit(EXIT_SUCCESS);
+}
+
+
+
+
+
+int cwdaemon_set_default_keydev(void)
+{
+	/* FIXME: something tells me that you shouldn't just assign
+	   strings to keydev. Look up other places where local variables
+	   are assigned to keydev. */
 #if defined HAVE_LINUX_PPDEV_H
 	keydev = "parport0";
 #elif defined HAVE_DEV_PPBUS_PPI_H
@@ -1347,187 +1514,85 @@ main (int argc, char *argv[])
 # endif
 #endif
 
-	cwdaemon_parse_command_line(argc, argv);
-
-	if (debuglevel > 3) {		/* debugging cwlib as well */
-		/* FIXME: pass correct libcw debug flags. */
-		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
-	}
+	return 0;
+}
 
 
-	if ((fd = dev_is_tty(keydev)) != -1)
+
+
+int cwdaemon_set_cwdev(char *keying_device)
+{
+	int fd = dev_is_tty(keying_device);
+	if (fd != -1) {
 		cwdev = &cwdevice_ttys;
+	}
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	else if ((fd = dev_is_parport(keydev)) != -1)
-	{
+	else if ((fd = dev_is_parport(keying_device)) != -1) {
 		cwdev = &cwdevice_lp;
-		if (geteuid () != 0)
-		{
-			printf ("You must run this program as root\n");
-			exit (1);
+		if (geteuid() != 0) {
+			printf("You must run this program as root\n");
+			return -1;
 		}
 	}
 #endif
-	else if ((fd = dev_is_null(keydev)) != -1)
+	else if ((fd = dev_is_null(keying_device)) != -1) {
 		cwdev = &cwdevice_null;
-
-	if (cwdev == NULL)
-	{
-		printf("%s: bad keyer device: %s\n", PACKAGE, keydev);
-		exit(1);
-	}
-	cwdev->desc = keydev;
-
-	cwdaemon_reset_almost_all();
-	atexit(cwdaemon_close_libcw_output);
-
-	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
-
-	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
-
-	cwdaemon_debug(1, "Device used: %s", cwdev->desc);
-	cwdev->init (cwdev, fd);
-
-	if (forking)
-	{
-		pid = fork ();
-		if (pid < 0)
-		{
-			printf ("%s: Fork failed: %s\n", PACKAGE,
-				strerror (errno));
-			exit (1);
-		}
-
-		if (pid > 0)
-			exit (0);
-
-		openlog ("netkeyer", LOG_PID, LOG_DAEMON);
-		if ((sid = setsid ()) < 0)
-		{
-			syslog (LOG_ERR, "%s\n", "setsid");
-			exit (1);
-		}
-		if ((chdir ("/")) < 0)
-		{
-			syslog (LOG_ERR, "%s\n", "chdir");
-			exit (1);
-		}
-		umask (0);
-
-		/* replace stdin/stdout/stderr with /dev/null */
-		if ((fd = open("/dev/null", O_RDWR, 0)) == -1)
-		{
-			syslog (LOG_ERR, "%s\n", "open null");
-			exit (1);
-		}
-		if (dup2 (fd, STDIN_FILENO) == -1)
-		{
-			syslog (LOG_ERR, "%s\n", "dup2 stdin");
-			exit (1);
-		}
-		if (dup2 (fd, STDOUT_FILENO) == -1)
-		{
-			syslog (LOG_ERR, "%s\n", "dup2 stdout");
-			exit (1);
-		}
-		if (dup2 (fd, STDERR_FILENO) == -1)
-		{
-			syslog (LOG_ERR, "%s\n", "dup2 stderr");
-			exit (1);
-		}
-		if (fd != STDIN_FILENO && fd != STDOUT_FILENO && fd != STDERR_FILENO)
-			(void)close (fd);
-	}
-	else
-	{
-		cwdaemon_debug(1, "Press ^C to quit");
-		signal (SIGINT, catchint);
+	} else {
+		; /* Pass, checking for NULL cwdev below. */
 	}
 
-	bzero (&request_addr, sizeof (request_addr));
+	if (!cwdev) {
+		printf("%s: bad keyer device: %s\n", PACKAGE, keying_device);
+		return -1;
+	}
+	cwdev->desc = keying_device;
+
+	cwdaemon_debug(1, "Keying device used: %s", cwdev->desc);
+	cwdev->init(cwdev, fd);
+
+	return 0;
+
+}
+
+
+
+
+
+int cwdaemon_initialize_socket(void)
+{
+	bzero(&request_addr, sizeof (request_addr));
 	request_addr.sin_family = AF_INET;
-	request_addr.sin_addr.s_addr = htonl (INADDR_ANY);
-	request_addr.sin_port = htons (port);
+	request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	request_addr.sin_port = htons(port);
 	request_addrlen = sizeof (request_addr);
 
-	socket_descriptor = socket (AF_INET, SOCK_DGRAM, 0);
-	if (socket_descriptor == -1)
-	{
-		errmsg ("Socket open");
-		exit (1);
+	socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
+	if (socket_descriptor == -1) {
+		errmsg("Socket open");
+		return -1;
 	}
 
-	if (bind(socket_descriptor, (struct sockaddr *) &request_addr,
-		 sizeof (request_addr)) == -1)
-	{
-		errmsg ("Bind");
-		exit (1);
+	if (bind(socket_descriptor,
+		 (struct sockaddr *) &request_addr,
+		 request_addrlen) == -1) { /* TODO: why not request_addrlen? */
+
+		errmsg("Bind");
+		return -1;
 	}
 
-	save_flags = fcntl (socket_descriptor, F_GETFL);
-	if (save_flags == -1)
-	{
-		errmsg ("Trying get flags");
-		exit (1);
+	int save_flags = fcntl(socket_descriptor, F_GETFL);
+	if (save_flags == -1) {
+		errmsg("Trying get flags");
+		return -1;
 	}
 	save_flags |= O_NONBLOCK;
 
-	if (fcntl (socket_descriptor, F_SETFL, save_flags) == -1)
-	{
-		errmsg ("Trying non-blocking");
-		exit (1);
+	if (fcntl(socket_descriptor, F_SETFL, save_flags) == -1) {
+		errmsg("Trying non-blocking");
+		return -1;
 	}
 
-#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
-	if (priority != 0)
-	{
-		if (setpriority (PRIO_PROCESS, getpid (), priority) < 0)
-		{
-			errmsg ("Setting priority");
-			exit (1);
-		}
-	}
-#endif
-
-	request_queue[0] = '\0';
-	do
-	{
-		fd_set readfd;
-		struct timeval udptime;
-
-		FD_ZERO (&readfd);
-		FD_SET (socket_descriptor, &readfd);
-
-		if (inactivity_seconds < 30)
-		{
-			udptime.tv_sec = 1;
-			inactivity_seconds++;
-		}
-		else
-			udptime.tv_sec = 86400;
-		udptime.tv_usec = 0;
-		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
-		fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
-		/* fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
-		if (fd_count == -1 && errno != EINTR)
-			errmsg ("Select");
-		else
-			cwdaemon_receive();
-
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-		if (cwdev->footswitch)
-			cwdev->ptt (cwdev, !((cwdev->footswitch(cwdev))));
-#endif
-
-	} while (1);
-
-	cwdev->free (cwdev);
-	if (close (socket_descriptor) == -1)
-	{
-		errmsg ("Close socket");
-		exit (1);
-	}
-	exit (0);
+	return 0;
 }
 
 
