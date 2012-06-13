@@ -46,7 +46,7 @@ typedef struct cwdev_s {
 }
 cwdevice;
 
-void errmsg (char *info, ...);
+void cwdaemon_errmsg(char *info, ...);
 void cwdaemon_debug(int level, char *info, ...);
 
 int dev_is_tty(const char *fname);
