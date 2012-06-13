@@ -170,15 +170,16 @@ static socklen_t          reply_addrlen;
 static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
-
 /* Various variables. */
-static int wordmode = 0;               /* start in character mode */
-static int forking = 1;                /* we fork by default */
-static int debuglevel = 0;             /* only debug when not forking */
-static int bandswitch;
+static int wordmode = 0;               /* Start in character mode. */
+static int forking = 1;                /* We fork by default. */
+static int debuglevel = 0;             /* Only debug when not forking. */
 static int process_priority = 0;       /* Scheduling priority of cwdaemon process. */
 static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
-static int inactivity_seconds = 9999;  /* inactive since nnn seconds */
+static int inactivity_seconds = 9999;  /* Inactive since nnn seconds. */
+
+/* Incoming requests are stored in this pseudo-FIFO before they are played. */
+static char request_queue[CWDAEMON_REQUEST_QUEUE_SIZE_MAX];
 
 
 /* flags for different states */
@@ -192,8 +193,9 @@ static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
 #define PTT_ACTIVE_ECHO		0x04
 
 
-void cwdaemon_set_ptt_on(cwdevice *device, char *msg);
-void cwdaemon_set_ptt_off(cwdevice *device, char *msg);
+void cwdaemon_set_ptt_on(cwdevice *device, char *info);
+void cwdaemon_set_ptt_off(cwdevice *device, char *info);
+void cwdaemon_switch_band(cwdevice *device, unsigned int band);
 
 void cwdaemon_play_request(char *request);
 
@@ -218,16 +220,11 @@ int  cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
+int  cwdaemon_get_long(const char *buf, long *lvp);
 void cwdaemon_parse_command_line(int argc, char *argv[]);
 void cwdaemon_print_help(void);
 
-
-//struct timeval now, end, left;	/* PTT timers */
-
-
-
-static char request_queue[CWDAEMON_REQUEST_QUEUE_SIZE_MAX];
-
+RETSIGTYPE cwdaemon_catchint(int signal);
 
 
 cwdevice cwdevice_ttys = {
@@ -236,11 +233,9 @@ cwdevice cwdevice_ttys = {
 	.reset      = ttys_reset,
 	.cw         = ttys_cw,
 	.ptt        = ttys_ptt,
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 	.ssbway     = NULL,
 	.switchband = NULL,
 	.footswitch = NULL,
-#endif
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -251,11 +246,9 @@ cwdevice cwdevice_null = {
 	.reset      = null_reset,
 	.cw         = null_cw,
 	.ptt        = null_ptt,
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 	.ssbway     = NULL,
 	.switchband = NULL,
 	.footswitch = NULL,
-#endif
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -283,31 +276,41 @@ static cwdevice *global_cwdevice = NULL;
 
 
 
+
+
 /* catch ^C when running in foreground */
-static RETSIGTYPE
-catchint (int signal)
+RETSIGTYPE cwdaemon_catchint(int signal)
 {
-	global_cwdevice->free (global_cwdevice);
-	printf ("%s: Exiting\n", PACKAGE);
-	exit (0);
+	global_cwdevice->free(global_cwdevice);
+	printf("%s: Exiting\n", PACKAGE);
+	exit(EXIT_SUCCESS);
 }
 
+
+
+
+
 /* print error message to the console or syslog if we are forked */
-void
-errmsg (char *info, ...)
+void cwdaemon_errmsg(char *info, ...)
 {
 	va_list ap;
 	char s[1025];
 
-	va_start (ap, info);
-	vsnprintf (s, 1024, info, ap);
-	va_end (ap);
+	va_start(ap, info);
+	vsnprintf(s, 1024, info, ap);
+	va_end(ap);
 
-	if (forking)
-		syslog (LOG_ERR, "%s\n", s);
-	else
-		printf ("%s: %s failed: %s\n", PACKAGE, s, strerror (errno));
+	if (forking) {
+		syslog(LOG_ERR, "%s\n", s);
+	} else {
+		printf("%s: %s failed: %s\n", PACKAGE, s, strerror(errno));
+	}
+
+	return;
 }
+
+
+
 
 
 /* FIXME: come up with nice symbolic names for debug
@@ -343,7 +346,7 @@ void cwdaemon_udelay(unsigned long us)
 		if (errno == EINTR) {
 			nanosleep(&time_remainder, NULL);
 		} else {
-			errmsg("Nanosleep");
+			cwdaemon_errmsg("Nanosleep");
 		}
 	}
 
@@ -354,21 +357,56 @@ void cwdaemon_udelay(unsigned long us)
 
 
 
-/* band switch function,  pin 2, 7, 8, 9 */
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-static void
-set_switch (unsigned int bandswitch)
-{
-	unsigned int lp_switchbyte = 0;
+/**
+   \brief Band switch function using LPT port
 
-	lp_switchbyte = (bandswitch & 0x01) | ((bandswitch & 0x0e) * 16);
-	if (global_cwdevice->switchband)
-	{
-		global_cwdevice->switchband (global_cwdevice, lp_switchbyte);
-		cwdaemon_debug(1, "Set bandswitch to %x", bandswitch);
+   Band switch function using LPT (parallel) port of PC computer.
+
+   In general, data is transmitted through LPT using pins 9 (MSB) - 2 (LSB).
+   It seems that "TR Log" software has established a standard for controlling
+   band switches using LPT port (or "TR Log" has just followed already
+   established standard. Original information in cwdaemon's documentation
+   mentions: "Pinout is compatible with the standard (CT, TRlog).").
+
+   cwdaemon follows the standard. The standard utilizes only a subset of
+   the data pins: pins 9, 8, 7, and 2.
+
+   From TR Log manual, version 6.79, Appendix A, Table A.3
+   (the manual is available at www.trlog.com):
+
+   Hex value is transmitted through pins 9 (MSB), 8, 7, and 2 (LSB)
+
+            Band     Value
+             160         1
+              80         2
+              40         3
+              30         4
+              20         5
+              17         6
+              15         7
+              12         8
+              10         9
+               6         A
+               2         B
+             222         C
+             432         D
+             902         E
+            1GHz         F
+   Other or None         0
+
+*/
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+void cwdaemon_switch_band(cwdevice *device, unsigned int band)
+{
+	unsigned int bit_pattern = (band & 0x01) | ((band & 0x0e) << 4);
+	if (device->switchband) {
+		device->switchband(device, bit_pattern);
+		cwdaemon_debug(1, "Set band switch to %x", band);
+	} else {
+		cwdaemon_debug(1, "Band switch output not implemented");
 	}
-	else
-		cwdaemon_debug(1, "Bandswitch output not implemented");
+
+	return;
 }
 #endif
 
@@ -379,13 +417,13 @@ set_switch (unsigned int bandswitch)
 /**
    \brief Switch PTT on
 
-   \param msg - debug message displayed when performing the switching
+   \param info - debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_on(cwdevice *device, char *msg)
+void cwdaemon_set_ptt_on(cwdevice *device, char *info)
 {
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		device->ptt(device, ON);
-		cwdaemon_debug(1, msg);
+		cwdaemon_debug(1, info);
 		int rv = cw_queue_tone((current_ptt_delay * CWDAEMON_USECS_PER_MSEC) * 20, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
 			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
@@ -405,13 +443,13 @@ void cwdaemon_set_ptt_on(cwdevice *device, char *msg)
 /**
    \brief Switch PTT off
 
-   \param msg - debug message displayed when performing the switching
+   \param info - debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_off(cwdevice *device, char *msg)
+void cwdaemon_set_ptt_off(cwdevice *device, char *info)
 {
 	device->ptt(device, OFF);
 	ptt_flag = 0;
-	cwdaemon_debug(1, msg);
+	cwdaemon_debug(1, info);
 
 	return;
 }
@@ -495,13 +533,13 @@ int cwdaemon_open_libcw_output(int audio_system)
 	}
 	if (rv != CW_FAILURE) {
 		rv = cw_generator_start();
-		cwdaemon_debug(1, "Starting generator with audio system '%s': %s", cw_get_audio_system_label(audio_system), rv ? "success" : "failure");
+		cwdaemon_debug(1, "Starting generator with sound system '%s': %s", cw_get_audio_system_label(audio_system), rv ? "success" : "failure");
 	} else {
 		/* FIXME:
 		   When cwdaemon failed to create a generator, and user
 		   kills non-forked cwdaemon through Ctrl+C, there is
 		   a memory protection error. */
-		cwdaemon_debug(1, "Failed to create generator with audio system '%s'", cw_get_audio_system_label(audio_system));
+		cwdaemon_debug(1, "Failed to create generator with sound system '%s'", cw_get_audio_system_label(audio_system));
 	}
 
 	return rv == CW_FAILURE ? -1 : 0;
@@ -538,7 +576,7 @@ void cwdaemon_reset_libcw_output(void)
 	/* Delete old generator (if it exists). */
 	cwdaemon_close_libcw_output();
 
-	cwdaemon_debug(3, "Setting audio system='%s'", cw_get_audio_system_label(default_audio_system));
+	cwdaemon_debug(3, "Setting sound system '%s'", cw_get_audio_system_label(default_audio_system));
 	cwdaemon_open_libcw_output(default_audio_system);
 
 	cw_set_frequency(default_morse_tone);
@@ -555,20 +593,22 @@ void cwdaemon_reset_libcw_output(void)
 
 
 /* properly parse a 'long' integer */
-static int
-get_long(const char *buf, long *lvp)
+int cwdaemon_get_long(const char *buf, long *lvp)
 {
-	char *ep;
-	long lv;
-
 	errno = 0;
-	lv = strtol(buf, &ep, 10);
-	if (buf[0] == '\0' || *ep != '\0')
-		return (-1);
-	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN))
-		return (-1);
+
+	char *ep;
+	long lv = strtol(buf, &ep, 10);
+	if (buf[0] == '\0' || *ep != '\0') {
+		return -1;
+	}
+
+	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN)) {
+		return -1;
+	}
 	*lvp = lv;
-	return (0);
+
+	return 0;
 }
 
 
@@ -690,7 +730,7 @@ int cwdaemon_recvfrom(char *request, int n)
 			return 0;
 		} else {
 			/* Some other error. May be a serious error. */
-			errmsg("Recvfrom");
+			cwdaemon_errmsg("Recvfrom");
 			return -1;
 		}
 	} else if (recv_rc == 0) {
@@ -788,7 +828,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '2':
 		/* Set speed of morse code, in words per minute. */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -801,7 +841,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '3':
 		/* Set tone (frequency) of morse code, in Hz. */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -843,7 +883,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		/* Exit cwdaemon. */
 		global_cwdevice->free(global_cwdevice);
 		errno = 0;
-		errmsg("Sender has told me to end the connection");
+		cwdaemon_errmsg("Sender has told me to end the connection");
 		exit(EXIT_SUCCESS);
 
 	case '6':	/* set uninterruptable */
@@ -858,7 +898,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		   -50/+50, but libcw accepts values in range
 		   20/80. This is why you have the calculation
 		   when calling cw_set_weighting(). */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -880,7 +920,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_debug(1, "Obsolete control data '9'.");
 		break;
 	case 'a':	/* PTT keying on or off */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -910,7 +950,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'b':	/* SSB way */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -935,7 +975,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'c':
 		/* Tune for a number of seconds */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -946,7 +986,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	case 'd':
 		/* Set PTT delay (TOD, Turn On Delay).
 		   The value is milliseconds. */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -964,16 +1004,15 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
 		if (lv <= 15 && lv >= 0) {
-			bandswitch = lv;
-			set_switch(bandswitch);
+			cwdaemon_switch_band(global_cwdevice, lv);
 		}
 #else
-		cwdaemon_debug(1, "Parallel port unavailable");
+		cwdaemon_debug(1, "Band switching through parallel port is unavailable.");
 #endif
 		break;
 	case 'f': {
@@ -1004,7 +1043,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	}
 	case 'g':
 		/* Set volume of sound, in percents. */
-		if (get_long(request + 2, &lv)) {
+		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -1142,10 +1181,10 @@ void cwdaemon_keyingevent(void *arg, int keystate)
 /* Callback routine when tone queue is empty */
 void cwdaemon_tone_queue_low_callback(void *arg)
 {
-	cwdaemon_debug(2, "entering-Q-empty ptt_flag=%02x", ptt_flag);
-	if (ptt_flag == PTT_ACTIVE_AUTO &&		/* PTT on, w/o manual PTT or similar */
-		request_queue[0] == '\0' &&			/* no new text in the meantime */
-	    cw_get_tone_queue_length() <= 1) {
+	cwdaemon_debug(2, "Entering \"queue empty\" callback, ptt_flag=%02x", ptt_flag);
+	if (ptt_flag == PTT_ACTIVE_AUTO        /* PTT on, w/o manual PTT or similar */
+	    && request_queue[0] == '\0'        /* No new text in the meantime. */
+	    && cw_get_tone_queue_length() <= 1) {
 
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
@@ -1199,7 +1238,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			debuglevel++;
 			break;
 		case 'p':
-			if (get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
 				printf("%s: invalid port number - %s\n",
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
@@ -1208,7 +1247,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			break;
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 		case 'P':
-			if (get_long(optarg, &lv) || lv < -20 || lv > 20) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
 				printf("%s: bad priority %s (should be between -20 and 20 inclusive)\n",
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
@@ -1217,7 +1256,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			break;
 #endif
 		case 's':
-			if (get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
 				printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
 				       PACKAGE, optarg,
 				       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
@@ -1226,7 +1265,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			default_morse_speed = lv;
 			break;
 		case 't':
-			if (get_long(optarg, &lv) || lv < 0 || lv > 50) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 50) {
 				printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
@@ -1234,7 +1273,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			default_ptt_delay = lv;
 			break;
 		case 'v':
-			if (get_long(optarg, &lv) || lv < 0 || lv > 100) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 100) {
 				printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
@@ -1245,7 +1284,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			printf("%s version %s\n", PACKAGE, VERSION);
 			exit(EXIT_SUCCESS);
 		case 'w':
-			if (get_long(optarg, &lv) || lv < -50 || lv > 50) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < -50 || lv > 50) {
 				printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
 				       PACKAGE, optarg);
 				exit(EXIT_FAILURE);
@@ -1253,7 +1292,7 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			default_weighting = lv;
 			break;
 		case 'T':
-			if (get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
+			if (cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
 				printf("%s: bad tone %s (should be between %d and %d inclusive)\n",
 				       PACKAGE, optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
 				exit(EXIT_FAILURE);
@@ -1422,7 +1461,7 @@ int main(int argc, char *argv[])
 		}
 	} else {
 		cwdaemon_debug(1, "Press ^C to quit");
-		signal(SIGINT, catchint);
+		signal(SIGINT, cwdaemon_catchint);
 	}
 
 	if (cwdaemon_initialize_socket() == -1) {
@@ -1432,7 +1471,7 @@ int main(int argc, char *argv[])
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (process_priority != 0) {
 		if (setpriority(PRIO_PROCESS, getpid(), process_priority) < 0) {
-			errmsg("Setting process priority: \"%s\"", strerror(errno));
+			cwdaemon_errmsg("Setting process priority: \"%s\"", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -1458,7 +1497,7 @@ int main(int argc, char *argv[])
 		int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
 		/* fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
 		if (fd_count == -1 && errno != EINTR) {
-			errmsg("Select");
+			cwdaemon_errmsg("Select");
 		} else {
 			cwdaemon_receive();
 		}
@@ -1474,7 +1513,7 @@ int main(int argc, char *argv[])
 
 	global_cwdevice->free(global_cwdevice);
 	if (close(socket_descriptor) == -1) {
-		errmsg("Close socket");
+		cwdaemon_errmsg("Close socket");
 		exit(EXIT_FAILURE);
 	}
 	exit(EXIT_SUCCESS);
@@ -1598,7 +1637,7 @@ int cwdaemon_initialize_socket(void)
 
 	socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
 	if (socket_descriptor == -1) {
-		errmsg("Socket open");
+		cwdaemon_errmsg("Socket open");
 		return -1;
 	}
 
@@ -1606,19 +1645,19 @@ int cwdaemon_initialize_socket(void)
 		 (struct sockaddr *) &request_addr,
 		 request_addrlen) == -1) {
 
-		errmsg("Bind");
+		cwdaemon_errmsg("Bind");
 		return -1;
 	}
 
 	int save_flags = fcntl(socket_descriptor, F_GETFL);
 	if (save_flags == -1) {
-		errmsg("Trying get flags");
+		cwdaemon_errmsg("Trying get flags");
 		return -1;
 	}
 	save_flags |= O_NONBLOCK;
 
 	if (fcntl(socket_descriptor, F_SETFL, save_flags) == -1) {
-		errmsg("Trying non-blocking");
+		cwdaemon_errmsg("Trying non-blocking");
 		return -1;
 	}
 
