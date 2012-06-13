@@ -158,16 +158,16 @@ static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
 /* cwdaemon usually receives requests from client, but on occasions
    it needs to send a reply back. This is why in addition to
    request_* we also have reply_* */
-int socket_descriptor;
+static int socket_descriptor;
 static int port = CWDAEMON_DEFAULT_NETWORK_PORT;  /* default UDP port we listen on */
 
-struct sockaddr_in request_addr;
-socklen_t          request_addrlen;
+static struct sockaddr_in request_addr;
+static socklen_t          request_addrlen;
 
-struct sockaddr_in reply_addr;
-socklen_t          reply_addrlen;
+static struct sockaddr_in reply_addr;
+static socklen_t          reply_addrlen;
 
-char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
+static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
 
@@ -191,8 +191,9 @@ static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
 /* We must return an echo when libcw's queue of characters becomes empty. */
 #define PTT_ACTIVE_ECHO		0x04
 
-void cwdaemon_set_ptt_on(char *msg);
-void cwdaemon_set_ptt_off(char *msg);
+
+void cwdaemon_set_ptt_on(cwdevice *device, char *msg);
+void cwdaemon_set_ptt_off(cwdevice *device, char *msg);
 
 void cwdaemon_play_request(char *request);
 
@@ -208,8 +209,9 @@ int     cwdaemon_handle_escaped_request(char *request);
 
 void cwdaemon_reset_almost_all(void);
 void cwdaemon_udelay(unsigned long us);
-int  cwdaemon_set_default_keydev(void);
-int  cwdaemon_set_cwdev(char *keying_device);
+int  cwdaemon_set_default_cwdevice_descriptions(void);
+void cwdaemon_free_cwdevice_descriptions(void);
+int  cwdaemon_set_cwdevice(cwdevice **device, char *desc);
 int  cwdaemon_initialize_socket(void);
 
 int  cwdaemon_open_libcw_output(int audio_system);
@@ -226,8 +228,6 @@ void cwdaemon_print_help(void);
 
 static char request_queue[CWDAEMON_REQUEST_QUEUE_SIZE_MAX];
 
-/* Name of keying device: parallel port || serial port || null port. */
-char *keydev = NULL;
 
 
 cwdevice cwdevice_ttys = {
@@ -235,12 +235,14 @@ cwdevice cwdevice_ttys = {
 	.free       = ttys_free,
 	.reset      = ttys_reset,
 	.cw         = ttys_cw,
-	.ptt        = ttys_ptt
+	.ptt        = ttys_ptt,
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	,.ssbway     = NULL,
+	.ssbway     = NULL,
 	.switchband = NULL,
-	.footswitch = NULL
+	.footswitch = NULL,
 #endif
+	.fd         = 0,
+	.desc       = NULL
 };
 
 cwdevice cwdevice_null = {
@@ -248,12 +250,14 @@ cwdevice cwdevice_null = {
 	.free       = null_free,
 	.reset      = null_reset,
 	.cw         = null_cw,
-	.ptt        = null_ptt
+	.ptt        = null_ptt,
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	,.ssbway    = NULL,
+	.ssbway     = NULL,
 	.switchband = NULL,
-	.footswitch = NULL
+	.footswitch = NULL,
 #endif
+	.fd         = 0,
+	.desc       = NULL
 };
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
@@ -265,12 +269,17 @@ cwdevice cwdevice_lp = {
 	.ptt        = lp_ptt,
 	.ssbway     = lp_ssbway,
 	.switchband = lp_switchband,
-	.footswitch = lp_footswitch
+	.footswitch = lp_footswitch,
+	.fd         = 0,
+	.desc       = NULL
 };
 #endif
-cwdevice *cwdev = NULL;
 
 
+
+/* Selected keying device:
+   serial port (cwdevice_ttys) || parallel port (cwdevice_lp) || null (cwdevice_null). */
+static cwdevice *global_cwdevice = NULL;
 
 
 
@@ -278,7 +287,7 @@ cwdevice *cwdev = NULL;
 static RETSIGTYPE
 catchint (int signal)
 {
-	cwdev->free (cwdev);
+	global_cwdevice->free (global_cwdevice);
 	printf ("%s: Exiting\n", PACKAGE);
 	exit (0);
 }
@@ -353,9 +362,9 @@ set_switch (unsigned int bandswitch)
 	unsigned int lp_switchbyte = 0;
 
 	lp_switchbyte = (bandswitch & 0x01) | ((bandswitch & 0x0e) * 16);
-	if (cwdev->switchband)
+	if (global_cwdevice->switchband)
 	{
-		cwdev->switchband (cwdev, lp_switchbyte);
+		global_cwdevice->switchband (global_cwdevice, lp_switchbyte);
 		cwdaemon_debug(1, "Set bandswitch to %x", bandswitch);
 	}
 	else
@@ -372,10 +381,10 @@ set_switch (unsigned int bandswitch)
 
    \param msg - debug message displayed when performing the switching
 */
-void cwdaemon_set_ptt_on(char *msg)
+void cwdaemon_set_ptt_on(cwdevice *device, char *msg)
 {
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
-		cwdev->ptt(cwdev, ON);
+		device->ptt(device, ON);
 		cwdaemon_debug(1, msg);
 		int rv = cw_queue_tone((current_ptt_delay * CWDAEMON_USECS_PER_MSEC) * 20, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
@@ -398,9 +407,9 @@ void cwdaemon_set_ptt_on(char *msg)
 
    \param msg - debug message displayed when performing the switching
 */
-void cwdaemon_set_ptt_off(char *msg)
+void cwdaemon_set_ptt_off(cwdevice *device, char *msg)
 {
-	cwdev->ptt(cwdev, OFF);
+	device->ptt(device, OFF);
 	ptt_flag = 0;
 	cwdaemon_debug(1, msg);
 
@@ -420,7 +429,7 @@ void cwdaemon_tune(int seconds)
 {
 	if (seconds > 0) {
 		cw_flush_tone_queue();
-		cwdaemon_set_ptt_on("PTT (TUNE) on");
+		cwdaemon_set_ptt_on(global_cwdevice, "PTT (TUNE) on");
 
 		/* make it similar to normal CW, allowing interrupt */
 		int i = 0;
@@ -773,7 +782,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_reset_almost_all();
 		wordmode = 0;
 		async_abort = 0;
-		cwdev->reset(cwdev);
+		global_cwdevice->reset(global_cwdevice);
 		ptt_flag = 0;
 		cwdaemon_debug(1, "Reset all values");
 		break;
@@ -825,14 +834,14 @@ int cwdaemon_handle_escaped_request(char *request)
 			cw_flush_tone_queue();
 			cw_wait_for_tone_queue();
 			if (ptt_flag) {
-				cwdaemon_set_ptt_off("PTT off");
+				cwdaemon_set_ptt_off(global_cwdevice, "PTT off");
 			}
 			ptt_flag &= 0;
 		}
 		break;
 	case '5':
 		/* Exit cwdaemon. */
-		cwdev->free(cwdev);
+		global_cwdevice->free(global_cwdevice);
 		errno = 0;
 		errmsg("Sender has told me to end the connection");
 		exit(EXIT_SUCCESS);
@@ -860,31 +869,9 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '8': {
 		/* Set type of keying device. */
-		char *ndev = request + 2;
-		int fd;
-		cwdaemon_debug(1, "Device: %s", ndev);
-		if ((fd = dev_is_tty(ndev)) != -1) {
-			cwdev->free(cwdev);
-			cwdev = &cwdevice_ttys;
-			keydev = cwdev->desc = ndev;
-			cwdev->init(cwdev, fd);
-		}
-#if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		else if ((fd = dev_is_parport(ndev)) != -1) {
-			cwdev->free(cwdev);
-			cwdev = &cwdevice_lp;
-			keydev = cwdev->desc = ndev;
-			cwdev->init(cwdev, fd);
-		}
-#endif
-		else if ((fd = dev_is_null(ndev)) != -1) {
-			cwdev->free(cwdev);
-			cwdev = &cwdevice_null;
-			keydev = cwdev->desc = ndev;
-			cwdev->init(cwdev, fd);
-		} else {
-			cwdaemon_debug(1, "Unknown device");
-		}
+		cwdaemon_debug(1, "Setting new keying device: %s", request + 2);
+		cwdaemon_set_cwdevice(&global_cwdevice, request + 2);
+
 		break;
 	}
 	case '9':
@@ -898,9 +885,9 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 
 		if (lv) {
-			cwdev->ptt (cwdev, ON);
+			global_cwdevice->ptt(global_cwdevice, ON);
 			if (current_ptt_delay) {
-				cwdaemon_set_ptt_on("PTT (manual, delay) on");
+				cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
 			} else {
 				cwdaemon_debug(1, "PTT (manual, immediate) on");
 			}
@@ -912,7 +899,7 @@ int cwdaemon_handle_escaped_request(char *request)
 				if (request_queue[0] == '\0'/* no new text in the meantime */
 				    && cw_get_tone_queue_length() <= 1) {
 
-					cwdaemon_set_ptt_off("PTT (manual, immediate) off");
+					cwdaemon_set_ptt_off(global_cwdevice, "PTT (manual, immediate) off");
 				} else {
 					/* still sending, cannot yet switch PTT off */
 					ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
@@ -928,22 +915,22 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 
 		if (lv) {
-			if (cwdev->ssbway) {
-				cwdev->ssbway (cwdev, SOUNDCARD);
+			if (global_cwdevice->ssbway) {
+				global_cwdevice->ssbway(global_cwdevice, SOUNDCARD);
 				cwdaemon_debug(1, "SSB way set to SOUNDCARD", PACKAGE);
 			} else {
 				cwdaemon_debug(1, "SSB way to SOUNDCARD unimplemented");
 			}
 		} else {
-			if (cwdev->ssbway) {
-				cwdev->ssbway (cwdev, MICROPHONE);
+			if (global_cwdevice->ssbway) {
+				global_cwdevice->ssbway(global_cwdevice, MICROPHONE);
 				cwdaemon_debug(1, "SSB way set to MIC");
 			} else {
 				cwdaemon_debug(1, "SSB way to MICROPHONE unimplemented");
 			}
 		}
 #else
-		cwdaemon_debug(1, "Unavailable");
+		cwdaemon_debug(1, "Escape code 'b' unavailable (no parallel port available).");
 #endif
 		break;
 	case 'c':
@@ -972,13 +959,15 @@ int cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_debug(1, "PTT delay(TOD): %d ms", current_ptt_delay);
 
 		if (current_ptt_delay == 0) {
-			cwdaemon_set_ptt_off("ensure PTT off");
+			cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
 		}
 		break;
 	case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		if (get_long(request + 2, &lv))
+		if (get_long(request + 2, &lv)) {
 			break;
+		}
+
 		if (lv <= 15 && lv >= 0) {
 			bandswitch = lv;
 			set_switch(bandswitch);
@@ -1097,7 +1086,7 @@ void cwdaemon_play_request(char *request)
 		case '*':
 			*x = '+';
 		default:
-			cwdaemon_set_ptt_on("PTT (auto) on");
+			cwdaemon_set_ptt_on(global_cwdevice, "PTT (auto) on");
 			cwdaemon_debug(1, "Morse = %c", *x);
 			cw_send_character(*x);
 			x++;
@@ -1134,9 +1123,9 @@ void cwdaemon_play_request(char *request)
 void cwdaemon_keyingevent(void *arg, int keystate)
 {
 	if (keystate == 1) {
-		cwdev->cw(cwdev, ON);
+		global_cwdevice->cw(global_cwdevice, ON);
 	} else {
-		cwdev->cw(cwdev, OFF);
+		global_cwdevice->cw(global_cwdevice, OFF);
 	}
 
 	inactivity_seconds = 0;
@@ -1158,7 +1147,7 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 		request_queue[0] == '\0' &&			/* no new text in the meantime */
 	    cw_get_tone_queue_length() <= 1) {
 
-		cwdaemon_set_ptt_off("PTT (auto) off");
+		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
 	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
 
@@ -1186,10 +1175,11 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 /* parse the command line and check for options, do some error checking */
 void cwdaemon_parse_command_line(int argc, char *argv[])
 {
-	long lv;
 	int p;
 
 	while ((p = getopt(argc, argv, "d:hnp:P:s:t:T:v:Vw:x:")) != -1) {
+		long lv;
+
 		switch (p) {
 		case ':':
 		case '?':
@@ -1197,7 +1187,9 @@ void cwdaemon_parse_command_line(int argc, char *argv[])
 			cwdaemon_print_help();
 			exit(EXIT_SUCCESS);
 		case 'd':
-			keydev = optarg;
+			if (cwdaemon_set_cwdevice(&global_cwdevice, optarg) == -1) {
+				exit(EXIT_FAILURE);
+			}
 			break;
 		case 'n':
 			if (forking) {
@@ -1361,7 +1353,10 @@ void cwdaemon_print_help(void)
    waiting for something to happen on the UDP port */
 int main(int argc, char *argv[])
 {
-	cwdaemon_set_default_keydev();
+	atexit(cwdaemon_free_cwdevice_descriptions);
+	if (cwdaemon_set_default_cwdevice_descriptions() == -1) {
+		exit(EXIT_FAILURE);
+	}
 
 	cwdaemon_parse_command_line(argc, argv);
 
@@ -1370,10 +1365,6 @@ int main(int argc, char *argv[])
 		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
 	}
 
-	int rv = cwdaemon_set_cwdev(keydev);
-	if (rv == -1) {
-		exit(EXIT_FAILURE);
-	}
 
 	cwdaemon_reset_almost_all();
 	atexit(cwdaemon_close_libcw_output);
@@ -1402,8 +1393,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 
-		if ((chdir("/")) < 0)
-		{
+		if ((chdir("/")) < 0) {
 			syslog(LOG_ERR, "%s\n", "chdir");
 			exit(EXIT_FAILURE);
 		}
@@ -1435,9 +1425,7 @@ int main(int argc, char *argv[])
 		signal(SIGINT, catchint);
 	}
 
-
-	rv = cwdaemon_initialize_socket();
-	if (rv == -1) {
+	if (cwdaemon_initialize_socket() == -1) {
 		exit(CW_FAILURE);
 	}
 
@@ -1476,14 +1464,15 @@ int main(int argc, char *argv[])
 		}
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-		if (cwdev->footswitch) {
-			cwdev->ptt(cwdev, !((cwdev->footswitch(cwdev))));
+		if (global_cwdevice->footswitch) {
+			int state = global_cwdevice->footswitch(global_cwdevice);
+			global_cwdevice->ptt(global_cwdevice, !state);
 		}
 #endif
 
 	} while (1);
 
-	cwdev->free(cwdev);
+	global_cwdevice->free(global_cwdevice);
 	if (close(socket_descriptor) == -1) {
 		errmsg("Close socket");
 		exit(EXIT_FAILURE);
@@ -1495,24 +1484,35 @@ int main(int argc, char *argv[])
 
 
 
-int cwdaemon_set_default_keydev(void)
+int cwdaemon_set_default_cwdevice_descriptions(void)
 {
-	/* FIXME: something tells me that you shouldn't just assign
-	   strings to keydev. Look up other places where local variables
-	   are assigned to keydev. */
-#if defined HAVE_LINUX_PPDEV_H
-	keydev = "parport0";
-#elif defined HAVE_DEV_PPBUS_PPI_H
-	keydev = "ppi0";
-#else
-# if defined(__FreeBSD__)
-	keydev = "ttyd0";
-# elif defined(__OpenBSD__)
-	keydev = "tty00";
-# else
-	keydev = "ttyS0";
-# endif
+	/* Default device description of parallel/lpt port. */
+#if defined HAVE_LINUX_PPDEV_H        /* Linux, obviously. */
+	cwdevice_lp.desc = strdup("parport0");
+#elif defined HAVE_DEV_PPBUS_PPI_H    /* FreeBSD (ppbus/ppi). */
+	cwdevice_lp.desc = strdup("ppi0");
+#else                                 /* FIXME: where is OpenBSD? */
+	cwdevice_lp.desc = NULL;
 #endif
+
+
+	/* Default device description of serial/com port. */
+#if defined(__linux__)
+	cwdevice_ttys.desc = strdup("ttyS0");
+#elif defined(__FreeBSD__)
+        cwdevice_ttys.desc = strdup("ttyd0");
+#elif defined(__OpenBSD__)
+	cwdevice_ttys.desc = strdup("tty00");
+#else
+	cwdevice_ttys.desc = NULL;
+#endif
+
+
+	/* Default device description of null port. */
+	cwdevice_null.desc = strdup("null");
+
+
+	/* TODO: add checks of return values. */
 
 	return 0;
 }
@@ -1520,35 +1520,65 @@ int cwdaemon_set_default_keydev(void)
 
 
 
-int cwdaemon_set_cwdev(char *keying_device)
+
+void cwdaemon_free_cwdevice_descriptions(void)
 {
-	int fd = dev_is_tty(keying_device);
-	if (fd != -1) {
-		cwdev = &cwdevice_ttys;
+	if (cwdevice_ttys.desc) {
+		free(cwdevice_ttys.desc);
+		cwdevice_ttys.desc = NULL;
+	}
+
+	if (cwdevice_null.desc) {
+		free(cwdevice_null.desc);
+		cwdevice_null.desc = NULL;
+	}
+
+	if (cwdevice_lp.desc) {
+		free(cwdevice_lp.desc);
+		cwdevice_lp.desc = NULL;
+	}
+
+	return;
+}
+
+
+
+
+
+int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
+{
+	int fd;
+
+	if ((fd = dev_is_tty(desc)) != -1) {
+		*device = &cwdevice_ttys;
 	}
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	else if ((fd = dev_is_parport(keying_device)) != -1) {
-		cwdev = &cwdevice_lp;
-		if (geteuid() != 0) {
-			printf("You must run this program as root\n");
+	else if ((fd = dev_is_parport(desc)) != -1) {
+		if (geteuid()) {
+			printf("You must run this program as root to use parallel port.\n");
 			return -1;
 		}
+		*device = &cwdevice_lp;
 	}
 #endif
-	else if ((fd = dev_is_null(keying_device)) != -1) {
-		cwdev = &cwdevice_null;
+	else if ((fd = dev_is_null(desc)) != -1) {
+		*device = &cwdevice_null;
 	} else {
-		; /* Pass, checking for NULL cwdev below. */
+		; /* Pass, checking for NULL device below. */
 	}
 
-	if (!cwdev) {
-		printf("%s: bad keyer device: %s\n", PACKAGE, keying_device);
+	if (!*device) {
+		printf("%s: bad keyer device: %s\n", PACKAGE, desc);
 		return -1;
 	}
-	cwdev->desc = keying_device;
 
-	cwdaemon_debug(1, "Keying device used: %s", cwdev->desc);
-	cwdev->init(cwdev, fd);
+	if ((*device)->desc) {
+		free((*device)->desc);
+	}
+	(*device)->desc = strdup(desc);
+
+	cwdaemon_debug(1, "Keying device used: %s", (*device)->desc);
+	(*device)->init(*device, fd);
 
 	return 0;
 
@@ -1574,7 +1604,7 @@ int cwdaemon_initialize_socket(void)
 
 	if (bind(socket_descriptor,
 		 (struct sockaddr *) &request_addr,
-		 request_addrlen) == -1) { /* TODO: why not request_addrlen? */
+		 request_addrlen) == -1) {
 
 		errmsg("Bind");
 		return -1;
