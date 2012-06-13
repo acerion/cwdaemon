@@ -144,7 +144,7 @@ parport_control (int fd, unsigned char controlbits, int values)
 
 	if (ioctl (fd, PPFCONTROL, &frob) == -1)
 	{
-		errmsg ("Parallel port PPFCONTROL");
+		cwdaemon_errmsg("Parallel port PPFCONTROL");
 		exit (1);
 	}
 }
@@ -159,7 +159,7 @@ parport_control (int fd, unsigned char controlbits, int values)
 
 	if (ioctl (fd, PPIGCTRL, &val) == -1)
 	{
-		errmsg ("Parallel port PPIGCTRL");
+		cwdaemon_errmsg("Parallel port PPIGCTRL");
 		exit (1);
 	}
 
@@ -168,7 +168,7 @@ parport_control (int fd, unsigned char controlbits, int values)
 
 	if (ioctl (fd, PPISCTRL, &val) == -1)
 	{
-		errmsg ("Parallel port PPISCTRL");
+		cwdaemon_errmsg("Parallel port PPISCTRL");
 		exit (1);
 	}
 }
@@ -181,7 +181,7 @@ parport_write_data (int fd, unsigned char data)
 {
 	if (ioctl (fd, PPWDATA, &data) == -1)
 	{
-		errmsg ("Parallel port PPWDATA");
+		cwdaemon_errmsg("Parallel port PPWDATA");
 		exit (1);
 	}
 }
@@ -194,7 +194,7 @@ parport_write_data (int fd, unsigned char data)
 {
 	if (ioctl (fd, PPISDATA, &data) == -1)
 	{
-		errmsg ("Parallel port PPISDATA");
+		cwdaemon_errmsg("Parallel port PPISDATA");
 		exit (1);
 	}
 }
@@ -208,7 +208,7 @@ parport_read_data (int fd)
 	unsigned char data = 0;
 	if (ioctl (fd, PPRSTATUS, &data) == -1)
 	{
-		errmsg ("Parallel port PPRSTATUS");
+		cwdaemon_errmsg("Parallel port PPRSTATUS");
 		exit (1);
 	}
 	return data;
@@ -223,7 +223,7 @@ parport_read_data (int fd)
 	unsigned char data = 0;
 	if (ioctl (fd, PPISSTATUS, &data) == -1)
 	{
-		errmsg ("Parallel port PPISSTATUS");
+		cwdaemon_errmsg("Parallel port PPISSTATUS");
 		exit (1);
 	}
 	return data;
@@ -243,20 +243,20 @@ lp_init (cwdevice * dev, int fd)
 
 	if (ioctl (fd, PPSETMODE, &mode) == -1)
 	{
-		errmsg ("Setting parallel port mode");
+		cwdaemon_errmsg("Setting parallel port mode");
 		close (fd);
 		exit (1);
 	}
 
 	if (ioctl (fd, PPEXCL, NULL) == -1)
 	{
-		errmsg ("Parallel port %s is already in use", dev->desc);
+		cwdaemon_errmsg("Parallel port %s is already in use", dev->desc);
 		close (fd);
 		exit (1);
 	}
 	if (ioctl (fd, PPCLAIM, NULL) == -1)
 	{
-		errmsg ("Claiming parallel port %s", dev->desc);
+		cwdaemon_errmsg("Claiming parallel port %s", dev->desc);
 		cwdaemon_debug(1, "HINT: did you unload the lp kernel module?");
 		cwdaemon_debug(1, "HINT: perhaps there is another cwdaemon running?");
 		close (fd);
@@ -382,7 +382,7 @@ lp_ssbway (cwdevice * dev, int onoff)
 	return 0;
 }
 
-/* Bandswitch output on pins 2,7,8,9 */
+/* Bandswitch output on pins 9 (MSB), 8, 7, and 2 (LSB). */
 int
 lp_switchband (cwdevice * dev, unsigned char bitpattern)
 {

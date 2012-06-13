@@ -80,7 +80,7 @@ dev_is_tty(const char *fname)
 out:
 	close(fd);
 	return (-1);
-	
+
 }
 
 int
@@ -118,7 +118,7 @@ ttys_cw (cwdevice * dev, int onoff)
 	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &y);
 	if (result < 0)
 	{
-		errmsg ("Ioctl serial port %s", dev->desc);
+		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
 		exit (1);
 	}
 	return 0;
@@ -133,7 +133,7 @@ ttys_ptt (cwdevice * dev, int onoff)
 	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &y);
 	if (result < 0)
 	{
-		errmsg ("Ioctl serial port %s", dev->desc);
+		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
 		exit (1);
 	}
 	return 0;
