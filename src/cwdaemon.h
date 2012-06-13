@@ -32,8 +32,7 @@
 
 #define MAX_DEVICE 20
 
-typedef struct cwdev_s
-{
+typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);
 	int (*reset) (struct cwdev_s *);
@@ -43,7 +42,7 @@ typedef struct cwdev_s
 	int (*switchband) (struct cwdev_s *, unsigned char bandswitch);
 	int (*footswitch) (struct cwdev_s *);
 	int fd;
-	char *desc;
+	char *desc; /* "parport0", "ttyS0", "null" - name of device used for keying. */
 }
 cwdevice;
 
