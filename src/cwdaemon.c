@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#define _POSIX_C_SOURCE 200809L /* nanosleep(), strdup() */
+
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif
@@ -65,6 +67,7 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -75,6 +78,7 @@
 #  include <time.h>
 # endif
 #endif
+
 #if HAVE_SIGNAL_H
 # include <signal.h>
 #endif
@@ -217,8 +221,8 @@ static unsigned char ptt_flag = 0;
 
 
 
-void cwdaemon_set_ptt_on(cwdevice *device, char *info);
-void cwdaemon_set_ptt_off(cwdevice *device, char *info);
+void cwdaemon_set_ptt_on(cwdevice *device, const char *info);
+void cwdaemon_set_ptt_off(cwdevice *device, const char *info);
 void cwdaemon_switch_band(cwdevice *device, unsigned int band);
 
 void cwdaemon_play_request(char *request);
@@ -248,7 +252,7 @@ int  cwdaemon_get_long(const char *buf, long *lvp);
 void cwdaemon_parse_command_line(int argc, char *argv[]);
 void cwdaemon_print_help(void);
 
-RETSIGTYPE cwdaemon_catchint(int signal);
+RETSIGTYPE cwdaemon_catch_sigint(int signal);
 
 
 cwdevice cwdevice_ttys = {
@@ -304,8 +308,9 @@ static cwdevice *global_cwdevice = NULL;
 
 
 /* catch ^C when running in foreground */
-RETSIGTYPE cwdaemon_catchint(int signal)
+RETSIGTYPE cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 {
+
 	global_cwdevice->free(global_cwdevice);
 	printf("%s: Exiting\n", PACKAGE);
 	exit(EXIT_SUCCESS);
@@ -327,7 +332,7 @@ RETSIGTYPE cwdaemon_catchint(int signal)
 
    \param info - first part of an error message, a formatting string
 */
-void cwdaemon_errmsg(char *info, ...)
+void cwdaemon_errmsg(const char *info, ...)
 {
 	va_list ap;
 	char s[1025];
@@ -368,7 +373,7 @@ void cwdaemon_errmsg(char *info, ...)
    \param level - debug level of given message
    \param info - formatting string of a message
 */
-void cwdaemon_debug(int level, char *info, ...)
+void cwdaemon_debug(int level, const char *info, ...)
 {
 	if (level <= debuglevel) {
 		va_list ap;
@@ -487,7 +492,7 @@ void cwdaemon_switch_band(cwdevice *device, unsigned int band)
    \param device - current keying device
    \param info - debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_on(cwdevice *device, char *info)
+void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 {
 	/* TODO: check the condition:
 	   Shouldn't it be only '!(ptt_flag & PTT_ACTIVE_AUTO)', with
@@ -520,7 +525,7 @@ void cwdaemon_set_ptt_on(cwdevice *device, char *info)
    \param device - current keying device
    \param info - debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_off(cwdevice *device, char *info)
+void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 {
 	device->ptt(device, OFF);
 	ptt_flag = 0;
@@ -547,8 +552,7 @@ void cwdaemon_tune(int seconds)
 		cwdaemon_set_ptt_on(global_cwdevice, "PTT (TUNE) on");
 
 		/* make it similar to normal CW, allowing interrupt */
-		int i = 0;
-		for (i = 0; i < seconds; i++) {
+		for (int i = 0; i < seconds; i++) {
 			cw_queue_tone(1000000, current_morse_tone);
 		}
 
@@ -598,8 +602,7 @@ int cwdaemon_open_libcw_output(int audio_system)
 		   block audio device for a short period of time after the
 		   output has been closed. In such a situation OSS may fail
 		   to open audio device. Let's give it some time. */
-		int i = 0;
-		for (i = 0; i < 5; i++) {
+		for (int i = 0; i < 5; i++) {
 			cwdaemon_debug(1, "Delaying switching to OSS, please wait few seconds.");
 			sleep(4);
 			rv = cw_generator_new(audio_system, NULL);
@@ -1267,7 +1270,7 @@ void cwdaemon_play_request(char *request)
    \param unused argument
    \param keystate - state of a key, as seen by libcw
 */
-void cwdaemon_keyingevent(void *arg, int keystate)
+void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 {
 	if (keystate == 1) {
 		global_cwdevice->cw(global_cwdevice, ON);
@@ -1295,7 +1298,7 @@ void cwdaemon_keyingevent(void *arg, int keystate)
 
    \param arg - unused argument
 */
-void cwdaemon_tone_queue_low_callback(void *arg)
+void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
 	cwdaemon_debug(2, "Entering \"queue empty\" callback, ptt_flag=%02x", ptt_flag);
 
@@ -1588,7 +1591,7 @@ int main(int argc, char *argv[])
 		}
 	} else {
 		cwdaemon_debug(1, "Press ^C to quit");
-		signal(SIGINT, cwdaemon_catchint);
+		signal(SIGINT, cwdaemon_catch_sigint);
 	}
 
 	if (cwdaemon_initialize_socket() == -1) {
@@ -1780,7 +1783,7 @@ int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 	}
 	(*device)->desc = strdup(desc);
 	if (!(*device)->desc) {
-		printf("%s: memory allocation error\n");
+		printf("%s: memory allocation error\n", PACKAGE);
 		return -1;
 	}
 
@@ -1805,7 +1808,7 @@ int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 */
 int cwdaemon_initialize_socket(void)
 {
-	bzero(&request_addr, sizeof (request_addr));
+	memset(&request_addr, '\0', sizeof (request_addr));
 	request_addr.sin_family = AF_INET;
 	request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	request_addr.sin_port = htons(port);

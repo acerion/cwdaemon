@@ -18,6 +18,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#define _BSD_SOURCE /* S_IFMT and related. */
+
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif

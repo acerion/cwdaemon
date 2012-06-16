@@ -24,6 +24,8 @@
  * (Rubini et al. Linux Device Driver Book)
  */
 
+#define _BSD_SOURCE /* S_IFMT and related. */
+
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif
