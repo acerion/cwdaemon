@@ -1262,10 +1262,21 @@ void cwdaemon_play_request(char *request)
 /**
    \brief Callback function for key state change
 
-   Function passed to libcw, will be called every time libcw is notified
-   about change of a state of user's Morse key.
-   When key is closed (dit or dah), \p keystate is 1.
-   Otherwise \p keystate is 0.
+   Function passed to libcw, will be called every time a state of libcw's
+   internal ("software") key changes, i.e. every time it starts or ends
+   producing dit or dash.
+   When the software key is closed (dit or dash), \p keystate is 1.
+   Otherwise \p keystate is 0. Following the changes of \p keystate the
+   function changes state of bit on output of its keying device.
+
+   So it goes like this:
+   input text in cwdaemon is split into characters ->
+   characters in cwdaemon are sent to libcw ->
+   characters in libcw are converted to dits/dashes ->
+   dits/dashes are played by libcw, and at the same time libcw changes
+           state of its software key ->
+   libcw calls cwdaemon_keyingevent() on changes of software key ->
+   cwdaemon_keyingevent() changes state of a bit on cwdaemon's keying device
 
    \param unused argument
    \param keystate - state of a key, as seen by libcw
