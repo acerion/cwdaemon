@@ -1,3 +1,7 @@
+2012-06-16 Kamil Ignacak
+	* build system: added "-std=C99" compilation flag.
+	Temporarily enabling more warnings.
+
 2012-06-12 Kamil Ignacak
 	* escape codes: until now, whenever client has sent request to
 	change tone, cwdaemon has been also resetting volume to default value.
