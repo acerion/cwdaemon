@@ -178,19 +178,43 @@ static int process_priority = 0;       /* Scheduling priority of cwdaemon proces
 static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
 static int inactivity_seconds = 9999;  /* Inactive since nnn seconds. */
 
-/* Incoming requests are stored in this pseudo-FIFO before they are played. */
+
+/* Incoming requests without Escape code are stored in this pseudo-FIFO
+   before they are played. */
 static char request_queue[CWDAEMON_REQUEST_QUEUE_SIZE_MAX];
 
 
-/* flags for different states */
-static unsigned char ptt_flag = 0;	/* flag for PTT state/behaviour */
-/* PTT on while sending, delay performed, switch PTT off when
-   libcw's queue of characters becomes empty. */
+
+/* Flag for PTT state/behaviour. */
+static unsigned char ptt_flag = 0;
+
+/* Automatically turn PTT on and off.
+   Turn PTT on when starting to play Morse characters, and turn PTT off when
+   there are no more characters to play.
+   "Automatically" means that cwdaemon toggles PTT without any additional
+   actions taken by client. Client doesn't have to tell cwdaemon when to
+   turn PTT on/off - this is done by cwdaemon itself, automatically.
+
+   If ptt delay is non-zero, cwdaemon performs delay between turning PTT on
+   and starting to play Morse characters.
+   TODO: is there a delay before turning PTT off? */
 #define PTT_ACTIVE_AUTO		0x01
-/* PTT manually activated, switch off manually. */
+
+/* PTT is turned on and off manually.
+   It is the client who decides when to turn the PTT on and off.
+   The client has to send 'a' escape code, followed by '1' or '0' to
+   'manually' turn PTT on or off.
+   'MANUAL' - the opposite of 'AUTO' where it is cwdaemon that decides
+   when to turn PTT on and off.
+   Perhaps "PTT_ON_REQUEST" would be a better name of the constant. */
 #define PTT_ACTIVE_MANUAL	0x02
-/* We must return an echo when libcw's queue of characters becomes empty. */
+
+/* Don't turn PTT off until cwdaemon sends back an echo to client.
+   client may request echoing back to it a reply when cwdaemon finishes
+   playing given request. PTT shouldn't be turned off when sending the
+   reply (TODO: why it shouldn't?). */
 #define PTT_ACTIVE_ECHO		0x04
+
 
 
 void cwdaemon_set_ptt_on(cwdevice *device, char *info);
@@ -271,7 +295,8 @@ cwdevice cwdevice_lp = {
 
 
 /* Selected keying device:
-   serial port (cwdevice_ttys) || parallel port (cwdevice_lp) || null (cwdevice_null). */
+   serial port (cwdevice_ttys) || parallel port (cwdevice_lp) || null (cwdevice_null).
+   It should be configured with cwdaemon_set_cwdevice(). */
 static cwdevice *global_cwdevice = NULL;
 
 
@@ -290,7 +315,18 @@ RETSIGTYPE cwdaemon_catchint(int signal)
 
 
 
-/* print error message to the console or syslog if we are forked */
+/**
+   \brief Print error message to the console or syslog
+
+   Function checks if cwdaemon has forked, and prints given error message
+   to stdout (if cwdaemon hasn't forked) or to syslog (if cwdaemon has
+   forked).
+
+   Function accepts printf-line formatting string as first argument, and
+   a set of optional arguments to be inserted into the formatting string.
+
+   \param info - first part of an error message, a formatting string
+*/
 void cwdaemon_errmsg(char *info, ...)
 {
 	va_list ap;
@@ -313,8 +349,25 @@ void cwdaemon_errmsg(char *info, ...)
 
 
 
-/* FIXME: come up with nice symbolic names for debug
-   levels - don't use magic numbers. */
+/**
+   \brief Print debug message to stdout
+
+   Function decides if given debug \p level is sufficient to print given
+   \p info debug message, and prints it to stdout. If current global
+   debug level is zero, no information will be printed.
+
+   Currently \p level can have one of following values: 1, 2, 3.
+   1 has the highest priority, 3 the lowest.
+
+   FIXME: come up with nice symbolic names for debug
+   levels - don't use magic numbers.
+
+   Function accepts printf-line formatting string as second argument, and
+   a set of optional arguments to be inserted into the formatting string.
+
+   \param level - debug level of given message
+   \param info - formatting string of a message
+*/
 void cwdaemon_debug(int level, char *info, ...)
 {
 	if (level <= debuglevel) {
@@ -334,7 +387,14 @@ void cwdaemon_debug(int level, char *info, ...)
 
 
 
-/* delay in microseconds */
+/**
+   \brief Sleep for specified amount of microseconds
+
+   Function can detect an interrupt from a signal, and continue sleeping,
+   but only once.
+
+   \param us - microseconds to sleep
+*/
 void cwdaemon_udelay(unsigned long us)
 {
 	struct timespec sleeptime, time_remainder;
@@ -394,6 +454,13 @@ void cwdaemon_udelay(unsigned long us)
             1GHz         F
    Other or None         0
 
+
+
+   The function works only for a subset of devices that are able to
+   perform band switching. Currently the only such device is parallel port.
+
+   \brief device - device to use to switch band
+   \brief band - band number to switch to (a hex number)
 */
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 void cwdaemon_switch_band(cwdevice *device, unsigned int band)
@@ -417,17 +484,24 @@ void cwdaemon_switch_band(cwdevice *device, unsigned int band)
 /**
    \brief Switch PTT on
 
+   \param device - current keying device
    \param info - debug information displayed when performing the switching
 */
 void cwdaemon_set_ptt_on(cwdevice *device, char *info)
 {
+	/* TODO: check the condition:
+	   Shouldn't it be only '!(ptt_flag & PTT_ACTIVE_AUTO)', with
+	   'current_ptt_delay' pushed lower, in separate 'if'? */
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		device->ptt(device, ON);
 		cwdaemon_debug(1, info);
+		/* TODO: why multiply by 20? */
 		int rv = cw_queue_tone((current_ptt_delay * CWDAEMON_USECS_PER_MSEC) * 20, 0);	/* try to 'enqueue' delay */
-		if (rv == CW_FAILURE) {			        /* old libcw may reject freq=0 */
+		if (rv == CW_FAILURE) {	/* Old libcw may reject freq=0. */
 			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
 				       rv, strerror(errno));
+			/* TODO: wouldn't it be simpler to use
+			   cwdaemon_udelay()? */
 			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
@@ -443,6 +517,7 @@ void cwdaemon_set_ptt_on(cwdevice *device, char *info)
 /**
    \brief Switch PTT off
 
+   \param device - current keying device
    \param info - debug information displayed when performing the switching
 */
 void cwdaemon_set_ptt_off(cwdevice *device, char *info)
@@ -460,6 +535,8 @@ void cwdaemon_set_ptt_off(cwdevice *device, char *info)
 
 /**
    \brief Tune for a number of seconds
+
+   Play a continuous sound for a given number of seconds.
 
    \param seconds - time of tuning
 */
@@ -549,6 +626,9 @@ int cwdaemon_open_libcw_output(int audio_system)
 
 
 
+/**
+   \brief Close libcw audio output
+*/
 void cwdaemon_close_libcw_output(void)
 {
 	cw_generator_stop();
@@ -592,7 +672,17 @@ void cwdaemon_reset_libcw_output(void)
 
 
 
-/* properly parse a 'long' integer */
+/**
+   \brief Properly parse a 'long' integer
+
+   Parse a string with digits, convert it to a long integer
+
+   \param buf - input buffer with a string
+   \param lvp - pointer to output long int variable
+
+   \return -1 on failure
+   \return 0 on success
+*/
 int cwdaemon_get_long(const char *buf, long *lvp)
 {
 	errno = 0;
@@ -757,7 +847,10 @@ int cwdaemon_recvfrom(char *request, int n)
 
 
 
-/* watch the socket and if there is an escape character check what it is,
+/**
+   \brief Receive message from socket, act upon it
+
+   Watch the socket and if there is an escape character check what it is,
    otherwise play morse.
 
    \return 0 when an escape code has been received
@@ -793,9 +886,6 @@ int cwdaemon_receive(void)
 		   as text to be sent using Morse code. */
 		cwdaemon_debug(1, "Request = %s", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
-			/* Hmm, seems that 'request_queue' is a kind of
-			   simple FIFO for text to be played. Would
-			   a better FIFO be a good thing? */
 			strcat(request_queue, request_buffer);
 			cwdaemon_play_request(request_queue);
 		} else {
@@ -817,7 +907,8 @@ int cwdaemon_handle_escaped_request(char *request)
 
 	/* Take action depending on Escape code. */
 	switch ((int) request[1]) {
-	case '0':	/* reset  all values */
+	case '0':
+		/* Reset all values. */
 		request_queue[0] = '\0';
 		cwdaemon_reset_almost_all();
 		wordmode = 0;
@@ -827,7 +918,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_debug(1, "Reset all values");
 		break;
 	case '2':
-		/* Set speed of morse code, in words per minute. */
+		/* Set speed of Morse code, in words per minute. */
 		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
@@ -863,10 +954,10 @@ int cwdaemon_handle_escaped_request(char *request)
 	case '4':
 		/* Abort currently sent message. */
 		if (wordmode) {
-			cwdaemon_debug(1, "Ignoring Message abort request");
+			cwdaemon_debug(1, "Word mode - ignoring 'Message abort' request");
 		} else {
-			cwdaemon_debug(1, "Message abort");
-			if (ptt_flag & PTT_ACTIVE_ECHO) {		/* if echo pending */
+			cwdaemon_debug(1, "Character mode - message abort");
+			if (ptt_flag & PTT_ACTIVE_ECHO) {
 				cwdaemon_debug(1, "Echo 'break'");
 				cwdaemon_sendto("break\r\n");
 			}
@@ -886,7 +977,8 @@ int cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_errmsg("Sender has told me to end the connection");
 		exit(EXIT_SUCCESS);
 
-	case '6':	/* set uninterruptable */
+	case '6':
+		/* Set uninterruptable (word mode). */
 		request[0] = '\0';
 		request_queue[0] = '\0';
 		wordmode = 1;
@@ -917,9 +1009,10 @@ int cwdaemon_handle_escaped_request(char *request)
 	case '9':
 		/* Base port number.
 		   TODO: why this is obsolete? */
-		cwdaemon_debug(1, "Obsolete control data '9'.");
+		cwdaemon_debug(1, "Obsolete control data '9' (change network port), ignoring");
 		break;
-	case 'a':	/* PTT keying on or off */
+	case 'a':
+		/* PTT keying on or off */
 		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
@@ -948,7 +1041,8 @@ int cwdaemon_handle_escaped_request(char *request)
 			}
 		}
 		break;
-	case 'b':	/* SSB way */
+	case 'b':
+		/* SSB way. */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
 		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
@@ -970,16 +1064,17 @@ int cwdaemon_handle_escaped_request(char *request)
 			}
 		}
 #else
-		cwdaemon_debug(1, "Escape code 'b' unavailable (no parallel port available).");
+		cwdaemon_debug(1, "'SSB way' through parallel port unavailable (parallel port not configured).");
 #endif
 		break;
 	case 'c':
-		/* Tune for a number of seconds */
+		/* Tune for a number of seconds. */
 		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
 		if (lv <= 10) {
+			/* TODO: why the limitation to 10 s? Is it enough? */
 			cwdaemon_tune(lv);
 		}
 		break;
@@ -990,7 +1085,8 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
-		if (lv >= 0 && lv < 51) {
+		/* TODO: why the limitation to 50 ms? Is it enough? */
+		if (lv >= 0 && lv <= 50) {
 			current_ptt_delay = lv;
 		} else {
 			current_ptt_delay = 50;
@@ -1002,17 +1098,18 @@ int cwdaemon_handle_escaped_request(char *request)
 			cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
 		}
 		break;
-	case 'e':	/* set bandswitch output on parport bits 2(lsb),7,8,9(msb) */
+	case 'e':
+		/* Set band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB). */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
 		if (cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
-		if (lv <= 15 && lv >= 0) {
+		if (lv >= 0 && lv <= 15) {
 			cwdaemon_switch_band(global_cwdevice, lv);
 		}
 #else
-		cwdaemon_debug(1, "Band switching through parallel port is unavailable.");
+		cwdaemon_debug(1, "Band switching through parallel port is unavailable (parallel port not configured).");
 #endif
 		break;
 	case 'f': {
@@ -1063,7 +1160,8 @@ int cwdaemon_handle_escaped_request(char *request)
 		   the client.
 		   So this is a reply with delay. */
 		cwdaemon_prepare_reply(reply_buffer, request + 2, strlen(request) - 2);
-		/* wait for queue-empty callback */
+		/* cwdaemon will wait for queue-empty callback before
+		   sending the reply. */
 		break;
 	} /* switch ((int) request[1]) */
 
@@ -1111,21 +1209,29 @@ void cwdaemon_play_request(char *request)
 			cw_set_send_speed(current_morse_speed);
 			break;
 		case '~':
-			cw_set_gap(2); /* 2 dots time additional for the next char */
+			/* 2 dots time additional for the next char. The gap
+			   is always reset after playing the char. */
+			cw_set_gap(2);
 			x++;
 			break;
-		case '^':              /* Send echo to main program when CW playing is done. */
+		case '^':
+			/* Send echo to main program when CW playing is done. */
 			*x = '\0';     /* Remove '^' and possible trailing garbage. */
 			/* I'm guessing here that '^' can be found at
 			   the end of request, and it means "echo text of current
 			   request back to sender once you finish playing it". */
 			cwdaemon_prepare_reply(reply_buffer, request, strlen(request) - 2);
-			/* wait for queue-empty callback */
+			/* cwdaemon will wait for queue-empty callback
+			   before sending the reply. */
 			break;
 		case '*':
+			/* TODO: what's this? */
 			*x = '+';
 		default:
 			cwdaemon_set_ptt_on(global_cwdevice, "PTT (auto) on");
+			/* PTT is now in AUTO. It will be turned off on low
+			   tone queue, in cwdaemon_tone_queue_low_callback(). */
+
 			cwdaemon_debug(1, "Morse = %c", *x);
 			cw_send_character(*x);
 			x++;
@@ -1140,7 +1246,7 @@ void cwdaemon_play_request(char *request)
 		}
 	}
 
-	/* All characters processed, mark buffer. */
+	/* All characters processed, mark buffer as empty. */
 	*request = '\0';
 
 	return;
@@ -1151,8 +1257,10 @@ void cwdaemon_play_request(char *request)
 
 
 /**
-   Function passed to libcw, will be called every time libcw notices
-   change of a key state.
+   \brief Callback function for key state change
+
+   Function passed to libcw, will be called every time libcw is notified
+   about change of a state of user's Morse key.
    When key is closed (dit or dah), \p keystate is 1.
    Otherwise \p keystate is 0.
 
@@ -1178,10 +1286,19 @@ void cwdaemon_keyingevent(void *arg, int keystate)
 
 
 
-/* Callback routine when tone queue is empty */
+/**
+   \brief Callback routine called when tone queue is empty
+
+   Callback routine registered with cw_register_tone_queue_low_callback(),
+   will be called by libcw every time number of tones drops in queue below
+   specific level.
+
+   \param arg - unused argument
+*/
 void cwdaemon_tone_queue_low_callback(void *arg)
 {
 	cwdaemon_debug(2, "Entering \"queue empty\" callback, ptt_flag=%02x", ptt_flag);
+
 	if (ptt_flag == PTT_ACTIVE_AUTO        /* PTT on, w/o manual PTT or similar */
 	    && request_queue[0] == '\0'        /* No new text in the meantime. */
 	    && cw_get_tone_queue_length() <= 1) {
@@ -1195,10 +1312,13 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 		cwdaemon_sendto(reply_buffer);
 		reply_buffer[0] = '\0';
 
+		/* Since echo has been sent, we can turn the flag off. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
 
 		/* wait a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
+			/* TODO: wouldn't it be easier to just call
+			   cwdaemon_tone_queue_low_callback()? */
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
@@ -1211,7 +1331,14 @@ void cwdaemon_tone_queue_low_callback(void *arg)
 
 
 
-/* parse the command line and check for options, do some error checking */
+/**
+   \brief Get and parse command line options
+
+   Scan program's arguments, check for command line options, parse them.
+
+   \param argc - main()'s argc argument
+   \param argv - main()'s argv argument
+*/
 void cwdaemon_parse_command_line(int argc, char *argv[])
 {
 	int p;
@@ -1523,6 +1650,17 @@ int main(int argc, char *argv[])
 
 
 
+/**
+   \brief Set up initial values of cw keying device names
+
+   Allocate strings with device names, assign them to appropriate
+   cwdevice_xyz.desc values.
+
+   The strings can be later deallocated with
+   cwdaemon_free_cwdevice_descriptions().
+
+   \return 0
+*/
 int cwdaemon_set_default_cwdevice_descriptions(void)
 {
 	/* Default device description of parallel/lpt port. */
@@ -1560,6 +1698,12 @@ int cwdaemon_set_default_cwdevice_descriptions(void)
 
 
 
+/**
+   \brief Deallocate strings with cw keying device names
+
+   Function frees memory previously allocated with
+   cwdaemon_free_cwdevice_descriptions().
+*/
 void cwdaemon_free_cwdevice_descriptions(void)
 {
 	if (cwdevice_ttys.desc) {
@@ -1584,6 +1728,26 @@ void cwdaemon_free_cwdevice_descriptions(void)
 
 
 
+/**
+   \brief Assign correct device type to given device variable
+
+   A device setup function. The function takes device name (description)
+   \p desc, guesses device type (parport/tty/null), and assigns the guessed
+   device to given \p device.
+
+   Function assigns to \p device a pointer to global variable, there is
+   no need to free memory associated with the variable itself.
+   The function copies \p desc to 'global device'->desc , you will have to
+   deallocate the copied desc with cwdaemon_free_cwdevice_descriptions().
+
+   The function can be called with \p device to which some other device
+   has been already assigned.
+
+   \param device - pointer to device variable - guessed device will be
+
+   \return -1 if \p desc describes invalid device, or if memory allocation error happens
+   \return 0 otherwise
+*/
 int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 {
 	int fd;
@@ -1603,7 +1767,7 @@ int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 	else if ((fd = dev_is_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
-		; /* Pass, checking for NULL device below. */
+		*device = NULL;
 	}
 
 	if (!*device) {
@@ -1615,6 +1779,10 @@ int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 		free((*device)->desc);
 	}
 	(*device)->desc = strdup(desc);
+	if (!(*device)->desc) {
+		printf("%s: memory allocation error\n");
+		return -1;
+	}
 
 	cwdaemon_debug(1, "Keying device used: %s", (*device)->desc);
 	(*device)->init(*device, fd);
@@ -1627,6 +1795,14 @@ int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
 
 
 
+/**
+   \brief Initialize network variables
+
+   Initialize network socket and other network variables.
+
+   \return -1 on failure
+   \return 0 on success
+*/
 int cwdaemon_initialize_socket(void)
 {
 	bzero(&request_addr, sizeof (request_addr));
