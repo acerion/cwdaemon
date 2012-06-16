@@ -5678,9 +5678,8 @@ done
 
 for ac_header in errno.h arpa/inet.h fcntl.h netdb.h netinet/in.h \
 stdlib.h string.h strings.h sys/ioctl.h sys/socket.h syslog.h unistd.h \
-sys/time.h linux/ppdev.h stdio.h signal.h stdarg.h termios.h sys/resource.h \
-dev/ppbus/ppi.h sys/stat.h \
-
+sys/time.h time.h linux/ppdev.h stdio.h signal.h stdarg.h termios.h sys/resource.h \
+dev/ppbus/ppi.h sys/stat.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -5694,55 +5693,9 @@ fi
 done
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether time.h and sys/time.h may both be included" >&5
-$as_echo_n "checking whether time.h and sys/time.h may both be included... " >&6; }
-if ${ac_cv_header_time+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <sys/time.h>
-#include <time.h>
+# AC_HEADER_TIME
 
-int
-main ()
-{
-if ((struct tm *) 0)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_header_time=yes
-else
-  ac_cv_header_time=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_time" >&5
-$as_echo "$ac_cv_header_time" >&6; }
-if test $ac_cv_header_time = yes; then
-
-$as_echo "#define TIME_WITH_SYS_TIME 1" >>confdefs.h
-
-fi
-
-
-for ac_header in sys/kd.h sys/vtkd.h sys/kbio.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
+#AC_CHECK_HEADERS(sys/kd.h sys/vtkd.h sys/kbio.h)
 
 for ac_header in libcw.h
 do :
@@ -5756,23 +5709,11 @@ fi
 
 done
 
-for ac_header in sys/soundcard.h soundcard.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-if test "$ac_cv_header_sys_soundcard_h" = 'no' \
-	       && test "$ac_cv_header_soundcard_h" == 'no'; then
-	as_fn_error $? "Cannot find sys/soundcard.h or soundcard.h" "$LINENO" 5
-fi
+#AC_CHECK_HEADERS(sys/soundcard.h soundcard.h)
+#if test "$ac_cv_header_sys_soundcard_h" = 'no' \
+#	       && test "$ac_cv_header_soundcard_h" == 'no'; then
+#	AC_MSG_ERROR(Cannot find sys/soundcard.h or soundcard.h)
+#fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 ac_fn_c_check_type "$LINENO" "pid_t" "ac_cv_type_pid_t" "$ac_includes_default"
@@ -6058,13 +5999,19 @@ fi
 done
 
 # check for single precision versions of sin() and floor()
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sinf in -lm" >&5
-$as_echo_n "checking for sinf in -lm... " >&6; }
-if ${ac_cv_lib_m_sinf+:} false; then :
+#AC_CHECK_LIB([m],[sinf],[AC_DEFINE([HAVE_SINF],[1],[libm includes sinf])])
+#AC_CHECK_LIB([m],[floorf],[AC_DEFINE([HAVE_FLOORF],[1],[libm includes floorf])])
+#AC_CHECK_LIB([m],[sin])
+#AC_CHECK_LIB([ossaudio],[_oss_ioctl])
+
+# New function in libcw4
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cw_get_audio_system_label in -lcw" >&5
+$as_echo_n "checking for cw_get_audio_system_label in -lcw... " >&6; }
+if ${ac_cv_lib_cw_cw_get_audio_system_label+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
+LIBS="-lcw  $LIBS"
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -6074,170 +6021,42 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char sinf ();
+char cw_get_audio_system_label ();
 int
 main ()
 {
-return sinf ();
+return cw_get_audio_system_label ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_sinf=yes
+  ac_cv_lib_cw_cw_get_audio_system_label=yes
 else
-  ac_cv_lib_m_sinf=no
+  ac_cv_lib_cw_cw_get_audio_system_label=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_sinf" >&5
-$as_echo "$ac_cv_lib_m_sinf" >&6; }
-if test "x$ac_cv_lib_m_sinf" = xyes; then :
-
-$as_echo "#define HAVE_SINF 1" >>confdefs.h
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for floorf in -lm" >&5
-$as_echo_n "checking for floorf in -lm... " >&6; }
-if ${ac_cv_lib_m_floorf+:} false; then :
-  $as_echo_n "(cached) " >&6
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cw_cw_get_audio_system_label" >&5
+$as_echo "$ac_cv_lib_cw_cw_get_audio_system_label" >&6; }
+if test "x$ac_cv_lib_cw_cw_get_audio_system_label" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Found libcw4" >&5
+$as_echo "$as_me: Found libcw4" >&6;}
 else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char floorf ();
-int
-main ()
-{
-return floorf ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_floorf=yes
-else
-  ac_cv_lib_m_floorf=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_floorf" >&5
-$as_echo "$ac_cv_lib_m_floorf" >&6; }
-if test "x$ac_cv_lib_m_floorf" = xyes; then :
-
-$as_echo "#define HAVE_FLOORF 1" >>confdefs.h
-
+  as_fn_error $? "Can't find libcw4 from unixcw package." "$LINENO" 5
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for sin in -lm" >&5
-$as_echo_n "checking for sin in -lm... " >&6; }
-if ${ac_cv_lib_m_sin+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lm  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char sin ();
-int
-main ()
-{
-return sin ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_m_sin=yes
-else
-  ac_cv_lib_m_sin=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_m_sin" >&5
-$as_echo "$ac_cv_lib_m_sin" >&6; }
-if test "x$ac_cv_lib_m_sin" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBM 1
-_ACEOF
-
-  LIBS="-lm $LIBS"
-
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for _oss_ioctl in -lossaudio" >&5
-$as_echo_n "checking for _oss_ioctl in -lossaudio... " >&6; }
-if ${ac_cv_lib_ossaudio__oss_ioctl+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lossaudio  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char _oss_ioctl ();
-int
-main ()
-{
-return _oss_ioctl ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_ossaudio__oss_ioctl=yes
-else
-  ac_cv_lib_ossaudio__oss_ioctl=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ossaudio__oss_ioctl" >&5
-$as_echo "$ac_cv_lib_ossaudio__oss_ioctl" >&6; }
-if test "x$ac_cv_lib_ossaudio__oss_ioctl" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBOSSAUDIO 1
-_ACEOF
-
-  LIBS="-lossaudio $LIBS"
-
-fi
 
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
-  CFLAGS="${CFLAGS} -Wall"
+  #CFLAGS="${CFLAGS} -Wall"
+  CFLAGS="${CFLAGS} -Wall -W -pedantic -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wredundant-decls"
 fi
+CFLAGS="${CFLAGS} -std=c99"
 
-pkg_modules="libcw"
+
 
 
 
@@ -6367,12 +6186,12 @@ if test -n "$UNIXCW_CFLAGS"; then
     pkg_cv_UNIXCW_CFLAGS="$UNIXCW_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$pkg_modules\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "$pkg_modules") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcw >= 4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_CFLAGS=`$PKG_CONFIG --cflags "$pkg_modules" 2>/dev/null`
+  pkg_cv_UNIXCW_CFLAGS=`$PKG_CONFIG --cflags "libcw >= 4" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6384,12 +6203,12 @@ if test -n "$UNIXCW_LIBS"; then
     pkg_cv_UNIXCW_LIBS="$UNIXCW_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"\$pkg_modules\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "$pkg_modules") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcw >= 4") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_LIBS=`$PKG_CONFIG --libs "$pkg_modules" 2>/dev/null`
+  pkg_cv_UNIXCW_LIBS=`$PKG_CONFIG --libs "libcw >= 4" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6410,14 +6229,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "$pkg_modules" 2>&1`
+	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcw >= 4" 2>&1`
         else
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "$pkg_modules" 2>&1`
+	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcw >= 4" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$UNIXCW_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements ($pkg_modules) were not met:
+	as_fn_error $? "Package requirements (libcw >= 4) were not met:
 
 $UNIXCW_PKG_ERRORS
 
