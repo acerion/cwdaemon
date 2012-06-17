@@ -36,6 +36,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <signal.h>
 
 #define K_MESSAGE 1
 
@@ -75,7 +76,7 @@ int netkeyer_init (void)
 	}
 	bzero (&address, sizeof(address));
 	address.sin_family = AF_INET;
-	memcpy (&address.sin_addr.s_addr, hostbyname->h_addr, 
+	memcpy (&address.sin_addr.s_addr, hostbyname->h_addr,
 		sizeof (address.sin_addr.s_addr));
 	address.sin_port = htons (netkeyer_port);
 	socket_descriptor = socket (AF_INET, SOCK_DGRAM, 0);
@@ -174,7 +175,7 @@ int netkeyer(int cw_op, char *cwmessage)
 			buf[0]='\0';
 	}
 
-	if (buf[0] != '\0') 
+	if (buf[0] != '\0')
 	{
 		sendto_rc = sendto (socket_descriptor, buf, sizeof (buf),
 			0, (struct sockaddr *)&address, sizeof (address));
@@ -191,13 +192,20 @@ int netkeyer(int cw_op, char *cwmessage)
 	return(0);
 }
 
+static void
+catchint (int signal)
+{
+	int	result = netkeyer (K_ABORT, "");
+	exit (0);
+}
+
 int main (int argc, char **argv)
 {
 	int result;
 
 	result = netkeyer_init ();
 	if (result == 1) exit (1);
-		
+
 /* tests start here, no error handling */
 	if (argc > 1)
 	{
@@ -225,7 +233,7 @@ int main (int argc, char **argv)
 	result = netkeyer (K_WEIGHT, "20");
 	result = netkeyer (K_MESSAGE, "paris");
 	sleep (2);
-	
+
 	printf("weight -20\n");
 	result = netkeyer (K_WEIGHT, "-20");
 	result = netkeyer (K_MESSAGE, "paris");
@@ -289,9 +297,18 @@ int main (int argc, char **argv)
 	result = netkeyer (K_PTT, "");
 	result = netkeyer (K_TOD, "0");
 
-/* done, reset keyer */
+	/* almost done, reset keyer */
 	printf("done, reset\n");
 	result = netkeyer (K_RESET, "");
+
+
+	printf("test message abort with SIGALRM");
+	signal (SIGALRM, catchint);
+	result = netkeyer (K_MESSAGE, "paris paris");
+	alarm (2);
+	while (1) {}
+
+	printf("done");
 
 /* end tests */
 	result = netkeyer_close ();
