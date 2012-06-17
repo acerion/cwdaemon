@@ -184,7 +184,7 @@ int netkeyer(int cw_op, const char *cwmessage)
 			buf[0] = '\0';
 	}
 
-	ssize_t sendto_rc;
+	ssize_t sendto_rc = 0;
 	if (buf[0] != '\0') {
 		sendto_rc = sendto(socket_descriptor, buf, sizeof (buf),
 				   0, (struct sockaddr *)&address, sizeof (address));
