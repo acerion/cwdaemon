@@ -65,6 +65,12 @@ ssize_t sendto_rc;
 struct sockaddr_in address;
 struct hostent *hostbyname;
 
+int netkeyer_init(void);
+int netkeyer_close(void);
+int netkeyer(int cw_op, const char *cwmessage);
+void catchint(int signal);
+
+
 
 int netkeyer_init (void)
 {
@@ -74,9 +80,9 @@ int netkeyer_init (void)
 		perror ("gethostbyname failed");
 		return (1);
 	}
-	bzero (&address, sizeof(address));
+	memset(&address, '\0', sizeof(address));
 	address.sin_family = AF_INET;
-	memcpy (&address.sin_addr.s_addr, hostbyname->h_addr,
+	memcpy (&address.sin_addr.s_addr, hostbyname->h_addr_list[0],
 		sizeof (address.sin_addr.s_addr));
 	address.sin_port = htons (netkeyer_port);
 	socket_descriptor = socket (AF_INET, SOCK_DGRAM, 0);
@@ -101,7 +107,7 @@ int netkeyer_close (void)
 }
 
 
-int netkeyer(int cw_op, char *cwmessage)
+int netkeyer(int cw_op, const char *cwmessage)
 {
 	char buf[80];
 
@@ -192,10 +198,9 @@ int netkeyer(int cw_op, char *cwmessage)
 	return(0);
 }
 
-static void
-catchint (int signal)
+void catchint(__attribute__((unused)) int signal)
 {
-	int	result = netkeyer (K_ABORT, "");
+	__attribute__((unused)) int result = netkeyer(K_ABORT, "");
 	exit (0);
 }
 
