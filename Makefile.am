@@ -1,4 +1,4 @@
-SUBDIRS=src doc
+SUBDIRS=src doc test
 
 INCLUDES = @UNIXCW_CFLAGS@
 
