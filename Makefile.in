@@ -221,8 +221,12 @@ top_srcdir = @top_srcdir@
 SUBDIRS = src doc test
 INCLUDES = @UNIXCW_CFLAGS@
 CLEANFILES = *~
-EXTRA_DIST = cwdaemon.spec.in cwdaemon.spec test/cwtest.sh test/cwtest.c \
-  cwdaemon.png TODO cwsetup.sh
+EXTRA_DIST = cwdaemon.spec.in cwdaemon.spec \
+	test/cwtest.sh test/cwtest.c test/Makefile.am test/Makefile.in \
+	patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.diff patches/cwdaemon-mt.patch \
+	doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
+	doc/schematics/serialport_circuit.jpg doc/schematics/serialport_circuit.ps \
+	cwdaemon.png TODO README cwsetup.sh
 
 all: all-recursive
 
@@ -456,9 +460,6 @@ distdir: $(DISTFILES)
 	      || exit 1; \
 	  fi; \
 	done
-	$(MAKE) $(AM_MAKEFLAGS) \
-	  top_distdir="$(top_distdir)" distdir="$(distdir)" \
-	  dist-hook
 	-test -n "$(am__skip_mode_fix)" \
 	|| find "$(distdir)" -type d ! -perm -755 \
 		-exec chmod u+rwx,go+rx {} \; -o \
@@ -646,7 +647,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am:
 
 install-dvi: install-dvi-recursive
 
@@ -700,58 +701,18 @@ uninstall-am:
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-generic \
 	ctags ctags-recursive dist dist-all dist-bzip2 dist-gzip \
-	dist-hook dist-lzip dist-lzma dist-shar dist-tarZ dist-xz \
-	dist-zip distcheck distclean distclean-generic distclean-tags \
+	dist-lzip dist-lzma dist-shar dist-tarZ dist-xz dist-zip \
+	distcheck distclean distclean-generic distclean-tags \
 	distcleancheck distdir distuninstallcheck dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-data-local install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-generic pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
 
-
-install-data-local:
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) README $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) doc/schematics/parallelport_circuit.ps $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) doc/schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) doc/schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) doc/schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_SCRIPT) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_SCRIPT) cwsetup.sh $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) test/cwtest.c $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) cwdaemon.png $(DESTDIR)$(pkgdatadir)
-
-dist-hook:
-	if test -d schematics; then \
-		mkdir $(distdir)/schematics; \
-		for file in schematics/*; do \
-			if test -f $$file; then \
-				cp -p $$file $(distdir)/schematics; \
-			fi \
-		done \
-	fi
-	if test -d test; then \
-		mkdir $(distdir)/test; \
-		for test in test/*; do \
-			if test -f $$test; then \
-				cp -p $$test $(distdir)/test; \
-			fi \
-		done \
-	fi
-	if test -d patches; then \
-		mkdir $(distdir)/patches; \
-		for patch in patches/*; do \
-			if test -f $$patch; then \
-				cp -p $$patch $(distdir)/patches; \
-			fi \
-		done \
-	fi
 
 rpm: Makefile
 	make dist
