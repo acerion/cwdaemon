@@ -6272,7 +6272,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile doc/cwdaemon.8 cwdaemon.spec"
+ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile test/Makefile doc/cwdaemon.8 cwdaemon.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7023,6 +7023,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+    "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
     "doc/cwdaemon.8") CONFIG_FILES="$CONFIG_FILES doc/cwdaemon.8" ;;
     "cwdaemon.spec") CONFIG_FILES="$CONFIG_FILES cwdaemon.spec" ;;
 
