@@ -1540,18 +1540,6 @@ int main(int argc, char *argv[])
 
 	cwdaemon_parse_command_line(argc, argv);
 
-	if (debuglevel > 3) {		/* debugging cwlib as well */
-		/* FIXME: pass correct libcw debug flags. */
-		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
-	}
-
-
-	cwdaemon_reset_almost_all();
-	atexit(cwdaemon_close_libcw_output);
-
-	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
-	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
-
 	if (forking) {
 		pid_t pid = fork();
 		if (pid < 0) {
@@ -1617,6 +1605,24 @@ int main(int argc, char *argv[])
 		}
 	}
 #endif
+
+	/* Initialize libcw (and other things) here, this late, to
+	   be sure that libcw has been initialized (and is still used)
+	   by child process. Parent process exits after forking, and so
+	   libcw is closed in parent process. We need it in child process,
+	   so here it is. */
+	cwdaemon_reset_almost_all();
+	atexit(cwdaemon_close_libcw_output);
+
+	if (debuglevel > 3) {		/* debugging cwlib as well */
+		/* FIXME: pass correct libcw debug flags. */
+		cw_set_debug_flags((1 << (debuglevel - 3)) -1);
+	}
+
+
+	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
+
 
 	request_queue[0] = '\0';
 	do {
