@@ -1,3 +1,13 @@
+2012-06-18 Kamil Ignacak
+	* audio: it was possible in previous versions of cwdaemon that after
+	forking cwdaemon didn't produce any sound. This is now fixed.
+	* tests: further clean up in 'test/': removing binary files.
+
+2012-06-17 Kamil Ignacak
+	* tests: somewhere around 17.06 I have cleaned up a bit contents of
+	'test/'; Two *.c files have been merged into one, Makefile files have
+	been added.
+
 2012-06-16 Kamil Ignacak
 	* build system: added "-std=C99" compilation flag.
 	Temporarily enabling more warnings.
