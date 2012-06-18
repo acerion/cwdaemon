@@ -27,10 +27,13 @@
  * Usage: cwtest or cwtest <portname>
  */
 
+#define _POSIX_SOURCE /* getaddrinfo() and friends. */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -57,11 +60,11 @@
 #define K_SDEVICE 15	// set sound device
 #define K_VOLUME 16     // volume for soundcard
 
-static int netkeyer_port = 6789;
+static char netkeyer_port[] = "6789";
 static char netkeyer_hostaddress[16] = "127.0.0.1";
 static int socket_descriptor;
-struct sockaddr_in address;
-
+static struct addrinfo *addrinfo_list;
+static struct addrinfo *selected_addrinfo;
 
 int netkeyer_init(void);
 int netkeyer_close(void);
@@ -74,23 +77,56 @@ void catchint(int signal);
 
 int netkeyer_init(void)
 {
-	struct hostent *host = gethostbyname(netkeyer_hostaddress);
-	if (!host) {
-		perror("gethostbyname() failed");
+	/* Code in this function has been copied from
+	   getaddrinfo() man page. */
+
+	struct addrinfo hints;
+
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+	hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
+	hints.ai_flags = 0;
+	hints.ai_protocol = IPPROTO_UDP;
+
+	int rv = getaddrinfo(netkeyer_hostaddress,
+			     netkeyer_port,
+			     &hints, &addrinfo_list);
+	if (rv) {
+		fprintf(stderr, "getaddrinfo(): %s\n", gai_strerror(rv));
 		return -1;
 	}
 
-	memset(&address, '\0', sizeof(address));
-	address.sin_family = AF_INET;
-	memcpy(&address.sin_addr.s_addr, host->h_addr_list[0],
-		sizeof (address.sin_addr.s_addr));
-	address.sin_port = htons(netkeyer_port);
-	socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
-	if (socket_descriptor == -1) {
-		perror("socket call failed");
-		return -1;
+	/* getaddrinfo() returns a list of address structures.
+	   Try each address until we successfully connect(2).
+	   If socket(2) (or connect(2)) fails, we (close the socket
+	   and) try the next address. */
+
+	for (selected_addrinfo = addrinfo_list;
+	     selected_addrinfo;
+	     selected_addrinfo = selected_addrinfo->ai_next) {
+
+		socket_descriptor = socket(selected_addrinfo->ai_family,
+					   selected_addrinfo->ai_socktype,
+					   selected_addrinfo->ai_protocol);
+		if (socket_descriptor == -1) {
+			continue;
+		}
+
+		if (connect(socket_descriptor,
+			    selected_addrinfo->ai_addr,
+			    selected_addrinfo->ai_addrlen) != -1) {
+			break;
+		}
+
+		close(socket_descriptor);
 	}
-	return 0;
+
+	if (!selected_addrinfo) {
+		fprintf(stderr, "Could not connect\n");
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
 
@@ -103,6 +139,8 @@ int netkeyer_close(void)
 		perror("close call failed");
 		return -1;
 	}
+
+	freeaddrinfo(addrinfo_list);           /* No longer needed */
 
 	return 0;
 }
@@ -186,15 +224,18 @@ int netkeyer(int cw_op, const char *cwmessage)
 
 	ssize_t sendto_rc = 0;
 	if (buf[0] != '\0') {
-		sendto_rc = sendto(socket_descriptor, buf, sizeof (buf),
-				   0, (struct sockaddr *)&address, sizeof (address));
+		sendto_rc = sendto(socket_descriptor,
+				   buf, sizeof (buf),
+				   0,
+				   selected_addrinfo->ai_addr,
+				   sizeof (struct addrinfo));
 	}
 
 	buf[0] = '\0';
 	cw_op = K_RESET;
 
 	if (sendto_rc == -1) {
-     	 	printf("Keyer send failed...!\n");
+     	 	printf("Keyer send failed (%s)!\n", strerror(errno));
 		return -1;
      	} else {
 		return 0;
