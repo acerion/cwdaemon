@@ -500,13 +500,13 @@ void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		device->ptt(device, ON);
 		cwdaemon_debug(1, info);
-		/* TODO: why multiply by 20? */
-		int rv = cw_queue_tone((current_ptt_delay * CWDAEMON_USECS_PER_MSEC) * 20, 0);	/* try to 'enqueue' delay */
+
+		int rv = cw_queue_tone(current_ptt_delay * CWDAEMON_USECS_PER_MSEC, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {	/* Old libcw may reject freq=0. */
 			cwdaemon_debug(1, "cw_queue_tone failed: rv=%d errno=%s, using udelay instead",
 				       rv, strerror(errno));
-			/* TODO: wouldn't it be simpler to use
-			   cwdaemon_udelay()? */
+			/* TODO: wouldn't it be simpler to not to call
+			   cw_queue_tone() and use only cwdaemon_udelay()? */
 			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
