@@ -1,0 +1,145 @@
+Title: Specification of PTT functionality in cwdaemon.
+
+Version: 1
+
+Date of last revision: 2012.06.22
+
+Status: Draft. The file may contain old, inaccurate, misleading or
+invalid information.
+
+
+TOC:
+
+A. PTT delay
+
+B. PTT on request
+
+C. PTT automatic
+
+D. PTT by footswitch
+
+E. PTT on
+
+F. PTT off
+
+
+----------------------------------------------------------------------------
+
+
+
+
+A. PTT delay
+
+
+"PTT delay" is a time between two specific events at the beginning of
+keying a text:
+
+1. between enabling PTT in a HAM transceiver by changing state of a
+specific pin of PC hardware port, and
+
+2. beginning of keying HAM transceiver by changing state of a specific pin
+of PC hardware port.
+
+
+PTT delay at the end of keying a text is equal to zero. Therefore
+these two events occur in sequence without delay:
+
+1. end of keying HAM transceiver by changing state of a specific pin
+of PC hardware port, and
+
+2. disabling PTT in a HAM transceiver by changing state of a specific
+pin of PC hardware port.
+
+
+Rationale behind using the "PTT delay":
+Some text about relays in HAM transceivers.
+
+
+Value of the delay can be altered by client software at run-time by
+sending to cwdaemon a request with escape code. See chapter with
+specification of escape codes for information about format of network
+requests with escape code.
+
+The delay is measured in milliseconds.
+
+Setting ptt delay to zero means that cwdaemon won't be turning PTT on
+on any occasion.
+
+
+
+
+B. PTT on request
+
+
+Client software can request altering state of PTT pin in PC hardware
+port (turning it on or off). This can be achieved with request with
+escaped code. See escape_codes_specification for details on such
+request.
+
+If this is the only active mode controlling the PTT pin, then
+cwdaemon's behaviour is following:
+
+PTT pin is set to "on" if value in request with escaped code is
+non-zero. Change of the state may be delayed if "PTT delay" parameter
+is non-zero.
+
+If there is no text being keyed, PTT pin is set to "off" immediately,
+without delay caused by "PTT delay" (as "PTT delay" only affects
+action upon "on"). After this the mode of controlling PTT is set to
+"none".
+
+If upon receiving an "PTT off" request cwdaemon is keying a text, then
+setting PTT "off" is postponed until the text has been completely
+keyed. (Implementation detail: this may be implemented as switching
+from "PTT on request" to "PTT automatic".) After this the mode of
+controlling PTT is set to "none".
+
+
+
+
+C. PTT automatic
+
+
+The default mode of controlling by cwdaemon the PTT pin in PC hardware
+port.
+
+If this is the only active mode controlling the PTT pin, then
+cwdaemon's behaviour is following:
+
+PTT pin is set to "on" at the beginnig of keyed text.  Delay between
+setting PTT pin ot on and beginning of keying the text is controlled
+by cwdaemon's "PTT delay" parameter, and may be non-zero.
+
+After keying the whole text the PTT pin is set to "off" immediately,
+without delay caused by "PTT delay" (as "PTT delay" only affects
+action upon "on"). After this the mode of controlling PTT is set to
+"none".
+
+
+
+
+D. PTT by footswitch
+
+
+TBD
+
+
+
+
+E. PTT on
+
+
+This part will describe how to change state of PTT pin of PC hardware
+port to "on" if more than one mode of controlling PTT is active.
+
+
+
+
+F. PTT off
+
+
+This part will describe how to change state of PTT pin of PC hardware
+port to "off" if more than one mode of controlling PTT is active.
+
+It will also mention turning PTT off right after the last dit/dah has
+been keyed.

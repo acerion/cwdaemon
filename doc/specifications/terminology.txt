@@ -1,0 +1,73 @@
+Title: Terminology
+
+Version: 0
+
+Date of last revision: 23.06.2012
+
+Status: Draft. The file may contain old, inaccurate, misleading or
+invalid information.
+
+This document specifies terminology to be used in cwdaemon project.
+Consistent use of unambiguous terminology should make writing
+comments, messages, specification and other documentation easier.
+
+
+----------------------------------------------------------------------------
+
+
+
+
+message
+
+Data exchanged between cwdaemon and client application over the
+network. It may be either "request" or "reply".
+
+The word should be avoided, as it is ambiguous: it can mean both
+request and reply, a content of request or reply, or any other generic
+data sent between any entities.
+
+
+
+
+request
+
+Message sent by client application to cwdaemon.
+
+
+
+
+reply
+
+Message sent back by cwdaemon to client application.
+
+
+
+
+text
+
+A string of ASCII characters that should be converted to Morse code.
+A text is usually sent by client application to cwdaemon in a request.
+A text can be keyed or played.
+
+
+
+
+keying
+
+Manipulating state of HAM transceiver input to transmit a Morse
+code. The manipulation is performed through a pin of PC hardware
+port. Input data for keying process is a text, hence text is usually
+being keyed by cwdaemon. Keying is one of primary roles of cwdaemon.
+
+
+
+
+playing
+
+Converting given text into audible form of Morse code. cwdaemon can
+access Operating System's audio system through libcw. Playing a text
+is only a secondary role of cwdaemon.
+
+
+
+

@@ -1,0 +1,233 @@
+Title: Escape codes specification
+
+Version: 0
+
+Date of last revision: 23.06.2012
+
+Status: Draft. The file may contain old, inaccurate, misleading or
+invalid information.
+
+
+----------------------------------------------------------------------------
+
+
+
+
+Some messages are recognized by cwdaemon as special messages. Such
+messages start with 'ESC' character - ASCII character equal 27.  ESC
+character is treated as special only when it is the first character in
+the message. Handling of ESC character on any other position in the
+message, and handling of multiple ESC characters in single message, is
+unspecified.
+
+For the purpose of this document the following meta characters,
+denoting boundaries of entities, will be used:
+
+< > "
+
+They are used only in this documentation, and are not a part of real
+message.
+
+Escape codes recognized by cwdaemon, their exact format, and behaviour
+of cwdaemon is specified below.
+
+Every message sent to cwdaemon can contain zero or one escape code.
+Any additional content of a message that follows valid escape code and
+its allowed value, may be silently ignored by cwdaemon.
+
+
+
+
+<ESC>"0"
+
+Reset parameters of cwdaemon to default values. The user-visible
+parameters that are being reset are following:
+
+parameter 1, parameter 2, parameter 3. TBD
+
+
+
+
+<ESC>"2"<"speed value">
+
+Set keying speed to given value, in wpm. Allowed values are between 4
+and 60, inclusive. Values outside of the range are silently ignored.
+
+
+
+
+<ESC>"3"<"tone value">
+
+Set frequency of side tone, in Hz. Allowed values are between 1 and
+4000, inclusive. Values outside of this range are silently ignored.
+Value equal zero has a special meaning, described below.
+
+
+
+
+<ESC>"3"<"0">
+
+Turn side tone off. A special case of the previous escape code. The
+difference is that value '0' sets volume of sound, and not its
+frequency, to zero.  You have to use 'g' escape code to set volume of
+sound to non-zero value.
+
+
+
+
+<ESC>"4"
+
+Abort message.
+TBD
+
+
+
+
+<ESC>"5"
+
+Stop (exit) the daemon
+
+
+
+
+<ESC>"6"
+Set uninterruptable (word- ) mode for simulator.
+TBD
+
+
+
+
+<ESC>"7"<"weight value">
+
+Set weighting (-50 ... 50).
+TBD
+
+
+
+
+<ESC>"8"<"device">
+
+Set device for keying. Meaning of the code is the same as of '-d'
+command line option.
+TBD
+
+
+
+
+<ESC>"9"<"port number">
+
+Obsolete, do not use.
+
+Change network port used by cwdaemon to specified value.
+
+
+
+
+<ESC>"a"<"0|1">
+
+Set state of PTT pin on PC hardware port to off ("0") or on ("1").
+This escape code manipulates state of PTT pin "on request", as opposed
+to manipulating the PTT pin "automatically" and "by footswitch".
+
+"Automatic" and "by footswitch" modes are described elsewhere, but you
+have to remember that they also affect state of PTT pin.
+
+There is a delay between turning PTT on and start of keying HAM
+transceiver by cwdaemon. This is a "PTT delay" parameter that can be
+altered with 'd' escape code.
+
+
+
+
+<ESC>"b"<"0|1">
+
+SSB signal from microphone or soundcard.
+TBD
+
+
+
+
+<ESC>"c"<"x">
+
+Tune for x seconds, i.e. turn PTT on, key continuous tone for x
+seconds, turn PTT off. Allowed values of x are between 0 and 10.
+Values outside of this range are silently ignored.
+
+
+
+
+<ESC>"d"<"delay">
+
+Set value of "PTT delay" parameter, in milliseconds. Allowed values
+are between 0 and 50. Values outside of this range are silently
+ignored.
+
+Check ptt_specification.txt to see how "PTT delay" affects working of
+cwdaemon.
+
+FIXME: code in cwdaemon.c allows values out of range. Make the
+behaviour consistent with other options (silently ignore) or add
+exception?
+
+
+
+
+<ESC>"e"<"bandindex">
+
+Band info output on pins 2, 7, 8, 9 of the parport (pin 2 = lsb, 9 =
+msb, e.g. 1000 = 160m, 1001 = 10m).
+TBD
+
+
+
+
+<ESC>"f"<"sound system">
+
+Set sound system used by cwdaemon. "sound system" is one, single
+letter, from list presented below.  Meaning of the code is the same as
+of '-x' command line option.
+
+Recognized values of "sound systems" (case sensitive) are:
+
+c - console buzzer (PC speaker) - default system,
+
+o - OSS,
+
+a - ALSA,
+
+p - PulseAudio,
+
+n - none - no audio,
+
+s - soundcard - cwdaemon will autoselect from OSS/ALSA/PulseAudio.
+
+You may experience few seconds of delay (~4 s) when switching from
+ALSA or PulseAudio to OSS audio system. This is because OSS waits
+until audio device stops being blocked by ALSA or PulseAudio.
+
+Values describing unknown sound systems, or sound systems that are
+unavailable on current platform, are silently ignored. Requesting such
+a sound system results in not switching to another sound system, but
+keeping with last valid one.
+
+NOTE: future versions of cwdaemon may also accept other values,
+describing newly added support for other audio systems.
+
+
+
+
+<ESC>"g"<"volume">
+
+Set volume of sound on soundcard, in percents of maximum volume.
+Allowed values are between 0 and 100. Values outside of this range are
+silently ignored.
+
+This code does not affect volume of sound played by console buzzer.
+
+
+
+
+<ESC>"h"<"opt.text">
+
+cwdaemon sends back "h", and "opt.text" (if provided), to logging
+program when keying is done.  "opt.text" is optional. TBD
