@@ -494,9 +494,9 @@ void cwdaemon_switch_band(cwdevice *device, unsigned int band)
 */
 void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 {
-	/* TODO: check the condition:
-	   Shouldn't it be only '!(ptt_flag & PTT_ACTIVE_AUTO)', with
-	   'current_ptt_delay' pushed lower, in separate 'if'? */
+	/* For backward compatibility it is assumed that ptt_delay=0
+	   means "cwdaemon shouldn't turn PTT on, at all". */
+
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		device->ptt(device, ON);
 		cwdaemon_debug(1, info);
@@ -723,10 +723,14 @@ int cwdaemon_get_long(const char *buf, long *lvp)
    There are two different procedures for recognizing what should be sent
    back as reply and when:
    \li received request ending with '^' character: the text of the request
-       should be played, but it also should be used as a reply. The reply
-       should be sent back to the client as soon as cwdaemon finishes playing
-       text of request.
-       Think about it as a form of "confirm by copy".
+       should be played, but it also should be used as a reply.
+       This function does not specify when the reply should be sent back.
+       All it does is it prepares the text of reply.
+
+       '^' can be used for char-by-char communication: client software
+       message with single character followed by '^'. cwdaemon plays the
+       character, and informs client software about playing the sound. Then
+       client software can send request with next character followed by '^'.
    \li received request starting with "<ESC>h" escape code: the text of
        request should be sent back to the client after playing text of *next*
        request. So there are two requests sent by client to cwdaemon:
@@ -1239,7 +1243,14 @@ void cwdaemon_play_request(char *request)
 			cw_send_character(*x);
 			x++;
 			if (cw_get_gap() == 2) {
-				if (*x == '^') { /* TODO: ??? */
+				if (*x == '^') {
+					/* '^' is supposed to be the
+					   last character in the
+					   message, meaning that all
+					   that was before it, should
+					   be used as reply text. So
+					   x++ will jump to ending
+					   NUL */
 					x++;
 				} else {
 					cw_set_gap(0);
