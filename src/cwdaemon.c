@@ -1,7 +1,8 @@
 /*
  * cwdaemon - morse sounding daemon for the parallel or serial port
- * Copyright (C) 2002 -2005 Joop Stakenborg <pg4i@amsat.org>
- *		       and many authors, see the AUTHORS file.
+ * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
+ *		        and many authors, see the AUTHORS file.
+ * Copyright (C) 2012 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,10 +13,11 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Library General Public License for more details.
- *
+
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 #define _POSIX_C_SOURCE 200809L /* nanosleep(), strdup() */
@@ -1025,7 +1027,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		}
 
 		if (lv) {
-			global_cwdevice->ptt(global_cwdevice, ON);
+			//global_cwdevice->ptt(global_cwdevice, ON);
 			if (current_ptt_delay) {
 				cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
 			} else {
