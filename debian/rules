@@ -1,4 +1,10 @@
 #!/usr/bin/make -f
 
+
+# Enable hardening.
+# http://wiki.debian.org/Hardening#dpkg-buildflags
+DPKG_EXPORT_BUILDFLAGS = yes
+include /usr/share/dpkg/default.mk
+
 %:
 	dh $@
