@@ -1,3 +1,9 @@
+cwdaemon (0.9.6-1) unstable; urgency=low
+
+  * New version of upstream package;
+
+ -- Kamil Ignacak <acerion@wp.pl>  Wed, 04 Jul 2012 19:33:45 +0100
+
 cwdaemon (0.9.5-1) unstable; urgency=low
 
   * New version of upstream package;
@@ -18,7 +24,7 @@ cwdaemon (0.9.4-9) unstable; urgency=low
 
   * New maintainer/upstream: Kamil Ignacak <acerion@wp.pl>; there is no
     new project page yet.
-  * Applying patches from Jenö Vago <ha5se@ha5hrk.hu>, with small changes
+  * Applying patches from Jenö Vágó HA5SE, with small changes
     from Kamil Ignacak.
   * Install /usr/share/cwdaemon/*.sh scripts with correct permissions.
 
