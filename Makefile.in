@@ -226,7 +226,8 @@ EXTRA_DIST = cwdaemon.spec.in cwdaemon.spec \
 	patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.diff patches/cwdaemon-mt.patch \
 	doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
 	doc/schematics/serialport_circuit.jpg doc/schematics/serialport_circuit.ps \
-	cwdaemon.png TODO README cwsetup.sh
+	cwdaemon.png TODO README cwsetup.sh \
+	debian
 
 all: all-recursive
 
