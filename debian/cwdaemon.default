@@ -13,7 +13,7 @@ DEVICE="parport0"
 # default 6789
 #UDPPORT="6789"
 
-# priority -20 to +20 
+# priority -20 to +20
 #PRIORITY="0"
 
 # CW speed in WPM. Default 24
@@ -29,5 +29,6 @@ DEVICE="parport0"
 #WEIGHT="0"
 
 # sound device:
-# c: console, s: soundcard, b: both, n: none. Default is c.
+# c: console, o: OSS, a: ALSA, p: PulseAudio,
+# s: soundcard (autoselect from OSS/ALSA/PulseAudio), n: none. Default is c.
 #SDEVICE="c"
