@@ -1,11 +1,10 @@
-You will need to have the the unixcw-2.3 development libraries and headers
+You will need to have the the libcw4 development libraries and headers
 installed to install cwdaemon.
 
-Try http://www.ibiblio.org/pub/linux/Incoming/unixcw-2.3.tgz or
-http://www.ibiblio.org/pub/linux/apps/ham/morse/unixcw-2.3.tgz
-to get unixcw.
+libcw4 is a part of unicw-3.1.0 package which can be found here:
+http://unixcw.sourceforge.net/
 
-After installing unixcw do:
+After installing libcw4 development files do:
 
 1: ./configure
 2: make
