@@ -22,8 +22,11 @@ install-data-local:
 	$(INSTALL_DATA) doc/schematics/serialport_circuit.ps $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) doc/schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) doc/schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) cwsetup.sh $(DESTDIR)$(pkgdatadir)
+
+        # The scripts will be installed as executable.
+	$(INSTALL_SCRIPT) test/cwtest.sh $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_SCRIPT) cwsetup.sh $(DESTDIR)$(pkgdatadir)
+
 	$(INSTALL_DATA) test/cwtest.c $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) cwdaemon.png $(DESTDIR)$(pkgdatadir)
 
