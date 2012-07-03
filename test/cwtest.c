@@ -1,6 +1,7 @@
 /*
  * cwtest.c - test program for cwdaemon
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
+ * Copyright (C) 2012 Kamil Ignacak <acerion@wp.pl>
  *
  * Some of this code is taken from netkeyer.c, which is part of the tlf source,
  * here is the copyright:
@@ -19,7 +20,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 /*
@@ -159,17 +161,17 @@ int netkeyer(int cw_op, const char *cwmessage)
 			sprintf(buf + 1, "0");
  			break;
 		case K_MESSAGE :
-			sprintf(buf, cwmessage);
+			sprintf(buf, "%s", cwmessage);
  			break;
 		case K_SPEED :
   			buf[0] = 27;
 			sprintf(buf + 1, "2");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_TONE :
   			buf[0] = 27;
 			sprintf(buf + 1, "3");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_ABORT :
   			buf[0] = 27;
@@ -186,37 +188,37 @@ int netkeyer(int cw_op, const char *cwmessage)
 		case K_WEIGHT :
   			buf[0] = 27;
 			sprintf(buf + 1, "7");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_DEVICE :
   			buf[0] = 27;
 			sprintf(buf + 1, "8");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_PTT :
   			buf[0] = 27;
 			sprintf(buf + 1, "a");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_TUNE :
   			buf[0] = 27;
 			sprintf(buf + 1, "c");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_TOD :
   			buf[0] = 27;
 			sprintf(buf + 1, "d");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_SDEVICE :
   			buf[0] = 27;
 			sprintf(buf + 1, "f");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		case K_VOLUME :
   			buf[0] = 27;
 			sprintf(buf + 1, "g");
-			sprintf(buf + 2, cwmessage);
+			sprintf(buf + 2, "%s", cwmessage);
  			break;
 		default :
 			buf[0] = '\0';
