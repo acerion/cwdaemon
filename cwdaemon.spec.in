@@ -1,6 +1,7 @@
 # cwdaemon.spec
 #
-# Copyright (c) 2003 -2004 Joop Stakenborg pg4i@amsat.org
+# Copyright (C) 2003 - 2004 Joop Stakenborg pg4i@amsat.org
+# Copyright (C) 2012 Kamil Ignacak <acerion@wp.pl>
 #
 %define name cwdaemon
 %define version @VERSION@
@@ -15,13 +16,13 @@ Group: Daemons
 Prefix: /usr
 BuildRoot: /var/tmp/%{name}-%{version}
 Summary:  Morse daemon for the parallel or serial port
-Vendor: Joop Stakenborg <pg4i@amsat.org>
-URL: http://www.qsl.net/pg4i/linux/cwdaemon.html
-Packager: Joop Stakenborg <pg4i@amsat.org>
+Vendor: Kamil Ignacak <acerion@wp.pl>
+URL: http://cwdaemon.sourceforge.net/
+Packager: Kamil Ignacak <acerion@wp.pl>
 Source: %{name}-%{version}.tar.gz
 
 %description
-Cwdaemon is a small daemon which uses the pc parallel or serial port 
+Cwdaemon is a small daemon which uses the pc parallel or serial port
 and a simple transistor switch to output morse code to a transmitter
 from a text message sent to it via the udp internet protocol.
 
@@ -60,3 +61,5 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Sat Jan 18 2003 Joop Stakenborg
 - Initial spec file
+* Tue Jul 03 2012 Kamil Ignacak
+- Updating the file after taking the project over by new maintainer.
