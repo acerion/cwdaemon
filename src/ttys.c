@@ -1,9 +1,10 @@
 /*
  * cwdaemon - morse sounding daemon for the parallel or serial port
- * Copyright (C) 2002 -2005 Joop Stakenborg <pg4i@amsat.org>
- *			 and many authors, see the AUTHORS file.
+ * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
+ *		        and many authors, see the AUTHORS file.
+ * Copyright (C) 2012 Kamil Ignacak <acerion@wp.pl>
  *
- * This program is free oftware; you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
@@ -15,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
  */
 
 #define _BSD_SOURCE /* S_IFMT and related. */
