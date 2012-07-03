@@ -1,3 +1,6 @@
+2012-07-03 Kamil Ignacak
+	* preparing cwdaemon for new release - few updates in various files.
+
 2012-06-18 Kamil Ignacak
 	* audio: it was possible in previous versions of cwdaemon that after
 	forking cwdaemon didn't produce any sound. This is now fixed.
