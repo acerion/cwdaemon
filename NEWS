@@ -1,3 +1,21 @@
+cwdaemon 0.9.6 / 2012.07.03
+
+New upstream release.
+Most of the changes in the release were introduced by Jenö Vágó, HA5SE
+The changes include:
+ - improved behaviour of PTT function,
+ - completed implementation of basics of handshaking between cwdaemon and
+   client application; this should allow the client application e.g. to send
+   message char-by-char;
+ - fixing some side effects of previously applied patches.
+
+This version of cwdaemon is intended to be used with libcw4.
+This version of cwdaemon has been barely tested by main developer.
+
+
+----
+
+
 cwdaemon 0.9.5 / 2012.04.09
 
 New upstream release. The release has been made after taking over the project
@@ -16,11 +34,11 @@ Summary of changes in applied Debian patches:
  - "Removed bashism from cwsetup.sh script" (by Michael
    Meskes <meskes@debian.org>);
  - "Minor changes for transition from unixcw to libcw3" (by Kamil Ignacak,
-   including fixes by Jenö Vago <ha5se@ha5hrk.hu>);
+   including fixes by Jenö Vágó, HA5SE);
  - "Checking for '\n' char that may occur at the end of TCP buffer."
-   (by Jenö Vago);
+   (by Jenö Vágó);
  - "Call to cw_wait_for_tone_queue() to prevent too early PTT OFF"
-   (by Jenö Vago);
+   (by Jenö Vágó);
  - "Install scripts with INSTALL_SCRIPT to get correct permissions"
    (by Kamal Mostafa <kamal@whence.com>);
 
