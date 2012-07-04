@@ -1,3 +1,8 @@
+2012-07-04 Kamil Ignacak
+	* after performing some tests it turned out that cwdaemon sends
+	malformed replies; three changes in src/cwdaemon.c fix this
+	problem;
+
 2012-07-03 Kamil Ignacak
 	* preparing cwdaemon for new release - few updates in various files.
 
