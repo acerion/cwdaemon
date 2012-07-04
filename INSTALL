@@ -1,7 +1,7 @@
 You will need to have the the libcw4 development libraries and headers
 installed to install cwdaemon.
 
-libcw4 is a part of unicw-3.1.0 package which can be found here:
+libcw4 is a part of unicw-3.1.1 package which can be found here:
 http://unixcw.sourceforge.net/
 
 After installing libcw4 development files do:
