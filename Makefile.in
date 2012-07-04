@@ -737,10 +737,10 @@ install-data-local:
 
 dist-hook:
 	if test -d doc/schematics; then \
-		mkdir $(distdir)/schematics; \
-		for file in schematics/*; do \
+		mkdir $(distdir)/doc/schematics; \
+		for file in doc/schematics/*; do \
 			if test -f $$file; then \
-				cp -p $$file $(distdir)/schematics; \
+				cp -p $$file $(distdir)/doc/schematics; \
 			fi \
 		done \
 	fi
