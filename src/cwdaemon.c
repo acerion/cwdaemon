@@ -749,7 +749,9 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 	reply_addrlen = request_addrlen;
 
 	strncpy(reply, request, n);
-	cwdaemon_debug(2, "request='%s', reply='%s'", request, reply);
+	reply[n] = '\0'; /* FIXME: where is boundary checking? */
+
+	cwdaemon_debug(2, "text of request='%s', text of reply='%s'", request, reply);
 	cwdaemon_debug(1, "now waiting for end of transmission before echo");
 
 	ptt_flag |= PTT_ACTIVE_ECHO; /* wait for tone queue to become empty, then echo back */
@@ -1168,7 +1170,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		   it, and then send prepared reply back to
 		   the client.
 		   So this is a reply with delay. */
-		cwdaemon_prepare_reply(reply_buffer, request + 2, strlen(request) - 2);
+		cwdaemon_prepare_reply(reply_buffer, request + 2, strlen(request + 2));
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
 		break;
@@ -1229,7 +1231,7 @@ void cwdaemon_play_request(char *request)
 			/* I'm guessing here that '^' can be found at
 			   the end of request, and it means "echo text of current
 			   request back to sender once you finish playing it". */
-			cwdaemon_prepare_reply(reply_buffer, request, strlen(request) - 2);
+			cwdaemon_prepare_reply(reply_buffer, request, strlen(request));
 			/* cwdaemon will wait for queue-empty callback
 			   before sending the reply. */
 			break;
