@@ -952,6 +952,11 @@ int cwdaemon_handle_escaped_request(char *request)
 			cw_set_frequency(current_morse_tone);
 			cwdaemon_debug(1, "Tone: %s Hz", request + 2);
 
+			/* Should we really be adjusting volume when
+			   the command is for frequency? It would be more
+			   "elegant" not to do so. */
+			cw_set_volume(current_morse_volume);
+
 		} else if (lv == 0) {	/* sidetone off */
 			current_morse_tone = 0;
 			cw_set_volume(0);
