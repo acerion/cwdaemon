@@ -1363,15 +1363,16 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
 
-		fprintf(stderr, "low callback branch 2\n");
+		fprintf(stderr, "low callback branch 2, ptt_flag = %d\n", ptt_flag);
+
+		/* Since echo has been sent, we can turn the flag off. */
+		ptt_flag &= ~PTT_ACTIVE_ECHO;
+		fprintf(stderr, "PTT flag -PTT_ACTIVE_ECHO (%d, %d)\n", ptt_flag, __LINE__);
 
 		cwdaemon_debug(1, "Echo '%s'", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
 		cwdaemon_sendto(reply_buffer);
 		reply_buffer[0] = '\0';
-
-		/* Since echo has been sent, we can turn the flag off. */
-		ptt_flag &= ~PTT_ACTIVE_ECHO;
 
 		/* wait a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
@@ -1381,13 +1382,8 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
 	} else {
-		fprintf(stderr, "low callback branch 3\n");
-
-		cwdaemon_debug(1, "Echo '%s'", reply_buffer);
-		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
-		cwdaemon_sendto(reply_buffer);
-		reply_buffer[0] = '\0';
-
+		fprintf(stderr, "+++++++++++++++++++low callback branch 3, ptt_flag = %d\n", ptt_flag);
+		exit(0);
 	}
 
 	cwdaemon_debug(2, "Low TQ callback end");
