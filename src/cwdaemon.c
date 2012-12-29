@@ -512,6 +512,7 @@ void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
+		cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%d, %d)\n", ptt_flag, __LINE__);
 	}
 
 	return;
@@ -531,6 +532,8 @@ void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 {
 	device->ptt(device, OFF);
 	ptt_flag = 0;
+	cwdaemon_debug(3, "PTT flag =0 (%d, %d)\n", ptt_flag, __LINE__);
+
 	cwdaemon_debug(1, info);
 
 	return;
@@ -755,6 +758,7 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 	cwdaemon_debug(1, "now waiting for end of transmission before echo");
 
 	ptt_flag |= PTT_ACTIVE_ECHO; /* wait for tone queue to become empty, then echo back */
+	cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_ECHO (%d, %d)\n", ptt_flag, __LINE__);
 
 	return;
 }
@@ -895,7 +899,7 @@ int cwdaemon_receive(void)
 	if (request_buffer[0] != 27) {
 		/* No ESCAPE. All received data should be treated
 		   as text to be sent using Morse code. */
-		cwdaemon_debug(1, "Request = %s", request_buffer);
+		cwdaemon_debug(1, "Request = '%s'", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			strcat(request_queue, request_buffer);
 			cwdaemon_play_request(request_queue);
@@ -925,7 +929,10 @@ int cwdaemon_handle_escaped_request(char *request)
 		wordmode = 0;
 		async_abort = 0;
 		global_cwdevice->reset(global_cwdevice);
+
 		ptt_flag = 0;
+		cwdaemon_debug(3, "PTT flag =0 (%d, %d)\n", ptt_flag, __LINE__);
+
 		cwdaemon_debug(1, "Reset all values");
 		break;
 	case '2':
@@ -984,6 +991,7 @@ int cwdaemon_handle_escaped_request(char *request)
 				cwdaemon_set_ptt_off(global_cwdevice, "PTT off");
 			}
 			ptt_flag &= 0;
+			cwdaemon_debug(3, "PTT flag =0 (%d, %d)\n", ptt_flag, __LINE__);
 		}
 		break;
 	case '5':
@@ -1040,9 +1048,15 @@ int cwdaemon_handle_escaped_request(char *request)
 			} else {
 				cwdaemon_debug(1, "PTT (manual, immediate) on");
 			}
+
 			ptt_flag |= PTT_ACTIVE_MANUAL;
+			cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_MANUAL (%d, %d)\n", ptt_flag, __LINE__);
+
 		} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
+
 			ptt_flag &= ~PTT_ACTIVE_MANUAL;
+			cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_MANUAL (%d, %d)\n", ptt_flag, __LINE__);
+
 			if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
 
 				if (request_queue[0] == '\0'/* no new text in the meantime */
@@ -1052,6 +1066,8 @@ int cwdaemon_handle_escaped_request(char *request)
 				} else {
 					/* still sending, cannot yet switch PTT off */
 					ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
+					cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%d, %d)\n", ptt_flag, __LINE__);
+
 					cwdaemon_debug(1, "reverting from PTT (manual) to PTT (auto) now");
 				}
 			}
@@ -1176,6 +1192,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		   the client.
 		   So this is a reply with delay. */
 		cwdaemon_prepare_reply(reply_buffer, request + 2, strlen(request + 2));
+		cwdaemon_debug(1, "Reply is ready, waiting for message from client (reply = '%s')\n", reply_buffer);
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
 		break;
@@ -1237,6 +1254,7 @@ void cwdaemon_play_request(char *request)
 			   the end of request, and it means "echo text of current
 			   request back to sender once you finish playing it". */
 			cwdaemon_prepare_reply(reply_buffer, request, strlen(request));
+			fprintf(stderr, "waiting 2\n");
 			/* cwdaemon will wait for queue-empty callback
 			   before sending the reply. */
 			break;
@@ -1248,8 +1266,9 @@ void cwdaemon_play_request(char *request)
 			/* PTT is now in AUTO. It will be turned off on low
 			   tone queue, in cwdaemon_tone_queue_low_callback(). */
 
-			cwdaemon_debug(1, "Morse = %c", *x);
+			cwdaemon_debug(1, "Morse = '%c'", *x);
 			cw_send_character(*x);
+			cwdaemon_debug(2, "Morse character '%c' has been queued in libcw\n", *x);
 			x++;
 			if (cw_get_gap() == 2) {
 				if (*x == '^') {
@@ -1331,15 +1350,20 @@ void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 */
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
+	cwdaemon_debug(2, "Low TQ callback start");
 	cwdaemon_debug(2, "Entering \"queue empty\" callback, ptt_flag=%02x", ptt_flag);
 
 	if (ptt_flag == PTT_ACTIVE_AUTO        /* PTT on, w/o manual PTT or similar */
 	    && request_queue[0] == '\0'        /* No new text in the meantime. */
 	    && cw_get_tone_queue_length() <= 1) {
 
+		fprintf(stderr, "low callback branch 1\n");
+
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
 	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
+
+		fprintf(stderr, "low callback branch 2\n");
 
 		cwdaemon_debug(1, "Echo '%s'", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
@@ -1356,7 +1380,17 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
+	} else {
+		fprintf(stderr, "low callback branch 3\n");
+
+		cwdaemon_debug(1, "Echo '%s'", reply_buffer);
+		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
+		cwdaemon_sendto(reply_buffer);
+		reply_buffer[0] = '\0';
+
 	}
+
+	cwdaemon_debug(2, "Low TQ callback end");
 
 	return;
 }
