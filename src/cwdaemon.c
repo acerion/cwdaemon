@@ -1184,15 +1184,19 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'h':
 		/* Data after '<ESC>h' is a text to be used as reply.
-		   It shouldn't be echoed back to client
-		   immediately.
-		   Instead, cwdaemon should wait for another
-		   request (I assume that it will be a
-		   regular text to be played), play
-		   it, and then send prepared reply back to
-		   the client.
-		   So this is a reply with delay. */
-		cwdaemon_prepare_reply(reply_buffer, request + 2, strlen(request + 2));
+		   It shouldn't be echoed back to client immediately.
+
+		   Instead, cwdaemon should wait for another request
+		   (I assume that it will be a regular text to be
+		   played), play it, and then send prepared reply back
+		   to the client.  So this is a reply with delay. */
+
+		/* 'request + 1' skips the leading <ESC>, but
+		   preserves 'h'.  The 'h' is a part of reply text. If
+		   the client didn't specify reply text, the 'h' will
+		   be the only content of server's reply. */
+
+		cwdaemon_prepare_reply(reply_buffer, request + 1, strlen(request + 1));
 		cwdaemon_debug(1, "Reply is ready, waiting for message from client (reply = '%s')", reply_buffer);
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
