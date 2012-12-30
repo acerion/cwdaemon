@@ -512,7 +512,7 @@ void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
 		}
 		ptt_flag |= PTT_ACTIVE_AUTO;
-		cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
 	}
 
 	return;
@@ -532,7 +532,7 @@ void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 {
 	device->ptt(device, OFF);
 	ptt_flag = 0;
-	cwdaemon_debug(3, "PTT flag =0 (%d, %d)", ptt_flag, __LINE__);
+	cwdaemon_debug(3, "PTT flag =0 (%02d, %d)", ptt_flag, __LINE__);
 
 	cwdaemon_debug(1, info);
 
@@ -891,6 +891,7 @@ int cwdaemon_receive(void)
 		cwdaemon_debug(2, "...recv_from (no data)");
 		return 0;
 	} else {
+		cwdaemon_debug(3, "----------------------");
 		; /* pass */
 	}
 
@@ -904,7 +905,7 @@ int cwdaemon_receive(void)
 			strcat(request_queue, request_buffer);
 			cwdaemon_play_request(request_queue);
 		} else {
-			; /* TODO */
+			; /* TODO: how to handle this case? */
 		}
 		return 1;
 	} else {
@@ -931,7 +932,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		global_cwdevice->reset(global_cwdevice);
 
 		ptt_flag = 0;
-		cwdaemon_debug(3, "PTT flag =0 (%d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(3, "PTT flag =0 (%02d, %d)", ptt_flag, __LINE__);
 
 		cwdaemon_debug(1, "Reset all values");
 		break;
@@ -991,7 +992,7 @@ int cwdaemon_handle_escaped_request(char *request)
 				cwdaemon_set_ptt_off(global_cwdevice, "PTT off");
 			}
 			ptt_flag &= 0;
-			cwdaemon_debug(3, "PTT flag =0 (%d, %d)", ptt_flag, __LINE__);
+			cwdaemon_debug(3, "PTT flag =0 (%02d, %d)", ptt_flag, __LINE__);
 		}
 		break;
 	case '5':
@@ -1050,12 +1051,12 @@ int cwdaemon_handle_escaped_request(char *request)
 			}
 
 			ptt_flag |= PTT_ACTIVE_MANUAL;
-			cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_MANUAL (%d, %d)", ptt_flag, __LINE__);
+			cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
 
 		} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
 
 			ptt_flag &= ~PTT_ACTIVE_MANUAL;
-			cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_MANUAL (%d, %d)", ptt_flag, __LINE__);
+			cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
 
 			if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
 
@@ -1066,7 +1067,7 @@ int cwdaemon_handle_escaped_request(char *request)
 				} else {
 					/* still sending, cannot yet switch PTT off */
 					ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
-					cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%d, %d)", ptt_flag, __LINE__);
+					cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
 
 					cwdaemon_debug(1, "reverting from PTT (manual) to PTT (auto) now");
 				}
@@ -1350,8 +1351,7 @@ void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 */
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
-	cwdaemon_debug(2, "Low TQ callback start");
-	cwdaemon_debug(2, "Entering \"queue empty\" callback, ptt_flag=%02x", ptt_flag);
+	cwdaemon_debug(2, "Low TQ callback start, ptt_flag=%02x", ptt_flag);
 
 	if (ptt_flag == PTT_ACTIVE_AUTO        /* PTT on, w/o manual PTT or similar */
 	    && request_queue[0] == '\0'        /* No new text in the meantime. */
@@ -1363,13 +1363,14 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
 
-		cwdaemon_debug(3, "Low callback branch 2, ptt_flag = %d", ptt_flag);
+		cwdaemon_debug(3, "Low callback branch 2, ptt_flag = %02d", ptt_flag);
 
 		/* Since echo has been sent, we can turn the flag off. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-		cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_ECHO (%d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_ECHO (%02d, %d)", ptt_flag, __LINE__);
 
-		cwdaemon_debug(1, "Echo '%s'", reply_buffer);
+
+		cwdaemon_debug(1, "Echoing '%s' back to client", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
 		cwdaemon_sendto(reply_buffer);
 		reply_buffer[0] = '\0';
@@ -1382,8 +1383,9 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
 	} else {
-		cwdaemon_debug(3, "+++++++++++++++++++ Low callback branch 3, ptt_flag = %d", ptt_flag);
-		exit(0);
+		/* TODO: how to correctly handle this case?
+		   Should we do something? */
+		cwdaemon_debug(3, "Low callback branch 3, ptt_flag = %02d", ptt_flag);
 	}
 
 	cwdaemon_debug(2, "Low TQ callback end");
