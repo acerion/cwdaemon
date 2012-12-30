@@ -748,6 +748,14 @@ int cwdaemon_get_long(const char *buf, long *lvp)
 */
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 {
+	/* Since we need to prepare a reply, we need to mark our
+	   intent to send echo. The echo (reply) will be sent to client
+	   when libcw's tone queue becomes empty.
+
+	   It is important to set this flag at the beginning of the function. */
+	ptt_flag |= PTT_ACTIVE_ECHO;
+	cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_ECHO (%02d, %d)", ptt_flag, __LINE__);
+
 	memcpy(&reply_addr, &request_addr, sizeof(reply_addr)); /* Remember sender. */
 	reply_addrlen = request_addrlen;
 
@@ -755,10 +763,7 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 	reply[n] = '\0'; /* FIXME: where is boundary checking? */
 
 	cwdaemon_debug(2, "text of request='%s', text of reply='%s'", request, reply);
-	cwdaemon_debug(1, "now waiting for end of transmission before echo");
-
-	ptt_flag |= PTT_ACTIVE_ECHO; /* wait for tone queue to become empty, then echo back */
-	cwdaemon_debug(3, "PTT flag +PTT_ACTIVE_ECHO (%d, %d)", ptt_flag, __LINE__);
+	cwdaemon_debug(1, "now waiting for end of transmission before echoing back to client");
 
 	return;
 }
@@ -1377,7 +1382,14 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		cwdaemon_debug(1, "Echoing '%s' back to client", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
 		cwdaemon_sendto(reply_buffer);
-		reply_buffer[0] = '\0';
+		/* If this line is uncommented, the callback erases a valid
+		   reply that should be sent back to client. Commenting the
+		   line fixes the problem, and doesn't seem to introduce
+		   any new ones.
+		   TODO: investigate the original problem of erasing a valid
+		   reply. */
+		/* reply_buffer[0] = '\0'; */
+
 
 		/* wait a bit more since we expect to get more text to send */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
