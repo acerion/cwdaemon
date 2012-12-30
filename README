@@ -138,10 +138,16 @@ device          sio             # 8250, 16[45]50 based serial ports
 
 How cwdaemon works
 ------------------
-After starting, the program detaches from its controlling terminal,
-after that the program can be controlled via its network udp input port.
 
-The message formats are:
+After starting, the program detaches from its controlling terminal,
+after that the program can be controlled via its network udp input
+port.
+
+You can control cwdaemon by sending requests to it. Recognized
+requests are listed below. Skip the quotes around codes when sending
+actual requests. <ESC> is ASCII escape character (decimal 27, hex 1B).
+Most of the requests are so called "escape requests", because they
+start with Escape character.
 
 <ESC>"0"                 Reset to default values
 <ESC>"2"<"speed value">  Set keying speed (5 ... 60 wpm)
@@ -172,8 +178,48 @@ The message formats are:
                          system. This is because OSS waits until audio device
                          stops being blocked by ALSA or PulseAudio.
 <ESC>"g"<"volume">       Set soundcard volume (0 .. 100).
-<ESC>"h"<"opt.text">     Cwdaemon replies "h" and optionaly text to logging
-                         program when playing is done.
+<ESC>h<"text">           This request must be followed by a second request
+                         containing only text to be played by cwdaemon. Once
+			 the cwdaemon finishes playing the text from second
+			 request, it replies to the client with "h"+"text"
+			 from first request.
+
+			 "text" is optional.
+
+			 The reply defined in first request is used by
+			 cwdaemon only once, i.e. only for a single
+			 text request that follows the escape
+			 request. If you want to receive a reply from
+			 the cwdaemon after playing each text request,
+			 you need to send the "<ESC>h" escape request
+			 first, for every text request.
+
+			 Example:
+			 client sends: "<ESC>hcat"
+			 client sends: "purring"
+			 server plays: "purring"
+			 server sends back: "hcat"
+
+			 client sends: "<ESC>hdog"
+			 client sends: "barking"
+			 server plays: "barking"
+			 server sends back: "hdog"
+
+			 client sends: "<ESC>h"
+			 client sends: "whispering"
+			 server plays: "whispering"
+			 server sends back: "h"
+
+			 client sends: "<ESC>hdog"
+			 client sends: "barking"
+			 server plays: "barking"
+			 server sends back: "hdog"
+
+			 client sends: "purring"
+			 server plays: "purring"
+			 server does not send a reply - none was specified this time for "purring"
+
+
 Any message              Send morse code message  (max 1 packet!)
 qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps.
                          Repeated '+' and '-' characters are allowed,
