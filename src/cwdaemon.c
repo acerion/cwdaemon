@@ -97,6 +97,7 @@
 #include <assert.h>
 
 #include <libcw.h>
+#include <libcw_debug.h>
 #include "cwdaemon.h"
 
 
@@ -135,6 +136,10 @@
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
+
+
+/* For developer's debugging purposes. */
+extern cw_debug_t cw_debug_object_dev;
 
 
 /* Default values of parameters, may be modified only through
@@ -1601,6 +1606,9 @@ void cwdaemon_print_help(void)
    waiting for something to happen on the UDP port */
 int main(int argc, char *argv[])
 {
+	cw_debug_set_flags(&cw_debug_object_dev, CW_DEBUG_GENERATOR | CW_DEBUG_SOUND_SYSTEM);
+	(&cw_debug_object_dev)->level = CW_DEBUG_DEBUG;
+
 	atexit(cwdaemon_free_cwdevice_descriptions);
 	if (cwdaemon_set_default_cwdevice_descriptions() == -1) {
 		exit(EXIT_FAILURE);
