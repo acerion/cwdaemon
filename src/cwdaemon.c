@@ -174,7 +174,13 @@ static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
    other than '1'. */
 static const int tq_low_watermark = 1;
 
+/* Quick and dirty solution to following problem: when cwdaemon for
+   some reason fails to open audio output, and attempts to play
+   characters received from client, it crashes.  It doesn't know that
+   it attempts to play to closed audio output.
 
+   This is a flag telling cwdaemon if audio output is available or not. */
+static bool has_audio_output = false;
 
 
 /* Network variables. */
@@ -686,7 +692,13 @@ void cwdaemon_reset_libcw_output(void)
 	cwdaemon_close_libcw_output();
 
 	cwdaemon_debug(3, "Setting sound system '%s'", cw_get_audio_system_label(default_audio_system));
-	cwdaemon_open_libcw_output(default_audio_system);
+
+	if (!cwdaemon_open_libcw_output(default_audio_system)) {
+		has_audio_output = true;
+	} else {
+		has_audio_output = false;
+		return;
+	}
 
 	cw_set_frequency(default_morse_tone);
 	cw_set_send_speed(default_morse_speed);
@@ -1206,7 +1218,12 @@ int cwdaemon_handle_escaped_request(char *request)
 		/* Handle valid request for changing sound system. */
 		cwdaemon_debug(1, "Switching to sound system '%s'", cw_get_audio_system_label(current_audio_system));
 		cwdaemon_close_libcw_output();
-		cwdaemon_open_libcw_output(current_audio_system);
+
+		if (!cwdaemon_open_libcw_output(current_audio_system)) {
+			has_audio_output = true;
+		} else {
+			has_audio_output = false;
+		}
 		break;
 	}
 	case 'g':
