@@ -172,7 +172,7 @@ static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
 
    I REALLY don't think that you would want to set it to any value
    other than '1'. */
-static int tq_low_watermark = 1;
+static const int tq_low_watermark = 1;
 
 
 
