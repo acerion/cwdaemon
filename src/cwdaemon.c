@@ -134,6 +134,7 @@
 #define CWDAEMON_DEFAULT_AUDIO_SYSTEM  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
+#define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
 #define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
@@ -563,7 +564,7 @@ void cwdaemon_tune(int seconds)
 
 		/* make it similar to normal CW, allowing interrupt */
 		for (int i = 0; i < seconds; i++) {
-			cw_queue_tone(1000000, current_morse_tone);
+			cw_queue_tone(CWDAEMON_USECS_PER_SEC, current_morse_tone);
 		}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */
@@ -1954,10 +1955,10 @@ static void
 timer_add (struct timeval *tv, long secs, long usecs)
 {
 	tv->tv_sec += secs;
-	if ((tv->tv_usec += usecs) >= 1000000)
+	if ((tv->tv_usec += usecs) >= CWDAEMON_USECS_PER_SEC)
 	{
-		tv->tv_sec += tv->tv_usec / 1000000;
-		tv->tv_usec %= 1000000;
+		tv->tv_sec += tv->tv_usec / CWDAEMON_USECS_PER_SEC;
+		tv->tv_usec %= CWDAEMON_USECS_PER_SEC;
 	}
 }
 
