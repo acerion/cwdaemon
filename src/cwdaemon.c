@@ -629,7 +629,11 @@ int cwdaemon_open_libcw_output(int audio_system)
 		/* FIXME:
 		   When cwdaemon failed to create a generator, and user
 		   kills non-forked cwdaemon through Ctrl+C, there is
-		   a memory protection error. */
+		   a memory protection error.
+
+		   It seems that this error has been fixed with
+		   changes in libcw, committed on 31.12.2012.
+		   To be observed. */
 		cwdaemon_debug(1, "Failed to create generator with sound system '%s'", cw_get_audio_system_label(audio_system));
 	}
 
@@ -902,7 +906,6 @@ int cwdaemon_receive(void)
 		cwdaemon_debug(2, "...recv_from (no data)");
 		return 0;
 	} else {
-		cwdaemon_debug(3, "----------------------");
 		; /* pass */
 	}
 
@@ -1176,6 +1179,19 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
+		/* FIXME: if 'c' describes unavailable sound system,
+		   cwdaemon fails to open the new sound system. Since
+		   the old one is closed with cwdaemon_close_libcw_output(),
+		   cwdaemon has no working sound system, and is unable to
+		   play sound.
+
+		   This can be fixed either by querying libcw if 'c'
+		   sound system is available, or by first trying to
+		   open new sound system and then - on success -
+		   closing the old one. In either case cwdaemon would
+		   require some method to inform client about success
+		   or failure to open new sound system.	*/
+
 		/* Handle valid request for changing sound system. */
 		cwdaemon_debug(1, "Switching to sound system '%s'", cw_get_audio_system_label(current_audio_system));
 		cwdaemon_close_libcw_output();
@@ -1366,21 +1382,40 @@ void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 */
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
-	cwdaemon_debug(2, "Low TQ callback start, ptt_flag=%02x", ptt_flag);
+	cwdaemon_debug(3, "Low TQ callback start, ptt_flag=%02x", ptt_flag);
 
-	if (ptt_flag == PTT_ACTIVE_AUTO        /* PTT on, w/o manual PTT or similar */
-	    && request_queue[0] == '\0'        /* No new text in the meantime. */
-	    && cw_get_tone_queue_length() <= 1) {
+	if (ptt_flag == PTT_ACTIVE_AUTO
+	    /* PTT is (most probably?) on, in purely automatic mode.
+	       This means that as soon as there are no new chars to
+	       play, we should turn PTT off. */
 
-		cwdaemon_debug(3, "Low callback branch 1");
+	    && request_queue[0] == '\0'
+	    /* No new text has been queued in the meantime. */
+
+	    && cw_get_tone_queue_length() <= tq_low_watermark) {
+		/* TODO: check if this third condition is really necessary. */
+		/* Originally twas 'cw_get_tone_queue_length() <= 1',
+		   I'm guessing that '1' here was the same '1' as the
+		   third argument to cw_register_tone_queue_low_callback().
+		   Feel free to correct me ;) */
+
+
+		cwdaemon_debug(3, "Low TQ callback branch 1, ptt_flag = %02d", ptt_flag);
 
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
-	} else if (ptt_flag & PTT_ACTIVE_ECHO) {        /* if waiting for echo */
+	} else if (ptt_flag & PTT_ACTIVE_ECHO) {
+		/* PTT_ACTIVE_ECHO: client has used special request to
+		   indicate that it is waiting for reply (echo) from
+		   the server (i.e. cwdaemon) after the server plays
+		   all characters. */
 
-		cwdaemon_debug(3, "Low callback branch 2, ptt_flag = %02d", ptt_flag);
+		cwdaemon_debug(3, "Low TQ callback branch 2, ptt_flag = %02d", ptt_flag);
 
-		/* Since echo has been sent, we can turn the flag off. */
+		/* Since echo is being sent, we can turn the flag off.
+		   For some reason cwdaemon works better when we turn the
+		   flag off before sending the reply, rather than turning
+		   if after sending the reply. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
 		cwdaemon_debug(3, "PTT flag -PTT_ACTIVE_ECHO (%02d, %d)", ptt_flag, __LINE__);
 
@@ -1397,20 +1432,34 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		/* reply_buffer[0] = '\0'; */
 
 
-		/* wait a bit more since we expect to get more text to send */
+		/* wait a bit more since we expect to get more text to send
+
+		   TODO: the comment above is a bit unclear.  Perhaps
+		   it means that we have dealt with escape request
+		   requesting an echo, and now there may be a second
+		   request (following the escape request) that still
+		   needs to be played ("more text to send").
+
+		   If so, we need to call the callback again, so that
+		   it can check if text buffer is non-empty and if
+		   tone queue is non-empty. We call the callback again
+		   indirectly, by simulating almost empty tone queue
+		   (i.e. by adding only two tones to tone queue).
+
+		   I wonder why we don't call the callback directly,
+		   maybe it has something to do with avoiding
+		   recursion? */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
-			/* TODO: wouldn't it be easier to just call
-			   cwdaemon_tone_queue_low_callback()? */
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
 	} else {
 		/* TODO: how to correctly handle this case?
 		   Should we do something? */
-		cwdaemon_debug(3, "Low callback branch 3, ptt_flag = %02d", ptt_flag);
+		cwdaemon_debug(3, "Low TQ callback branch 3, ptt_flag = %02d", ptt_flag);
 	}
 
-	cwdaemon_debug(2, "Low TQ callback end");
+	cwdaemon_debug(3, "Low TQ callback end");
 
 	return;
 }
