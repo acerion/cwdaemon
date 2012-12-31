@@ -1,3 +1,12 @@
+2012-12-30 Kamil Ignacak
+	* testing: improving test/cwtest.pl script - more test cases,
+	checking replies from server, multiple repetitions of test cases
+	in a loop.
+	* functionality: restoring functionality from 0.9.4: reply from
+	cwdaemon to a "<ESC>h" escape request starts with character "h".
+	This small piece of functionality was missing from post-0.9.4
+	releases.
+
 2012-12-29 Kamil Ignacak
 	* <ESC>h Some changes that fix problems related to callback
 	mechanism replying to <ESC>h sequence. The problems were reported
