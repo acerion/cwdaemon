@@ -165,6 +165,17 @@ static int current_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
 static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
 
 
+/* Level of libcw's tone queue that triggers 'callback for low level
+   in tone queue'.  The callback function is
+   cwdaemon_tone_queue_low_callback(), it is registered with
+   cw_register_tone_queue_low_callback().
+
+   I REALLY don't think that you would want to set it to any value
+   other than '1'. */
+static int tq_low_watermark = 1;
+
+
+
 
 /* Network variables. */
 /* cwdaemon usually receives requests from client, but on occasions
@@ -1747,7 +1758,7 @@ int main(int argc, char *argv[])
 
 
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
-	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, 1);
+	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, tq_low_watermark);
 
 
 	request_queue[0] = '\0';
