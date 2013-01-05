@@ -1,3 +1,22 @@
+cwdaemon 0.9.7 / 2013.01.XX
+
+New release.
+The reason for this release is fixing some bugs reported by Thomas Beierlein:
+ - <ESC>30 request has been setting volume to zero, but it was impossible
+   to re-set the volume to non-zero value (e.g. with <ESC>3440). This now
+   has been fixed.
+ - reply mechanism replying to <ESC>h requests wasn't working correctly.
+   Behaviour of the reply mechanism has been improved.
+A Perl script testing cwdaemon (test/cwtest.pl) has greatly improved in the
+process of fixing the second issue.
+
+This version of cwdaemon is intended to be used with libcw5.
+This version of cwdaemon has been barely tested by main developer.
+
+
+----
+
+
 cwdaemon 0.9.6 / 2012.07.04
 
 New release.
