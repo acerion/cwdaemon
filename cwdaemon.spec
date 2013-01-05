@@ -4,7 +4,7 @@
 # Copyright (C) 2012 - 2013 Kamil Ignacak <acerion@wp.pl>
 #
 %define name cwdaemon
-%define version 0.9.6
+%define version 0.9.7
 %define release 1
 
 # required items
