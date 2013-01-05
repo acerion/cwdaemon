@@ -1,7 +1,7 @@
 /*
  * cwtest.c - test program for cwdaemon
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2013 Kamil Ignacak <acerion@wp.pl>
  *
  * Some of this code is taken from netkeyer.c, which is part of the tlf source,
  * here is the copyright:
