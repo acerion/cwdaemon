@@ -326,6 +326,9 @@ cwdevice cwdevice_lp = {
 /* Selected keying device:
    serial port (cwdevice_ttys) || parallel port (cwdevice_lp) || null (cwdevice_null).
    It should be configured with cwdaemon_set_cwdevice(). */
+/* FIXME: if no device is specified in command line, and no physical
+   device is available, the global_cwdevice is NULL, which causes the
+   program to break. */
 static cwdevice *global_cwdevice = NULL;
 
 
