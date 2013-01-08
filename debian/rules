@@ -8,3 +8,8 @@ include /usr/share/dpkg/default.mk
 
 %:
 	dh $@
+
+# Don't strip anything from files containing <some string> in their
+# name.  May be useful during debugging of application.
+#override_dh_strip:
+#	dh_strip -Xcw
