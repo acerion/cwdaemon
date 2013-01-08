@@ -1,6 +1,11 @@
 cwdaemon (0.9.7-1) unstable; urgency=low
 
   * New version of upstream package;
+  * debian/init.d file: The file is installed as /etc/init.d/cwdaemon.
+    Upstream has changed contents of '# Default-Stop:' line from (empty)
+    to '0 1 6', to silence this warning message occurring during
+    installation: 'update-rc.d: warning: default stop runlevel arguments
+    (0 1 6) do not match cwdaemon Default-Stop values (none)'.
 
  -- Kamil Ignacak <acerion@wp.pl>  Fri, 04 Jan 2013 23:55:21 +0100
 
