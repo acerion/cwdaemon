@@ -7,7 +7,7 @@ DPKG_EXPORT_BUILDFLAGS = yes
 include /usr/share/dpkg/default.mk
 
 %:
-	dh $@
+	dh $@ --without dh_pysupport --without dh_python2
 
 # Don't strip anything from files containing <some string> in their
 # name.  May be useful during debugging of application.
