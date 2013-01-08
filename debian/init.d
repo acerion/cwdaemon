@@ -4,7 +4,7 @@
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
-# Default-Stop:
+# Default-Stop:      0 1 6
 # Short-Description: A Morse daemon.
 ### END INIT INFO
 #
@@ -32,27 +32,27 @@ if [ -r /etc/default/$NAME ]
 then
     . /etc/default/$NAME
 
-    test -n "$DEVICE"   && OPTS="$OPTS -d $DEVICE"  
-    test -n "$UDPPORT"  && OPTS="$OPTS -p $UDPPORT"  
-    test -n "$PRIORITY" && OPTS="$OPTS -P $PRIORITY"  
-    test -n "$SPEED"    && OPTS="$OPTS -s $SPEED"  
-    test -n "$PTTDELAY" && OPTS="$OPTS -t $PTTDELAY"  
-    test -n "$VOLUME"   && OPTS="$OPTS -v $VOLUME"  
-    test -n "$WEIGHT"   && OPTS="$OPTS -w $WEIGHT"  
-    test -n "$SDEVICE"  && OPTS="$OPTS -x $SDEVICE"  
+    test -n "$DEVICE"   && OPTS="$OPTS -d $DEVICE"
+    test -n "$UDPPORT"  && OPTS="$OPTS -p $UDPPORT"
+    test -n "$PRIORITY" && OPTS="$OPTS -P $PRIORITY"
+    test -n "$SPEED"    && OPTS="$OPTS -s $SPEED"
+    test -n "$PTTDELAY" && OPTS="$OPTS -t $PTTDELAY"
+    test -n "$VOLUME"   && OPTS="$OPTS -v $VOLUME"
+    test -n "$WEIGHT"   && OPTS="$OPTS -w $WEIGHT"
+    test -n "$SDEVICE"  && OPTS="$OPTS -x $SDEVICE"
 fi
 
 case "$1" in
   start)
     echo "$DEVICE" | grep -q 'parport'
     if [ $? = 0 ]; then
-        lsmod|grep -q '\<lp\>' 
+        lsmod|grep -q '\<lp\>'
         if [ $? = 0 ]; then
             echo "Removing module lp"
             rmmod lp
         fi
     fi
-    
+
     echo -n "Starting $DESC: $NAME"
     start-stop-daemon --start --quiet --exec $DAEMON -- $OPTS
     echo "."
