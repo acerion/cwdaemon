@@ -50,9 +50,12 @@ AC_CHECK_FUNCS([setpriority])
 #AC_CHECK_LIB([m],[sin])
 #AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
-# New function in libcw4
-AC_CHECK_LIB([cw], [cw_get_audio_system_label], [AC_MSG_NOTICE([Found libcw4])], [AC_MSG_ERROR([Can't find libcw4 from unixcw package.])])
+# New function in libcw5
+AC_CHECK_LIB([cw], [cw_debug_get_flags], [AC_MSG_NOTICE([Found libcw5])], [AC_MSG_ERROR([Can't find libcw5 from unixcw package.])])
 
+
+# For debug purposes only.
+# CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   #CFLAGS="${CFLAGS} -Wall"
