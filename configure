@@ -6004,10 +6004,10 @@ done
 #AC_CHECK_LIB([m],[sin])
 #AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
-# New function in libcw4
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cw_get_audio_system_label in -lcw" >&5
-$as_echo_n "checking for cw_get_audio_system_label in -lcw... " >&6; }
-if ${ac_cv_lib_cw_cw_get_audio_system_label+:} false; then :
+# New function in libcw5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cw_debug_get_flags in -lcw" >&5
+$as_echo_n "checking for cw_debug_get_flags in -lcw... " >&6; }
+if ${ac_cv_lib_cw_cw_debug_get_flags+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6021,34 +6021,37 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char cw_get_audio_system_label ();
+char cw_debug_get_flags ();
 int
 main ()
 {
-return cw_get_audio_system_label ();
+return cw_debug_get_flags ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_cw_cw_get_audio_system_label=yes
+  ac_cv_lib_cw_cw_debug_get_flags=yes
 else
-  ac_cv_lib_cw_cw_get_audio_system_label=no
+  ac_cv_lib_cw_cw_debug_get_flags=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cw_cw_get_audio_system_label" >&5
-$as_echo "$ac_cv_lib_cw_cw_get_audio_system_label" >&6; }
-if test "x$ac_cv_lib_cw_cw_get_audio_system_label" = xyes; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Found libcw4" >&5
-$as_echo "$as_me: Found libcw4" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cw_cw_debug_get_flags" >&5
+$as_echo "$ac_cv_lib_cw_cw_debug_get_flags" >&6; }
+if test "x$ac_cv_lib_cw_cw_debug_get_flags" = xyes; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: Found libcw5" >&5
+$as_echo "$as_me: Found libcw5" >&6;}
 else
-  as_fn_error $? "Can't find libcw4 from unixcw package." "$LINENO" 5
+  as_fn_error $? "Can't find libcw5 from unixcw package." "$LINENO" 5
 fi
 
 
+
+# For debug purposes only.
+# CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   #CFLAGS="${CFLAGS} -Wall"
