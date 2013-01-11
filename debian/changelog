@@ -7,7 +7,7 @@ cwdaemon (0.9.7-1) unstable; urgency=low
     installation: 'update-rc.d: warning: default stop runlevel arguments
     (0 1 6) do not match cwdaemon Default-Stop values (none)'.
 
- -- Kamil Ignacak <acerion@wp.pl>  Fri, 04 Jan 2013 23:55:21 +0100
+ -- Kamil Ignacak <acerion@wp.pl>  Fri, 11 Jan 2013 20:14:27 +0100
 
 cwdaemon (0.9.6-1) unstable; urgency=low
 
