@@ -22,6 +22,12 @@ PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 OPTS=""
 
+# To silence lintian's warning:
+# W: cwdaemon: init.d-script-does-not-source-init-functions etc/init.d/cwdaemon
+. /lib/lsb/init-functions
+
+
+
 # Gracefully exit if the package has been removed.
 test -x $DAEMON || exit 0
 # Exit if it says no start
