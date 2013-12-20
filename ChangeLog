@@ -1,3 +1,20 @@
+2013-12-20 Kamil Ignacak
+	* debug code: symblic names as verbosity debug levels;
+	cwdaemon_debug() now can write to stdout and to disc file;
+	cwdaemon_debug() accepts __line__ and __FILE__. Three new command
+	line options related to debugging (verbosity level, libcw debug
+	flags, output debug file).
+
+2013-12-17 Kamil Ignacak
+	* build system: renaming configure.in to configure.ac Making some
+	other small changes so that current source code (which - so far -
+	is still 0.9.7) can build without warnings.
+	* debian/* files: upgrading content of control and init.d files to
+	cleanly build Debian package.
+
+	Since now I have a cleanly "buildable" source code tree, I can
+	proceed with hacking the code.
+
 2012-12-30 Kamil Ignacak
 	* testing: improving test/cwtest.pl script - more test cases,
 	checking replies from server, multiple repetitions of test cases
