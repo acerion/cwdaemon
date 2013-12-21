@@ -1996,9 +1996,11 @@ void cwdaemon_args_help(void)
 	printf("        Set initial tone to 'tone' (%d - %d Hz, default: %d).\n",
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_DEFAULT_MORSE_TONE);
 	printf("-i\n");
-	printf("        Increase verbosity. Repeat for even more verbosity.\n");
+	printf("        Increase verbosity of debug messages printed by cwademon.\n");
+	printf("        Repeat for even more verbosity.\n");
 	printf("--verbosity <level>\n");
-	printf("        Set verbosity level. Recognized values:\n");
+	printf("        Set verbosity level of messages printed by cwdaemon.\n");
+	printf("        Recognized values:\n");
 	printf("        n = none (default)\n");
 	printf("        e = errors\n");
 	printf("        w = warnings\n");
