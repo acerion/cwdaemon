@@ -13,29 +13,38 @@ message sent to it via udp port 6789.
 
 .SH "OPTIONS"
 .TP
-\fB\-d <device>\fR Use a different device for keying.
+\fB\-d, \-\-cwdevice <device>\fR Use a different device for keying.
 .TP
-\fB\-h\fR Show summary of options.
+\fB\-h, \-\-help\fR Show summary of options.
 .TP
-\fB\-n\fR Do not fork and print debug information to stdout.
+\fB\-n, \-\-nofork\fR Do not fork and print debug information to stdout.
 .TP
-\fB\-p <port>\fR Use a different UDP port number (default = 6789).
+\fB\-p, \-\-port <port>\fR Use a different UDP port number (default = 6789).
 .TP
-\fB\-P <priority>\fR Set cwdaemon priority, -20 to 20 (default = 0).
+\fB\-P, \-\-priority <priority>\fR Set cwdaemon priority, -20 to 20 (default = 0).
 .TP
-\fB\-s <speed>\fR Set speed, value larger than 4 (default = 24).
+\fB\-s, \-\-wpm <speed>\fR Set speed, value larger than 4 (default = 24).
 .TP
-\fB\-t <time>\fR Set PTT delay, value from 0 to 50 ms (default = 0).
+\fB\-t, \-\-pttdelay <time>\fR Set PTT delay, value from 0 to 50 ms (default = 0).
 .TP
-\fB\-v <volume>\fR Set volume for soundcard output.
+\fB\-v, \-\-volume <volume>\fR Set volume for soundcard output.
 .TP
-\fB\-V\fR Output version information and exit.
+\fB\-V, \-\-version\fR Output version information and exit.
 .TP
-\fB\-w <weight>\fR Set weighting, value from -50 to 50 (default = 0).
+\fB\-w, \-\-weighting <weight>\fR Set weighting, value from -50 to 50 (default = 0).
 .TP
-\fB\-x <sound system>\fR Set sound system to be used.
+\fB\-x, \-\-system <sound system>\fR Set sound system to be used.
 .TP
-\fB\-T <tone>\fR Set initial tone, value in range 0 to 4000 Hz (default = 800).
+\fB\-T, \-\-tone <tone>\fR Set initial tone, value in range 0 to 4000 Hz (default = 800).
+.TP
+\fB\-i\fR Increase verbosity of debug messages printed by cwademon. Repeat for even more verbosity.
+.TP
+\fB\-\-verbosity <level>\fR Set level of verbosity of debug messages printed by cwdaemon.
+.TP
+\fB\-I, \-\-libcwflags <flags>\fR Numeric value of debug flags to be passed to libcw.
+.TP
+\fB\-f, \-\-debugfile <path>\fR Print debug information to file instead of stdout. Also works when cwdaemon has forked.
+
 
 .SH DEVICES
 Any serial device that supports getting and setting the modem
@@ -69,6 +78,25 @@ exactly nothing (no rig keying, no ssb keying, etc.).
 \'s\' - soundcard - autoselect from OSS/ALSA/PulseAudio.
 
 
+.SH "VERBOSITY LEVEL"
+Value of \'level\' argument should be one of following:
+.TP
+\'n\' - none (default)
+.TP
+\'e\' - errors
+.TP
+\'w\' - warnings
+.TP
+\'i\' - information
+.TP
+\'d\' - debug (details)
+
+.P
+By default cwdaemon doesn't print any debug information (level of
+verbosity is none). Increasing it to e.g. warnings makes cwdaemon
+print all messages that have verbosity level no larger than warning,
+i.e. errors and warnings.
+
 
 .SH "SEE ALSO"
 The provided README in \fI@prefix@/share/cwdaemon\fR
@@ -84,4 +112,4 @@ the unixcw package, version 2.2 by Simon Baldwin, G0FRD.
 FreeBSD support mostly done by Diane Bruce, VA3DB.
 OpenBSD support by Jason L. Wright, AI4JW.
 
-Since 2012, the main developer is Kamil Ignacak <acerion@wp.pl>.
+Since 2012 the main developer is Kamil Ignacak <acerion@wp.pl>.
