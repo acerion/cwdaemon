@@ -21,6 +21,9 @@
  */
 
 #define _POSIX_C_SOURCE 200809L /* nanosleep(), strdup() */
+#define _GNU_SOURCE /* getopt_long() */
+
+#include "config.h"
 
 # if HAVE_STDIO_H
 # include <stdio.h>
@@ -95,6 +98,10 @@
 #endif
 #include <limits.h>
 #include <assert.h>
+
+#if defined(HAVE_GETOPT_H)
+#include <getopt.h>
+#endif
 
 #include <libcw.h>
 #include <libcw_debug.h>
@@ -200,6 +207,7 @@ static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
 
+/* cwdaemon may print debug messages to a disc file instead of stdout. */
 static FILE *cwdaemon_debug_f = NULL;
 static char *cwdaemon_debug_f_path = NULL;
 
@@ -219,7 +227,7 @@ static long int libcw_debug_flags = 0;
 /* Various variables. */
 static int wordmode = 0;               /* Start in character mode. */
 static int forking = 1;                /* We fork by default. */
-static int cwdaemon_verbosity = CWDAEMON_VERBOSITY_N;
+static int cwdaemon_verbosity = CWDAEMON_VERBOSITY_N;   /* Threshold of verbosity of debug messages. */
 static int process_priority = 0;       /* Scheduling priority of cwdaemon process. */
 static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
 static int inactivity_seconds = 9999;  /* Inactive since nnn seconds. */
@@ -283,7 +291,7 @@ void cwdaemon_reset_almost_all(void);
 void cwdaemon_udelay(unsigned long us);
 int  cwdaemon_set_default_cwdevice_descriptions(void);
 void cwdaemon_free_cwdevice_descriptions(void);
-int  cwdaemon_set_cwdevice(cwdevice **device, char *desc);
+int  cwdaemon_set_cwdevice(cwdevice **device, const char *desc);
 int  cwdaemon_initialize_socket(void);
 
 int  cwdaemon_open_libcw_output(int audio_system);
@@ -291,9 +299,27 @@ void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
 int  cwdaemon_get_long(const char *buf, long *lvp);
-void cwdaemon_parse_command_line(int argc, char *argv[]);
-void cwdaemon_print_help(void);
 
+static void cwdaemon_args_parse(int argc, char *argv[]);
+static void cwdaemon_args_help(void);
+static void cwdaemon_args_cwdevice(const char *optarg);
+static void cwdaemon_args_nofork(void);
+static void cwdaemon_args_port(const char *optarg);
+static void cwdaemon_args_priority(const char *optarg);
+static void cwdaemon_args_wpm(const char *optarg);
+static void cwdaemon_args_pttdelay(const char *optarg);
+static void cwdaemon_args_volume(const char *optarg);
+static void cwdaemon_args_version(void);
+static void cwdaemon_args_weighting(const char *optarg);
+static void cwdaemon_args_tone(const char *optarg);
+static void cwdaemon_args_inc_verbosity(void);
+static void cwdaemon_args_set_verbosity(const char *optarg);
+static void cwdaemon_args_libcwflags(const char *optarg);
+static void cwdaemon_args_debugfile(const char *optarg);
+static void cwdaemon_args_system(const char *optarg);
+
+static void cwdaemon_args_process_short(int c, const char *optarg);
+static void cwdaemon_args_process_long(int argc, char *argv[]);
 
 static void cwdaemon_debug_open(void);
 static void cwdaemon_debug_close(void);
@@ -449,7 +475,7 @@ void cwdaemon_debug(int verbosity, const char *func, int line, const char *forma
 void cwdaemon_debug_close(void)
 {
 	if (cwdaemon_debug_f
-	    && cwdaemon_debug != stdout) {
+	    && cwdaemon_debug_f != stdout) {
 
 		fclose(cwdaemon_debug_f);
 		cwdaemon_debug_f = NULL;
@@ -1536,6 +1562,324 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Low TQ callback end");
 
 	return;
+
+}
+
+
+
+static const char   *cwdaemon_args_short = "d:hniI:f:p:P:s:t:T:v:Vw:x:";
+
+static struct option cwdaemon_args_long[] = {
+	{ "cwdevice",    required_argument,       0, 0},  /* Keying device. */
+	{ "nofork",      no_argument,             0, 0},  /* Don't fork. */
+	{ "port",        required_argument,       0, 0},  /* Network port number. */
+#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
+	{ "priority",    required_argument,       0, 0},  /* Process priority. */
+#endif
+	{ "wpm",         required_argument,       0, 0},  /* Sending speed. */
+	{ "pttdelay",    required_argument,       0, 0},  /* PTT delay. */
+	{ "volume",      required_argument,       0, 0},  /* Sound volume. */
+	{ "version",     no_argument,             0, 0},  /* Program's version. */
+	{ "weighting",   required_argument,       0, 0},  /* CW weight. */
+	{ "tone",        required_argument,       0, 0},  /* CW tone. */
+	{ "verbosity",   required_argument,       0, 0},  /* Verbosity of cwdaemon's debug messages. */
+	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
+	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
+	{ "system",      required_argument,       0, 0},  /* Audio system. */
+	{ "help",        no_argument,             0, 0},  /* Print help text and exit. */
+
+	{ 0,             0,                       0, 0} };
+
+
+
+
+void cwdaemon_args_process_long(int argc, char *argv[])
+{
+	int option_index = 0;
+
+	int c = 0;
+
+	while ((c = getopt_long(argc, argv, cwdaemon_args_short, cwdaemon_args_long, &option_index)) != -1) {
+		if (c == 0) {
+			fprintf(stderr, "INFO: long option %s\n", cwdaemon_args_long[option_index].name);
+			if (optarg) {
+				fprintf(stderr, "INFO:    with arg %s\n", optarg);
+			}
+			const char *optname = cwdaemon_args_long[option_index].name;
+
+			if (!strcmp(optname, "cwdevice"))          cwdaemon_args_cwdevice(optarg);
+			else if (!strcmp(optname, "nofork"))       cwdaemon_args_nofork();
+			else if (!strcmp(optname, "port"))         cwdaemon_args_port(optarg);
+			else if (!strcmp(optname, "priority"))     cwdaemon_args_priority(optarg);
+			else if (!strcmp(optname, "wpm"))          cwdaemon_args_wpm(optarg);
+			else if (!strcmp(optname, "pttdelay"))     cwdaemon_args_pttdelay(optarg);
+			else if (!strcmp(optname, "volume"))       cwdaemon_args_volume(optarg);
+			else if (!strcmp(optname, "version"))    { cwdaemon_args_version(); exit(EXIT_SUCCESS); }
+			else if (!strcmp(optname, "weighting"))    cwdaemon_args_weighting(optarg);
+			else if (!strcmp(optname, "tone"))         cwdaemon_args_tone(optarg);
+			else if (!strcmp(optname, "verbosity"))    cwdaemon_args_set_verbosity(optarg);
+			else if (!strcmp(optname, "libcwflags"))   cwdaemon_args_libcwflags(optarg);
+			else if (!strcmp(optname, "debugfile"))    cwdaemon_args_debugfile(optarg);
+			else if (!strcmp(optname, "system"))       cwdaemon_args_system(optarg);
+			else                                     { cwdaemon_args_help(); exit(EXIT_SUCCESS); }
+		} else {
+			cwdaemon_args_process_short(c, optarg);
+		}
+	}
+
+	return;
+}
+
+
+void cwdaemon_args_process_short(int c, const char *optarg)
+{
+	switch (c) {
+	case ':':
+	case '?':
+	case 'h':
+		cwdaemon_args_help();
+		exit(EXIT_SUCCESS);
+	case 'd':
+		cwdaemon_args_cwdevice(optarg);
+		break;
+	case 'n':
+		cwdaemon_args_nofork();
+		break;
+	case 'p':
+		cwdaemon_args_port(optarg);
+		break;
+#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
+	case 'P':
+		cwdaemon_args_priority(optarg);
+		break;
+#endif
+	case 's':
+		cwdaemon_args_wpm(optarg);
+		break;
+	case 't':
+		cwdaemon_args_pttdelay(optarg);
+		break;
+	case 'v':
+		cwdaemon_args_volume(optarg);
+		break;
+	case 'V':
+		cwdaemon_args_version();
+		exit(EXIT_SUCCESS);
+	case 'w':
+		cwdaemon_args_weighting(optarg);
+		break;
+	case 'T':
+		cwdaemon_args_tone(optarg);
+		break;
+	case 'i':
+		cwdaemon_args_inc_verbosity();
+		break;
+	case 'I':
+		cwdaemon_args_libcwflags(optarg);
+		break;
+	case 'f':
+		cwdaemon_args_debugfile(optarg);
+		break;
+	case 'x':
+		cwdaemon_args_system(optarg);
+		break;
+	}
+
+	return;
+}
+
+
+void cwdaemon_args_cwdevice(const char *optarg)
+{
+	if (cwdaemon_set_cwdevice(&global_cwdevice, optarg) == -1) {
+		exit(EXIT_FAILURE);
+	}
+	return;
+}
+
+void cwdaemon_args_nofork(void)
+{
+	if (forking) {
+		printf("%s: Not forking...\n", PACKAGE);
+		forking = 0;
+	}
+	return;
+}
+
+
+void cwdaemon_args_port(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
+		printf("%s: invalid port number - %s\n",
+		       PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+	port = lv;
+	return;
+}
+
+
+void cwdaemon_args_priority(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
+		printf("%s: bad priority %s (should be between -20 and 20 inclusive)\n",
+		       PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+	process_priority = lv;
+	return;
+}
+
+
+void cwdaemon_args_wpm(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
+		printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
+		       PACKAGE, optarg,
+		       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
+		exit(EXIT_FAILURE);
+	}
+	default_morse_speed = lv;
+	return;
+}
+
+
+void cwdaemon_args_pttdelay(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 50) {
+		printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
+		       PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+	default_ptt_delay = lv;
+	return;
+}
+
+
+void cwdaemon_args_volume(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 100) {
+		printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
+		       PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+	default_morse_volume = lv;
+	return;
+}
+
+
+void cwdaemon_args_version(void)
+{
+	printf("%s version %s\n", PACKAGE, VERSION);
+	return;
+}
+
+
+void cwdaemon_args_weighting(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < -50 || lv > 50) {
+		printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
+		       PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+	default_weighting = lv;
+	return;
+}
+
+
+void cwdaemon_args_tone(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
+		printf("%s: bad tone %s (should be between %d and %d inclusive)\n",
+		       PACKAGE, optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
+		exit(EXIT_FAILURE);
+	}
+	default_morse_tone = lv;
+	return;
+}
+
+
+void cwdaemon_args_inc_verbosity(void)
+{
+	if (cwdaemon_verbosity < CWDAEMON_VERBOSITY_D) {
+		cwdaemon_verbosity++;
+	}
+	fprintf(stderr, "cwdaemon verbosity = %s\n", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+	return;
+}
+
+
+void cwdaemon_args_set_verbosity(const char *optarg)
+{
+	if (!strcmp(optarg, "n") || !strcmp(optarg, "N")) {
+		cwdaemon_verbosity = CWDAEMON_VERBOSITY_N;
+	} else if (!strcmp(optarg, "e") || !strcmp(optarg, "E")) {
+		cwdaemon_verbosity = CWDAEMON_VERBOSITY_E;
+	} else if (!strcmp(optarg, "w") || !strcmp(optarg, "W")) {
+		cwdaemon_verbosity = CWDAEMON_VERBOSITY_W;
+	} else if (!strcmp(optarg, "i") || !strcmp(optarg, "I")) {
+		cwdaemon_verbosity = CWDAEMON_VERBOSITY_I;
+	} else if (!strcmp(optarg, "d") || !strcmp(optarg, "D")) {
+		cwdaemon_verbosity = CWDAEMON_VERBOSITY_D;
+	} else {
+		fprintf(stderr, "%s: invalid verbosity level \"%s\"\n", PACKAGE, optarg);
+		exit(EXIT_FAILURE);
+	}
+
+	fprintf(stderr, "cwdaemon verbosity = %s\n", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+	return;
+}
+
+
+void cwdaemon_args_libcwflags(const char *optarg)
+{
+	long lv = 0;
+	if (cwdaemon_get_long(optarg, &lv)) {
+		printf("%s: bad libcw debug flags %s (should be numeric value)\n",
+		       PACKAGE, optarg);
+		libcw_debug_flags = lv;
+	} else {
+		libcw_debug_flags = 0;
+	}
+	fprintf(stderr, "libcw debug flag = %ld\n", libcw_debug_flags);
+	return;
+}
+
+
+void cwdaemon_args_debugfile(const char *optarg)
+{
+	cwdaemon_debug_f_path = strdup(optarg);
+	fprintf(stderr, "%s: debug file path = \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
+	return;
+}
+
+
+void cwdaemon_args_system(const char *optarg)
+{
+	if (!strncmp(optarg, "n", 1)) {
+		default_audio_system = CW_AUDIO_NULL;
+	} else if (!strncmp(optarg, "c", 1)) {
+		default_audio_system = CW_AUDIO_CONSOLE;
+	} else if (!strncmp(optarg, "s", 1)) {
+		default_audio_system = CW_AUDIO_SOUNDCARD;
+	} else if (!strncmp(optarg, "a", 1)) {
+		default_audio_system = CW_AUDIO_ALSA;
+	} else if (!strncmp(optarg, "p", 1)) {
+		default_audio_system = CW_AUDIO_PA;
+	} else if (!strncmp(optarg, "o", 1)) {
+		default_audio_system = CW_AUDIO_OSS;
+	} else {
+		printf("Wrong sound device, use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio)\n");
+		exit(EXIT_FAILURE);
+	}
+	return;
 }
 
 
@@ -1550,131 +1894,19 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
    \param argc - main()'s argc argument
    \param argv - main()'s argv argument
 */
-void cwdaemon_parse_command_line(int argc, char *argv[])
+void cwdaemon_args_parse(int argc, char *argv[])
 {
+#if defined(HAVE_GETOPT_H)
+	cwdaemon_args_process_long(argc, argv);
+#else
 	int p;
 
-	while ((p = getopt(argc, argv, "d:hniI:f:p:P:s:t:T:v:Vw:x:")) != -1) {
+	while ((p = getopt(argc, argv, cwdaemon_args_short)) != -1) {
 		long lv;
 
-		switch (p) {
-		case ':':
-		case '?':
-		case 'h':
-			cwdaemon_print_help();
-			exit(EXIT_SUCCESS);
-		case 'd':
-			if (cwdaemon_set_cwdevice(&global_cwdevice, optarg) == -1) {
-				exit(EXIT_FAILURE);
-			}
-			break;
-		case 'n':
-			if (forking) {
-				printf("%s: Not forking...\n", PACKAGE);
-				forking = 0;
-			}
-
-			break;
-		case 'p':
-			if (cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
-				printf("%s: invalid port number - %s\n",
-				       PACKAGE, optarg);
-				exit(EXIT_FAILURE);
-			}
-			port = lv;
-			break;
-#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
-		case 'P':
-			if (cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
-				printf("%s: bad priority %s (should be between -20 and 20 inclusive)\n",
-				       PACKAGE, optarg);
-				exit(EXIT_FAILURE);
-			}
-			process_priority = lv;
-			break;
+		cwdaemon_args_process_short(p, optarg);
+	}
 #endif
-		case 's':
-			if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
-				printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
-				       PACKAGE, optarg,
-				       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
-				exit(EXIT_FAILURE);
-			}
-			default_morse_speed = lv;
-			break;
-		case 't':
-			if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 50) {
-				printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
-				       PACKAGE, optarg);
-				exit(EXIT_FAILURE);
-			}
-			default_ptt_delay = lv;
-			break;
-		case 'v':
-			if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 100) {
-				printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
-				       PACKAGE, optarg);
-				exit(EXIT_FAILURE);
-			}
-			default_morse_volume = lv;
-			break;
-		case 'V':
-			printf("%s version %s\n", PACKAGE, VERSION);
-			exit(EXIT_SUCCESS);
-		case 'w':
-			if (cwdaemon_get_long(optarg, &lv) || lv < -50 || lv > 50) {
-				printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
-				       PACKAGE, optarg);
-				exit(EXIT_FAILURE);
-			}
-			default_weighting = lv;
-			break;
-		case 'T':
-			if (cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
-				printf("%s: bad tone %s (should be between %d and %d inclusive)\n",
-				       PACKAGE, optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
-				exit(EXIT_FAILURE);
-			}
-			default_morse_tone = lv;
-			break;
-		case 'i':
-			if (cwdaemon_verbosity < CWDAEMON_VERBOSITY_D) {
-				cwdaemon_verbosity++;
-			}
-			fprintf(stderr, "cwdaemon verbosity = %s\n", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
-			break;
-		case 'I':
-			libcw_debug_flags = atol(optarg);
-			if (errno) {
-				libcw_debug_flags = 0;
-			}
-			fprintf(stderr, "libcw debug flag = %ld\n", libcw_debug_flags);
-			break;
-		case 'f':
-			cwdaemon_debug_f_path = strdup(optarg);
-			fprintf(stderr, "%s: debug file path = \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
-			break;
-		case 'x':
-			if (!strncmp(optarg, "n", 1)) {
-				default_audio_system = CW_AUDIO_NULL;
-			} else if (!strncmp(optarg, "c", 1)) {
-				default_audio_system = CW_AUDIO_CONSOLE;
-			} else if (!strncmp(optarg, "s", 1)) {
-				default_audio_system = CW_AUDIO_SOUNDCARD;
-			} else if (!strncmp(optarg, "a", 1)) {
-				default_audio_system = CW_AUDIO_ALSA;
-			} else if (!strncmp(optarg, "p", 1)) {
-				default_audio_system = CW_AUDIO_PA;
-			} else if (!strncmp(optarg, "o", 1)) {
-				default_audio_system = CW_AUDIO_OSS;
-			} else {
-				printf("Wrong sound device, use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio)\n");
-				exit(EXIT_FAILURE);
-			}
-			break;
-		} /* switch (p) */
-	} /* while ((p = getopt()) */
-
 	return;
 }
 
@@ -1710,17 +1942,18 @@ void cwdaemon_debug_open(void)
 
 
 
-void cwdaemon_print_help(void)
+void cwdaemon_args_help(void)
 {
-	printf("Usage: %s [option]...\n\n", PACKAGE);
+	printf("Usage: %s [option]...\n", PACKAGE);
+	printf("Long options may not be supported on your system.\n\n");
 
-	printf("-h\n");
-	printf("        Display this help and exit\n");
-	printf("-V\n");
-	printf("        Output version information and exit\n");
+	printf("-h, --help\n");
+	printf("        Display this help and exit.\n");
+	printf("-V, --version\n");
+	printf("        Output version information and exit.\n");
 
-	printf("-d <device>\n");
-	printf("        Use a different device\n");
+	printf("-d, --cwdevice <device>\n");
+	printf("        Use a different device.\n");
 #if defined (HAVE_LINUX_PPDEV_H)
 	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default = parport0)\n");
 #elif defined (HAVE_DEV_PPBUS_PPI_H)
@@ -1734,20 +1967,20 @@ void cwdaemon_print_help(void)
 #endif
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
 
-	printf("-n\n");
+	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
-	printf("-p <port>\n");
-	printf("        Use a different UDP port number (> 1023, default = %d)\n", CWDAEMON_DEFAULT_NETWORK_PORT);
+	printf("-p, --port <port>\n");
+	printf("        Use a different UDP port number (> 1023, default = %d).\n", CWDAEMON_DEFAULT_NETWORK_PORT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
-	printf("-P <priority>\n");
-	printf("        Set cwdaemon priority (-20 ... 20, default = 0)\n");
+	printf("-P, --priority <priority>\n");
+	printf("        Set program's priority (-20 ... 20, default = 0).\n");
 #endif
-	printf("-s <speed>\n");
-	printf("        Set morse speed (%d ... %d wpm, default = %d)\n",
+	printf("-s, --wpm <speed>\n");
+	printf("        Set morse speed (%d ... %d wpm, default = %d).\n",
 	       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
-	printf("-t <time>\n");
-	printf("        Set PTT delay (0 ... 50 ms, default = 0)\n");
-	printf("-x <sound system>\n");
+	printf("-t, --pttdelay <time>\n");
+	printf("        Set PTT delay (0 ... 50 ms, default = 0).\n");
+	printf("-x, --system <sound system>\n");
 	printf("        Use a specific sound system:\n");
 	printf("        c = console buzzer (default)\n");
 	printf("        o = OSS\n");
@@ -1755,14 +1988,28 @@ void cwdaemon_print_help(void)
 	printf("        p = PulseAudio\n");
 	printf("        n = none (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
-	printf("-v <volume>\n");
-	printf("        Set volume for soundcard output\n");
-	printf("-w <weight>\n");
-	printf("        Set weighting (-50 ... 50, default = 0)\n");
-	printf("-T <tone>\n");
+	printf("-v, --volume <volume>\n");
+	printf("        Set volume for soundcard output.\n");
+	printf("-w, --weighting <weight>\n");
+	printf("        Set weighting (-50 ... 50, default = 0).\n");
+	printf("-T, --tone <tone>\n");
 	printf("        Set initial tone to 'tone' (%d - %d Hz, default: %d).\n",
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_DEFAULT_MORSE_TONE);
-
+	printf("-i\n");
+	printf("        Increase verbosity. Repeat for even more verbosity.\n");
+	printf("--verbosity <level>\n");
+	printf("        Set verbosity level. Recognized values:\n");
+	printf("        n = none (default)\n");
+	printf("        e = errors\n");
+	printf("        w = warnings\n");
+	printf("        i = information\n");
+	printf("        d = debug (details)\n");
+	printf("-I, --libcwflags <flags>\n");
+	printf("        Numeric value of debug flags to be passed to libcw.\n");
+	printf("-f, --debugfile <path>\n");
+	printf("        Print debug information to file instead of stdout.\n");
+	printf("        Also works when %s has forked.\n", PACKAGE);
+	printf("\n");
 
 	return;
 }
@@ -1779,15 +2026,14 @@ int main(int argc, char *argv[])
 	//(&cw_debug_object_dev)->level = CW_DEBUG_DEBUG;
 
 	atexit(cwdaemon_free_cwdevice_descriptions);
-
-	cwdaemon_parse_command_line(argc, argv);
-
-	cwdaemon_debug_open();
-	atexit(cwdaemon_debug_close);
 	if (cwdaemon_set_default_cwdevice_descriptions() == -1) {
 		exit(EXIT_FAILURE);
 	}
 
+	cwdaemon_args_parse(argc, argv);
+
+	atexit(cwdaemon_debug_close);
+	cwdaemon_debug_open();
 
 
 	if (forking) {
@@ -2019,7 +2265,7 @@ void cwdaemon_free_cwdevice_descriptions(void)
    \return -1 if \p desc describes invalid device, or if memory allocation error happens
    \return 0 otherwise
 */
-int cwdaemon_set_cwdevice(cwdevice **device, char *desc)
+int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
 {
 	int fd;
 
