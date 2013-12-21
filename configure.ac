@@ -6,6 +6,7 @@ AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CONFIG_SRCDIR([src/cwdaemon.c])
 AC_PROG_GCC_TRADITIONAL
+AC_CONFIG_HEADERS([config.h])
 
 
 # Checks for programs.
@@ -28,6 +29,9 @@ dev/ppbus/ppi.h sys/stat.h])
 # AC_HEADER_TIME
 
 #AC_CHECK_HEADERS(sys/kd.h sys/vtkd.h sys/kbio.h)
+
+# getopt_long()
+AC_CHECK_HEADERS([getopt.h])
 
 AC_CHECK_HEADERS(libcw.h)
 #AC_CHECK_HEADERS(sys/soundcard.h soundcard.h)
