@@ -1,3 +1,6 @@
+2013-12-21 Kamil Ignacak
+	* command line options: added support for --long-options.
+
 2013-12-20 Kamil Ignacak
 	* debug code: symblic names as verbosity debug levels;
 	cwdaemon_debug() now can write to stdout and to disc file;
@@ -102,5 +105,3 @@
 	06-install-scripts-as-scripts.patch by Kamal Mostafa <kamal@whence.com>
 	Since the patches have been applied, I will remove them.
 	* debian/: upgrading debian/* files.
-
-
