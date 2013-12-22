@@ -121,24 +121,31 @@
        - request
        - reply
 
-   Maximal size of a message is constant: CWDAEMON_MESSAGE_SIZE_MAX
-   Size of a message can be smaller than that.
+   Size of a message is not constant.
+   Maximal size of a message is CWDAEMON_MESSAGE_SIZE_MAX.
 */
 
 
 
 
 /* cwdaemon constants. */
-#define CWDAEMON_DEFAULT_MORSE_SPEED           24 /* [wpm] */
-#define CWDAEMON_MIN_MORSE_SPEED     CW_SPEED_MIN /* [wpm], from libcw.h */
-#define CWDAEMON_MAX_MORSE_SPEED     CW_SPEED_MAX /* [wpm], from libcw.h */
-#define CWDAEMON_DEFAULT_MORSE_TONE           800 /* [Hz] */
-#define CWDAEMON_DEFAULT_MORSE_VOLUME          70 /* [%] */
-#define CWDAEMON_DEFAULT_PTT_DELAY              0 /* [ms] */
-#define CWDAEMON_DEFAULT_MORSE_WEIGHTING        0 /* in range -50/+50 */
+#define CWDAEMON_MORSE_SPEED_DEFAULT           24 /* [wpm] */
+#define CWDAEMON_MORSE_TONE_DEFAULT           800 /* [Hz] */
+#define CWDAEMON_MORSE_VOLUME_DEFAULT          70 /* [%] */
 
-#define CWDAEMON_DEFAULT_NETWORK_PORT              6789
-#define CWDAEMON_DEFAULT_AUDIO_SYSTEM  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
+/* TODO: why the limitation to 50 ms? Is it enough? */
+#define CWDAEMON_PTT_DELAT_DEFAULT              0 /* [ms] */
+#define CWDAEMON_PTT_DELAT_MIN                  0 /* [ms] */
+#define CWDAEMON_PTT_DELAT_MAX                 50 /* [ms] */
+
+/* Notice that the range accepted by cwdaemon is different than that
+   accepted by libcw. */
+#define CWDAEMON_MORSE_WEIGHTING_DEFAULT        0
+#define CWDAEMON_MORSE_WEIGHTING_MIN          -50
+#define CWDAEMON_MORSE_WEIGHTING_MAX           50
+
+#define CWDAEMON_NETWORK_PORT_DEFAULT              6789
+#define CWDAEMON_AUDIO_SYSTEM_DEFAULT  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
@@ -154,22 +161,22 @@
    commandline arguments passed to cwdaemon.
    These values are used when resetting libcw and cwdaemon to
    initial state. */
-static int default_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
-static int default_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
-static int default_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
-static int default_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
-static int default_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
-static int default_weighting    = CWDAEMON_DEFAULT_MORSE_WEIGHTING;
+static int default_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
+static int default_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
+static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
+static int default_ptt_delay    = CWDAEMON_PTT_DELAT_DEFAULT;
+static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
+static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 
 
 /* Actual values of parameters, used to control ongoing operation of
    cwdaemon+libcw. These values can be modified through requests
    received from socket in cwdaemon_receive(). */
-static int current_morse_speed  = CWDAEMON_DEFAULT_MORSE_SPEED;
-static int current_morse_tone   = CWDAEMON_DEFAULT_MORSE_TONE;
-static int current_morse_volume = CWDAEMON_DEFAULT_MORSE_VOLUME;
-static int current_ptt_delay    = CWDAEMON_DEFAULT_PTT_DELAY;
-static int current_audio_system = CWDAEMON_DEFAULT_AUDIO_SYSTEM;
+static int current_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
+static int current_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
+static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
+static int current_ptt_delay    = CWDAEMON_PTT_DELAT_DEFAULT;
+static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 
 
 /* Level of libcw's tone queue that triggers 'callback for low level
@@ -195,7 +202,7 @@ static bool has_audio_output = false;
    it needs to send a reply back. This is why in addition to
    request_* we also have reply_* */
 static int socket_descriptor;
-static int port = CWDAEMON_DEFAULT_NETWORK_PORT;  /* default UDP port we listen on */
+static int port = CWDAEMON_NETWORK_PORT_DEFAULT;  /* default UDP port we listen on */
 
 static struct sockaddr_in request_addr;
 static socklen_t          request_addrlen;
@@ -385,7 +392,6 @@ static cwdevice *global_cwdevice = NULL;
 /* catch ^C when running in foreground */
 RETSIGTYPE cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 {
-
 	global_cwdevice->free(global_cwdevice);
 	printf("%s: Exiting\n", PACKAGE);
 	exit(EXIT_SUCCESS);
@@ -420,6 +426,7 @@ void cwdaemon_errmsg(const char *info, ...)
 		syslog(LOG_ERR, "%s\n", s);
 	} else {
 		printf("%s: %s failed: %s\n", PACKAGE, s, strerror(errno));
+		fflush(stdout);
 	}
 
 	return;
@@ -776,7 +783,7 @@ void cwdaemon_reset_libcw_output(void)
 	cw_set_send_speed(default_morse_speed);
 	cw_set_volume(default_morse_volume);
 	cw_set_gap(0);
-	cw_set_weighting(default_weighting * 0.6 + 50);
+	cw_set_weighting(default_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
 
 	return;
 }
@@ -1051,7 +1058,7 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
-		if (lv >= CWDAEMON_MIN_MORSE_SPEED && lv <= CWDAEMON_MAX_MORSE_SPEED) {
+		if (lv >= CW_SPEED_MIN && lv <= CW_SPEED_MAX) {
 			current_morse_speed = lv;
 			cw_set_send_speed(current_morse_speed);
 			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Speed: %d wpm", current_morse_speed);
@@ -1128,8 +1135,8 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
-		if ((lv > -51) && (lv < 51)) {
-			cw_set_weighting(lv * 0.6 + 50);
+		if ((lv >= CWDAEMON_MORSE_WEIGHTING_MIN) && (lv <= CWDAEMON_MORSE_WEIGHTING_MAX)) {
+			cw_set_weighting(lv * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
 			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Weight: %ld", lv);
 		}
 		break;
@@ -1227,11 +1234,13 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
-		/* TODO: why the limitation to 50 ms? Is it enough? */
-		if (lv >= 0 && lv <= 50) {
+
+		if (lv >= CWDAEMON_PTT_DELAT_MIN && lv <= CWDAEMON_PTT_DELAT_MAX) {
 			current_ptt_delay = lv;
 		} else {
-			current_ptt_delay = 50;
+			/* Why do we set here delay to MAX? What if lv
+			   < 0 - shouldn't we set it to zero then? */
+			current_ptt_delay = CWDAEMON_PTT_DELAT_MAX;
 		}
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT delay(TOD): %d ms", current_ptt_delay);
@@ -1304,7 +1313,7 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
-		if (lv >= 0 && lv <= 100) {
+		if (lv >= CW_VOLUME_MIN && lv <= CW_VOLUME_MAX) {
 			current_morse_volume = lv;
 			cw_set_volume(current_morse_volume);
 		}
@@ -1364,10 +1373,10 @@ void cwdaemon_play_request(char *request)
 				x++;
 			} while (*x == '+' || *x == '-');
 
-			if (current_morse_speed < CWDAEMON_MIN_MORSE_SPEED) {
-				current_morse_speed = CWDAEMON_MIN_MORSE_SPEED;
-			} else if (current_morse_speed > CWDAEMON_MAX_MORSE_SPEED) {
-				current_morse_speed = CWDAEMON_MAX_MORSE_SPEED;
+			if (current_morse_speed < CW_SPEED_MIN) {
+				current_morse_speed = CW_SPEED_MIN;
+			} else if (current_morse_speed > CW_SPEED_MAX) {
+				current_morse_speed = CW_SPEED_MAX;
 			} else {
 				;
 			}
@@ -1601,10 +1610,11 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, cwdaemon_args_short, cwdaemon_args_long, &option_index)) != -1) {
 		if (c == 0) {
-			fprintf(stderr, "INFO: long option %s\n", cwdaemon_args_long[option_index].name);
-			if (optarg) {
-				fprintf(stderr, "INFO:    with arg %s\n", optarg);
-			}
+			fprintf(stderr, "INFO: long option %s%s%s\n",
+				cwdaemon_args_long[option_index].name,
+				optarg ? "=" : "",
+				optarg ? optarg : "");
+
 			const char *optname = cwdaemon_args_long[option_index].name;
 
 			if (!strcmp(optname, "cwdevice"))          cwdaemon_args_cwdevice(optarg);
@@ -1736,10 +1746,10 @@ void cwdaemon_args_priority(const char *optarg)
 void cwdaemon_args_wpm(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MIN_MORSE_SPEED || lv > CWDAEMON_MAX_MORSE_SPEED) {
+	if (cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
 		printf("%s: bad speed %s (should be between %d and %d inclusive)\n",
 		       PACKAGE, optarg,
-		       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED);
+		       CW_SPEED_MIN, CW_SPEED_MAX);
 		exit(EXIT_FAILURE);
 	}
 	default_morse_speed = lv;
@@ -1750,9 +1760,9 @@ void cwdaemon_args_wpm(const char *optarg)
 void cwdaemon_args_pttdelay(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 50) {
-		printf("%s: bad PTT delay value %s (should be between 0 and 50 ms inclusive)\n",
-		       PACKAGE, optarg);
+	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_PTT_DELAT_MIN || lv > CWDAEMON_PTT_DELAT_MAX) {
+		printf("%s: bad PTT delay value %s (should be between %d and %d ms inclusive)\n",
+		       PACKAGE, optarg, CWDAEMON_PTT_DELAT_MIN, CWDAEMON_PTT_DELAT_MAX);
 		exit(EXIT_FAILURE);
 	}
 	default_ptt_delay = lv;
@@ -1763,9 +1773,9 @@ void cwdaemon_args_pttdelay(const char *optarg)
 void cwdaemon_args_volume(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > 100) {
-		printf("%s: bad volume %s (should be between 0 and 100 inclusive)\n",
-		       PACKAGE, optarg);
+	if (cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
+		printf("%s: bad volume %s (should be between %d and %d inclusive)\n",
+		       PACKAGE, optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
 		exit(EXIT_FAILURE);
 	}
 	default_morse_volume = lv;
@@ -1783,9 +1793,9 @@ void cwdaemon_args_version(void)
 void cwdaemon_args_weighting(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < -50 || lv > 50) {
-		printf("%s: bad weight %s (should be between -50 and 50 inclusive)\n",
-		       PACKAGE, optarg);
+	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
+		printf("%s: bad weight %s (should be between %d and %d inclusive)\n",
+		       PACKAGE, optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
 		exit(EXIT_FAILURE);
 	}
 	default_weighting = lv;
@@ -1970,16 +1980,17 @@ void cwdaemon_args_help(void)
 	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
 	printf("-p, --port <port>\n");
-	printf("        Use a different UDP port number (> 1023, default = %d).\n", CWDAEMON_DEFAULT_NETWORK_PORT);
+	printf("        Use a different UDP port number (> 1023, default = %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	printf("-P, --priority <priority>\n");
 	printf("        Set program's priority (-20 ... 20, default = 0).\n");
 #endif
 	printf("-s, --wpm <speed>\n");
 	printf("        Set morse speed (%d ... %d wpm, default = %d).\n",
-	       CWDAEMON_MIN_MORSE_SPEED, CWDAEMON_MAX_MORSE_SPEED, CWDAEMON_DEFAULT_MORSE_SPEED);
+	       CW_SPEED_MIN, CW_SPEED_MAX, CWDAEMON_MORSE_SPEED_DEFAULT);
 	printf("-t, --pttdelay <time>\n");
-	printf("        Set PTT delay (0 ... 50 ms, default = 0).\n");
+	printf("        Set PTT delay (%d - %d ms, default = %d).\n",
+	       CWDAEMON_PTT_DELAT_MIN, CWDAEMON_PTT_DELAT_MAX, CWDAEMON_PTT_DELAT_DEFAULT);
 	printf("-x, --system <sound system>\n");
 	printf("        Use a specific sound system:\n");
 	printf("        c = console buzzer (default)\n");
@@ -1989,12 +2000,14 @@ void cwdaemon_args_help(void)
 	printf("        n = none (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
 	printf("-v, --volume <volume>\n");
-	printf("        Set volume for soundcard output.\n");
+	printf("        Set volume for soundcard output (%d%% - %d%%, default = %d%%).\n",
+	       CW_VOLUME_MIN, CW_VOLUME_MAX, CWDAEMON_MORSE_VOLUME_DEFAULT);
 	printf("-w, --weighting <weight>\n");
-	printf("        Set weighting (-50 ... 50, default = 0).\n");
+	printf("        Set weighting (%d - %d, default = %d).\n",
+	       CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX, CWDAEMON_MORSE_WEIGHTING_DEFAULT);
 	printf("-T, --tone <tone>\n");
 	printf("        Set initial tone to 'tone' (%d - %d Hz, default: %d).\n",
-	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_DEFAULT_MORSE_TONE);
+	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
 	printf("-i\n");
 	printf("        Increase verbosity of debug messages printed by cwademon.\n");
 	printf("        Repeat for even more verbosity.\n");
@@ -2053,7 +2066,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 		}
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Child process reporting.");
+		// cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Child process reporting.");
 		openlog("netkeyer", LOG_PID, LOG_DAEMON);
 		pid_t sid = setsid();
 		if (sid < 0) {
@@ -2094,7 +2107,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (cwdaemon_initialize_socket() == -1) {
-		exit(CW_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
@@ -2141,7 +2154,7 @@ int main(int argc, char *argv[])
 		udptime.tv_usec = 0;
 		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
 		int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
-		/* fd_count = select (socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
+		/* fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
 		if (fd_count == -1 && errno != EINTR) {
 			cwdaemon_errmsg("Select");
 		} else {
