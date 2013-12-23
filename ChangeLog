@@ -1,3 +1,17 @@
+2013-12-22 Kamil Ignacak
+	* configuration: Unification of configuration via command line and
+	through socket.
+
+	Parameters of cwdaemon can be changed using either command line
+	switches, or requests sent through socket. Some of parameters can
+	be changed using both ways. Handling the two ways is implemented
+	in two different places, and some code was duplicated.
+	I have reused some functions that handled only command line
+	arguments to also handle requests sent through pipe.
+	I have also modified some debug messages printed on receiving
+	invalid configuration values, so that the messages have similar
+	format.
+
 2013-12-21 Kamil Ignacak
 	* command line options: added support for --long-options.
 
