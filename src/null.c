@@ -39,41 +39,37 @@
 /*
  * dev_is_null(name): check to see whether 'name' is a null type device.
  */
-int
-dev_is_null(const char *fname)
+int dev_is_null(const char *fname)
 {
-       if (strcmp(fname, "null") != 0)
-               return (-1);
-       return (0);
+	if (strcmp(fname, "null") != 0) {
+		return -1;
+	} else {
+		return 0;
+	}
 }
 
-int
-null_init (cwdevice * dev, int fd)
+int null_init(cwdevice *dev, int fd)
 {
        dev->fd = fd;
        return 0;
 }
 
-int
-null_free (__attribute__((unused)) cwdevice * dev)
+int null_free(__attribute__((unused)) cwdevice *dev)
 {
        return 0;
 }
 
-int
-null_reset (__attribute__((unused)) cwdevice * dev)
+int null_reset(__attribute__((unused)) cwdevice *dev)
 {
        return 0;
 }
 
-int
-null_cw (__attribute__((unused)) cwdevice * dev, __attribute__((unused)) int onoff)
+int null_cw(__attribute__((unused)) cwdevice *dev, __attribute__((unused)) int onoff)
 {
        return 0;
 }
 
-int
-null_ptt (__attribute__((unused)) cwdevice * dev, __attribute__((unused)) int onoff)
+int null_ptt(__attribute__((unused)) cwdevice *dev, __attribute__((unused)) int onoff)
 {
        return 0;
 }
