@@ -22,6 +22,8 @@
 
 #define _BSD_SOURCE /* S_IFMT and related. */
 
+#include "config.h"
+
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif
