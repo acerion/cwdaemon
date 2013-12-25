@@ -177,6 +177,7 @@ static int current_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static int current_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
+static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 
 
 /* Level of libcw's tone queue that triggers 'callback for low level
@@ -677,11 +678,12 @@ void cwdaemon_tune(int seconds)
 */
 void cwdaemon_reset_almost_all(void)
 {
-	current_morse_speed = default_morse_speed;
-	current_morse_tone = default_morse_tone;
+	current_morse_speed  = default_morse_speed;
+	current_morse_tone   = default_morse_tone;
 	current_morse_volume = default_morse_volume;
 	current_audio_system = default_audio_system;
-	current_ptt_delay = default_ptt_delay;
+	current_ptt_delay    = default_ptt_delay;
+	current_weighting    = default_weighting;
 
 	cwdaemon_reset_libcw_output();
 
@@ -1120,14 +1122,9 @@ int cwdaemon_handle_escaped_request(char *request)
 		   -50/+50, but libcw accepts values in range
 		   20/80. This is why you have the calculation
 		   when calling cw_set_weighting(). */
-		/* TODO: other options have current_* variable. Where
-		   is current_weighting? */
-		{
-			int weighting = 0;
-			if (cwdaemon_args_weighting(&weighting, request + 2)) {
-				cw_set_weighting(weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Weight: %d", weighting);
-			}
+		if (cwdaemon_args_weighting(&current_weighting, request + 2)) {
+			cw_set_weighting(current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Weight: %d", current_weighting);
 		}
 		break;
 	case '8': {
