@@ -2370,11 +2370,11 @@ int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
 {
 	int fd;
 
-	if ((fd = dev_is_tty(desc)) != -1) {
+	if ((fd = dev_get_tty(desc)) != -1) {
 		*device = &cwdevice_ttys;
 	}
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	else if ((fd = dev_is_parport(desc)) != -1) {
+	else if ((fd = dev_get_parport(desc)) != -1) {
 		if (geteuid()) {
 			printf("You must run this program as root to use parallel port.\n");
 			return -1;
@@ -2382,7 +2382,7 @@ int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
 		*device = &cwdevice_lp;
 	}
 #endif
-	else if ((fd = dev_is_null(desc)) != -1) {
+	else if ((fd = dev_get_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
 		*device = NULL;
