@@ -56,16 +56,24 @@
 
 #include "cwdaemon.h"
 
-/* serial port functions*/
+/**
+   \file ttys.c
 
-/*
- * dev_is_tty(name): check to see whether 'name' is a tty type character
- *     device capable of TIOCM*.  Returns -1 if the device isn't a
- *     suitable tty device, and a file descriptor if it is.  This should
- *     be platform independent.
- */
-int
-dev_is_tty(const char *fname)
+   Serial port functions.
+*/
+
+
+/**
+   \brief Get fd for serial port
+
+   Check to see whether \p fname is a tty type character device
+   capable of TIOCM*.
+   This should be platform independent.
+
+   \return -1 if the device isn't a suitable tty device
+   \return a file descriptor if the device is a suitable tty device
+*/
+int dev_get_tty(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
