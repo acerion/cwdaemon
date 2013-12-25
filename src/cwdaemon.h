@@ -64,9 +64,9 @@ enum cwdaemon_verbosity {
 void cwdaemon_errmsg(const char *info, ...);
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...);
 
-int dev_is_tty(const char *fname);
-int dev_is_null(const char *fname);
-int dev_is_parport(const char *fname);
+int dev_get_tty(const char *fname);
+int dev_get_null(const char *fname);
+int dev_get_parport(const char *fname);
 
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 int lp_init (cwdevice * dev, int fd);
