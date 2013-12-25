@@ -20,6 +20,8 @@
  * 02110-1301, USA.
  */
 
+#include "config.h"
+
 #if HAVE_STRING_H
 # if !STDC_HEADERS && HAVE_MEMORY_H
 #  include <memory.h>
@@ -53,25 +55,25 @@ null_init (cwdevice * dev, int fd)
 }
 
 int
-null_free (cwdevice * dev)
+null_free (__attribute__((unused)) cwdevice * dev)
 {
        return 0;
 }
 
 int
-null_reset (cwdevice * dev)
+null_reset (__attribute__((unused)) cwdevice * dev)
 {
        return 0;
 }
 
 int
-null_cw (cwdevice * dev, int onoff)
+null_cw (__attribute__((unused)) cwdevice * dev, __attribute__((unused)) int onoff)
 {
        return 0;
 }
 
 int
-null_ptt (cwdevice * dev, int onoff)
+null_ptt (__attribute__((unused)) cwdevice * dev, __attribute__((unused)) int onoff)
 {
        return 0;
 }
