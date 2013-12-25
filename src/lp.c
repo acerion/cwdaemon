@@ -67,19 +67,21 @@
 
 #include "cwdaemon.h"
 
-/* parport functions */
+/**
+   \file lp.c - parport functions
+*/
 
-/*
- * dev_is_parport(name): check to see whether 'name' is a parallel
- *     port type character device.  Returns non-zero if the device is
- *     capable of use for a parallel port based keyer, and zero if it
- *     is not.  Unfortunately, this is platform specific.
- */
 
 #if defined(HAVE_LINUX_PPDEV_H)                /* Linux (ppdev) */
+/**
+   \brief Check to see whether \p fname is a parallel port type character device.
 
-int
-dev_is_parport(const char *fname)
+   Unfortunately, this is platform specific.
+
+   \return -1 if the device is not suitable for use as parallel port based keyer
+   \return a file descriptor if the device is suitable for use as a parallel port based keyer
+*/
+int dev_get_parport(const char *fname)
 {
        char nm[MAXPATHLEN];
        struct stat st;
@@ -104,8 +106,7 @@ out:
 
 #elif defined(HAVE_DEV_PPBUS_PPI_H)    /* FreeBSD (ppbus/ppi) */
 
-int
-dev_is_parport(const char *fname)
+int dev_get_parport(const char *fname)
 {
        char nm[MAXPATHLEN];
        struct stat st;
@@ -131,13 +132,16 @@ out:
 
 #else                                  /* Fallback (nothing) */
 
-int
-dev_is_parport(const char *fname)
+int dev_get_parport(const char *fname)
 {
        return (-1);
 }
 
 #endif
+
+
+
+
 
 /* Linux wrapper around PPFCONTROL */
 #ifdef HAVE_LINUX_PPDEV_H
