@@ -31,15 +31,17 @@
 
 #include "cwdaemon.h"
 
-/*
- * null port functions... these do, well, nothing, except for provide
- * a convienient placeholder.
- */
+/**
+   \file null.c - null port functions
 
-/*
- * dev_is_null(name): check to see whether 'name' is a null type device.
- */
-int dev_is_null(const char *fname)
+   The functions do, well, nothing, except for provide convenient
+   placeholder.
+*/
+
+/**
+   \brief Check to see whether \p fname is a null type device.
+*/
+int dev_get_null(const char *fname)
 {
 	if (strcmp(fname, "null") != 0) {
 		return -1;
