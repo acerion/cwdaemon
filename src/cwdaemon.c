@@ -2380,6 +2380,12 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
 	int fd;
 
+	if (!desc || !strlen(desc)) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+			       "invalid device description \"%s\"\n", desc);
+		return -1;
+	}
+
 	if ((fd = dev_get_tty(desc)) != -1) {
 		*device = &cwdevice_ttys;
 	}
