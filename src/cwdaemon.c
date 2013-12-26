@@ -159,8 +159,10 @@
 
 /* Default values of parameters, may be modified only through
    commandline arguments passed to cwdaemon.
-   These values are used when resetting libcw and cwdaemon to
-   initial state. */
+
+   After setting these variables with values passed in command line,
+   these become the default state of cwdaemon.  They will be used when
+   resetting libcw and cwdaemon to initial state. */
 static int default_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int default_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
@@ -299,7 +301,8 @@ void cwdaemon_reset_almost_all(void);
 void cwdaemon_udelay(unsigned long us);
 int  cwdaemon_set_default_cwdevice_descriptions(void);
 void cwdaemon_free_cwdevice_descriptions(void);
-int  cwdaemon_set_cwdevice(cwdevice **device, const char *desc);
+int  cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
+void cwdaemon_cwdevice_free(void);
 int  cwdaemon_initialize_socket(void);
 
 int  cwdaemon_open_libcw_output(int audio_system);
@@ -380,7 +383,7 @@ cwdevice cwdevice_lp = {
 
 /* Selected keying device:
    serial port (cwdevice_ttys) || parallel port (cwdevice_lp) || null (cwdevice_null).
-   It should be configured with cwdaemon_set_cwdevice(). */
+   It should be configured with cwdaemon_cwdevice_set(). */
 /* FIXME: if no device is specified in command line, and no physical
    device is available, the global_cwdevice is NULL, which causes the
    program to break. */
@@ -393,7 +396,6 @@ static cwdevice *global_cwdevice = NULL;
 /* catch ^C when running in foreground */
 RETSIGTYPE cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 {
-	global_cwdevice->free(global_cwdevice);
 	printf("%s: Exiting\n", PACKAGE);
 	exit(EXIT_SUCCESS);
 }
@@ -993,8 +995,8 @@ int cwdaemon_recvfrom(char *request, int n)
 */
 int cwdaemon_receive(void)
 {
-	/* We may treat request as printable string, so +1 for
-	   ending NUL added somewhere below is necessary. */
+	/* The request may be a printable string, so +1 for ending NUL
+	   added somewhere below is necessary. */
 	char request_buffer[CWDAEMON_MESSAGE_SIZE_MAX + 1];
 
 	ssize_t recv_rc = cwdaemon_recvfrom(request_buffer, CWDAEMON_MESSAGE_SIZE_MAX);
@@ -1104,7 +1106,6 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '5':
 		/* Exit cwdaemon. */
-		global_cwdevice->free(global_cwdevice);
 		errno = 0;
 		cwdaemon_errmsg("Sender has told me to end the connection");
 		exit(EXIT_SUCCESS);
@@ -1130,7 +1131,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	case '8': {
 		/* Set type of keying device. */
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Setting new keying device: %s", request + 2);
-		cwdaemon_set_cwdevice(&global_cwdevice, request + 2);
+		cwdaemon_cwdevice_set(&global_cwdevice, request + 2);
 
 		break;
 	}
@@ -1236,6 +1237,8 @@ int cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 
+		/* We use four bits to select band, this gives 16
+		   bands: 0 - 15. */
 		if (lv >= 0 && lv <= 15) {
 			cwdaemon_switch_band(global_cwdevice, lv);
 		}
@@ -1374,10 +1377,10 @@ void cwdaemon_play_request(char *request)
 					/* '^' is supposed to be the
 					   last character in the
 					   message, meaning that all
-					   that was before it, should
+					   that was before it should
 					   be used as reply text. So
 					   x++ will jump to ending
-					   NUL */
+					   NUL. */
 					x++;
 				} else {
 					cw_set_gap(0);
@@ -1416,7 +1419,7 @@ void cwdaemon_play_request(char *request)
    libcw calls cwdaemon_keyingevent() on changes of software key ->
    cwdaemon_keyingevent() changes state of a bit on cwdaemon's keying device
 
-   \param unused argument
+   \param arg - unused argument
    \param keystate - state of a key, as seen by libcw
 */
 void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
@@ -1461,7 +1464,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 	    && cw_get_tone_queue_length() <= tq_low_watermark) {
 		/* TODO: check if this third condition is really necessary. */
-		/* Originally twas 'cw_get_tone_queue_length() <= 1',
+		/* Originally it was 'cw_get_tone_queue_length() <= 1',
 		   I'm guessing that '1' here was the same '1' as the
 		   third argument to cw_register_tone_queue_low_callback().
 		   Feel free to correct me ;) */
@@ -1737,7 +1740,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 
 bool cwdaemon_args_cwdevice(const char *optarg)
 {
-	if (cwdaemon_set_cwdevice(&global_cwdevice, optarg) == -1) {
+	if (cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
 		return false;
 	} else {
 		return true;
@@ -2121,7 +2124,7 @@ int main(int argc, char *argv[])
 	//cw_debug_set_flags(&cw_debug_object_dev, CW_DEBUG_GENERATOR | CW_DEBUG_SOUND_SYSTEM);
 	//(&cw_debug_object_dev)->level = CW_DEBUG_DEBUG;
 
-	/* Until a call to cwdaemon_debug_open() is made, and debug
+	/* Until a call to cwdaemon_debug_open() is made and debug
 	   output is configured according to command line switches,
 	   use the default "stdout" file. */
 	cwdaemon_debug_f = stdout;
@@ -2131,9 +2134,18 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
+	atexit(cwdaemon_cwdevice_free);
+	/* cwdaemon_cwdevice_set() is called elsewhere, in code
+	   handling command line args. */
+
 	cwdaemon_args_parse(argc, argv);
 
 	atexit(cwdaemon_debug_close);
+	/* Call cwdaemon_debug_open() after parsing command line
+	   arguments. Errors discovered during parsing of command line
+	   args will then still be printed to stderr. Options for
+	   debug output can be also passed as command line args, so
+	   they weren't available until now. */
 	cwdaemon_debug_open();
 
 
@@ -2205,11 +2217,9 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	/* Initialize libcw (and other things) here, this late, to
-	   be sure that libcw has been initialized (and is still used)
-	   by child process. Parent process exits after forking, and so
-	   libcw is closed in parent process. We need it in child process,
-	   so here it is. */
+	/* Initialize libcw (and other things) here, this late, to be
+	   sure that libcw has been initialized and is used only by
+	   child process, not by parent process. */
 	cwdaemon_reset_almost_all();
 	atexit(cwdaemon_close_libcw_output);
 
@@ -2222,6 +2232,7 @@ int main(int argc, char *argv[])
 	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, tq_low_watermark);
 
 
+	/* The main loop of cwdaemon. */
 	request_queue[0] = '\0';
 	do {
 		fd_set readfd;
@@ -2240,7 +2251,7 @@ int main(int argc, char *argv[])
 		udptime.tv_usec = 0;
 		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
 		int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
-		/* fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
+		/* int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
 		if (fd_count == -1 && errno != EINTR) {
 			cwdaemon_errmsg("Select");
 		} else {
@@ -2256,7 +2267,6 @@ int main(int argc, char *argv[])
 
 	} while (1);
 
-	global_cwdevice->free(global_cwdevice);
 	if (close(socket_descriptor) == -1) {
 		cwdaemon_errmsg("Close socket");
 		exit(EXIT_FAILURE);
@@ -2366,7 +2376,7 @@ void cwdaemon_free_cwdevice_descriptions(void)
    \return -1 if \p desc describes invalid device, or if memory allocation error happens
    \return 0 otherwise
 */
-int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
+int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
 	int fd;
 
@@ -2393,6 +2403,8 @@ int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
 		return -1;
 	}
 
+	/* Replace default description of device with actual
+	   description provided by caller. */
 	if ((*device)->desc) {
 		free((*device)->desc);
 	}
@@ -2410,6 +2422,29 @@ int cwdaemon_set_cwdevice(cwdevice **device, const char *desc)
 }
 
 
+
+
+/**
+   \brief Clean up global cwdevice
+
+   Global cwdevice has been initialized with
+   cwdaemon_cwdevice_set(). Clean it up before exiting.
+
+   This function should be registered with atexit(). It is able to
+   handle situation where global cwdevice has not been initialized
+   yet.
+
+*/
+void cwdaemon_cwdevice_free(void)
+{
+	if (global_cwdevice
+	    && global_cwdevice->free) {
+
+		global_cwdevice->free(global_cwdevice);
+	}
+
+	return;
+}
 
 
 
