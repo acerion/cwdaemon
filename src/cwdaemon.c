@@ -301,6 +301,7 @@ void cwdaemon_reset_almost_all(void);
 void cwdaemon_udelay(unsigned long us);
 int  cwdaemon_set_default_cwdevice_descriptions(void);
 void cwdaemon_free_cwdevice_descriptions(void);
+void cwdaemon_cwdevice_init(void);
 int  cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
 void cwdaemon_cwdevice_free(void);
 int  cwdaemon_initialize_socket(void);
@@ -2135,8 +2136,9 @@ int main(int argc, char *argv[])
 	}
 
 	atexit(cwdaemon_cwdevice_free);
-	/* cwdaemon_cwdevice_set() is called elsewhere, in code
-	   handling command line args. */
+	/* Sets global_cwdevice to null device. This may be overridden
+	   with command line argument. */
+	cwdaemon_cwdevice_init();
 
 	cwdaemon_args_parse(argc, argv);
 
@@ -2401,7 +2403,11 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	else if ((fd = dev_get_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
-		*device = NULL;
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+			       "no valid device found, setting cwdevice to null device");
+		/* It's better to have null device than NULL
+		   pointer. */
+		*device = &cwdevice_null;
 	}
 
 	if (!*device) {
@@ -2427,6 +2433,28 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 
 }
 
+
+
+
+/**
+   \brief Assign initial value to global_cwdevice
+
+   Assign some initial value (initial device) to global_cwdevice,
+   before the device will be configured through command line options.
+
+   If cwdaemon will be started without any device specified in command
+   line, we could end up with global_cwdevice being NULL pointer.
+
+*/
+void cwdaemon_cwdevice_init(void)
+{
+	global_cwdevice = &cwdevice_null;
+
+	/* Name of the device has been set in
+	   cwdaemon_set_default_cwdevice_descriptions() */
+
+	return;
+}
 
 
 
