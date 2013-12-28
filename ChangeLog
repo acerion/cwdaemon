@@ -1,3 +1,17 @@
+2013-12-28 Kamil Ignacak
+	* cwdevice: the new default cwdevice is "null". It is a default
+	device at startup (thanks to new function
+	cwdaemon_cwdevice_init()), unless it is changed through command
+	line, or until it is changed through network request. It is also a
+	default fallback device if something goes wrong when changing the
+	cwdevice using network request.
+
+2013-12-26 Kamil Ignacak
+	* configuration: adding test of cwdevice desciption passed either
+	through command line (-d/--cwdevice <name>) or through network
+	(<ESC>8<name>). Empty device descriptions are now discarded and
+	shouldn't cause crash of daemon anymore.
+
 2013-12-22 Kamil Ignacak
 	* configuration: Unification of configuration via command line and
 	through socket.
