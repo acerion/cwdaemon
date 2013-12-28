@@ -158,11 +158,11 @@
 
 
 /* Default values of parameters, may be modified only through
-   commandline arguments passed to cwdaemon.
+   command line arguments passed to cwdaemon.
 
    After setting these variables with values passed in command line,
-   these become the default state of cwdaemon.  They will be used when
-   resetting libcw and cwdaemon to initial state. */
+   these become the default state of cwdaemon.  Values of default_*
+   will be used when resetting libcw and cwdaemon to initial state. */
 static int default_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int default_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
@@ -200,12 +200,23 @@ static const int tq_low_watermark = 1;
 static bool has_audio_output = false;
 
 
+
+
 /* Network variables. */
+
 /* cwdaemon usually receives requests from client, but on occasions
    it needs to send a reply back. This is why in addition to
    request_* we also have reply_* */
 static int socket_descriptor;
-static int port = CWDAEMON_NETWORK_PORT_DEFAULT;  /* default UDP port we listen on */
+
+/* Default UDP port we listen on. Can be changed only through command
+   line switch.
+
+   There is a code path suggesting that it was possible to change the
+   port using network request, but now this code path is marked as
+   "obsolete".
+ */
+static int port = CWDAEMON_NETWORK_PORT_DEFAULT;
 
 static struct sockaddr_in request_addr;
 static socklen_t          request_addrlen;
@@ -217,19 +228,25 @@ static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
 
-/* cwdaemon may print debug messages to a disc file instead of stdout. */
+/* Debug variables. */
+
+/* cwdaemon may print debug messages to a disc file instead of
+   stdout. */
 static FILE *cwdaemon_debug_f = NULL;
 static char *cwdaemon_debug_f_path = NULL;
 
-
+/* This table is addressed with values defined in "enum
+   cwdaemon_verbosity" (src/cwdaemon.h). */
 static const char *cwdaemon_verbosity_labels[] = {
-	"NN", /* None - obviously this label will never be used. */
-	"EE",
-	"WW",
-	"II",
-	"DD" };
+	"NN",    /* None - obviously this label will never be used. */
+	"EE",    /* Error. */
+	"WW",    /* Warning. */
+	"II",    /* Information. */
+	"DD" };  /* Debug. */
 
-
+/* An integer that is a result of ORing libcw's debug flags. See
+   libcw.h (or is it libcw_debug.h?) for numeric values of the
+   flags. */
 static long int libcw_debug_flags = 0;
 
 
@@ -292,25 +309,29 @@ void cwdaemon_keyingevent(void *arg, int keystate);
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
+int     cwdaemon_initialize_socket(void);
 ssize_t cwdaemon_sendto(const char *reply);
 int     cwdaemon_recvfrom(char *request, int n);
 int     cwdaemon_receive(void);
 int     cwdaemon_handle_escaped_request(char *request);
 
 void cwdaemon_reset_almost_all(void);
-void cwdaemon_udelay(unsigned long us);
-int  cwdaemon_set_default_cwdevice_descriptions(void);
-void cwdaemon_free_cwdevice_descriptions(void);
+
+/* Functions managing cwdevices. */
+int  cwdaemon_cwdevices_init(void);
+void cwdaemon_cwdevices_free(void);
 void cwdaemon_cwdevice_init(void);
 int  cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
 void cwdaemon_cwdevice_free(void);
-int  cwdaemon_initialize_socket(void);
 
+/* Functions managing libcw output. */
 int  cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
+/* Utility functions. */
 int  cwdaemon_get_long(const char *buf, long *lvp);
+void cwdaemon_udelay(unsigned long us);
 
 
 
@@ -324,8 +345,8 @@ static void cwdaemon_args_help(void);
 
    While it would make some sense to make request to get version of
    cwdaemon while it is already running, it is impossible to request
-   non-forking of daemon that has - after the stage of parsing command
-   line options - already forked. */
+   non-forking of daemon that - after parsing command line options -
+   has already forked. */
 static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
@@ -1749,7 +1770,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 bool cwdaemon_params_cwdevice(const char *optarg)
 {
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested cwdevice \"%s\"\n", optarg);
+		       "requested cwdevice \"%s\"", optarg);
 
 	if (cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
 		return false;
@@ -2143,8 +2164,8 @@ int main(int argc, char *argv[])
 	   use the default "stdout" file. */
 	cwdaemon_debug_f = stdout;
 
-	atexit(cwdaemon_free_cwdevice_descriptions);
-	if (cwdaemon_set_default_cwdevice_descriptions() == -1) {
+	atexit(cwdaemon_cwdevices_free);
+	if (cwdaemon_cwdevices_init() == -1) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -2300,11 +2321,11 @@ int main(int argc, char *argv[])
    cwdevice_xyz.desc values.
 
    The strings can be later deallocated with
-   cwdaemon_free_cwdevice_descriptions().
+   cwdaemon_cwdevices_free().
 
    \return 0
 */
-int cwdaemon_set_default_cwdevice_descriptions(void)
+int cwdaemon_cwdevices_init(void)
 {
 	/* Default device description of parallel/lpt port. */
 #if defined HAVE_LINUX_PPDEV_H        /* Linux, obviously. */
@@ -2345,9 +2366,9 @@ int cwdaemon_set_default_cwdevice_descriptions(void)
    \brief Deallocate strings with cw keying device names
 
    Function frees memory previously allocated with
-   cwdaemon_free_cwdevice_descriptions().
+   cwdaemon_cwdevices_init().
 */
-void cwdaemon_free_cwdevice_descriptions(void)
+void cwdaemon_cwdevices_free(void)
 {
 	if (cwdevice_ttys.desc) {
 		free(cwdevice_ttys.desc);
@@ -2381,7 +2402,7 @@ void cwdaemon_free_cwdevice_descriptions(void)
    Function assigns to \p device a pointer to global variable, there is
    no need to free memory associated with the variable itself.
    The function copies \p desc to 'global device'->desc , you will have to
-   deallocate the copied desc with cwdaemon_free_cwdevice_descriptions().
+   deallocate the copied desc with cwdaemon_cwdevices_free().
 
    The function can be called with \p device to which some other device
    has been already assigned.
@@ -2397,7 +2418,7 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 
 	if (!desc || !strlen(desc)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid device description \"%s\"\n", desc);
+			       "invalid device description \"%s\"", desc);
 		return -1;
 	}
 
@@ -2463,8 +2484,8 @@ void cwdaemon_cwdevice_init(void)
 {
 	global_cwdevice = &cwdevice_null;
 
-	/* Name of the device has been set in
-	   cwdaemon_set_default_cwdevice_descriptions() */
+	/* cwdevice_null->desc (and now global_cwdevice->desc) has
+	   been set in cwdaemon_cwdevices_init(). */
 
 	return;
 }
