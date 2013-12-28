@@ -312,26 +312,38 @@ void cwdaemon_reset_libcw_output(void);
 
 int  cwdaemon_get_long(const char *buf, long *lvp);
 
-static void cwdaemon_args_parse(int argc, char *argv[]);
-static void cwdaemon_args_help(void);
-static bool cwdaemon_args_cwdevice(const char *optarg);
-static void cwdaemon_args_nofork(void);
-static bool cwdaemon_args_port(const char *optarg);
-static bool cwdaemon_args_priority(int *priority, const char *optarg);
-static bool cwdaemon_args_wpm(int *wpm, const char *optarg);
-static bool cwdaemon_args_pttdelay(int *delay, const char *optarg);
-static bool cwdaemon_args_volume(int *volume, const char *optarg);
-static void cwdaemon_args_version(void);
-static bool cwdaemon_args_weighting(int *weighting, const char *optarg);
-static bool cwdaemon_args_tone(int *tone, const char *optarg);
-static void cwdaemon_args_inc_verbosity(void);
-static bool cwdaemon_args_set_verbosity(const char *optarg);
-static bool cwdaemon_args_libcwflags(const char *optarg);
-static bool cwdaemon_args_debugfile(const char *optarg);
-static bool cwdaemon_args_system(int *system, const char *optarg);
 
+
+static void cwdaemon_args_parse(int argc, char *argv[]);
 static void cwdaemon_args_process_short(int c, const char *optarg);
 static void cwdaemon_args_process_long(int argc, char *argv[]);
+static void cwdaemon_args_help(void);
+
+/* These two are called only in code handling command line options. No
+   request can prompt cwdaemon to inform about version or to fork.
+
+   While it would make some sense to make request to get version of
+   cwdaemon while it is already running, it is impossible to request
+   non-forking of daemon that has - after the stage of parsing command
+   line options - already forked. */
+static void cwdaemon_params_version(void);
+static void cwdaemon_params_nofork(void);
+
+static bool cwdaemon_params_cwdevice(const char *optarg);
+static bool cwdaemon_params_port(const char *optarg);
+static bool cwdaemon_params_priority(int *priority, const char *optarg);
+static bool cwdaemon_params_wpm(int *wpm, const char *optarg);
+static bool cwdaemon_params_pttdelay(int *delay, const char *optarg);
+static bool cwdaemon_params_volume(int *volume, const char *optarg);
+static bool cwdaemon_params_weighting(int *weighting, const char *optarg);
+static bool cwdaemon_params_tone(int *tone, const char *optarg);
+static void cwdaemon_params_inc_verbosity(void);
+static bool cwdaemon_params_set_verbosity(const char *optarg);
+static bool cwdaemon_params_libcwflags(const char *optarg);
+static bool cwdaemon_params_debugfile(const char *optarg);
+static bool cwdaemon_params_system(int *system, const char *optarg);
+
+
 
 static void cwdaemon_debug_open(void);
 static void cwdaemon_debug_close(void);
@@ -1059,16 +1071,15 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '2':
 		/* Set speed of Morse code, in words per minute. */
-		if (cwdaemon_args_wpm(&current_morse_speed, request + 2)) {
+		if (cwdaemon_params_wpm(&current_morse_speed, request + 2)) {
 			cw_set_send_speed(current_morse_speed);
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Speed: %d wpm", current_morse_speed);
 		}
 		break;
 	case '3':
 		/* Set tone (frequency) of morse code, in Hz.
 		   The code assumes that minimal valid frequency is zero. */
 		assert (CW_FREQUENCY_MIN == 0);
-		if (cwdaemon_args_tone(&current_morse_tone, request + 2)) {
+		if (cwdaemon_params_tone(&current_morse_tone, request + 2)) {
 			if (current_morse_tone > 0) {
 
 				cw_set_frequency(current_morse_tone);
@@ -1124,9 +1135,8 @@ int cwdaemon_handle_escaped_request(char *request)
 		   -50/+50, but libcw accepts values in range
 		   20/80. This is why you have the calculation
 		   when calling cw_set_weighting(). */
-		if (cwdaemon_args_weighting(&current_weighting, request + 2)) {
+		if (cwdaemon_params_weighting(&current_weighting, request + 2)) {
 			cw_set_weighting(current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Weight: %d", current_weighting);
 		}
 		break;
 	case '8': {
@@ -1219,13 +1229,11 @@ int cwdaemon_handle_escaped_request(char *request)
 	case 'd':
 		/* Set PTT delay (TOD, Turn On Delay).
 		   The value is milliseconds. */
-		if (!cwdaemon_args_pttdelay(&current_ptt_delay, request + 2)) {
+		if (!cwdaemon_params_pttdelay(&current_ptt_delay, request + 2)) {
 			/* Why do we set here delay to MAX? What if lv
 			   < 0 - shouldn't we set it to zero then? */
 			current_ptt_delay = CWDAEMON_PTT_DELAY_MAX;
 		}
-
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT delay(TOD): %d ms", current_ptt_delay);
 
 		if (current_ptt_delay == 0) {
 			cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
@@ -1261,9 +1269,8 @@ int cwdaemon_handle_escaped_request(char *request)
 		   closing the old one. In either case cwdaemon would
 		   require some method to inform client about success
 		   or failure to open new sound system.	*/
-		if (cwdaemon_args_system(&current_audio_system, request + 2)) {
+		if (cwdaemon_params_system(&current_audio_system, request + 2)) {
 			/* Handle valid request for changing sound system. */
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Switching to sound system '%s'", cw_get_audio_system_label(current_audio_system));
 			cwdaemon_close_libcw_output();
 
 			if (!cwdaemon_open_libcw_output(current_audio_system)) {
@@ -1276,7 +1283,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	}
 	case 'g':
 		/* Set volume of sound, in percents. */
-		if (cwdaemon_args_volume(&current_morse_volume, request + 2)) {
+		if (cwdaemon_params_volume(&current_morse_volume, request + 2)) {
 			cw_set_volume(current_morse_volume);
 		}
 		break;
@@ -1580,69 +1587,69 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 			const char *optname = cwdaemon_args_long[option_index].name;
 
 			if (!strcmp(optname, "cwdevice")) {
-				if (!cwdaemon_args_cwdevice(optarg)) {
+				if (!cwdaemon_params_cwdevice(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "nofork")) {
-				cwdaemon_args_nofork();
+				cwdaemon_params_nofork();
 
 			} else if (!strcmp(optname, "port")) {
-				if (!cwdaemon_args_port(optarg)) {
+				if (!cwdaemon_params_port(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "priority")) {
-				if (!cwdaemon_args_priority(&process_priority, optarg)) {
+				if (!cwdaemon_params_priority(&process_priority, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "wpm")) {
-				if (!cwdaemon_args_wpm(&default_morse_speed, optarg)) {
+				if (!cwdaemon_params_wpm(&default_morse_speed, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "pttdelay")) {
-				if (!cwdaemon_args_pttdelay(&default_ptt_delay, optarg)) {
+				if (!cwdaemon_params_pttdelay(&default_ptt_delay, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "volume")) {
-				if (!cwdaemon_args_volume(&default_morse_volume, optarg)) {
+				if (!cwdaemon_params_volume(&default_morse_volume, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "version")) {
-				cwdaemon_args_version();
+				cwdaemon_params_version();
 				exit(EXIT_SUCCESS);
 
 			} else if (!strcmp(optname, "weighting")) {
-				if (!cwdaemon_args_weighting(&default_weighting, optarg)) {
+				if (!cwdaemon_params_weighting(&default_weighting, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "tone")) {
-				if (!cwdaemon_args_tone(&default_morse_tone, optarg)) {
+				if (!cwdaemon_params_tone(&default_morse_tone, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "verbosity")) {
-				if (!cwdaemon_args_set_verbosity(optarg)) {
+				if (!cwdaemon_params_set_verbosity(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "libcwflags")) {
-				if (!cwdaemon_args_libcwflags(optarg)) {
+				if (!cwdaemon_params_libcwflags(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "debugfile")) {
-				if (!cwdaemon_args_debugfile(optarg)) {
+				if (!cwdaemon_params_debugfile(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
 			} else if (!strcmp(optname, "system")) {
-				if (!cwdaemon_args_system(&default_audio_system, optarg)) {
+				if (!cwdaemon_params_system(&default_audio_system, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1668,68 +1675,68 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		cwdaemon_args_help();
 		exit(EXIT_SUCCESS);
 	case 'd':
-		if (!cwdaemon_args_cwdevice(optarg)) {
+		if (!cwdaemon_params_cwdevice(optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'n':
-		cwdaemon_args_nofork();
+		cwdaemon_params_nofork();
 		break;
 	case 'p':
-		if (!cwdaemon_args_port(optarg)) {
+		if (!cwdaemon_params_port(optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	case 'P':
-		if (!cwdaemon_args_priority(&process_priority, optarg)) {
+		if (!cwdaemon_params_priority(&process_priority, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 #endif
 	case 's':
-		if (!cwdaemon_args_wpm(&default_morse_speed, optarg)) {
+		if (!cwdaemon_params_wpm(&default_morse_speed, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 't':
-		if (!cwdaemon_args_pttdelay(&default_ptt_delay, optarg)) {
+		if (!cwdaemon_params_pttdelay(&default_ptt_delay, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'v':
-		if (!cwdaemon_args_volume(&default_morse_volume, optarg)) {
+		if (!cwdaemon_params_volume(&default_morse_volume, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'V':
-		cwdaemon_args_version();
+		cwdaemon_params_version();
 		exit(EXIT_SUCCESS);
 	case 'w':
-		if (!cwdaemon_args_weighting(&default_weighting, optarg)) {
+		if (!cwdaemon_params_weighting(&default_weighting, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'T':
-		if (!cwdaemon_args_tone(&default_morse_tone, optarg)) {
+		if (!cwdaemon_params_tone(&default_morse_tone, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'i':
-		cwdaemon_args_inc_verbosity();
+		cwdaemon_params_inc_verbosity();
 		break;
 	case 'I':
-		if (!cwdaemon_args_libcwflags(optarg)) {
+		if (!cwdaemon_params_libcwflags(optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'f':
-		if (!cwdaemon_args_debugfile(optarg)) {
+		if (!cwdaemon_params_debugfile(optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
 	case 'x':
-		if (!cwdaemon_args_system(&default_audio_system, optarg)) {
+		if (!cwdaemon_params_system(&default_audio_system, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1739,8 +1746,11 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 }
 
 
-bool cwdaemon_args_cwdevice(const char *optarg)
+bool cwdaemon_params_cwdevice(const char *optarg)
 {
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+		       "requested cwdevice \"%s\"\n", optarg);
+
 	if (cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
 		return false;
 	} else {
@@ -1748,7 +1758,8 @@ bool cwdaemon_args_cwdevice(const char *optarg)
 	}
 }
 
-void cwdaemon_args_nofork(void)
+
+void cwdaemon_params_nofork(void)
 {
 	if (forking) {
 		printf("%s: Not forking...\n", PACKAGE);
@@ -1758,143 +1769,145 @@ void cwdaemon_args_nofork(void)
 }
 
 
-bool cwdaemon_args_port(const char *optarg)
+bool cwdaemon_params_port(const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of port number: \"%s\"", optarg);
+			       "invalid requested port number: \"%s\"", optarg);
 		return false;
 	} else {
 		port = lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested port number = %ld", port);
+			       "requested port number: \"%ld\"", port);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_priority(int *priority, const char *optarg)
+bool cwdaemon_params_priority(int *priority, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of priority: \"%s\" (should be between -20 and 20 inclusive)",
+			       "invalid requested process priority: \"%s\" (should be between -20 and 20 inclusive)",
 			       optarg);
 		return false;
 	} else {
 		*priority = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested process priority = %ld", *priority);
+			       "requested process priority: \"%ld\"", *priority);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_wpm(int *wpm, const char *optarg)
+bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
-			       "invalid value of speed: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested morse speed [wpm]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_SPEED_MIN, CW_SPEED_MAX);
 		return false;
 	} else {
 		*wpm = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested wpm = %d", *wpm);
+			       "requested morse speed [wpm]: \"%d\"", *wpm);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_pttdelay(int *delay, const char *optarg)
+bool cwdaemon_params_pttdelay(int *delay, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_PTT_DELAY_MIN || lv > CWDAEMON_PTT_DELAY_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of PTT delay: \"%s\" (should be between %d and %d [ms] inclusive)",
+			       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 		return false;
 	} else {
 		*delay = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT delay: %ld", *delay);
+			       "requested PTT delay [ms]: \"%ld\"", *delay);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_volume(int *volume, const char *optarg)
+bool cwdaemon_params_volume(int *volume, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of volume: \"%s\" (should be between %d and %d [%%] inclusive)",
+			       "invalid requested volume [%%]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
 		return false;
 	} else {
 		*volume = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested volume: %d", *volume);
+			       "requested volume [%%]: \"%d\"", *volume);
 		return true;
 	}
 }
 
 
-void cwdaemon_args_version(void)
+void cwdaemon_params_version(void)
 {
 	printf("%s version %s\n", PACKAGE, VERSION);
 	return;
 }
 
 
-bool cwdaemon_args_weighting(int *weighting, const char *optarg)
+bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of weighting: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested weighting: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
 		return false;
 	} else {
 		*weighting = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested weighting: %ld", *weighting);
+			       "requested weighting: \"%ld\"", *weighting);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_tone(int *tone, const char *optarg)
+bool cwdaemon_params_tone(int *tone, const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of tone: \"%s\" (should be between %d and %d [Hz] inclusive)",
+			       "invalid requested tone [Hz]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
 		return false;
 	} else {
 		*tone = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested tone: %ld", *tone);
+			       "requested tone [Hz]: \"%ld\"", *tone);
 		return true;
 	}
 }
 
 
-void cwdaemon_args_inc_verbosity(void)
+void cwdaemon_params_inc_verbosity(void)
 {
 	if (cwdaemon_verbosity < CWDAEMON_VERBOSITY_D) {
 		cwdaemon_verbosity++;
+
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
 	}
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level: %s", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+
 	return;
 }
 
 
-bool cwdaemon_args_set_verbosity(const char *optarg)
+bool cwdaemon_params_set_verbosity(const char *optarg)
 {
 	if (!strcmp(optarg, "n") || !strcmp(optarg, "N")) {
 		cwdaemon_verbosity = CWDAEMON_VERBOSITY_N;
@@ -1908,35 +1921,35 @@ bool cwdaemon_args_set_verbosity(const char *optarg)
 		cwdaemon_verbosity = CWDAEMON_VERBOSITY_D;
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of verbosity level: \"%s\"", optarg);
+			       "invalid requested verbosity level: \"%s\"", optarg);
 		return false;
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level = %s", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+		       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
 	return true;
 }
 
 
-bool cwdaemon_args_libcwflags(const char *optarg)
+bool cwdaemon_params_libcwflags(const char *optarg)
 {
 	long lv = 0;
 	if (cwdaemon_get_long(optarg, &lv)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid value of debug flags: \"%s\" (should be numeric value)", optarg);
+			       "invalid requested debug flags: \"%s\" (should be numeric value)", optarg);
 		libcw_debug_flags = 0;
 
 		return false;
 	} else {
 		libcw_debug_flags = lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested libcw debug flags = %ld", libcw_debug_flags);
+			       "requested libcw debug flags: \"%ld\"", libcw_debug_flags);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_debugfile(const char *optarg)
+bool cwdaemon_params_debugfile(const char *optarg)
 {
 	cwdaemon_debug_f_path = strdup(optarg);
 	if (!cwdaemon_debug_f_path) {
@@ -1945,13 +1958,13 @@ bool cwdaemon_args_debugfile(const char *optarg)
 		return false;
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested debug file path = \"%s\"", cwdaemon_debug_f_path);
+			       "requested debug file path: \"%s\"", cwdaemon_debug_f_path);
 		return true;
 	}
 }
 
 
-bool cwdaemon_args_system(int *system, const char *optarg)
+bool cwdaemon_params_system(int *system, const char *optarg)
 {
 	if (!strncmp(optarg, "n", 1)) {
 		*system = CW_AUDIO_NULL;
@@ -1967,7 +1980,7 @@ bool cwdaemon_args_system(int *system, const char *optarg)
 		*system = CW_AUDIO_OSS;
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
+			       "invalid requested sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
 			       optarg);
 		return false;
 	}
