@@ -2158,14 +2158,14 @@ void cwdaemon_args_help(void)
 	printf("-d, --cwdevice <device>\n");
 	printf("        Use a different device.\n");
 #if defined (HAVE_LINUX_PPDEV_H)
-	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default = parport0)\n");
+	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default: parport0)\n");
 #elif defined (HAVE_DEV_PPBUS_PPI_H)
-	printf("        (e.g. ttyd0,1,2, ppi0,1, etc. default = ppi0)\n");
+	printf("        (e.g. ttyd0,1,2, ppi0,1, etc. default: ppi0)\n");
 #else
 #ifdef BSD
-	printf("        (e.g. ttyd0,1,2, etc. default = ttyd0)\n");
+	printf("        (e.g. ttyd0,1,2, etc. default: ttyd0)\n");
 #else
-	printf("        (e.g. ttyS0,1,2, etc. default = ttyS0)\n");
+	printf("        (e.g. ttyS0,1,2, etc. default: ttyS0)\n");
 #endif
 #endif
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
@@ -2173,16 +2173,16 @@ void cwdaemon_args_help(void)
 	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
 	printf("-p, --port <port>\n");
-	printf("        Use a different UDP port number (> 1023, default = %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
+	printf("        Use a different UDP port number (> 1023, default: %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	printf("-P, --priority <priority>\n");
-	printf("        Set program's priority (-20 ... 20, default = 0).\n");
+	printf("        Set program's priority (-20 - 20, default: 0).\n");
 #endif
 	printf("-s, --wpm <speed>\n");
-	printf("        Set morse speed (%d ... %d wpm, default = %d).\n",
+	printf("        Set Morse speed [wpm] (%d - %d, default = %d).\n",
 	       CW_SPEED_MIN, CW_SPEED_MAX, CWDAEMON_MORSE_SPEED_DEFAULT);
 	printf("-t, --pttdelay <time>\n");
-	printf("        Set PTT delay (%d - %d ms, default = %d).\n",
+	printf("        Set PTT delay [ms] (%d - %d, default: %d).\n",
 	       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX, CWDAEMON_PTT_DELAY_DEFAULT);
 	printf("-x, --system <sound system>\n");
 	printf("        Use a specific sound system:\n");
@@ -2193,13 +2193,13 @@ void cwdaemon_args_help(void)
 	printf("        n = null (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
 	printf("-v, --volume <volume>\n");
-	printf("        Set volume for soundcard output (%d%% - %d%%, default = %d%%).\n",
+	printf("        Set volume for soundcard output [%%] (%d - %d, default: %d).\n",
 	       CW_VOLUME_MIN, CW_VOLUME_MAX, CWDAEMON_MORSE_VOLUME_DEFAULT);
 	printf("-w, --weighting <weight>\n");
-	printf("        Set weighting (%d - %d, default = %d).\n",
+	printf("        Set weighting (%d - %d, default: %d).\n",
 	       CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX, CWDAEMON_MORSE_WEIGHTING_DEFAULT);
 	printf("-T, --tone <tone>\n");
-	printf("        Set initial tone to 'tone' (%d - %d Hz, default: %d).\n",
+	printf("        Set initial tone [Hz] (%d - %d, default: %d).\n",
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
 	printf("-i\n");
 	printf("        Increase verbosity of debug messages printed by cwademon.\n");
