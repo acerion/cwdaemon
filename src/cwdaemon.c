@@ -2091,19 +2091,26 @@ void cwdaemon_debug_open(void)
 	/* Handle valid situations (after eliminating possible invalid
 	   situations above). */
 
-	if (!cwdaemon_debug_f_path
-	    || !strcmp(cwdaemon_debug_f_path, "stdout")) {
+	if (!cwdaemon_debug_f_path) {
+
+		if (!forking) {
+			/* stdout is (for historical reasons) a
+			   default file for printing debug messages
+			   when not forking, so if a debug file hasn't
+			   been defined in command line, the
+			   cwdaemon_debug_f_path will be NULL. Treat
+			   this situation accordingly.*/
+
+			fprintf(stderr, "debug output: stdout\n");
+			cwdaemon_debug_f = stdout;
+		}
+
+	} else if (!strcmp(cwdaemon_debug_f_path, "stdout")) {
 
 		/* We shouldn't get here when forking (invalid
 		   situation handled by first "if" in the
 		   function). */
 		assert(!forking);
-
-		/* stdout is (for historical reasons) a default file
-		   for printing debug messages when not forking, so if
-		   a debug file hasn't been defined in command line,
-		   the cwdaemon_debug_f_path will be NULL. Treat this
-		   situation accordingly.*/
 
 		fprintf(stderr, "debug output: stdout\n");
 		cwdaemon_debug_f = stdout;
