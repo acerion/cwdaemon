@@ -2335,8 +2335,12 @@ int main(int argc, char *argv[])
 	/* Initialize libcw (and other things) here, this late, to be
 	   sure that libcw has been initialized and is used only by
 	   child process, not by parent process. */
-	cwdaemon_reset_almost_all();
 	atexit(cwdaemon_close_libcw_output);
+	cwdaemon_reset_almost_all();
+	if (!has_audio_output) {
+		/* Failed to open libcw output. */
+		exit(EXIT_FAILURE);
+	}
 
 	if (libcw_debug_flags) { /* debugging libcw as well */
 		cw_set_debug_flags(libcw_debug_flags);
