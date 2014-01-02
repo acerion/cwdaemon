@@ -2011,13 +2011,13 @@ bool cwdaemon_params_system(int *system, const char *optarg)
 		/* TODO: print only those audio systems that are
 		   supported on given machine. */
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(one - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
+			       "invalid requested sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(ull - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
 			       optarg);
 		return false;
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested sound system: \"%s\"", optarg);
+		       "requested sound system: \"%s\" (\"%s\")", optarg, cw_get_audio_system_label(*system));
 	return true;
 }
 
@@ -2190,7 +2190,7 @@ void cwdaemon_args_help(void)
 	printf("        o = OSS\n");
 	printf("        a = ALSA\n");
 	printf("        p = PulseAudio\n");
-	printf("        n = none (no audio)\n");
+	printf("        n = null (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
 	printf("-v, --volume <volume>\n");
 	printf("        Set volume for soundcard output (%d%% - %d%%, default = %d%%).\n",
