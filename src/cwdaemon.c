@@ -477,8 +477,9 @@ void cwdaemon_errmsg(const char *info, ...)
    \brief Print debug message to debug file
 
    Function decides if given \p verbosity level is sufficient to print
-   given \p format debug message, and prints it to stdout. If current
-   global verbosity level is "None", no information will be printed.
+   given \p format debug message, and prints it to predefined file. If
+   current global verbosity level is "None", no information will be
+   printed.
 
    Currently \p verbosity can have one of values defined in enum
    cwdaemon_verbosity.
@@ -519,7 +520,8 @@ void cwdaemon_debug(int verbosity, const char *func, int line, const char *forma
 void cwdaemon_debug_close(void)
 {
 	if (cwdaemon_debug_f
-	    && cwdaemon_debug_f != stdout) {
+	    && cwdaemon_debug_f != stdout
+	    && cwdaemon_debug_f != stderr) {
 
 		fclose(cwdaemon_debug_f);
 		cwdaemon_debug_f = NULL;
@@ -1971,6 +1973,13 @@ bool cwdaemon_params_libcwflags(const char *optarg)
 
 bool cwdaemon_params_debugfile(const char *optarg)
 {
+	if (!strcmp(optarg, "syslog")) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+			       "debug output file \"%s\" not implemented yet, try it in later versions of %s",
+			       optarg, PACKAGE);
+		return false;
+	}
+
 	cwdaemon_debug_f_path = strdup(optarg);
 	if (!cwdaemon_debug_f_path) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
@@ -2049,19 +2058,76 @@ void cwdaemon_args_parse(int argc, char *argv[])
  */
 void cwdaemon_debug_open(void)
 {
-	if (cwdaemon_debug_f_path) {
-		/* Don't write to stdout (regardless if we are forking
-		   or not), write to disk file. */
+	/* First handle a clash of command line arguments. */
+	if (forking) {
+		if (cwdaemon_debug_f_path
+		    && (!strcmp(cwdaemon_debug_f_path, "stdout")
+			|| !strcmp(cwdaemon_debug_f_path, "stderr"))) {
+
+			/* If the path is not specified (path is
+			   NULL), it may imply that the debug output
+			   should be stdout. But since we explicitly
+			   asked for forking, the implied debug output
+			   to stdout will be ignored. This is a valid
+			   situation: explicit request for forking
+			   overrides implicit expectation of debug
+			   file being stdout.
+
+			   On the other hand, if we explicitly asked
+			   for debug output to be stdout or stderr,
+			   and at the same time explicitly asked for
+			   forking, that is completely different
+			   matter. This is an error (clash of command
+			   line arguments). */
+
+			fprintf(stdout, "%s:EE: expecting debug output to \"%s\" when forking\n",
+				PACKAGE, cwdaemon_debug_f_path);
+
+			exit(EXIT_FAILURE);
+		}
+	}
+
+
+	/* Handle valid situations (after eliminating possible invalid
+	   situations above). */
+
+	if (!cwdaemon_debug_f_path
+	    || !strcmp(cwdaemon_debug_f_path, "stdout")) {
+
+		/* We shouldn't get here when forking (invalid
+		   situation handled by first "if" in the
+		   function). */
+		assert(!forking);
+
+		/* stdout is (for historical reasons) a default file
+		   for printing debug messages when not forking, so if
+		   a debug file hasn't been defined in command line,
+		   the cwdaemon_debug_f_path will be NULL. Treat this
+		   situation accordingly.*/
+
+		fprintf(stderr, "debug output: stdout\n");
+		cwdaemon_debug_f = stdout;
+
+	} else if (!strcmp(cwdaemon_debug_f_path, "stderr")) {
+
+		/* We shouldn't get here when forking (invalid
+		   situation handled by first "if" in the
+		   function). */
+		assert(!forking);
+
+		fprintf(stderr, "debug output: stderr\n");
+		cwdaemon_debug_f = stderr;
+
+	} else { /* cwdaemon_debug_f_path is a path to disc file. */
+
+		/* We can get here when both forking and not forking. */
+
+		fprintf(stderr, "debug output: %s\n", cwdaemon_debug_f_path);
+
 		cwdaemon_debug_f = fopen(cwdaemon_debug_f_path, "w+");
 		if (!cwdaemon_debug_f) {
-			fprintf(stderr, "%s: failed to open output file \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
-			return;
-		}
-	} else {
-		if (forking) {
-			cwdaemon_debug_f = NULL;
-		} else {
-			cwdaemon_debug_f = stdout;
+			fprintf(stderr, "%s: failed to open output debug file \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -2141,9 +2207,15 @@ void cwdaemon_args_help(void)
 	printf("        d = debug (details)\n");
 	printf("-I, --libcwflags <flags>\n");
 	printf("        Numeric value of debug flags to be passed to libcw.\n");
-	printf("-f, --debugfile <path>\n");
-	printf("        Print debug information to file instead of stdout.\n");
-	printf("        Also works when %s has forked.\n", PACKAGE);
+	printf("-f, --debugfile <file>\n");
+	printf("        Print debug information to <file> instead of stdout.\n");
+	printf("        Value of <file> can be explicitly stated as \"stdout\"\n");
+	printf("        (when not forking).\n");
+	printf("        Value of <file> can be also \"stderr\" (when not forking).\n");
+	printf("        Special value of <file> being \"syslog\" is reserved for\n");
+	printf("        future use. For now it will be rejected as invalid.\n");
+	printf("        Passing path to disc file as value of <file> works in both\n");
+	printf("        situations: when forking and when not forking.\n");
 	printf("\n");
 
 	return;
@@ -2184,7 +2256,6 @@ int main(int argc, char *argv[])
 	   debug output can be also passed as command line args, so
 	   they weren't available until now. */
 	cwdaemon_debug_open();
-
 
 	if (forking) {
 
