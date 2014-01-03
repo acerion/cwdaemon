@@ -2102,7 +2102,14 @@ void cwdaemon_debug_open(void)
 			   this situation accordingly.*/
 
 			fprintf(stderr, "debug output: stdout\n");
+			/* This has been already done in main(), but
+			   do it again to be super-explicit. */
 			cwdaemon_debug_f = stdout;
+		} else {
+			/* Remember that in main() the file is set to
+			   stdout. Obviously we aren't going to use
+			   the stdout when daemon has forked. */
+			cwdaemon_debug_f = NULL;
 		}
 
 	} else if (!strcmp(cwdaemon_debug_f_path, "stdout")) {
@@ -2261,7 +2268,11 @@ int main(int argc, char *argv[])
 	   arguments. Errors discovered during parsing of command line
 	   args will then still be printed to stderr. Options for
 	   debug output can be also passed as command line args, so
-	   they weren't available until now. */
+	   they weren't available until now.
+
+	   TODO: perhaps opening debug output should be moved to a
+	   later stage, so that as many messages as possible is being
+	   printed to stdout before main daemon loop? */
 	cwdaemon_debug_open();
 
 	if (forking) {
