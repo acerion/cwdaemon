@@ -363,6 +363,7 @@ static bool cwdaemon_params_set_verbosity(const char *optarg);
 static bool cwdaemon_params_libcwflags(const char *optarg);
 static bool cwdaemon_params_debugfile(const char *optarg);
 static bool cwdaemon_params_system(int *system, const char *optarg);
+static bool cwdaemon_params_ptt_on_off(const char *optarg);
 
 
 
@@ -1175,41 +1176,8 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'a':
 		/* PTT keying on or off */
-		if (cwdaemon_get_long(request + 2, &lv)) {
-			break;
-		}
+		cwdaemon_params_ptt_on_off(request + 2);
 
-		if (lv) {
-			//global_cwdevice->ptt(global_cwdevice, ON);
-			if (current_ptt_delay) {
-				cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
-			} else {
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT (manual, immediate) on");
-			}
-
-			ptt_flag |= PTT_ACTIVE_MANUAL;
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
-
-		} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
-
-			ptt_flag &= ~PTT_ACTIVE_MANUAL;
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
-
-			if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
-
-				if (request_queue[0] == '\0'/* no new text in the meantime */
-				    && cw_get_tone_queue_length() <= 1) {
-
-					cwdaemon_set_ptt_off(global_cwdevice, "PTT (manual, immediate) off");
-				} else {
-					/* still sending, cannot yet switch PTT off */
-					ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
-					cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
-
-					cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reverting from PTT (manual) to PTT (auto) now");
-				}
-			}
-		}
 		break;
 	case 'b':
 		/* SSB way. */
@@ -2022,6 +1990,56 @@ bool cwdaemon_params_system(int *system, const char *optarg)
 }
 
 
+bool cwdaemon_params_ptt_on_off(const char *optarg)
+{
+	long lv;
+
+	/* PTT keying on or off */
+	if (cwdaemon_get_long(optarg, &lv)) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+			       "invalid requested PTT state: \"%s\" (should be numeric value \"0\" or \"1\")", optarg);
+		return false;
+	} else {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "requested PTT state: \"%s\"", optarg);
+	}
+
+	if (lv) {
+		//global_cwdevice->ptt(global_cwdevice, ON);
+		if (current_ptt_delay) {
+			cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
+		} else {
+			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT (manual, immediate) on");
+		}
+
+		ptt_flag |= PTT_ACTIVE_MANUAL;
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
+
+	} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
+
+		ptt_flag &= ~PTT_ACTIVE_MANUAL;
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
+
+		if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
+
+			if (request_queue[0] == '\0'/* no new text in the meantime */
+			    && cw_get_tone_queue_length() <= 1) {
+
+				cwdaemon_set_ptt_off(global_cwdevice, "PTT (manual, immediate) off");
+			} else {
+				/* still sending, cannot yet switch PTT off */
+				ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
+				cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
+
+				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reverting from PTT (manual) to PTT (auto) now");
+			}
+		}
+	}
+
+	return true;
+}
+
+
 
 
 
@@ -2546,7 +2564,14 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	}
 
 	/* Replace default description of device with actual
-	   description provided by caller. */
+	   description provided by caller.
+
+	   Notice that this also works for fallback null device: when
+	   no valid device has been found, cwdaemon falls back to null
+	   device. The name of the *intended* device (e.g. misspelled
+	   port name) is being assigned to fallback null device.
+	   TODO: is it a valid behaviour? Shouldn't we call the
+	   fallback device "null"? */
 	if ((*device)->desc) {
 		free((*device)->desc);
 	}
