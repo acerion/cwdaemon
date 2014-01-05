@@ -1,3 +1,9 @@
+2014-01-05 Kamil Ignacak
+	* ptt delay: changes in how 'd' request is handled. Until now when
+	value sent in request was negative, the delay has been set to
+	MAX. Now the negative value is ignored when handling request, and
+	causes exit() when handling command line arg.
+
 2014-01-02 Kamil Ignacak
 	* audio systems: Making the daemon quit on invalid audio system on
 	startup.
