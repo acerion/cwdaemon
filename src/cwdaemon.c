@@ -330,7 +330,7 @@ void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
 /* Utility functions. */
-int  cwdaemon_get_long(const char *buf, long *lvp);
+bool cwdaemon_get_long(const char *buf, long *lvp);
 void cwdaemon_udelay(unsigned long us);
 
 
@@ -841,25 +841,25 @@ void cwdaemon_reset_libcw_output(void)
    \param buf - input buffer with a string
    \param lvp - pointer to output long int variable
 
-   \return -1 on failure
-   \return 0 on success
+   \return false on failure
+   \return true on success
 */
-int cwdaemon_get_long(const char *buf, long *lvp)
+bool cwdaemon_get_long(const char *buf, long *lvp)
 {
 	errno = 0;
 
 	char *ep;
 	long lv = strtol(buf, &ep, 10);
 	if (buf[0] == '\0' || *ep != '\0') {
-		return -1;
+		return false;
 	}
 
 	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN)) {
-		return -1;
+		return false;
 	}
 	*lvp = lv;
 
-	return 0;
+	return true;
 }
 
 
@@ -1182,7 +1182,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	case 'b':
 		/* SSB way. */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		if (cwdaemon_get_long(request + 2, &lv)) {
+		if (!cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -1207,7 +1207,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'c':
 		/* Tune for a number of seconds. */
-		if (cwdaemon_get_long(request + 2, &lv)) {
+		if (!cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -1232,7 +1232,7 @@ int cwdaemon_handle_escaped_request(char *request)
 	case 'e':
 		/* Set band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB). */
 #if defined(HAVE_LINUX_PPDEV_H) || defined(HAVE_DEV_PPBUS_PPI_H)
-		if (cwdaemon_get_long(request + 2, &lv)) {
+		if (!cwdaemon_get_long(request + 2, &lv)) {
 			break;
 		}
 
@@ -1762,7 +1762,7 @@ void cwdaemon_params_nofork(void)
 bool cwdaemon_params_port(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested port number: \"%s\"", optarg);
 		return false;
@@ -1778,7 +1778,7 @@ bool cwdaemon_params_port(const char *optarg)
 bool cwdaemon_params_priority(int *priority, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested process priority: \"%s\" (should be between -20 and 20 inclusive)",
 			       optarg);
@@ -1795,7 +1795,7 @@ bool cwdaemon_params_priority(int *priority, const char *optarg)
 bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
 			       "invalid requested morse speed [wpm]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_SPEED_MIN, CW_SPEED_MAX);
@@ -1812,7 +1812,7 @@ bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 bool cwdaemon_params_pttdelay(int *delay, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_PTT_DELAY_MIN || lv > CWDAEMON_PTT_DELAY_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_PTT_DELAY_MIN || lv > CWDAEMON_PTT_DELAY_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
@@ -1829,7 +1829,7 @@ bool cwdaemon_params_pttdelay(int *delay, const char *optarg)
 bool cwdaemon_params_volume(int *volume, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested volume [%%]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
@@ -1853,7 +1853,7 @@ void cwdaemon_params_version(void)
 bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested weighting: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
@@ -1870,7 +1870,7 @@ bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 bool cwdaemon_params_tone(int *tone, const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested tone [Hz]: \"%s\" (should be between %d and %d inclusive)",
 			       optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
@@ -1924,7 +1924,7 @@ bool cwdaemon_params_set_verbosity(const char *optarg)
 bool cwdaemon_params_libcwflags(const char *optarg)
 {
 	long lv = 0;
-	if (cwdaemon_get_long(optarg, &lv)) {
+	if (!cwdaemon_get_long(optarg, &lv)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested debug flags: \"%s\" (should be numeric value)", optarg);
 		libcw_debug_flags = 0;
@@ -1992,10 +1992,10 @@ bool cwdaemon_params_system(int *system, const char *optarg)
 
 bool cwdaemon_params_ptt_on_off(const char *optarg)
 {
-	long lv;
+	long lv = 0;
 
 	/* PTT keying on or off */
-	if (cwdaemon_get_long(optarg, &lv)) {
+	if (!cwdaemon_get_long(optarg, &lv)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested PTT state: \"%s\" (should be numeric value \"0\" or \"1\")", optarg);
 		return false;
