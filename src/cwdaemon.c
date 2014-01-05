@@ -309,23 +309,23 @@ void cwdaemon_keyingevent(void *arg, int keystate);
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
-int     cwdaemon_initialize_socket(void);
+bool    cwdaemon_initialize_socket(void);
 ssize_t cwdaemon_sendto(const char *reply);
 int     cwdaemon_recvfrom(char *request, int n);
 int     cwdaemon_receive(void);
-int     cwdaemon_handle_escaped_request(char *request);
+void    cwdaemon_handle_escaped_request(char *request);
 
 void cwdaemon_reset_almost_all(void);
 
 /* Functions managing cwdevices. */
-int  cwdaemon_cwdevices_init(void);
+bool cwdaemon_cwdevices_init(void);
 void cwdaemon_cwdevices_free(void);
 void cwdaemon_cwdevice_init(void);
-int  cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
+bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
 void cwdaemon_cwdevice_free(void);
 
 /* Functions managing libcw output. */
-int  cwdaemon_open_libcw_output(int audio_system);
+bool cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
@@ -741,7 +741,7 @@ void cwdaemon_reset_almost_all(void)
    \return -1 on failure
    \return 0 otherwise
 */
-int cwdaemon_open_libcw_output(int audio_system)
+bool cwdaemon_open_libcw_output(int audio_system)
 {
 	int rv = cw_generator_new(audio_system, NULL);
 	if (audio_system == CW_AUDIO_OSS && rv == CW_FAILURE) {
@@ -774,7 +774,7 @@ int cwdaemon_open_libcw_output(int audio_system)
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "failed to create generator with sound system \"%s\"", cw_get_audio_system_label(audio_system));
 	}
 
-	return rv == CW_FAILURE ? -1 : 0;
+	return rv == CW_FAILURE ? false : true;
 }
 
 
@@ -813,7 +813,7 @@ void cwdaemon_reset_libcw_output(void)
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "setting sound system \"%s\"", cw_get_audio_system_label(default_audio_system));
 
-	if (!cwdaemon_open_libcw_output(default_audio_system)) {
+	if (cwdaemon_open_libcw_output(default_audio_system)) {
 		has_audio_output = true;
 	} else {
 		has_audio_output = false;
@@ -1066,15 +1066,19 @@ int cwdaemon_receive(void)
 		}
 		return 1;
 	} else {
-		return cwdaemon_handle_escaped_request(request_buffer);
+		cwdaemon_handle_escaped_request(request_buffer);
+		return 0;
 	}
 }
 
 
 
 
-
-int cwdaemon_handle_escaped_request(char *request)
+/**
+   The function may call exit() if a request from client asks the
+   daemon to exit.
+*/
+void cwdaemon_handle_escaped_request(char *request)
 {
 	long lv;
 
@@ -1263,7 +1267,7 @@ int cwdaemon_handle_escaped_request(char *request)
 			/* Handle valid request for changing sound system. */
 			cwdaemon_close_libcw_output();
 
-			if (!cwdaemon_open_libcw_output(current_audio_system)) {
+			if (cwdaemon_open_libcw_output(current_audio_system)) {
 				has_audio_output = true;
 			} else {
 				has_audio_output = false;
@@ -1298,7 +1302,7 @@ int cwdaemon_handle_escaped_request(char *request)
 		break;
 	} /* switch ((int) request[1]) */
 
-	return 0;
+	return;
 }
 
 
@@ -1741,7 +1745,7 @@ bool cwdaemon_params_cwdevice(const char *optarg)
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 		       "requested cwdevice \"%s\"", optarg);
 
-	if (cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
+	if (!cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
 		return false;
 	} else {
 		return true;
@@ -2270,7 +2274,7 @@ int main(int argc, char *argv[])
 	cwdaemon_debug_f = stdout;
 
 	atexit(cwdaemon_cwdevices_free);
-	if (cwdaemon_cwdevices_init() == -1) {
+	if (!cwdaemon_cwdevices_init()) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -2348,7 +2352,7 @@ int main(int argc, char *argv[])
 		signal(SIGINT, cwdaemon_catch_sigint);
 	}
 
-	if (cwdaemon_initialize_socket() == -1) {
+	if (!cwdaemon_initialize_socket()) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -2435,9 +2439,9 @@ int main(int argc, char *argv[])
    The strings can be later deallocated with
    cwdaemon_cwdevices_free().
 
-   \return 0
+   \return true
 */
-int cwdaemon_cwdevices_init(void)
+bool cwdaemon_cwdevices_init(void)
 {
 	/* Default device description of parallel/lpt port. */
 #if defined HAVE_LINUX_PPDEV_H        /* Linux, obviously. */
@@ -2467,7 +2471,7 @@ int cwdaemon_cwdevices_init(void)
 
 	/* TODO: add checks of return values. */
 
-	return 0;
+	return true;
 }
 
 
@@ -2521,17 +2525,17 @@ void cwdaemon_cwdevices_free(void)
 
    \param device - pointer to device variable - guessed device will be
 
-   \return -1 if \p desc describes invalid device, or if memory allocation error happens
-   \return 0 otherwise
+   \return false if \p desc describes invalid device, or if memory allocation error happens
+   \return true otherwise
 */
-int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
+bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
 	int fd;
 
 	if (!desc || !strlen(desc)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid device description \"%s\"", desc);
-		return -1;
+		return false;
 	}
 
 	if ((fd = dev_get_tty(desc)) != -1) {
@@ -2542,7 +2546,7 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		if (geteuid()) {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 				       "you must run this program as root to use parallel port");
-			return -1;
+			return false;
 		}
 		*device = &cwdevice_lp;
 	}
@@ -2560,7 +2564,7 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	if (!*device) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid keyer device: \"%s\"", desc);
-		return -1;
+		return false;
 	}
 
 	/* Replace default description of device with actual
@@ -2579,14 +2583,14 @@ int cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	if (!(*device)->desc) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "memory allocation error");
-		return -1;
+		return false;
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 		       "keying device used: \"%s\"", (*device)->desc);
 	(*device)->init(*device, fd);
 
-	return 0;
+	return true;
 
 }
 
@@ -2644,10 +2648,10 @@ void cwdaemon_cwdevice_free(void)
 
    Initialize network socket and other network variables.
 
-   \return -1 on failure
-   \return 0 on success
+   \return false on failure
+   \return true on success
 */
-int cwdaemon_initialize_socket(void)
+bool cwdaemon_initialize_socket(void)
 {
 	memset(&request_addr, '\0', sizeof (request_addr));
 	request_addr.sin_family = AF_INET;
@@ -2658,7 +2662,7 @@ int cwdaemon_initialize_socket(void)
 	socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
 	if (socket_descriptor == -1) {
 		cwdaemon_errmsg("Socket open");
-		return -1;
+		return false;
 	}
 
 	if (bind(socket_descriptor,
@@ -2666,22 +2670,22 @@ int cwdaemon_initialize_socket(void)
 		 request_addrlen) == -1) {
 
 		cwdaemon_errmsg("Bind");
-		return -1;
+		return false;
 	}
 
 	int save_flags = fcntl(socket_descriptor, F_GETFL);
 	if (save_flags == -1) {
 		cwdaemon_errmsg("Trying get flags");
-		return -1;
+		return false;
 	}
 	save_flags |= O_NONBLOCK;
 
 	if (fcntl(socket_descriptor, F_SETFL, save_flags) == -1) {
 		cwdaemon_errmsg("Trying non-blocking");
-		return -1;
+		return false;
 	}
 
-	return 0;
+	return true;
 }
 
 
