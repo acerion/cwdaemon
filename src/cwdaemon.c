@@ -144,8 +144,9 @@
 #define CWDAEMON_MORSE_WEIGHTING_MIN          -50
 #define CWDAEMON_MORSE_WEIGHTING_MAX           50
 
-#define CWDAEMON_NETWORK_PORT_DEFAULT              6789
-#define CWDAEMON_AUDIO_SYSTEM_DEFAULT  CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
+#define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
+#define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
+#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_I /* Threshold of verbosity of debug messages. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
@@ -169,6 +170,7 @@ static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static int default_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
 static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
+static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
 
 
 /* Actual values of parameters, used to control ongoing operation of
@@ -180,7 +182,7 @@ static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static int current_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-
+static int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
 
 /* Level of libcw's tone queue that triggers 'callback for low level
    in tone queue'.  The callback function is
@@ -254,7 +256,6 @@ static long int libcw_debug_flags = 0;
 /* Various variables. */
 static int wordmode = 0;               /* Start in character mode. */
 static int forking = 1;                /* We fork by default. */
-static int cwdaemon_verbosity = CWDAEMON_VERBOSITY_I;   /* Threshold of verbosity of debug messages. */
 static int process_priority = 0;       /* Scheduling priority of cwdaemon process. */
 static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
 static int inactivity_seconds = 9999;  /* Inactive since nnn seconds. */
@@ -358,8 +359,8 @@ static bool cwdaemon_params_pttdelay(int *delay, const char *optarg);
 static bool cwdaemon_params_volume(int *volume, const char *optarg);
 static bool cwdaemon_params_weighting(int *weighting, const char *optarg);
 static bool cwdaemon_params_tone(int *tone, const char *optarg);
-static void cwdaemon_params_inc_verbosity(void);
-static bool cwdaemon_params_set_verbosity(const char *optarg);
+static void cwdaemon_params_inc_verbosity(int *verbosity);
+static bool cwdaemon_params_set_verbosity(int *verbosity, const char *optarg);
 static bool cwdaemon_params_libcwflags(const char *optarg);
 static bool cwdaemon_params_debugfile(const char *optarg);
 static bool cwdaemon_params_system(int *system, const char *optarg);
@@ -494,8 +495,8 @@ void cwdaemon_errmsg(const char *info, ...)
 */
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...)
 {
-	if (cwdaemon_verbosity > CWDAEMON_VERBOSITY_N
-	    && verbosity <= cwdaemon_verbosity
+	if (current_verbosity > CWDAEMON_VERBOSITY_N
+	    && verbosity <= current_verbosity
 	    && cwdaemon_debug_f) {
 
 		fprintf(cwdaemon_debug_f, "%s:%s: ", PACKAGE, cwdaemon_verbosity_labels[verbosity]);
@@ -723,6 +724,16 @@ void cwdaemon_reset_almost_all(void)
 	current_audio_system = default_audio_system;
 	current_ptt_delay    = default_ptt_delay;
 	current_weighting    = default_weighting;
+
+	/* Right now there is no way to alter current_verbosity after
+	   start of daemon, but it's easy to imagine a new network
+	   request to modify verbosity. Maybe not very useful (to
+	   change verbosity of messages displayed on remote machine),
+	   but during development phase it may be useful.
+
+	   Anyway... Right now there is no such request, but for
+	   consistency I'm resetting the current_verbosity as well. */
+	current_verbosity    = default_verbosity;
 
 	cwdaemon_reset_libcw_output();
 
@@ -1539,7 +1550,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 
 
-static const char   *cwdaemon_args_short = "d:hniI:f:p:P:s:t:T:v:Vw:x:";
+static const char   *cwdaemon_args_short = "d:hniyI:f:p:P:s:t:T:v:Vw:x:";
 
 static struct option cwdaemon_args_long[] = {
 	{ "cwdevice",    required_argument,       0, 0},  /* Keying device. */
@@ -1573,10 +1584,12 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 
 	while ((c = getopt_long(argc, argv, cwdaemon_args_short, cwdaemon_args_long, &option_index)) != -1) {
 		if (c == 0) {
-			fprintf(stderr, "INFO: long option %s%s%s\n",
-				cwdaemon_args_long[option_index].name,
-				optarg ? "=" : "",
-				optarg ? optarg : "");
+
+			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__,
+				       "long option \"%s\"%s%s\n",
+				       cwdaemon_args_long[option_index].name,
+				       optarg ? "=" : "",
+				       optarg ? optarg : "");
 
 			const char *optname = cwdaemon_args_long[option_index].name;
 
@@ -1628,7 +1641,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else if (!strcmp(optname, "verbosity")) {
-				if (!cwdaemon_params_set_verbosity(optarg)) {
+				if (!cwdaemon_params_set_verbosity(&default_verbosity, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1717,7 +1730,12 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		}
 		break;
 	case 'i':
-		cwdaemon_params_inc_verbosity();
+		cwdaemon_params_inc_verbosity(&default_verbosity);
+		break;
+	case 'y':
+		if (!cwdaemon_params_set_verbosity(&default_verbosity, optarg)) {
+			exit(EXIT_FAILURE);
+		}
 		break;
 	case 'I':
 		if (!cwdaemon_params_libcwflags(optarg)) {
@@ -1888,31 +1906,31 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 }
 
 
-void cwdaemon_params_inc_verbosity(void)
+void cwdaemon_params_inc_verbosity(int *verbosity)
 {
-	if (cwdaemon_verbosity < CWDAEMON_VERBOSITY_D) {
-		cwdaemon_verbosity++;
+	if (*verbosity < CWDAEMON_VERBOSITY_D) {
+		(*verbosity)++;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+			       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
 	}
 
 	return;
 }
 
 
-bool cwdaemon_params_set_verbosity(const char *optarg)
+bool cwdaemon_params_set_verbosity(int *verbosity, const char *optarg)
 {
 	if (!strcmp(optarg, "n") || !strcmp(optarg, "N")) {
-		cwdaemon_verbosity = CWDAEMON_VERBOSITY_N;
+		*verbosity = CWDAEMON_VERBOSITY_N;
 	} else if (!strcmp(optarg, "e") || !strcmp(optarg, "E")) {
-		cwdaemon_verbosity = CWDAEMON_VERBOSITY_E;
+		*verbosity = CWDAEMON_VERBOSITY_E;
 	} else if (!strcmp(optarg, "w") || !strcmp(optarg, "W")) {
-		cwdaemon_verbosity = CWDAEMON_VERBOSITY_W;
+		*verbosity = CWDAEMON_VERBOSITY_W;
 	} else if (!strcmp(optarg, "i") || !strcmp(optarg, "I")) {
-		cwdaemon_verbosity = CWDAEMON_VERBOSITY_I;
+		*verbosity = CWDAEMON_VERBOSITY_I;
 	} else if (!strcmp(optarg, "d") || !strcmp(optarg, "D")) {
-		cwdaemon_verbosity = CWDAEMON_VERBOSITY_D;
+		*verbosity = CWDAEMON_VERBOSITY_D;
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested verbosity level: \"%s\"", optarg);
@@ -1920,7 +1938,7 @@ bool cwdaemon_params_set_verbosity(const char *optarg)
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[cwdaemon_verbosity]);
+		       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
 	return true;
 }
 
