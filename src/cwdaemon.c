@@ -103,6 +103,8 @@
 #include <getopt.h>
 #endif
 
+#include <stdint.h> /* uint32_t */
+
 #include <libcw.h>
 #include <libcw_debug.h>
 #include "cwdaemon.h"
@@ -191,6 +193,8 @@
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
 #define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
+
+#define CWDAEMON_TUNE_SECONDS_MAX  10 /* Maximal time of tuning. TODO: why the limitation to 10 s? Is it enough? */
 
 
 /* For developer's debugging purposes. */
@@ -344,7 +348,7 @@ void cwdaemon_switch_band(cwdevice *device, unsigned int band);
 
 void cwdaemon_play_request(char *request);
 
-void cwdaemon_tune(int seconds);
+void cwdaemon_tune(uint32_t seconds);
 void cwdaemon_keyingevent(void *arg, int keystate);
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
@@ -394,6 +398,7 @@ static bool cwdaemon_params_cwdevice(const char *optarg);
 static bool cwdaemon_params_port(const char *optarg);
 static bool cwdaemon_params_priority(int *priority, const char *optarg);
 static bool cwdaemon_params_wpm(int *wpm, const char *optarg);
+static bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg);
 static bool cwdaemon_params_pttdelay(int *delay, const char *optarg);
 static bool cwdaemon_params_volume(int *volume, const char *optarg);
 static bool cwdaemon_params_weighting(int *weighting, const char *optarg);
@@ -729,16 +734,19 @@ void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 
    Play a continuous sound for a given number of seconds.
 
+   Parameter type is uint32_t, which gives us maximum of 4294967295
+   seconds, i.e. ~136 years. Should be enough.
+
    \param seconds - time of tuning
 */
-void cwdaemon_tune(int seconds)
+void cwdaemon_tune(uint32_t seconds)
 {
 	if (seconds > 0) {
 		cw_flush_tone_queue();
 		cwdaemon_set_ptt_on(global_cwdevice, "PTT (TUNE) on");
 
 		/* make it similar to normal CW, allowing interrupt */
-		for (int i = 0; i < seconds; i++) {
+		for (uint32_t i = 0; i < seconds; i++) {
 			cw_queue_tone(CWDAEMON_USECS_PER_SEC, current_morse_tone);
 		}
 
@@ -1260,16 +1268,14 @@ void cwdaemon_handle_escaped_request(char *request)
 #endif
 		break;
 	case 'c':
-		/* Tune for a number of seconds. */
-		if (!cwdaemon_get_long(request + 2, &lv)) {
+		{
+			uint32_t seconds = 0;
+			/* Tune for a number of seconds. */
+			if (cwdaemon_params_tune(&seconds, request + 2)) {
+				cwdaemon_tune(seconds);
+			}
 			break;
 		}
-
-		if (lv <= 10) {
-			/* TODO: why the limitation to 10 s? Is it enough? */
-			cwdaemon_tune(lv);
-		}
-		break;
 	case 'd':
 		/* Set PTT delay (TOD, Turn On Delay).
 		   The value is milliseconds. */
@@ -1867,6 +1873,34 @@ bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 			       "requested morse speed [wpm]: \"%d\"", *wpm);
 		return true;
 	}
+}
+
+
+bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
+{
+	long lv = 0;
+
+	/* TODO: replace cwdaemon_get_long() with cwdaemon_get_uint32() */
+	if (!cwdaemon_get_long(optarg, &lv)) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
+			       "invalid requested tuning time [s]: \"%s\" (should be between %d and %d inclusive)",
+			       0, CWDAEMON_TUNE_SECONDS_MAX);
+		return false;
+	}
+
+	if (lv > CWDAEMON_TUNE_SECONDS_MAX) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+			       "requested tuning time [s]: \"%ld\", truncating down to \"%zd\"", lv, CWDAEMON_TUNE_SECONDS_MAX);
+
+		*seconds = CWDAEMON_TUNE_SECONDS_MAX;
+	} else {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+			       "requested tuning time [s]: \"%ld\"", lv);
+
+		*seconds = (uint32_t) lv;
+	}
+
+	return true;
 }
 
 
