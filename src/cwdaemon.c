@@ -1550,7 +1550,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 
 
-static const char   *cwdaemon_args_short = "d:hniyI:f:p:P:s:t:T:v:Vw:x:";
+static const char   *cwdaemon_args_short = "d:hniy:I:f:p:P:s:t:T:v:Vw:x:";
 
 static struct option cwdaemon_args_long[] = {
 	{ "cwdevice",    required_argument,       0, 0},  /* Keying device. */
