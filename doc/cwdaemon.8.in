@@ -14,9 +14,32 @@ message sent to it via udp port 6789.
 .SH "OPTIONS"
 cwdaemon can be configured either through command line arguments on
 start of the daemon, or through requests (escaped requests) sent over
-network. "<ESC>" string used below is ASCII escape character (decimal
-27, hex 1B). Notice that there are no space characters between parts
-of escaped requests.
+network. Each escaped request starts with ASCII Escape character
+(decimal 27, hex 1B). The Escape character is represented in the list
+below by "<ESC>" string. Notice that there are no space characters
+between parts of escaped requests.
+
+Some of the arguments and requests require passing a value (e.g. Morse
+speed [wpm], tone (frequency) [Hz] etc.). Call "cwdaemon -h" to see
+default values for these arguments/requests, and ranges of accepted
+values.
+
+When handling command line arguments, cwdaemon does not accept
+invalid, malformed, or out-of-range values passed through command
+line. It won't attempt to guess caller's intentions, it won't try to
+start with some fallback value of the argument. Instead it will just
+print a debug message and exit. In most cases the exit will happen
+before attempting to fork. One exception is with opening audio output,
+which is done (and may fail causing exit) after forking.
+
+When handling escaped requests, cwdaemon usually does not accept
+invalid, malformed or out-of-range vales either. But instead of
+exiting upon receiving request with such value, it simply prints debug
+message, ignores the request containing such value, and waits for next
+request. One exception to the rule is PTT delay: requested delay
+values that are too large will be clipped to maximal allowed value and
+then will used by cwdaemon. Requested negative or malformed values of
+PTT delay will be ignored.
 
 
 .TP
@@ -99,7 +122,7 @@ Escaped request: <ESC>2<speed>
 
 
 .TP
-\fBSet PTT delay [ms]\fR
+\fBSet PTT delay [ms] (TOD, Turn On Delay)\fR
 .TI
 Command line argument: -t, --pttdelay <delay>
 
@@ -287,8 +310,7 @@ Escaped request: <ESC>c<seconds>
 
 .TI
 Tune for <seconds> seconds. The tuning is performed by both selected
-sound system, and by current hardware keying device. Maximal value of
-seconds is 10. Values larger than 10 are "truncated" to 10.
+sound system, and by current hardware keying device.
 
 
 
