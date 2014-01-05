@@ -1919,26 +1919,19 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 	long lv = 0;
 
 	/* TODO: replace cwdaemon_get_long() with cwdaemon_get_uint32() */
-	if (!cwdaemon_get_long(optarg, &lv)) {
+	if (!cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > CWDAEMON_TUNE_SECONDS_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
 			       "invalid requested tuning time [s]: \"%s\" (should be between %d and %d inclusive)",
 			       0, CWDAEMON_TUNE_SECONDS_MAX);
 		return false;
-	}
-
-	if (lv > CWDAEMON_TUNE_SECONDS_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
-			       "requested tuning time [s]: \"%ld\", clipping to \"%zd\"", lv, CWDAEMON_TUNE_SECONDS_MAX);
-
-		*seconds = CWDAEMON_TUNE_SECONDS_MAX;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested tuning time [s]: \"%ld\"", lv);
 
 		*seconds = (uint32_t) lv;
-	}
 
-	return true;
+		return true;
+	}
 }
 
 
