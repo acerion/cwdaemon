@@ -1,10 +1,10 @@
-.TH CWDAEMON 8
+.TH CWDAEMON 8 "Morse daemon" "ver. 0.9.7"
 
 .SH NAME
 cwdaemon \- morse daemon for the serial or parallel port
 
 .SH SYNOPSIS
-.B cwdaemon [options] ...
+.B cwdaemon [options]
 
 .SH "DESCRIPTION"
 Cwdaemon is a small daemon which uses the pc parallel or serial port and a
@@ -12,38 +12,298 @@ simple transistor switch to output morse code to a transmitter from a text
 message sent to it via udp port 6789.
 
 .SH "OPTIONS"
+cwdaemon can be configured either through command line arguments on
+start of the daemon, or through requests (escaped requests) sent over
+network. "<ESC>" string used below is ASCII escape character (decimal
+27, hex 1B). Notice that there are no space characters between parts
+of escaped requests.
+
+
 .TP
-\fB\-d, \-\-cwdevice <device>\fR Use a different device for keying.
+\fBPrint help text to stdout and exit\fR
+.TI
+Command line argument: -h, --help
+
+.TI
+Escaped request: N/A
+
+
+
 .TP
-\fB\-h, \-\-help\fR Show summary of options.
+\fBPrint version information to stdout and exit\fR
+.TI
+Command line argument: -V, --version
+
+.TI
+Escaped request: N/A
+
+
+
 .TP
-\fB\-n, \-\-nofork\fR Do not fork and print debug information to stdout.
+\fBSet hardware keying device\fR
+.TI
+Command line argument: -d, --cwdevice <device>
+
+.TI
+Escaped request: <ESC>8<device>
+
+.TI
+See chapter "DEVICES" below for more information.
+
+
+
 .TP
-\fB\-p, \-\-port <port>\fR Use a different UDP port number (default = 6789).
+\fBDon't fork daemon, run in foreground\fR
+.TI
+Command line argument: -n, --nofork
+
+.TI
+Escaped request: N/A
+
+.TI
+Debug information will be printed to stdout (unless different debug outut is selected, or debug output is silenced by setting debug output verbosity).
+
+
+
 .TP
-\fB\-P, \-\-priority <priority>\fR Set cwdaemon priority, -20 to 20 (default = 0).
+\fBSet network UDP port\fR
+.TI
+Command line argument: -p, --port <port number>
+
+.TI
+Escaped request: <ESC>9<port number>
+
+.TI
+This escaped request is obsolete and has no effect. Command line argument works as expected.
+
+
+
 .TP
-\fB\-s, \-\-wpm <speed>\fR Set speed, value larger than 4 (default = 24).
+\fBSet process priority\fR
+.TI
+Command line argument: -P, --priority <priority>
+
+.TI
+Escaped request: N/A
+
+
+
 .TP
-\fB\-t, \-\-pttdelay <time>\fR Set PTT delay, value from 0 to 50 ms (default = 0).
+\fBSet Morse speed [wpm]\fR
+.TI
+Command line argument: -s, --wpm <speed>
+
+.TI
+Escaped request: <ESC>2<speed>
+
+
+
 .TP
-\fB\-v, \-\-volume <volume>\fR Set volume for soundcard output.
+\fBSet PTT delay [ms]\fR
+.TI
+Command line argument: -t, --pttdelay <delay>
+
+.TI
+Escaped request: <ESC>d<delay>
+
+
+
 .TP
-\fB\-V, \-\-version\fR Output version information and exit.
+\fBTurn PTT keying on/off\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>a<{0|1}>
+
+
+
 .TP
-\fB\-w, \-\-weighting <weight>\fR Set weighting, value from -50 to 50 (default = 0).
+\fBSet sound system (sound backend)\fR
+.TI
+Command line argument: -x, --system <system>
+
+.TI
+Escaped request: <ESC>f<system>
+
+.TI
+See chapter "SOUND SYSTEM" below for more information.
+
+
+
 .TP
-\fB\-x, \-\-system <sound system>\fR Set sound system to be used.
+\fBSet sound volume for soundcard [%]\fR
+.TI
+Command line argument: -v, --volume <volume>
+
+.TI
+Escaped request: <ESC>g<volume>
+
+
+
 .TP
-\fB\-T, \-\-tone <tone>\fR Set initial tone, value in range 0 to 4000 Hz (default = 800).
+\fBSet Morse weighting\fR
+.TI
+Command line argument: -w, --weighting <weighting>
+
+.TI
+Escaped request: <ESC>7<weighting>
+
+
+
 .TP
-\fB\-i\fR Increase verbosity of debug messages printed by cwademon. Repeat for even more verbosity.
+\fBSet tone (frequency) of sound [Hz]\fR
+.TI
+Command line argument: -T, --tone <tone>
+
+.TI
+Escaped request: <ESC>3<tone>
+
+.TI
+Notice that sending escaped request with value '0' silences cwdaemon.
+
+
 .TP
-\fB\-\-verbosity <level>\fR Set level of verbosity of debug messages printed by cwdaemon.
+\fBIncrease verbosity of debug output\fR
+.TI
+Command line argument: -i
+
+.TI
+Escaped request: N/A
+
+.TI
+The argument can be repeated up to four times to gradually increase the verbosity.
+
+
+
 .TP
-\fB\-I, \-\-libcwflags <flags>\fR Numeric value of debug flags to be passed to libcw.
+\fBSet verbosity of debug output\fR
+.TI
+Command line argument: -y, --verbosity <level>
+
+.TI
+Escaped request: N/A
+
+.TI
+See chapter "VERBOSITY LEVEL" below for more information.
+
+
+
+
+
 .TP
-\fB\-f, \-\-debugfile <path>\fR Print debug information to file instead of stdout. Also works when cwdaemon has forked.
+\fBSet numeric value of libcw debug flags\fR
+.TI
+Command line argument: -I, --libcwflags <flags>
+
+.TI
+Escaped request: N/A
+
+
+
+.TP
+\fBSet debug output\fR
+.TI
+Command line argument: -f, --debugfile <output>
+
+.TI
+Escaped request: N/A
+
+.TI
+Print debug information to <output> instead of stdout.
+Value of <output> can be explicitly stated as "stdout" (when not forking).
+Value of <output> can be also "stderr" (when not forking).
+Special value of <output> being "syslog" is reserved for future use. For now it will be rejected as invalid.
+Passing path to disc file as value of <output> works in both situations: when forking and when not forking.
+
+
+
+
+.TP
+\fBReset some of cwdaemon parameters\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>0
+
+.TI
+The request resets program's parameters to cwdaemon default values,
+unless the defaults were overriden with command line arguments - then
+the values passed in command line are used.
+
+
+.TP
+\fBAbort currently sent message\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>4
+
+
+
+.TP
+\fBExit (close) daemon\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>5
+
+
+
+
+.TP
+\fBSet word mode\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>5
+
+
+
+.TP
+\fBSet SSB way\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>b<{0|1}
+
+.TI
+0 - microphone, 1 - soundcard
+
+
+
+.TP
+\fBTune for a number of seconds\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>c<seconds>
+
+.TI
+Tune for <seconds> seconds. The tuning is performed by both selected
+sound system, and by current hardware keying device. Maximal value of
+seconds is 10. Values larger than 10 are "truncated" to 10.
+
+
+
+.TP
+\fBSet band switch output\fR
+.TI
+Command line argument: N/A
+
+.TI
+Escaped request: <ESC>e<value>
+
+.TI
+This argument sets band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB).
+
+
 
 
 .SH DEVICES
