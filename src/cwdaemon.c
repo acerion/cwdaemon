@@ -399,7 +399,7 @@ static bool cwdaemon_params_port(const char *optarg);
 static bool cwdaemon_params_priority(int *priority, const char *optarg);
 static bool cwdaemon_params_wpm(int *wpm, const char *optarg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg);
-static bool cwdaemon_params_pttdelay(int *delay, const char *optarg);
+static int  cwdaemon_params_pttdelay(int *delay, const char *optarg);
 static bool cwdaemon_params_volume(int *volume, const char *optarg);
 static bool cwdaemon_params_weighting(int *weighting, const char *optarg);
 static bool cwdaemon_params_tone(int *tone, const char *optarg);
@@ -1277,17 +1277,40 @@ void cwdaemon_handle_escaped_request(char *request)
 			break;
 		}
 	case 'd':
-		/* Set PTT delay (TOD, Turn On Delay).
-		   The value is milliseconds. */
-		if (!cwdaemon_params_pttdelay(&current_ptt_delay, request + 2)) {
-			/* Why do we set here delay to MAX? What if lv
-			   < 0 - shouldn't we set it to zero then? */
-			current_ptt_delay = CWDAEMON_PTT_DELAY_MAX;
+		{
+			/* Set PTT delay (TOD, Turn On Delay).
+			   The value is milliseconds. */
+
+			int rv = cwdaemon_params_pttdelay(&current_ptt_delay, request + 2);
+
+			if (rv == 0) {
+				/* Value totally invalid. Error
+				   message has been already printed in
+				   cwdaemon_params_pttdelay(). */
+			} else if (rv == 1) {
+				/* Value totally valid. Information
+				   message has been already printed in
+				   cwdaemon_params_pttdelay(). */
+			} else { /* rv == 2 */
+				/* Value invalid (out-of-range), but
+				   acceptable when sent over network
+				   request and then clipped to be
+				   in-range. Value has been clipped
+				   in cwdaemon_params_pttdelay(), but
+				   a warning message must be printed
+				   here. */
+				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+					       "requested PTT delay [ms] out of range: \"%s\", clipping to \"%d\" (should be between %d and %d inclusive)",
+					       optarg,
+					       CWDAEMON_PTT_DELAY_MAX,
+					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+			}
+
+			if (rv && current_ptt_delay == 0) {
+				cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
+			}
 		}
 
-		if (current_ptt_delay == 0) {
-			cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
-		}
 		break;
 	case 'e':
 		/* Set band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB). */
@@ -1662,7 +1685,11 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else if (!strcmp(optname, "pttdelay")) {
-				if (!cwdaemon_params_pttdelay(&default_ptt_delay, optarg)) {
+				if (cwdaemon_params_pttdelay(&default_ptt_delay, optarg) != 1) {
+					/* When processing command
+					   line arguments we are very
+					   strict, and accept only
+					   fully valid optarg. */
 					exit(EXIT_FAILURE);
 				}
 
@@ -1752,7 +1779,10 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		}
 		break;
 	case 't':
-		if (!cwdaemon_params_pttdelay(&default_ptt_delay, optarg)) {
+		if (cwdaemon_params_pttdelay(&default_ptt_delay, optarg) != 1) {
+			/* When processing command line arguments we
+			   are very strict, and accept only fully
+			   valid optarg. */
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1890,7 +1920,7 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 
 	if (lv > CWDAEMON_TUNE_SECONDS_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
-			       "requested tuning time [s]: \"%ld\", truncating down to \"%zd\"", lv, CWDAEMON_TUNE_SECONDS_MAX);
+			       "requested tuning time [s]: \"%ld\", clipping to \"%zd\"", lv, CWDAEMON_TUNE_SECONDS_MAX);
 
 		*seconds = CWDAEMON_TUNE_SECONDS_MAX;
 	} else {
@@ -1904,19 +1934,90 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 }
 
 
-bool cwdaemon_params_pttdelay(int *delay, const char *optarg)
+/**
+   \brief Handle parameter specifying PTT Turn On Delay
+
+   This function, and handling its return values by callers, isn't as
+   straightforward as it could be. This is because:
+   \li of some backwards-compatibility reasons,
+   \li because expected behaviour when handling command line argument,
+   and when handling network request, are a bit different,
+   \li because negative value of \p optarg is handled differently than
+   too large value of \p optarg.
+
+   The function clearly rejects negative value passed in \p
+   optarg. Return value is then 0 (a "false" value in boolean
+   expressions).
+
+   It is more tolerant when it comes to non-negative values, returning
+   1 or 2 (a "true" value in boolean expressions).
+
+   When the non-negative value is out of range (larger than limit
+   accepted by cwdaemon), the value is clipped to the limit, and put
+   into \p delay. Return value is then 2. Caller of the function may
+   then decide to accept or reject the value.
+
+   When the non-negative value is in range, the value is put into \p
+   delay, and return value is 1. Caller of the function must accept
+   the value.
+
+   Value passed in \p optarg is copied to \p delay only when function
+   returns 1 or 2.
+
+   \return 1 if value of \optarg is acceptable when it was provided as request and as command line argument (i.e. non-negative value in range);
+   \return 2 if value of \optarg is acceptable when it was provided as request, but not acceptable when it was provided as command line argument (i.e. non-negative value out of range);
+   \return 0 if value of \optarg is not acceptable, regardless how it was provided (i.e. a negative value or invalid value);
+*/
+int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 {
 	long lv = 0;
-	if (!cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_PTT_DELAY_MIN || lv > CWDAEMON_PTT_DELAY_MAX) {
+	if (!cwdaemon_get_long(optarg, &lv)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
-			       optarg, CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
-		return false;
-	} else {
-		*delay = (int) lv;
+			       "invalid requested PTT delay [ms]: \"%s\" (should be integer value between %d and %d inclusive)",
+			       optarg,
+			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+
+		/* 0 means "Value not acceptable in any context." */
+		return 0;
+	}
+
+	if (lv > CWDAEMON_PTT_DELAY_MAX) {
+
+		/* In theory we should reject invalid value, but for
+		   some reason in some contexts we aren't very strict
+		   about it. So be it. Just don't allow the value to
+		   be larger than *_MAX limit. */
+		*delay = CWDAEMON_PTT_DELAY_MAX;
+
+		/* 2 means "Value in general invalid (non-negative,
+		   but out of range), but in some contexts we may be
+		   tolerant and accept it after it has been decreased
+		   to an in-range value (*_MAX). */
+		return 2;
+
+
+	} else if (lv < CWDAEMON_PTT_DELAY_MIN) {
+
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+			       "invalid requested PTT delay [ms]: \"%ld\", (should be between %d and %d inclusive)",
+			       lv,
+			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+
+		/* In first branch of the if() we have accepted too
+		   large value from misinformed client, but we can't
+		   accept values that are clearly invalid (negative). */
+
+		/* 0 means "Value is not acceptable in any context". */
+		return 0;
+
+	} else { /* Non-negative, in range. */
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested PTT delay [ms]: \"%ld\"", *delay);
-		return true;
+
+		*delay = (int) lv;
+
+		/* 1 means "Value valid in all contexts." */
+		return 1;
 	}
 }
 
