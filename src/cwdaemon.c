@@ -1690,6 +1690,10 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 					   line arguments we are very
 					   strict, and accept only
 					   fully valid optarg. */
+					cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+						       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+						       optarg,
+						       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 					exit(EXIT_FAILURE);
 				}
 
@@ -1783,6 +1787,10 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 			/* When processing command line arguments we
 			   are very strict, and accept only fully
 			   valid optarg. */
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+				       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+				       optarg,
+				       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1999,7 +2007,7 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 	} else if (lv < CWDAEMON_PTT_DELAY_MIN) {
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT delay [ms]: \"%ld\", (should be between %d and %d inclusive)",
+			       "invalid requested PTT delay [ms]: \"%ld\" (should be between %d and %d inclusive)",
 			       lv,
 			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 
