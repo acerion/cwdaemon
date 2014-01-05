@@ -123,6 +123,45 @@
 
    Size of a message is not constant.
    Maximal size of a message is CWDAEMON_MESSAGE_SIZE_MAX.
+
+
+
+   cwdaemon can be configured either through command line arguments on
+   start of the daemon, or through requests (escaped requests) sent
+   over network.
+
+<verbatim>
+   Feature               command line argument     escaped request
+   ---------------------------------------------------------------
+   help                  -h, --help                N/A
+   version               -V, --version             N/A
+   keying device         -d, --cwdevice            8
+   don't fork daemon     -n, --nofork              N/A
+   network port          -p, --port                9 (obsolete)
+   process priority      -P, --priority            N/A
+   Morse speed (wpm)     -s, --wpm                 2
+   PTT delay             -t, --pttdelay            d
+   PTT keying on/off     N/A                       a
+   sound system          -x, --system              f
+   sound volume          -v, --volume              g
+   Morse weighting       -w, --weighting           7
+   sound tone            -T, --tone                3
+   debug verbosity       -i                        N/A
+   debug verbosity       -y, --verbosity           N/A
+   libcw debug flags     -I, --libcwflags          N/A
+   debug output          -f, --debugfile           N/A
+
+   reset parameters      N/A                       0
+   abort message         N/A                       4
+   exit daemon           N/A                       5
+   set word mode         N/A                       6
+   set SSB way           N/A                       b
+   tune                  N/A                       c
+   band switch           N/A                       e
+
+   </verbatim>
+
+
 */
 
 
@@ -2261,14 +2300,14 @@ void cwdaemon_args_help(void)
 	printf("        d = debug (details)\n");
 	printf("-I, --libcwflags <flags>\n");
 	printf("        Numeric value of debug flags to be passed to libcw.\n");
-	printf("-f, --debugfile <file>\n");
-	printf("        Print debug information to <file> instead of stdout.\n");
-	printf("        Value of <file> can be explicitly stated as \"stdout\"\n");
+	printf("-f, --debugfile <output>\n");
+	printf("        Print debug information to <output> instead of stdout.\n");
+	printf("        Value of <output> can be explicitly stated as \"stdout\"\n");
 	printf("        (when not forking).\n");
-	printf("        Value of <file> can be also \"stderr\" (when not forking).\n");
-	printf("        Special value of <file> being \"syslog\" is reserved for\n");
+	printf("        Value of <output> can be also \"stderr\" (when not forking).\n");
+	printf("        Special value of <output> being \"syslog\" is reserved for\n");
 	printf("        future use. For now it will be rejected as invalid.\n");
-	printf("        Passing path to disc file as value of <file> works in both\n");
+	printf("        Passing path to disc file as value of <output> works in both\n");
 	printf("        situations: when forking and when not forking.\n");
 	printf("\n");
 
