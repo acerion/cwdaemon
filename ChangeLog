@@ -1,3 +1,22 @@
+2014-01-02 Kamil Ignacak
+	* audio systems: Making the daemon quit on invalid audio system on
+	startup.
+	If cwdaemon is started with invalid/unsupported/non-available
+	audio system (either specified in command line, or the default
+	one), it exits.  Until now the daemon continued to run even if
+	audio system was misconfigured. Now it exits.  Code handling
+	unsuccessful reconfiguration/change of audio system through
+	network request has not been changed (the daemon should continue
+	to work, at least in theory).
+
+2014-01-02 Kamil Ignacak
+	* debug: Adding new recognized values for "debug file" command
+	line option.
+	Debug output can be now redirected to stderr, thanks to new
+	supported special value "stderr" passed to command line option.
+	I've also made sure that "syslog" value is reserved for future use
+	(for now it is rejected).
+
 2013-12-28 Kamil Ignacak
 	* cwdevice: the new default cwdevice is "null". It is a default
 	device at startup (thanks to new function
