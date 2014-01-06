@@ -402,11 +402,11 @@ line arguments, but you can.
 
 .P
 Regardless of values passed through -f or --debugfile arguments,
-cwdaemon opens a syslog file and prints some (few) messages to the
-syslog. There is no way to override this at the moment. Which messages
-are always printed to syslog, and which can be printed to other file,
-is settled for now, but may be changed in the future. Don't depend too
-much on current setup.
+cwdaemon opens a syslog file and (when forked) prints some (few)
+messages to the syslog. There is no way to override this at the
+moment. Which messages are always printed to syslog, and which can be
+printed to other file, is settled for now, but may be changed in the
+future. Don't depend too much on current setup.
 
 
 
