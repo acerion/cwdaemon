@@ -1171,8 +1171,9 @@ void cwdaemon_handle_escaped_request(char *request)
 				cw_set_frequency(current_morse_tone);
 				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "tone: %l Hz", current_morse_tone);
 
-				/* Should we really be adjusting volume when
-				   the command is for frequency? It would be more
+				/* TODO: Should we really be adjusting
+				   volume when the command is for
+				   frequency? It would be more
 				   "elegant" not to do so. */
 				cw_set_volume(current_morse_volume);
 
@@ -1232,9 +1233,10 @@ void cwdaemon_handle_escaped_request(char *request)
 		break;
 	}
 	case '9':
-		/* Base port number.
+		/* Change network port number.
 		   TODO: why this is obsolete? */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "obsolete control data \"9\" (change network port), ignoring");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+			       "obsolete request \"9\" (change network port), ignoring");
 		break;
 	case 'a':
 		/* PTT keying on or off */
