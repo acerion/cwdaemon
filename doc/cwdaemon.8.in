@@ -28,9 +28,8 @@ When handling command line arguments, cwdaemon does not accept
 invalid, malformed, or out-of-range values passed through command
 line. It won't attempt to guess caller's intentions, it won't try to
 start with some fallback value of the argument. Instead it will just
-print a debug message and exit. In most cases the exit will happen
-before attempting to fork. One exception is with opening audio output,
-which is done (and may fail causing exit) after forking.
+print a debug message and exit. Rejection of bad values and exiting
+will happen before attempting to fork.
 
 When handling escaped requests, cwdaemon usually does not accept
 invalid, malformed or out-of-range vales either. But instead of
@@ -38,8 +37,8 @@ exiting upon receiving request with such value, it simply prints debug
 message, ignores the request containing such value, and waits for next
 request. One exception to the rule is PTT delay: requested delay
 values that are too large will be clipped to maximal allowed value and
-then will used by cwdaemon. Requested negative or malformed values of
-PTT delay will be ignored.
+then will be used by cwdaemon. Requested negative or malformed values
+of PTT delay will be ignored.
 
 
 .TP
@@ -200,15 +199,15 @@ The argument can be repeated up to four times to gradually increase the verbosit
 
 
 .TP
-\fBSet verbosity of debug output\fR
+\fBSet verbosity threshold for debug strings\fR
 .TI
-Command line argument: -y, --verbosity <level>
+Command line argument: -y, --verbosity <threshold>
 
 .TI
 Escaped request: N/A
 
 .TI
-See chapter "VERBOSITY LEVEL" below for more information.
+See chapter "DEBUGGING" below for more information.
 
 
 
@@ -360,30 +359,74 @@ exactly nothing (no rig keying, no ssb keying, etc.).
 \'s\' - soundcard - autoselect from OSS/ALSA/PulseAudio.
 
 
-.SH "VERBOSITY LEVEL"
-Value of \'level\' argument should be one of following:
+
+.SH "DEBUGGING"
+cwdaemon can print debug strings. Each debug string in cwdaemon has
+specified verbosity (verbosity level), and can be printed (or not)
+depending on current verbosity threshold specified for cwdaemon.  The
+verbosity level value for each string can be changed in future
+versions of cwdaemon. Don't depend on current setup.
+
+The verbosity threshold can be specified through command line
+arguments: -i, -y, or --verbosity. -y and --verbosity accept
+"threshold" value (single character) as specified below:
+
 .TP
-\'n\' - none (default)
+\'n\' - none
 .TP
 \'e\' - errors
 .TP
-\'w\' - warnings
+\'w\' - warnings (default)
 .TP
 \'i\' - information
 .TP
-\'d\' - debug (details)
+\'d\' - details
 
 .P
-By default cwdaemon doesn't print any debug information (level of
-verbosity is none). Increasing it to e.g. warnings makes cwdaemon
-print all messages that have verbosity level no larger than warning,
-i.e. errors and warnings.
+By default the threshold is set to "warnings" - cwdaemon will print
+all errors and warnings. Changing the threshold to "information" will
+make the cwdaemon print errors, warnings, and information.
+
+.P
+Debug strings can be printed to stdout, stderr, or disc file. Printing
+to stdout or stderr is available only if cwdaemon has not forked.
+Printing to disc file is available regardless of whether cwdaemon has
+forked or not.  You can specify intended debug output using -f or
+--debugfile command line argument. Values "stdout" and "stderr" passed
+to cwdaemon with these arguments are recognized as special file
+names. "syslog" value is also treated as special value, but is not
+supported at the moment. Every other value will be treated as path to
+disc file.  "stdout" is a default debug output for non-forked
+cwdaemon. You don't have to specify this explicitly through command
+line arguments, but you can.
+
+.P
+Regardless of values passed through -f or --debugfile arguments,
+cwdaemon opens a syslog file and prints some (few) messages to the
+syslog. There is no way to override this at the moment. Which messages
+are always printed to syslog, and which can be printed to other file,
+is settled for now, but may be changed in the future. Don't depend too
+much on current setup.
+
+
+
+.SH BUGS
+When an escaped request "f" (change sound system) is sent asking for
+switching to sound system that is generally supported by libcw, but
+not available on given machine, cwdaemon will not recognize that the
+sound system is not available. It will close current audio system, and
+will attempt to open unavailable audio system. This will result in
+cwdaemon working without any sound, and may potentially crash the
+daemon.
+
 
 
 .SH "SEE ALSO"
 The provided README in \fI@prefix@/share/cwdaemon\fR
 for a description of the circuitry, usage and testing
 of cwdaemon.
+
+
 
 .SH AUTHOR
 Cwdaemon was written by Joop Stakenborg <pg4i at amsat.org>,
