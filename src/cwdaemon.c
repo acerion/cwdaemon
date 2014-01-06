@@ -187,7 +187,7 @@
 
 #define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
-#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_I /* Threshold of verbosity of debug strings. */
+#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
