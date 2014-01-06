@@ -187,7 +187,7 @@
 
 #define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
-#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_I /* Threshold of verbosity of debug messages. */
+#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_I /* Threshold of verbosity of debug strings. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
@@ -275,7 +275,7 @@ static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 /* Debug variables. */
 
-/* cwdaemon may print debug messages to a disc file instead of
+/* cwdaemon may print debug strings to a disc file instead of
    stdout. */
 static FILE *cwdaemon_debug_f = NULL;
 static char *cwdaemon_debug_f_path = NULL;
@@ -485,24 +485,24 @@ RETSIGTYPE cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 
 
 /**
-   \brief Print error message to the console or syslog
+   \brief Print error string to the console or syslog
 
-   Function checks if cwdaemon has forked, and prints given error message
+   Function checks if cwdaemon has forked, and prints given error string
    to stdout (if cwdaemon hasn't forked) or to syslog (if cwdaemon has
    forked).
 
    Function accepts printf-line formatting string as first argument, and
    a set of optional arguments to be inserted into the formatting string.
 
-   \param info - first part of an error message, a formatting string
+   \param format - first part of an error string, a formatting string
 */
-void cwdaemon_errmsg(const char *info, ...)
+void cwdaemon_errmsg(const char *format, ...)
 {
 	va_list ap;
 	char s[1025];
 
-	va_start(ap, info);
-	vsnprintf(s, 1024, info, ap);
+	va_start(ap, format);
+	vsnprintf(s, 1024, format, ap);
 	va_end(ap);
 
 	if (forking) {
@@ -520,10 +520,10 @@ void cwdaemon_errmsg(const char *info, ...)
 
 
 /**
-   \brief Print debug message to debug file
+   \brief Print debug string to debug file
 
    Function decides if given \p verbosity level is sufficient to print
-   given \p format debug message, and prints it to predefined file. If
+   given \p format debug string, and prints it to predefined file. If
    current global verbosity level is "None", no information will be
    printed.
 
@@ -534,8 +534,8 @@ void cwdaemon_errmsg(const char *info, ...)
    argument (\p format), and a set of optional arguments to be
    inserted into the formatting string.
 
-   \param verbosity - verbosity level of given message
-   \param format - formatting string of a message being printed
+   \param verbosity - verbosity level of given debug string
+   \param format - formatting string of a debug string being printed
 */
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...)
 {
@@ -775,8 +775,8 @@ void cwdaemon_reset_almost_all(void)
 	/* Right now there is no way to alter current_verbosity after
 	   start of daemon, but it's easy to imagine a new network
 	   request to modify verbosity. Maybe not very useful (to
-	   change verbosity of messages displayed on remote machine),
-	   but during development phase it may be useful.
+	   change verbosity of debug strings displayed on remote
+	   machine), but during development phase it may be useful.
 
 	   Anyway... Right now there is no such request, but for
 	   consistency I'm resetting the current_verbosity as well. */
@@ -1286,21 +1286,22 @@ void cwdaemon_handle_escaped_request(char *request)
 			int rv = cwdaemon_params_pttdelay(&current_ptt_delay, request + 2);
 
 			if (rv == 0) {
-				/* Value totally invalid. Error
-				   message has been already printed in
+				/* Value totally invalid. Error debug
+				   string has been already printed in
 				   cwdaemon_params_pttdelay(). */
 			} else if (rv == 1) {
 				/* Value totally valid. Information
-				   message has been already printed in
+				   debug string has been already
+				   printed in
 				   cwdaemon_params_pttdelay(). */
 			} else { /* rv == 2 */
 				/* Value invalid (out-of-range), but
 				   acceptable when sent over network
 				   request and then clipped to be
-				   in-range. Value has been clipped
-				   in cwdaemon_params_pttdelay(), but
-				   a warning message must be printed
-				   here. */
+				   in-range. Value has been clipped in
+				   cwdaemon_params_pttdelay(), but a
+				   warning debug string must be
+				   printed here. */
 				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
 					       "requested PTT delay [ms] out of range: \"%s\", clipping to \"%d\" (should be between %d and %d inclusive)",
 					       optarg,
@@ -1635,7 +1636,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "version",     no_argument,             0, 0},  /* Program's version. */
 	{ "weighting",   required_argument,       0, 0},  /* CW weight. */
 	{ "tone",        required_argument,       0, 0},  /* CW tone. */
-	{ "verbosity",   required_argument,       0, 0},  /* Verbosity of cwdaemon's debug messages. */
+	{ "verbosity",   required_argument,       0, 0},  /* Verbosity of cwdaemon's debug strings. */
 	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
@@ -2312,7 +2313,7 @@ void cwdaemon_debug_open(void)
 
 		if (!forking) {
 			/* stdout is (for historical reasons) a
-			   default file for printing debug messages
+			   default file for printing debug strings
 			   when not forking, so if a debug file hasn't
 			   been defined in command line, the
 			   cwdaemon_debug_f_path will be NULL. Treat
@@ -2426,16 +2427,16 @@ void cwdaemon_args_help(void)
 	printf("        Set initial tone [Hz] (%d - %d, default: %d).\n",
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
 	printf("-i\n");
-	printf("        Increase verbosity of debug messages printed by cwademon.\n");
+	printf("        Increase verbosity of debug strings printed by cwademon.\n");
 	printf("        Repeat for even more verbosity.\n");
-	printf("--verbosity <level>\n");
-	printf("        Set verbosity level of messages printed by cwdaemon.\n");
+	printf("-y, --verbosity <threshold>\n");
+	printf("        Set verbosity level threshold for debug strings printed by cwdaemon.\n");
 	printf("        Recognized values:\n");
 	printf("        n = none (default)\n");
 	printf("        e = errors\n");
 	printf("        w = warnings\n");
 	printf("        i = information\n");
-	printf("        d = debug (details)\n");
+	printf("        d = details\n");
 	printf("-I, --libcwflags <flags>\n");
 	printf("        Numeric value of debug flags to be passed to libcw.\n");
 	printf("-f, --debugfile <output>\n");
@@ -2488,8 +2489,8 @@ int main(int argc, char *argv[])
 	   they weren't available until now.
 
 	   TODO: perhaps opening debug output should be moved to a
-	   later stage, so that as many messages as possible is being
-	   printed to stdout before main daemon loop? */
+	   later stage, so that as many debug strings as possible are
+	   being printed to stdout before main daemon loop? */
 	cwdaemon_debug_open();
 
 	if (forking) {
