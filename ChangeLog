@@ -30,6 +30,12 @@
 	line, or until it is changed through network request. It is also a
 	default fallback device if something goes wrong when changing the
 	cwdevice using network request.
+	The fact that "null" is the new default doesn't mean that you have
+	to change the way you invoke cwdaemon. It just means that the
+	variable describing cwdevice is no longer a NULL pointer waiting
+	to be properly initiated (or not) by command line argument or
+	network request. The variable now references to "null" device by
+	default, from start, so there is no risk of using NULL pointer.
 
 2013-12-26 Kamil Ignacak
 	* configuration: adding test of cwdevice desciption passed either
