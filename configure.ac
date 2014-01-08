@@ -55,7 +55,7 @@ AC_CHECK_FUNCS([setpriority])
 #AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
 # New function in libcw5
-AC_CHECK_LIB([cw], [cw_debug_get_flags], [AC_MSG_NOTICE([Found libcw5])], [AC_MSG_ERROR([Can't find libcw5 from unixcw package.])])
+AC_CHECK_LIB([cw], [cw_debug_get_flags], [AC_MSG_NOTICE([Found libcw5 or libcw6])], [AC_MSG_ERROR([Can't find libcw5 nor libcw6 from unixcw package.])])
 
 
 # For debug purposes only.
