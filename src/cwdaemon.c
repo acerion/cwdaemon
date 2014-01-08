@@ -2090,7 +2090,7 @@ void cwdaemon_params_inc_verbosity(int *verbosity)
 		(*verbosity)++;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
+			       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
 	}
 
 	return;
@@ -2116,7 +2116,7 @@ bool cwdaemon_params_set_verbosity(int *verbosity, const char *optarg)
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
+		       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
 	return true;
 }
 
@@ -2404,7 +2404,7 @@ void cwdaemon_args_help(void)
 	printf("        Set program's priority (-20 - 20, default: 0).\n");
 #endif
 	printf("-s, --wpm <speed>\n");
-	printf("        Set Morse speed [wpm] (%d - %d, default = %d).\n",
+	printf("        Set Morse speed [wpm] (%d - %d, default: %d).\n",
 	       CW_SPEED_MIN, CW_SPEED_MAX, CWDAEMON_MORSE_SPEED_DEFAULT);
 	printf("-t, --pttdelay <time>\n");
 	printf("        Set PTT delay [ms] (%d - %d, default: %d).\n",
@@ -2432,9 +2432,9 @@ void cwdaemon_args_help(void)
 	printf("-y, --verbosity <threshold>\n");
 	printf("        Set verbosity level threshold for debug strings printed by cwdaemon.\n");
 	printf("        Recognized values:\n");
-	printf("        n = none (default)\n");
+	printf("        n = none\n");
 	printf("        e = errors\n");
-	printf("        w = warnings\n");
+	printf("        w = warnings (default)\n");
 	printf("        i = information\n");
 	printf("        d = details\n");
 	printf("-I, --libcwflags <flags>\n");
