@@ -1,3 +1,7 @@
+2014-01-08 Kamil Ignacak
+	Changing cwdaemon's version from 0.9.7 to 0.10.
+	Updating year in copyright notice.
+
 2014-01-05 Kamil Ignacak
 	* ptt delay: changes in how 'd' request is handled. Until now when
 	value sent in request was negative, the delay has been set to
