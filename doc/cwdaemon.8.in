@@ -1,4 +1,4 @@
-.TH CWDAEMON 8 "Morse daemon" "ver. 0.9.7"
+.TH CWDAEMON 8 "Morse daemon" "ver. 0.10.0"
 
 .SH NAME
 cwdaemon \- morse daemon for the serial or parallel port
@@ -251,7 +251,7 @@ Escaped request: <ESC>0
 
 .TI
 The request resets program's parameters to cwdaemon default values,
-unless the defaults were overriden with command line arguments - then
+unless the defaults were overridden with command line arguments - then
 the values passed in command line are used.
 
 
