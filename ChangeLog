@@ -1,3 +1,12 @@
+2014-01-09 Kamil Ignacak
+	Fixed one issue with switching sound systems.  When a network
+	request for changing sound system is received, and cwdaemon tries
+	to switch to the sound system but fails, it then attempts to fall
+	back to "Null" sound system. Opening a "Null" sound system isn't
+	very complicated, so it should succeed. We may not have a working
+	sound, but at least cwdaemon won't attempt to ask for audio on a
+	closed (un-opened) sound system.
+
 2014-01-08 Kamil Ignacak
 	Changing cwdaemon's version from 0.9.7 to 0.10.
 	Updating year in copyright notice.
