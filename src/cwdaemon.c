@@ -241,7 +241,11 @@ static const int tq_low_watermark = 1;
    characters received from client, it crashes.  It doesn't know that
    it attempts to play to closed audio output.
 
-   This is a flag telling cwdaemon if audio output is available or not. */
+   This is a flag telling cwdaemon if audio output is available or not.
+
+   TODO: the variable is almost unused. Start using it.
+
+   TODO: decide on terminology: "audio system" or "sound system". */
 static bool has_audio_output = false;
 
 
@@ -1286,9 +1290,11 @@ void cwdaemon_handle_escaped_request(char *request)
 			int rv = cwdaemon_params_pttdelay(&current_ptt_delay, request + 2);
 
 			if (rv == 0) {
-				/* Value totally invalid. Error debug
-				   string has been already printed in
-				   cwdaemon_params_pttdelay(). */
+				/* Value totally invalid. */
+				cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+					       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+					       request + 2,
+					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			} else if (rv == 1) {
 				/* Value totally valid. Information
 				   debug string has been already
@@ -1304,7 +1310,7 @@ void cwdaemon_handle_escaped_request(char *request)
 				   printed here. */
 				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
 					       "requested PTT delay [ms] out of range: \"%s\", clipping to \"%d\" (should be between %d and %d inclusive)",
-					       optarg,
+					       request + 2,
 					       CWDAEMON_PTT_DELAY_MAX,
 					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			}
@@ -1352,7 +1358,19 @@ void cwdaemon_handle_escaped_request(char *request)
 			if (cwdaemon_open_libcw_output(current_audio_system)) {
 				has_audio_output = true;
 			} else {
-				has_audio_output = false;
+				/* Fall back to NULL audio system. */
+				cwdaemon_close_libcw_output();
+				if (cwdaemon_open_libcw_output(CW_AUDIO_NULL)) {
+
+					cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
+						       "fall back to \"Null\" sound system");
+					current_audio_system = CW_AUDIO_NULL;
+					has_audio_output = true;
+				} else {
+					cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
+						       "failed to fall back to \"Null\" sound system");
+					has_audio_output = false;
+				}
 			}
 		}
 		break;
@@ -2001,11 +2019,6 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 
 
 	} else if (lv < CWDAEMON_PTT_DELAY_MIN) {
-
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT delay [ms]: \"%ld\" (should be between %d and %d inclusive)",
-			       lv,
-			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 
 		/* In first branch of the if() we have accepted too
 		   large value from misinformed client, but we can't
