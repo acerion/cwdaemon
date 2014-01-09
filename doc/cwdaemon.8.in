@@ -415,9 +415,10 @@ When an escaped request "f" (change sound system) is sent asking for
 switching to sound system that is generally supported by libcw, but
 not available on given machine, cwdaemon will not recognize that the
 sound system is not available. It will close current audio system, and
-will attempt to open unavailable audio system. This will result in
-cwdaemon working without any sound, and may potentially crash the
-daemon.
+will attempt to open unavailable audio system. That fails, and
+cwdaemon falls back to Null audio system. If the falling back fails,
+it will result in cwdaemon working without any sound system, and it
+may potentially crash the daemon on next attempt to play audio.
 
 
 
