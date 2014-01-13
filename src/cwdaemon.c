@@ -51,9 +51,14 @@
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+
 #if DHAVE_ARPA_INET
 # include <arpa/inet.h>
 #endif
+#if HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
+
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -541,7 +546,7 @@ void cwdaemon_errmsg(const char *format, ...)
    \param verbosity - verbosity level of given debug string
    \param format - formatting string of a debug string being printed
 */
-void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...)
+void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __attribute__((unused)) int line, const char *format, ...)
 {
 	if (current_verbosity > CWDAEMON_VERBOSITY_N
 	    && verbosity <= current_verbosity
@@ -555,9 +560,9 @@ void cwdaemon_debug(int verbosity, const char *func, int line, const char *forma
 		vsnprintf(s, 1024, format, ap);
 		va_end(ap);
 
-		fprintf(cwdaemon_debug_f, s);
+		fprintf(cwdaemon_debug_f, "%s", s);
 		fprintf(cwdaemon_debug_f, "\n");
-		fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
+		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
 		fflush(cwdaemon_debug_f);
 	}
 
@@ -1148,6 +1153,8 @@ void cwdaemon_handle_escaped_request(char *request)
 	switch ((int) request[1]) {
 	case '0':
 		/* Reset all values. */
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "requested resetting of parameters");
 		request_queue[0] = '\0';
 		cwdaemon_reset_almost_all();
 		wordmode = 0;
@@ -1156,8 +1163,9 @@ void cwdaemon_handle_escaped_request(char *request)
 
 		ptt_flag = 0;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "resetting completed");
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reset all values");
 		break;
 	case '2':
 		/* Set speed of Morse code, in words per minute. */
@@ -1173,7 +1181,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			if (current_morse_tone > 0) {
 
 				cw_set_frequency(current_morse_tone);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "tone: %l Hz", current_morse_tone);
+				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "tone: %d Hz", current_morse_tone);
 
 				/* TODO: Should we really be adjusting
 				   volume when the command is for
@@ -1190,9 +1198,9 @@ void cwdaemon_handle_escaped_request(char *request)
 	case '4':
 		/* Abort currently sent message. */
 		if (wordmode) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "word mode - ignoring \"Message abort\" request");
+			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "requested aborting of message - ignoring (word mode is active)");
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "character mode - message abort");
+			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "requested aborting of message - executing (character mode is active)");
 			if (ptt_flag & PTT_ACTIVE_ECHO) {
 				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "echo \"break\"");
 				cwdaemon_sendto("break\r\n");
@@ -1210,7 +1218,16 @@ void cwdaemon_handle_escaped_request(char *request)
 	case '5':
 		/* Exit cwdaemon. */
 		errno = 0;
-		cwdaemon_errmsg("Sender has told me to end the connection");
+#if 0
+		char address[INET_ADDRSTRLEN];
+		inet_ntop(request_addr.sin_family, (struct in_addr*) &(request_addr.sin_addr.s_addr),
+			  address, INET_ADDRSTRLEN);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "requested exit of daemon (client address: %s)", address);
+#else
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
+			       "requested exit of daemon");
+#endif
 		exit(EXIT_SUCCESS);
 
 	case '6':
@@ -1943,7 +1960,7 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 	if (!cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > CWDAEMON_TUNE_SECONDS_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
 			       "invalid requested tuning time [s]: \"%s\" (should be between %d and %d inclusive)",
-			       0, CWDAEMON_TUNE_SECONDS_MAX);
+			       optarg, 0, CWDAEMON_TUNE_SECONDS_MAX);
 		return false;
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
@@ -2028,10 +2045,10 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 		return 0;
 
 	} else { /* Non-negative, in range. */
+		*delay = (int) lv;
+
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested PTT delay [ms]: \"%ld\"", *delay);
-
-		*delay = (int) lv;
 
 		/* 1 means "Value valid in all contexts." */
 		return 1;
@@ -2311,7 +2328,7 @@ void cwdaemon_debug_open(void)
 			   matter. This is an error (clash of command
 			   line arguments). */
 
-			fprintf(stdout, "%s:EE: expecting debug output to \"%s\" when forking\n",
+			fprintf(stdout, "%s:EE: specified debug output to \"%s\" when forking\n",
 				PACKAGE, cwdaemon_debug_f_path);
 
 			exit(EXIT_FAILURE);
