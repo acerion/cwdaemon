@@ -3,7 +3,7 @@ Section: hamradio
 Priority: optional
 Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
 Uploaders: Kamil Ignacak <acerion@wp.pl>, Kamal Mostafa <kamal@whence.com>
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Build-Depends: debhelper (>=7), autotools-dev, libcw5-dev | libcw6-dev, pkg-config, dpkg-dev (>= 1.16.1~)
 Homepage: http://cwdaemon.sourceforge.net/
 
