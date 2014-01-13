@@ -43,170 +43,173 @@ of PTT delay will be ignored.
 
 .TP
 \fBPrint help text to stdout and exit\fR
-.TI
+.IP
 Command line argument: -h, --help
 
-.TI
+.IP
 Escaped request: N/A
 
 
 
 .TP
 \fBPrint version information to stdout and exit\fR
-.TI
+.IP
 Command line argument: -V, --version
 
-.TI
+.IP
 Escaped request: N/A
 
 
 
 .TP
 \fBSet hardware keying device\fR
-.TI
+.IP
 Command line argument: -d, --cwdevice <device>
 
-.TI
+.IP
 Escaped request: <ESC>8<device>
 
-.TI
+.IP
 See chapter "DEVICES" below for more information.
 
 
 
 .TP
 \fBDon't fork daemon, run in foreground\fR
-.TI
+.IP
 Command line argument: -n, --nofork
 
-.TI
+.IP
 Escaped request: N/A
 
-.TI
+.IP
 Debug information will be printed to stdout (unless different debug outut is selected, or debug output is silenced by setting debug output verbosity).
 
 
 
 .TP
 \fBSet network UDP port\fR
-.TI
+.IP
 Command line argument: -p, --port <port number>
 
-.TI
+.IP
 Escaped request: <ESC>9<port number>
 
-.TI
+.IP
 This escaped request is obsolete and has no effect. Command line argument works as expected.
 
 
 
 .TP
-\fBSet process priority\fR
-.TI
+\fBSet process priority (niceness)\fR
+.IP
 Command line argument: -P, --priority <priority>
 
-.TI
+.IP
 Escaped request: N/A
 
 
 
 .TP
 \fBSet Morse speed [wpm]\fR
-.TI
+.IP
 Command line argument: -s, --wpm <speed>
 
-.TI
+.IP
 Escaped request: <ESC>2<speed>
 
 
 
 .TP
 \fBSet PTT delay [ms] (TOD, Turn On Delay)\fR
-.TI
+.IP
 Command line argument: -t, --pttdelay <delay>
 
-.TI
+.IP
 Escaped request: <ESC>d<delay>
 
 
 
 .TP
 \fBTurn PTT keying on/off\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>a<{0|1}>
+
+.IP
+0 - PTT off, 1 - PTT on
 
 
 
 .TP
 \fBSet sound system (sound backend)\fR
-.TI
+.IP
 Command line argument: -x, --system <system>
 
-.TI
+.IP
 Escaped request: <ESC>f<system>
 
-.TI
+.IP
 See chapter "SOUND SYSTEM" below for more information.
 
 
 
 .TP
 \fBSet sound volume for soundcard [%]\fR
-.TI
+.IP
 Command line argument: -v, --volume <volume>
 
-.TI
+.IP
 Escaped request: <ESC>g<volume>
 
 
 
 .TP
 \fBSet Morse weighting\fR
-.TI
+.IP
 Command line argument: -w, --weighting <weighting>
 
-.TI
+.IP
 Escaped request: <ESC>7<weighting>
 
 
 
 .TP
 \fBSet tone (frequency) of sound [Hz]\fR
-.TI
+.IP
 Command line argument: -T, --tone <tone>
 
-.TI
+.IP
 Escaped request: <ESC>3<tone>
 
-.TI
+.IP
 Notice that sending escaped request with value '0' silences cwdaemon.
 
 
 .TP
 \fBIncrease verbosity of debug output\fR
-.TI
+.IP
 Command line argument: -i
 
-.TI
+.IP
 Escaped request: N/A
 
-.TI
+.IP
 The argument can be repeated up to four times to gradually increase the verbosity.
 
 
 
 .TP
 \fBSet verbosity threshold for debug strings\fR
-.TI
+.IP
 Command line argument: -y, --verbosity <threshold>
 
-.TI
+.IP
 Escaped request: N/A
 
-.TI
+.IP
 See chapter "DEBUGGING" below for more information.
 
 
@@ -215,23 +218,23 @@ See chapter "DEBUGGING" below for more information.
 
 .TP
 \fBSet numeric value of libcw debug flags\fR
-.TI
+.IP
 Command line argument: -I, --libcwflags <flags>
 
-.TI
+.IP
 Escaped request: N/A
 
 
 
 .TP
 \fBSet debug output\fR
-.TI
+.IP
 Command line argument: -f, --debugfile <output>
 
-.TI
+.IP
 Escaped request: N/A
 
-.TI
+.IP
 Print debug information to <output> instead of stdout.
 Value of <output> can be explicitly stated as "stdout" (when not forking).
 Value of <output> can be also "stderr" (when not forking).
@@ -243,13 +246,13 @@ Passing path to disc file as value of <output> works in both situations: when fo
 
 .TP
 \fBReset some of cwdaemon parameters\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>0
 
-.TI
+.IP
 The request resets program's parameters to cwdaemon default values,
 unless the defaults were overridden with command line arguments - then
 the values passed in command line are used.
@@ -257,20 +260,20 @@ the values passed in command line are used.
 
 .TP
 \fBAbort currently sent message\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>4
 
 
 
 .TP
 \fBExit (close) daemon\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>5
 
 
@@ -278,36 +281,36 @@ Escaped request: <ESC>5
 
 .TP
 \fBSet word mode\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>5
 
 
 
 .TP
 \fBSet SSB way\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>b<{0|1}
 
-.TI
+.IP
 0 - microphone, 1 - soundcard
 
 
 
 .TP
 \fBTune for a number of seconds\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>c<seconds>
 
-.TI
+.IP
 Tune for <seconds> seconds. The tuning is performed by both selected
 sound system, and by current hardware keying device.
 
@@ -315,13 +318,13 @@ sound system, and by current hardware keying device.
 
 .TP
 \fBSet band switch output\fR
-.TI
+.IP
 Command line argument: N/A
 
-.TI
+.IP
 Escaped request: <ESC>e<value>
 
-.TI
+.IP
 This argument sets band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB).
 
 
