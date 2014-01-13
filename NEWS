@@ -1,3 +1,48 @@
+cwdaemon 0.10.0 / 2014.01.XX
+
+New release. Changes since previous release:
+
+* Empty name of keying device sent with "8" network request shouldn't
+  cause cwdaemon to crash anymore. Handling of empty/invalid keying
+  device name has been improved.
+
+* Until now if cwdaemon was called with invalid / unsupported /
+  non-available sound system, it could start with misconfigured sound
+  system. Now cwdaemon exits when it cannot open a sound system during
+  start.
+
+* When cwdaemon receives "switch to sound system X" network request,
+  and it fails to correctly switch to the sound system, it falls back
+  to "Null" audio system. The fall back eliminates possibility of
+  crashing on attempt to use uninitialized sound system.
+
+* Handling of "ptt delay" parameter has changed. Until now when value
+  sent in network request was negative, the delay has been set to MAX.
+  Now the negative value sent with network request is ignored.  When
+  the negative value has been passed through command line argument,
+  cwdaemon exits.
+
+* Debug strings can be now printed to stdout (default, was already
+  available), stderr, or disc file. Check -f / --debugfile command
+  line option for more information.
+
+* Verbosity level of debug messages can be controlled with command
+  line options.
+
+* cwdaemon now accepts --long-options on systems that support this
+  functionality.
+
+* Help text printed when calling cwdaemon with "-h" command line
+  argument has been expanded.
+
+* Man page for cwdaemon has been expanded.
+
+This version of cwdaemon has been tested with libcw6.
+
+
+----
+
+
 cwdaemon 0.9.7 / 2013.01.11
 
 New release.
