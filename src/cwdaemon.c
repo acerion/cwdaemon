@@ -261,7 +261,8 @@ static bool has_audio_output = false;
 /* cwdaemon usually receives requests from client, but on occasions
    it needs to send a reply back. This is why in addition to
    request_* we also have reply_* */
-static int socket_descriptor;
+
+static int socket_descriptor = 0;
 
 /* Default UDP port we listen on. Can be changed only through command
    line switch.
@@ -363,6 +364,7 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
 bool    cwdaemon_initialize_socket(void);
+void    cwdaemon_close_socket(void);
 ssize_t cwdaemon_sendto(const char *reply);
 int     cwdaemon_recvfrom(char *request, int n);
 int     cwdaemon_receive(void);
@@ -2618,6 +2620,7 @@ int main(int argc, char *argv[])
 		signal(SIGINT, cwdaemon_catch_sigint);
 	}
 
+	atexit(cwdaemon_close_socket);
 	if (!cwdaemon_initialize_socket()) {
 		exit(EXIT_FAILURE);
 	}
@@ -2685,10 +2688,6 @@ int main(int argc, char *argv[])
 
 	} while (1);
 
-	if (close(socket_descriptor) == -1) {
-		cwdaemon_errmsg("Close socket");
-		exit(EXIT_FAILURE);
-	}
 	exit(EXIT_SUCCESS);
 }
 
@@ -2956,6 +2955,18 @@ bool cwdaemon_initialize_socket(void)
 
 
 
+
+void cwdaemon_close_socket(void)
+{
+	if (socket_descriptor) {
+		if (close(socket_descriptor) == -1) {
+			cwdaemon_errmsg("Close socket");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	return;
+}
 
 
 /* *** unused code *** */
