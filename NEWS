@@ -1,3 +1,33 @@
+cwdaemon 0.10.1 / 2014.04.XX
+
+New release. Changes since previous release:
+
+* Fixing bug #1 reported by Pino Zollo ZP4KFX: cwdaemon failed to
+  properly respond to <ESC>f Escape request. Attempting to change
+  sound system used by cwdaemon caused the program to completely go
+  silent and to not to send replies.
+
+* Fixing bug #2 also reported by Pino Zollo ZP4KFX: cwdaemon has been
+  sending replies too early, sometimes right after starting to play
+  Morse characters (i.e. not waiting for end of playing the
+  characters). This problem has been fixed by changes in cwdaemon
+  source code, as well as by changes in unixcw/libcw source code (this
+  is why you should use libcw version 6.1.1).
+
+* Fixing bug #3 also reported by Pino Zollo ZP4KFX: description of
+  escaped request for word mode in man page has been incorrect (wrong
+  code of request). This has been fixed.
+
+* Fixing bug #4, this one discovered by me: cwdaemon failed to
+  correctly close network socket at exit. This has been fixed.
+
+Many thanks to Pino Zollo ZP4KFX for reporting bugs in cwdaemon 0.10.0
+and taking time to test fixes.
+
+
+----
+
+
 cwdaemon 0.10.0 / 2014.01.15
 
 New release. Changes since previous release:
