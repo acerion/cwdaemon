@@ -1,4 +1,4 @@
-.TH CWDAEMON 8 "Morse daemon" "ver. 0.10.0"
+.TH CWDAEMON 8 "Morse daemon" "ver. 0.10.1"
 
 .SH NAME
 cwdaemon \- morse daemon for the serial or parallel port
@@ -197,7 +197,9 @@ Command line argument: -i
 Escaped request: N/A
 
 .IP
-The argument can be repeated up to four times to gradually increase the verbosity.
+The argument can be repeated up to four times (-iiii) to gradually
+increase the verbosity.  Alternatively you can use -y/--verbosity
+option.
 
 
 
@@ -208,6 +210,9 @@ Command line argument: -y, --verbosity <threshold>
 
 .IP
 Escaped request: N/A
+
+.IP
+Alternatively you can use -i option.
 
 .IP
 See chapter "DEBUGGING" below for more information.
@@ -285,7 +290,7 @@ Escaped request: <ESC>5
 Command line argument: N/A
 
 .IP
-Escaped request: <ESC>5
+Escaped request: <ESC>6
 
 
 
