@@ -2500,7 +2500,8 @@ void cwdaemon_args_help(void)
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
 	printf("-i\n");
 	printf("        Increase verbosity of debug strings printed by cwademon.\n");
-	printf("        Repeat for even more verbosity.\n");
+	printf("        Repeat for even more verbosity (e.g. -iii).\n");
+	printf("        Alternatively you can use -y/--verbosity option.\n");
 	printf("-y, --verbosity <threshold>\n");
 	printf("        Set verbosity level threshold for debug strings printed by cwdaemon.\n");
 	printf("        Recognized values:\n");
@@ -2509,6 +2510,7 @@ void cwdaemon_args_help(void)
 	printf("        w = warnings (default)\n");
 	printf("        i = information\n");
 	printf("        d = details\n");
+	printf("        Alternatively you can use -i option.\n");
 	printf("-I, --libcwflags <flags>\n");
 	printf("        Numeric value of debug flags to be passed to libcw.\n");
 	printf("-f, --debugfile <output>\n");
