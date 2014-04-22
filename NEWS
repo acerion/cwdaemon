@@ -12,7 +12,7 @@ New release. Changes since previous release:
   Morse characters (i.e. not waiting for end of playing the
   characters). This problem has been fixed by changes in cwdaemon
   source code, as well as by changes in unixcw/libcw source code (this
-  is why you should use libcw version 6.1.1).
+  is why you should use libcw version 6.1.1 from unixcw 3.3.1).
 
 * Fixing bug #3 also reported by Pino Zollo ZP4KFX: description of
   escaped request for word mode in man page has been incorrect (wrong
