@@ -552,16 +552,13 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 	    && verbosity <= current_verbosity
 	    && cwdaemon_debug_f) {
 
-		fprintf(cwdaemon_debug_f, "%s:%s: ", PACKAGE, cwdaemon_verbosity_labels[verbosity]);
-
 		va_list ap;
 		char s[1024 + 1];
 		va_start(ap, format);
 		vsnprintf(s, 1024, format, ap);
 		va_end(ap);
 
-		fprintf(cwdaemon_debug_f, "%s", s);
-		fprintf(cwdaemon_debug_f, "\n");
+		fprintf(cwdaemon_debug_f, "%s:%s: %s\n", PACKAGE, cwdaemon_verbosity_labels[verbosity], s);
 		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
 		fflush(cwdaemon_debug_f);
 	}
@@ -584,6 +581,37 @@ void cwdaemon_debug_close(void)
 
 	return;
 }
+
+
+
+
+
+const char *cwdaemon_debug_ptt_flags(void)
+{
+
+	if (ptt_flag & PTT_ACTIVE_AUTO) {
+		cwdaemon_debug_ptt_flag[0] = 'A';
+	} else {
+		cwdaemon_debug_ptt_flag[0] = 'a';
+	}
+
+	if (ptt_flag & PTT_ACTIVE_MANUAL) {
+		cwdaemon_debug_ptt_flag[1] = 'M';
+	} else {
+		cwdaemon_debug_ptt_flag[1] = 'm';
+	}
+
+	if (ptt_flag & PTT_ACTIVE_ECHO) {
+		cwdaemon_debug_ptt_flag[2] = 'E';
+	} else {
+		cwdaemon_debug_ptt_flag[2] = 'e';
+	}
+
+	cwdaemon_debug_ptt_flag[3] = '\0';
+
+	return cwdaemon_debug_ptt_flag;
+}
+
 
 
 
@@ -1113,7 +1141,7 @@ int cwdaemon_receive(void)
 		   Shouldn't we recover from the error? */
 		exit(EXIT_FAILURE);
 	} else if (recv_rc == 0) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "...recv_from (no data)");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "...recv_from (no data)");
 		return 0;
 	} else {
 		; /* pass */
@@ -1571,7 +1599,13 @@ void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 */
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "low TQ callback start, PTT flag = %02x", ptt_flag);
+	int len = cw_get_tone_queue_length();
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: start, TQ len = %d, PTT flag = %02x/%s",
+		       len, ptt_flag, cwdaemon_debug_ptt_flags());
+
+	if (len > tq_low_watermark) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: TQ len larger than watermark, TQ len = %d", len);
+	}
 
 	if (ptt_flag == PTT_ACTIVE_AUTO
 	    /* PTT is (most probably?) on, in purely automatic mode.
@@ -1589,7 +1623,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   Feel free to correct me ;) */
 
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "low TQ callback branch 1, PTT flag = %02d", ptt_flag);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 1, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
@@ -1599,17 +1633,17 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   the server (i.e. cwdaemon) after the server plays
 		   all characters. */
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "low TQ callback branch 2, PTT flag = %02d", ptt_flag);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 2, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		/* Since echo is being sent, we can turn the flag off.
 		   For some reason cwdaemon works better when we turn the
 		   flag off before sending the reply, rather than turning
 		   if after sending the reply. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_ECHO (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: PTT flag -PTT_ACTIVE_ECHO, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "echoing \"%s\" back to client", reply_buffer);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
 		cwdaemon_sendto(reply_buffer);
 		/* If this line is uncommented, the callback erases a valid
@@ -1639,16 +1673,18 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   maybe it has something to do with avoiding
 		   recursion? */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
+			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: queueing two empty tones");
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
 	} else {
 		/* TODO: how to correctly handle this case?
 		   Should we do something? */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "low TQ callback branch 3, PTT flag = %02d", ptt_flag);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "low TQ callback end");
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = %02x/%s\n\n",
+		       cw_get_tone_queue_length(), ptt_flag, cwdaemon_debug_ptt_flags());
 
 	return;
 
