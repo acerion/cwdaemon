@@ -1,3 +1,10 @@
+2014-04-22 Kamil Ignacak
+	* src/cwdaemon.c: fixes of problems reported by Pino Zollo
+	ZP4KFX. See NEWS entry of cwdaemon 0.10.1 for more details.
+	* doc/cwdaemon.8.in: fixes of two problems (one of them reported
+	by Pino Zollo ZP4KFX).
+	* updating debian/* files
+
 2014-01-09 Kamil Ignacak
 	Fixed one issue with switching sound systems.  When a network
 	request for changing sound system is received, and cwdaemon tries
