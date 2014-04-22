@@ -1429,6 +1429,29 @@ void cwdaemon_handle_escaped_request(char *request)
 					has_audio_output = false;
 				}
 			}
+
+			if (has_audio_output) {
+
+				/* Tone queue is bound to a
+				   generator. Creating new generator
+				   requires re-registering the
+				   callback. */
+				cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, tq_low_watermark);
+
+				/* This call recalibrates length of
+				   dot and dash. */
+				cw_set_frequency(current_morse_tone);
+
+				cw_set_send_speed(current_morse_speed);
+				cw_set_volume(current_morse_volume);
+
+				/* Regardless if we are using
+				   "default" or "current" parameters,
+				   the gap is always zero. */
+				cw_set_gap(0);
+
+				cw_set_weighting(current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
+			}
 		}
 		break;
 	}
