@@ -1,3 +1,11 @@
+cwdaemon (0.10.1-1) unstable; urgency=low
+
+  * New version of upstream package that fixes two major errors and
+    two minor errors. It is recommended to use libcw 6.1.1 from
+    unixcw 3.3.1 with this version of cwdaemon.
+
+ -- Kamil Ignacak <acerion@wp.pl>  Tue, 22 Apr 2014 22:47:50 +0100
+
 cwdaemon (0.10.0-1) unstable; urgency=low
 
   * New version of upstream package;
