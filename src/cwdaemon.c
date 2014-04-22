@@ -424,6 +424,10 @@ static bool cwdaemon_params_ptt_on_off(const char *optarg);
 static void cwdaemon_debug_open(void);
 static void cwdaemon_debug_close(void);
 
+/* Auto, manual, echo. */
+static char cwdaemon_debug_ptt_flag[3 + 1];
+static const char *cwdaemon_debug_ptt_flags(void);
+
 RETSIGTYPE cwdaemon_catch_sigint(int signal);
 
 
