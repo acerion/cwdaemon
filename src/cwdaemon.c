@@ -927,6 +927,11 @@ void cwdaemon_reset_libcw_output(void)
 		return;
 	}
 
+	/* Remember that tone queue is bound to a generator.  When
+	   cwdaemon switches on request to other sound system, it will
+	   have to re-register the callback. */
+	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, tq_low_watermark);
+
 	cw_set_frequency(default_morse_tone);
 	cw_set_send_speed(default_morse_speed);
 	cw_set_volume(default_morse_volume);
@@ -2685,7 +2690,6 @@ int main(int argc, char *argv[])
 
 
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
-	cw_register_tone_queue_low_callback(cwdaemon_tone_queue_low_callback, NULL, tq_low_watermark);
 
 
 	/* The main loop of cwdaemon. */
