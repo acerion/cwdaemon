@@ -1478,6 +1478,8 @@ void cwdaemon_handle_escaped_request(char *request)
 */
 void cwdaemon_play_request(char *request)
 {
+	//cw_block_callback(true);
+
 	char *x = request;
 
 	while (*x) {
@@ -1551,6 +1553,8 @@ void cwdaemon_play_request(char *request)
 
 	/* All characters processed, mark buffer as empty. */
 	*request = '\0';
+
+	//cw_block_callback(false);
 
 	return;
 }
