@@ -1,10 +1,10 @@
-You will need to have the the libcw4 development libraries and headers
-installed to install cwdaemon.
+You will need to have the the libcw6.1.1 development libraries and
+headers installed to install cwdaemon 0.10.1.
 
-libcw4 is a part of unicw-3.1.1 package which can be found here:
+libcw6.1.1 is a part of unicw-3.3.1 package which can be found here:
 http://unixcw.sourceforge.net/
 
-After installing libcw4 development files do:
+After installing libcw6 development files do:
 
 1: ./configure
 2: make
