@@ -148,9 +148,9 @@ sub cwtest_send_1
 
     # Constant expected reply text.
     #
-    # cwdaemon allows 'expected' to be empty string, this will be
-    # tested elsewhere.
-    my $expected = "reply";
+    # cwdaemon allows 'expected_reply' to be empty string, this will
+    # be tested elsewhere.
+    my $expected_reply = "reply";
 
     for (my $i = 0; $i < length($txt); $i++) {
 
@@ -159,7 +159,7 @@ sub cwtest_send_1
 	print "sending  '" . $text . "'\n";
 
         # Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected;
+	print $cwsocket chr(27) . "h" . $expected_reply;
 	# Send text to be played by server.
 	print $cwsocket $text;
 
@@ -167,9 +167,9 @@ sub cwtest_send_1
 	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t1++;
-	if ($reply ne $expected) {
+	if ($reply ne $expected_reply) {
 	    $global_e1++;
-	    die "die 1, incorrect reply: '$reply' != '$expected'\n";
+	    die "die 1, incorrect reply: '$reply' != '$expected_reply'\n";
 	}
 
 	print "\n"; # To clearly separate pairs of send/reply from each other.
@@ -194,16 +194,16 @@ sub cwtest_send_2
     my $txt = shift;
 
     for (my $i = 0; $i < length($txt); $i++) {
-	# cwdaemon allows 'expected' to be empty string,
+	# cwdaemon allows 'expected_reply' to be empty string,
 	# so let's test this here.
-	my $expected = "";
+	my $expected_reply = "";
 
 	my $text = substr($txt, $i, 1);
 
 	print "sending  '" . $text . "'\n";
 
 	# Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected;
+	print $cwsocket chr(27) . "h" . $expected_reply;
 	# Send text to be played by server.
 	print $cwsocket $text;
 
@@ -211,9 +211,9 @@ sub cwtest_send_2
 	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t2++;
-	if ($reply ne $expected) {
+	if ($reply ne $expected_reply) {
 	    $global_e2++;
-	    die "die 2, incorrect reply: '$reply' != '$expected'\n";
+	    die "die 2, incorrect reply: '$reply' != '$expected_reply'\n";
 	}
 
 	print "\n"; # To clearly separate pairs of send/reply from each other.
@@ -241,13 +241,13 @@ sub cwtest_send_3
 
     foreach (@tokens) {
 
-	my $expected = "ack";
+	my $expected_reply = "ack";
 	my $text = $_;
 
 	print "sending  '" . $text . "'\n";
 
 	# Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected;
+	print $cwsocket chr(27) . "h" . $expected_reply;
 	# Send text to be played by server.
 	print $cwsocket $text;
 
@@ -255,9 +255,9 @@ sub cwtest_send_3
 	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t3++;
-	if ($reply ne $expected) {
+	if ($reply ne $expected_reply) {
 	    $global_e3++;
-	    die "die 3, incorrect reply: '$reply' != '$expected'\n";;
+	    die "die 3, incorrect reply: '$reply' != '$expected_reply'\n";;
 	}
 
 
