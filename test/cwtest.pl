@@ -24,6 +24,7 @@ use warnings;
 use strict;
 
 use IO::Socket::INET;
+use cwdaemon::client;
 
 
 # How many times to run a basic set of tests.
@@ -145,10 +146,13 @@ sub cwtest_send_1
     my $cwsocket = shift;
     my $txt = shift;
 
+    # Constant expected reply text.
+    #
+    # cwdaemon allows 'expected' to be empty string, this will be
+    # tested elsewhere.
+    my $expected = "reply";
+
     for (my $i = 0; $i < length($txt); $i++) {
-	# cwdaemon allows 'expected' to be empty string,
-	# this will be tested in cwtest_send_2.
-	my $expected = "reply";
 
 	my $text = substr($txt, $i, 1);
 
@@ -159,8 +163,8 @@ sub cwtest_send_1
 	# Send text to be played by server.
 	print $cwsocket $text;
 
-	# Leading 'h' will be stripped from reply by cwtest_receive().
-	my $reply = cwtest_receive($cwsocket, "h");
+	# Leading 'h' will be stripped from reply by receive().
+	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t1++;
 	if ($reply ne $expected) {
@@ -203,8 +207,8 @@ sub cwtest_send_2
 	# Send text to be played by server.
 	print $cwsocket $text;
 
-	# Leading 'h' will be stripped from reply by cwtest_receive().
-	my $reply = cwtest_receive($cwsocket, "h");
+	# Leading 'h' will be stripped from reply by receive().
+	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t2++;
 	if ($reply ne $expected) {
@@ -247,8 +251,8 @@ sub cwtest_send_3
 	# Send text to be played by server.
 	print $cwsocket $text;
 
-	# Leading 'h' will be stripped from reply by cwtest_receive().
-	my $reply = cwtest_receive($cwsocket, "h");
+	# Leading 'h' will be stripped from reply by receive().
+	my $reply = cwdaemon::client::receive($cwsocket, "h");
 
 	$global_t3++;
 	if ($reply ne $expected) {
@@ -287,7 +291,7 @@ sub cwtest_send_4
 	# as a text of reply.
 	print $cwsocket  $text . '^';
 
-	my $reply = cwtest_receive($cwsocket, "");
+	my $reply = cwdaemon::client::receive($cwsocket, "");
 
 	$global_t4++;
 	if ($reply ne $text) {
@@ -328,7 +332,7 @@ sub cwtest_send_5
 	# as a text of reply.
 	print $cwsocket  $text . '^';
 
-	my $reply = cwtest_receive($cwsocket, "");
+	my $reply = cwdaemon::client::receive($cwsocket, "");
 
 	$global_t5++;
 	if ($reply ne $text) {
@@ -341,48 +345,6 @@ sub cwtest_send_5
 
 	sleep $in_loop_sleep;
     }
-}
-
-
-
-
-
-# Also used as receive routine in cwtest_send_2.
-sub cwtest_receive
-{
-    my $cwsocket = shift;
-    my $expected_prefix = shift;
-
-    my $expected_postfix = "\r\n";
-    my $pre_len = length($expected_prefix);
-    my $post_len = length($expected_postfix);
-
-
-    my $reply = <$cwsocket>;
-
-
-    if (substr($reply, 0, $pre_len) ne $expected_prefix) {
-	print("malformed reply, missing leading '$expected_prefix'");
-	return "";
-    }
-
-
-    if (substr($reply, length($reply) - $post_len, $post_len) ne $expected_postfix) {
-	print("malformed reply, missing ending '\\r\\n'");
-	return "";
-    }
-
-
-    $reply = substr($reply, $pre_len, length($reply) - $pre_len - $post_len);
-    print("received ");
-    if ($pre_len) {
-	print("'" . $expected_prefix . "' + ");
-    }
-    print("'" . $reply . "' + '\\r\\n'\n");
-
-
-    # At this point 'reply' may be an empty string.
-    return $reply;
 }
 
 
