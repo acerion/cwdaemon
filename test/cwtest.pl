@@ -24,29 +24,48 @@ use warnings;
 use strict;
 
 use IO::Socket::INET;
+use IO::Handle;
+use Time::HiRes qw(usleep);
+use Getopt::Long;
+
 use cwdaemon::client;
+
+
+
 
 
 # How many times to run a basic set of tests.
 my $cycles = 50000;
-my $cycle = 0; # Iterator.
+my $cycle = 0;
 
-# How long to sleep after every basic set of tests (the set is run in loop).
-my $in_loop_sleep = 2;
+# Number of test strings (number of request/reply pairs) to be used in
+# each test.
+my $n_test_strings = 20;
+
+# Milliseconds multiplier.
+# How long to sleep after every basic set of tests (the set is run in loop) [milliseconds].
+my $in_loop_sleep_milliseconds = 1;
+
+# Some test strings are randomly generated, and have random
+# length. This is maximal random length.
+my $string_len_max = 10;
+
+
+my $result = GetOptions("cycles=i"       => \$cycles,
+			"nstrings=i"     => \$n_test_strings,
+			"stringlenmax=i" => \$string_len_max)
+
+    or die "Problems with getting options: $@\n";
 
 
 
 
-my $server_port = 6789;
-my $input_text = 'paris ';
-#my $input_text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
-				     PeerPort => $server_port,
-				     Proto    => "udp",
-				     Type     => SOCK_DGRAM)
+my $seed = time;
+print "Using seed $seed.\n\n";
+srand($seed);
 
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+
 
 
 
@@ -63,14 +82,27 @@ my $global_t5 = 0;
 my $global_e5 = 0;
 
 
-sub INT_handler {
 
+
+
+my $server_port = 6789;
+my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
+				     PeerPort => $server_port,
+				     Proto    => "udp",
+				     Type     => SOCK_DGRAM)
+    or die "Couldn't setup udp server on port $server_port : $@\n";
+
+
+
+
+
+sub INT_handler
+{
     print "\n";
     cwtest_print_stats($cycle, $cycles);
     $cwsocket->close();
 
     exit(0);
-
 }
 
 $SIG{'INT'} = 'INT_handler';
@@ -81,48 +113,22 @@ $SIG{'INT'} = 'INT_handler';
 
 for ($cycle = 0; $cycle < $cycles; $cycle++) {
 
-    print("\n--- Test 1: \"<ESC>h<non-empty reply text>\\r\\n\" ---\n");
-
-    # PTT ON
-    print "PTT ON\n\n";
-    print $cwsocket chr(27).'a1';
-
-    cwtest_send_1($cwsocket, $input_text);
-
-
-
-    print("\n--- Test 2: \"<ESC>h<empty reply text>\\r\\n\" ---\n");
-    # PTT still ON
-    cwtest_send_2($cwsocket, $input_text);
-
-
-
-    print("\n--- Test 3: \"<ESC>h<non-empty reply text>\\r\\n\" ---\n");
-    # PTT still ON
-    cwtest_send_3($cwsocket, $input_text);
-
-
-
-    print("\n--- Test 4: \"<single-character text to be played>^\" ---\n");
-    # PTT OFF
-    print "PTT OFF\n\n";
-    print $cwsocket chr(27).'a0';
-
-    cwtest_send_4($cwsocket, $input_text);
-
-
-
-    print("\n--- Test 5: \"<multi-character text to be played>^\" ---\n");
-    # PTT still OFF
-    cwtest_send_5($cwsocket, $input_text);
-
-
-
+    &cwdaemon_test0;
+    &cwdaemon_test1;
+    &cwdaemon_test2;
+    &cwdaemon_test3;
+    &cwdaemon_test4;
+    &cwdaemon_test5;
+    
     cwtest_print_stats($cycle, $cycles);
 }
 
 
 $cwsocket->close();
+
+
+
+
 
 
 
@@ -135,216 +141,310 @@ $cwsocket->close();
 
 
 
+sub cwdaemon_test0
+{
+    print("\n\n\n--- Test 0:\n");
+    print("\n");
+
+    print "PTT ON\n\n";
+    print $cwsocket chr(27).'a1';
+ 
+    cwtest_send_hang($cwsocket, "paris ");
+}
+
+
+
+
+
+sub cwdaemon_test1
+{
+    print("\n\n\n--- Test 1:\n");
+
+    print("escaped request: \"<ESC>h<constant, non-empty reply text>\"\n");
+    print("request: \"<single-character request text>\"\n");
+    print("expected reply: \"h<non-empty reply text>\\r\\n\"\n");
+    print("\n");
+
+    print "PTT ON\n\n";
+    print $cwsocket chr(27).'a1';
+
+
+    # Single-character request texts
+    my @request_texts = cwtest_get_random_strings($n_test_strings, 1);
+    
+    # Constant, non-empty reply texts
+    my @reply_expected_texts = ("ack") x $n_test_strings;
+    
+    cwtest_request(1, $cwsocket, \@request_texts, \@reply_expected_texts);
+}
+
+
+
+
+
+sub cwdaemon_test2
+{
+    print("\n\n\n--- Test 2:\n");
+    
+    print("escaped request: \"<ESC>h<empty reply text>\"\n");
+    print("request: \"<single-character request text>\"\n");
+    print("expected reply: \"h\\r\\n\"\n");
+    print("\n");
+
+    print "PTT ON\n\n";
+    print $cwsocket chr(27).'a1';
+
+    # Single-character request texts
+    my @request_texts = cwtest_get_random_strings($n_test_strings, 1);
+    
+    # Empty reply texts.
+    my @reply_expected_texts = ("") x $n_test_strings;
+    
+    cwtest_request(1, $cwsocket, \@request_texts, \@reply_expected_texts);
+}
+
+
+
+
+
+sub cwdaemon_test3
+{
+    print("\n\n\n--- Test 3:\n");
+
+    print("escaped request: \"<ESC>h<random non-empty reply text>\"\n");
+    print("request: \"<random multi-character request text>\"\n");
+    print("expected reply: \"h<reply text specified in escaped request>\\r\\n\"\n");
+    print("\n");
+
+    print "PTT ON\n\n";
+    print $cwsocket chr(27).'a1';
+
+    # Multi-character request texts
+    my @request_texts = cwtest_get_random_strings($n_test_strings, $string_len_max);
+    
+    # Non-constant, non-empty reply texts.
+    my @reply_expected_texts = cwtest_get_random_strings($n_test_strings, $string_len_max);
+    
+    cwtest_request(1, $cwsocket, \@request_texts, \@reply_expected_texts);
+}
+
+
+
+
+
+sub cwdaemon_test4
+{
+    print("\n\n\n--- Test 4:\n");
+    
+    print("request: \"<single-character request text>^\"\n");
+    print("expected reply: \"<single-character reply==request text>\\r\\n\"\n");
+    print("\n");
+
+    print "PTT OFF\n\n";
+    print $cwsocket chr(27).'a0';
+
+
+    # Single-character request texts.
+    my @request_texts = cwtest_get_random_strings($n_test_strings, 1);
+    
+    # Single-character reply texts equal to request texts.
+    my @reply_expected_texts = @request_texts;
+    
+    cwtest_request(0, $cwsocket, \@request_texts, \@reply_expected_texts);
+}
+
+
+
+
+
+sub cwdaemon_test5
+{
+    print("\n\n\n--- Test 5:\n");
+    
+    print("request: \"<multi-character request text>^\"\n");
+    print("expected reply: \"<multi-character reply==request text>\\r\\n\"\n");
+    print("\n");
+
+    print "PTT OFF\n\n";
+    print $cwsocket chr(27).'a0';
+
+    # Multi-character request texts
+    my @request_texts = cwtest_get_random_strings($n_test_strings, $string_len_max);
+
+    # Multi-character reply texts equal to request texts.
+    my @reply_expected_texts = @request_texts;
+
+    cwtest_request(0, $cwsocket, \@request_texts, \@reply_expected_texts);
+}
+
+
+
+
+
+# This function can perform two modes of communication with cwdaemon server.
+#
+# First mode of communication (Escape mode) first sends two requests:
+# One to define reply from server, and one to define text to be played:
+# "<ESC>h<empty or non-empty reply text>"
+# "<single- or multi-character text to be played>"
+#
+# Then function waits for reply from server. In the first type of
+# communication the reply has following form:
+#
+# "h<empty or non-empty reply text>\r\n"
+#
+#
+#
+# Second mode of communication sends only one request - a request that
+# defines text to be played, which is followed by caret character
+# ('^'). The caret character means that the text to be played is also
+# a text to be sent in reply from server to client.
+#
+#
+#
+# Mode of communication is selected with first argument: $esc_mode,
+# being 1 for Escape mode, and 0 for caret mode.
+sub cwtest_request
+{
+    my $esc_mode = shift; 
+    my $cwsocket = shift;
+    my ($request_texts, $reply_expected_texts) = @_;
+
+    my $n_requests = @$request_texts;
+    my $n_replies = @$reply_expected_texts;
+
+    if ($n_requests != $n_replies) {
+	die "Lengths of args don't match";
+    }
+
+
+    # Constant expected reply text.
+    #
+    # cwdaemon allows 'expected_reply' to be empty string, this will
+    # be tested elsewhere.
+
+    for (my $i = 0; $i < $n_requests; $i++) {
+
+	my $request_prefix = "";
+	my $request_text = @$request_texts[$i];
+	my $reply_expected_text = @$reply_expected_texts[$i];
+
+
+	print("\n");
+	print("sending request text           '$request_text'\n");
+	print("    expecting reply text:      '$reply_expected_text'\n");
+
+
+	if ($esc_mode == 1) {
+	    $request_prefix = "h";
+	    cwdaemon::client::send_request_esc_h($cwsocket, $request_text, $reply_expected_text);
+	} else {
+	    $request_prefix = "";
+	    cwdaemon::client::send_request_caret($cwsocket, $request_text);
+	}
+
+
+	my ($reply_prefix, $reply_text, $reply_postfix) = cwdaemon::client::receive($cwsocket, $request_prefix);
+	$global_t1++;
+
+
+
+	if (!defined($reply_prefix) || !defined($reply_text) || !defined($reply_postfix)) {
+	    $global_e1++;
+	    print("undefined\n");
+
+	} elsif ($reply_prefix ne $request_prefix || $reply_text ne $reply_expected_text || $reply_postfix ne "\r\n") {
+	    $global_e1++;
+	    print("unequal\n");
+
+	} else {
+	    print("    received full reply: ");
+	    if (length($reply_prefix) != 0) {
+		print("'$reply_prefix' + ");
+	    } else {
+		print("      ");
+	    }
+	    print("'$reply_text' + '\\r\\n'");
+	}
+
+	print "\n";
+
+	my $r = rand($in_loop_sleep_milliseconds * 1000);
+	usleep(int($r));
+    }
+}
+
+
+
+
+
 # This function sends following request to the server:
 # "<ESC>h<non-empty reply text>"
 # "<single-character text to be played>"
 #
 # This function expects the following reply from the server:
 # "h<non-empty reply text>\r\n"
-sub cwtest_send_1
+sub cwtest_send_hang
 {
     my $cwsocket = shift;
     my $txt = shift;
 
-    # Constant expected reply text.
-    #
-    # cwdaemon allows 'expected_reply' to be empty string, this will
-    # be tested elsewhere.
-    my $expected_reply = "reply";
-
     for (my $i = 0; $i < length($txt); $i++) {
+	# cwdaemon allows 'expected' to be empty string,
+	# this will be tested in cwtest_send_2.
+	my $expected = "reply";
+	my $request_prefix = "h";
 
 	my $text = substr($txt, $i, 1);
 
 	print "sending  '" . $text . "'\n";
 
         # Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected_reply;
+	print $cwsocket chr(27) . $request_prefix . $expected;
 	# Send text to be played by server.
 	print $cwsocket $text;
 
-	# Leading 'h' will be stripped from reply by receive().
-	my $reply = cwdaemon::client::receive($cwsocket, "h");
+	my ($reply_prefix, $reply_text, $reply_postfix) = cwdaemon::client::receive($cwsocket, $request_prefix);
 
 	$global_t1++;
-	if ($reply ne $expected_reply) {
+	if ($reply_text ne $expected) {
 	    $global_e1++;
-	    die "die 1, incorrect reply: '$reply' != '$expected_reply'\n";
+	    die "die 1, incorrect reply: '$reply_text' != '$expected'\n";
 	}
 
 	print "\n"; # To clearly separate pairs of send/reply from each other.
 
-	sleep $in_loop_sleep;
+
+	usleep(10000);
     }
 }
 
 
 
 
-
-# This function sends following to the server:
-# "<ESC>h<empty reply text>"
-# "<single-character text to be played>"
-#
-# This function expects the following reply from the server:
-# "h\r\n"
-sub cwtest_send_2
+# Get an array of random strings
+# The strings can be used as request texts or expected reply texts.
+sub cwtest_get_random_strings
 {
-    my $cwsocket = shift;
-    my $txt = shift;
+    my $n_strings = shift;
+    my $len_max = shift;
 
-    for (my $i = 0; $i < length($txt); $i++) {
-	# cwdaemon allows 'expected_reply' to be empty string,
-	# so let's test this here.
-	my $expected_reply = "";
+    my @chars = ("A".."Z", "a".."z", "0".."9");
+    my @spaces = (" ") x 20;
+    @chars = (@chars, @spaces);
 
-	my $text = substr($txt, $i, 1);
+    my @strings = ("") x $n_strings;
+    for (my $i = 0; $i < $n_strings; $i++) {
 
-	print "sending  '" . $text . "'\n";
+	# http://www.perlmonks.org/?node_id=233023
+	my $string;
+	my $n = int(rand($len_max));
+	$string .= $chars[rand @chars] for 0..$n;
 
-	# Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected_reply;
-	# Send text to be played by server.
-	print $cwsocket $text;
-
-	# Leading 'h' will be stripped from reply by receive().
-	my $reply = cwdaemon::client::receive($cwsocket, "h");
-
-	$global_t2++;
-	if ($reply ne $expected_reply) {
-	    $global_e2++;
-	    die "die 2, incorrect reply: '$reply' != '$expected_reply'\n";
-	}
-
-	print "\n"; # To clearly separate pairs of send/reply from each other.
-
-	sleep $in_loop_sleep;
+	$strings[$i] = $string;
     }
-}
 
-
-
-
-
-# This function sends following requests to the server:
-# "<ESC>h<non-empty reply text>"
-# "<multi-character text to be played>"
-#
-# This function expects the following reply from the server:
-# "h<non-empty reply text>\r\n"
-sub cwtest_send_3
-{
-    my $cwsocket = shift;
-    my $txt = shift;
-
-    my @tokens = split(/ /, $txt);
-
-    foreach (@tokens) {
-
-	my $expected_reply = "ack";
-	my $text = $_;
-
-	print "sending  '" . $text . "'\n";
-
-	# Use "<ESC>h" request to define reply expected from the server.
-	print $cwsocket chr(27) . "h" . $expected_reply;
-	# Send text to be played by server.
-	print $cwsocket $text;
-
-	# Leading 'h' will be stripped from reply by receive().
-	my $reply = cwdaemon::client::receive($cwsocket, "h");
-
-	$global_t3++;
-	if ($reply ne $expected_reply) {
-	    $global_e3++;
-	    die "die 3, incorrect reply: '$reply' != '$expected_reply'\n";;
-	}
-
-
-	print "\n"; # To clearly separate pairs of send/reply from each other.
-
-	sleep $in_loop_sleep;
-    }
-}
-
-
-
-
-
-# This function sends following to the server:
-# "<single-character text to be played>^"
-#
-# This function expects the following reply from the server:
-# "<single-character text to be played>\r\n"
-sub cwtest_send_4
-{
-    my $cwsocket = shift;
-    my $txt = shift;
-
-    for (my $i = 0; $i < length($txt); $i++) {
-
-	my $text = substr($txt, $i, 1);
-
-	print "sending  '" . $text . "'\n";
-
-	# "^" after the text tells the server to use text from the request
-	# as a text of reply.
-	print $cwsocket  $text . '^';
-
-	my $reply = cwdaemon::client::receive($cwsocket, "");
-
-	$global_t4++;
-	if ($reply ne $text) {
-	    $global_e4++;
-	    die "die 4, incorrect text in reply: '$reply' != '$text'\n";
-	}
-
-
-	print "\n"; # To clearly separate pairs of send/reply from each other.
-
-	sleep $in_loop_sleep;
-    }
-}
-
-
-
-
-
-# This function sends following request to the server:
-# "<multi-character text to be played>^"
-#
-# This function expects the following reply from the server:
-# "<multi-character text to be played>\r\n"
-sub cwtest_send_5
-{
-    my $cwsocket = shift;
-    my $txt = shift;
-
-    my @tokens = split(/ /, $txt);
-
-    foreach (@tokens) {
-
-	my $text = $_;
-
-	print "sending  '" . $text . "'\n";
-
-	# "^" after the text tells the server to use text from the request
-	# as a text of reply.
-	print $cwsocket  $text . '^';
-
-	my $reply = cwdaemon::client::receive($cwsocket, "");
-
-	$global_t5++;
-	if ($reply ne $text) {
-	    $global_e5++;
-	    die "die 5, incorrect text in reply: '$reply' != '$text'\n";
-	}
-
-
-	print "\n"; # To clearly separate pairs of send/reply from each other.
-
-	sleep $in_loop_sleep;
-    }
+    return @strings;
 }
 
 
