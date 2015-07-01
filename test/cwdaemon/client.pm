@@ -45,31 +45,77 @@ sub receive
     my $reply = <$cwsocket>;
 
 
-    if (substr($reply, 0, $pre_len) ne $expected_prefix) {
-	print("malformed reply, missing leading '$expected_prefix'");
-	return "";
+    my $received_prefix = substr($reply, 0, $pre_len);
+    if ($received_prefix ne $expected_prefix) {
+	#print("malformed reply, missing prefix '$expected_prefix'");
+	return (undef, undef, undef);
     }
 
 
-    if (substr($reply, length($reply) - $post_len, $post_len) ne $expected_postfix) {
-	print("malformed reply, missing ending '\\r\\n'");
-	return "";
+    my $received_text = substr($reply, $pre_len, length($reply) - $pre_len - $post_len);
+
+
+    my $received_postfix = substr($reply, length($reply) - $post_len, $post_len);
+    if ($received_postfix ne $expected_postfix) {
+	#print("malformed reply, missing postfix '\\r\\n'");
+	return  ($received_prefix, $received_text, undef);
     }
 
-    
-    $reply = substr($reply, $pre_len, length($reply) - $pre_len - $post_len);
-
-    
-    print("received ");
-    if ($pre_len) {
-	print("'" . $expected_prefix . "' + ");
-    }
-    print("'" . $reply . "' + '\\r\\n'");
-
-
+   
     # At this point 'reply' may be an empty string.
-    return $reply;
+    return ($received_prefix, $received_text, $received_postfix);
+    #return (undef, $received_text, $received_postfix);
 }
+
+
+
+
+
+# This function sends following request to the server:
+# "<ESC>h<empty or non-empty reply text>"
+# "<single- or multi-character text to be played>"
+#
+# This function expects the following reply from the server:
+# "h<empty or non-empty reply text>\r\n"
+sub send_request_esc_h
+{
+    my $cwsocket            = shift;
+    my $request_text        = shift;
+    my $reply_expected_text = shift;
+    
+    # Use "<ESC>h" request to define reply text that server should
+    # send to client after playing a text from regular request.
+    print $cwsocket chr(27) . "h" . $reply_expected_text;
+    # Use regular request to ask server to play a text.
+    print $cwsocket $request_text;
+}
+
+
+
+
+
+# This function sends following request to the server:
+# "<single- or multi-character text to be played>^"
+#
+# This function expects the following reply from the server:
+# "<single-or multi-character text to be played>\r\n"
+sub send_request_caret
+{
+    my $cwsocket     = shift;
+    my $request_text = shift;
+
+    # Use caret request to do two things at once:
+    # a. ask server to play given text, and
+    # b. define reply text that server should send to client after
+    # playing the text
+    
+    # "^" after the text tells the server to use request text as a
+    # reply text.
+    print $cwsocket $request_text . '^';
+}
+
+
+
 
 
 1;
