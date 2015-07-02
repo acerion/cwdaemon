@@ -1,3 +1,10 @@
+2015-07-02 Kamil Ignacak
+	* tests: improving test/cwtest.pl. There is one additional small
+	test, but the most important change is using randomly generated
+	input data. Additionally refactoring of code (some code moved to
+	Perl modules; overall improvements) and adding support for command
+	line arguments to the test script.
+
 2014-04-22 Kamil Ignacak
 	* src/cwdaemon.c: fixes of problems reported by Pino Zollo
 	ZP4KFX. See NEWS entry of cwdaemon 0.10.1 for more details.
