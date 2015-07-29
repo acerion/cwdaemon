@@ -285,11 +285,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = src doc test
+SUBDIRS = src doc examples
 AM_CFLAGS = @UNIXCW_CFLAGS@
 CLEANFILES = *~
-CWDAEMON_EXAMPLE_FILES = examples/example.sh
-CWDAEMON_TEST_FILES = test/cwtest.c test/Makefile.am test/Makefile.in
+CWDAEMON_EXAMPLE_FILES = README examples/example.pl examples/example.sh \
+	examples/example.c examples/Makefile.am examples/Makefile.in
+
+CWDAEMON_TEST_FILES = test/cwtest.pl test/cwdaemon/client.pm
 CWDAEMON_PATCHES = patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.diff patches/cwdaemon-mt.patch
 CWDAEMON_SCHEMATICS_FILES = doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
 	doc/schematics/serialport_circuit.jpg doc/schematics/serialport_circuit.ps
@@ -787,9 +789,13 @@ install-data-local:
 
         # The scripts will be installed as executable.
 	$(INSTALL_SCRIPT) $(srcdir)/examples/example.sh $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_SCRIPT) $(srcdir)/examples/example.pl $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) $(srcdir)/cwsetup.sh $(DESTDIR)$(pkgdatadir)
 
-	$(INSTALL_DATA) $(srcdir)/test/cwtest.c $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/examples/README $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/examples/example.c $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/examples/Makefile.am $(DESTDIR)$(pkgdatadir)
+	$(INSTALL_DATA) $(srcdir)/examples/Makefile.in $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/cwdaemon.png $(DESTDIR)$(pkgdatadir)
 
 uninstall-local:
