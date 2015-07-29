@@ -1,7 +1,7 @@
 /*
- * cwtest.c - test program for cwdaemon
+ * example.c - example program for cwdaemon
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2014 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2015 Kamil Ignacak <acerion@wp.pl>
  *
  * Some of this code is taken from netkeyer.c, which is part of the tlf source,
  * here is the copyright:
@@ -25,8 +25,8 @@
  */
 
 /*
- * Compile this program with "gcc -o cwtest cwtest.c"
- * Usage: cwtest or cwtest <portname>
+ * Compile this program with "gcc -o example example.c"
+ * Usage: 'example' or 'example <portname>'
  */
 
 #define _POSIX_SOURCE /* getaddrinfo() and friends. */
