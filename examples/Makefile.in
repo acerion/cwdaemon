@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
-# Copyright (C) 2012 - 2014 Kamil Ignacak (acerion@wp.pl)
+# Copyright (C) 2012 - 2015 Kamil Ignacak (acerion@wp.pl)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -94,10 +94,10 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-noinst_PROGRAMS = cwtest$(EXEEXT)
-subdir = test
+noinst_PROGRAMS = example$(EXEEXT)
+subdir = examples
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
-	$(top_srcdir)/mkinstalldirs $(top_srcdir)/depcomp
+	$(top_srcdir)/mkinstalldirs $(top_srcdir)/depcomp README
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -107,9 +107,9 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_cwtest_OBJECTS = cwtest.$(OBJEXT)
-cwtest_OBJECTS = $(am_cwtest_OBJECTS)
-cwtest_LDADD = $(LDADD)
+am_example_OBJECTS = example.$(OBJEXT)
+example_OBJECTS = $(am_example_OBJECTS)
+example_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -138,8 +138,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(cwtest_SOURCES)
-DIST_SOURCES = $(cwtest_SOURCES)
+SOURCES = $(example_SOURCES)
+DIST_SOURCES = $(example_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -260,8 +260,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
-# source code files used to build cwtest program
-cwtest_SOURCES = cwtest.c
+# source code files used to build example program
+example_SOURCES = example.c
 all: all-am
 
 .SUFFIXES:
@@ -275,9 +275,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu examples/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu test/Makefile
+	  $(AUTOMAKE) --gnu examples/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -300,9 +300,9 @@ $(am__aclocal_m4_deps):
 clean-noinstPROGRAMS:
 	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 
-cwtest$(EXEEXT): $(cwtest_OBJECTS) $(cwtest_DEPENDENCIES) $(EXTRA_cwtest_DEPENDENCIES) 
-	@rm -f cwtest$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(cwtest_OBJECTS) $(cwtest_LDADD) $(LIBS)
+example$(EXEEXT): $(example_OBJECTS) $(example_DEPENDENCIES) $(EXTRA_example_DEPENDENCIES) 
+	@rm -f example$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(example_OBJECTS) $(example_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -310,7 +310,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwtest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -527,9 +527,9 @@ uninstall-am:
 	uninstall-am
 
 # target-specific preprocessor flags (#defs and include dirs)
-# cwtest_CPPFLAGS =
+# example_CPPFLAGS =
 # target-specific linker flags (objects to link)
-# cwtest_LDADD =
+# example_LDADD =
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
