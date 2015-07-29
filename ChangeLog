@@ -1,3 +1,13 @@
+2015-07-29 Kamil Ignacak
+	* examples and tests: moving some files from test/ to examples/.
+	The goal is on one hand to have small set of very simple examples
+	that can be used by some users to create their own applications
+	interfacing cwdaemon, and on the other hand to have coherent set
+	of tests that can be used by me to get the best test coverage. The
+	tests will be implemented in Perl only (so no duplication of tests
+	written in C and in Perl).
+	Updating built system files accordingly.
+
 2015-07-02 Kamil Ignacak
 	* tests: improving test/cwtest.pl. There is one additional small
 	test, but the most important change is using randomly generated
