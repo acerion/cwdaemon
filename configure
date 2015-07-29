@@ -6182,51 +6182,6 @@ done
 #AC_CHECK_LIB([m],[sin])
 #AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
-# New function in libcw5
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for cw_debug_get_flags in -lcw" >&5
-$as_echo_n "checking for cw_debug_get_flags in -lcw... " >&6; }
-if ${ac_cv_lib_cw_cw_debug_get_flags+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcw  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char cw_debug_get_flags ();
-int
-main ()
-{
-return cw_debug_get_flags ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_cw_cw_debug_get_flags=yes
-else
-  ac_cv_lib_cw_cw_debug_get_flags=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cw_cw_debug_get_flags" >&5
-$as_echo "$ac_cv_lib_cw_cw_debug_get_flags" >&6; }
-if test "x$ac_cv_lib_cw_cw_debug_get_flags" = xyes; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: Found libcw5 or libcw6" >&5
-$as_echo "$as_me: Found libcw5 or libcw6" >&6;}
-else
-  as_fn_error $? "Can't find libcw5 nor libcw6 from unixcw package." "$LINENO" 5
-fi
-
-
 
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
@@ -6367,12 +6322,12 @@ if test -n "$UNIXCW_CFLAGS"; then
     pkg_cv_UNIXCW_CFLAGS="$UNIXCW_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libcw >= 4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 5\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcw >= 5") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_CFLAGS=`$PKG_CONFIG --cflags "libcw >= 4" 2>/dev/null`
+  pkg_cv_UNIXCW_CFLAGS=`$PKG_CONFIG --cflags "libcw >= 5" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6384,12 +6339,12 @@ if test -n "$UNIXCW_LIBS"; then
     pkg_cv_UNIXCW_LIBS="$UNIXCW_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 4\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "libcw >= 4") 2>&5
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 5\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcw >= 5") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_LIBS=`$PKG_CONFIG --libs "libcw >= 4" 2>/dev/null`
+  pkg_cv_UNIXCW_LIBS=`$PKG_CONFIG --libs "libcw >= 5" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6410,14 +6365,14 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcw >= 4" 2>&1`
+	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcw >= 5" 2>&1`
         else
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcw >= 4" 2>&1`
+	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcw >= 5" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$UNIXCW_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libcw >= 4) were not met:
+	as_fn_error $? "Package requirements (libcw >= 5) were not met:
 
 $UNIXCW_PKG_ERRORS
 
@@ -6453,7 +6408,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile test/Makefile doc/cwdaemon.8 cwdaemon.spec"
+ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7196,7 +7151,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
-    "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
+    "examples/Makefile") CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
     "doc/cwdaemon.8") CONFIG_FILES="$CONFIG_FILES doc/cwdaemon.8" ;;
     "cwdaemon.spec") CONFIG_FILES="$CONFIG_FILES cwdaemon.spec" ;;
 
