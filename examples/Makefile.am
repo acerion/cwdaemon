@@ -17,7 +17,7 @@
 #
 
 # program(s) to be built in current dir
-noinst_PROGRAMS = example.c
+noinst_PROGRAMS = example
 
 # source code files used to build example program
 example_SOURCES = example.c
