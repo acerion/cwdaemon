@@ -54,9 +54,6 @@ AC_CHECK_FUNCS([setpriority])
 #AC_CHECK_LIB([m],[sin])
 #AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
-# New function in libcw5
-AC_CHECK_LIB([cw], [cw_debug_get_flags], [AC_MSG_NOTICE([Found libcw5 or libcw6])], [AC_MSG_ERROR([Can't find libcw5 nor libcw6 from unixcw package.])])
-
 
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
@@ -68,7 +65,7 @@ fi
 CFLAGS="${CFLAGS} -std=c99"
 
 
-PKG_CHECK_MODULES(UNIXCW, [libcw >= 4])
+PKG_CHECK_MODULES(UNIXCW, [libcw >= 5])
 AC_SUBST(UNIXCW_CFLAGS)
 AC_SUBST(UNIXCW_LIBS)
 
@@ -76,6 +73,6 @@ AC_SUBST(UNIXCW_LIBS)
 AC_OUTPUT([Makefile
 	src/Makefile
 	doc/Makefile
-	test/Makefile
+	examples/Makefile
 	doc/cwdaemon.8
 	cwdaemon.spec])
