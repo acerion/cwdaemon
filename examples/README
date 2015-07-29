@@ -2,7 +2,7 @@ In this directory there are three examples of how to interface
 cwdaemon. You can treat them as hints about how to write an
 application interfacing cwdaemon.
 
-example.sh is the most simple one, using nc to do the job - you can
+example.sh is the most simple one, using 'nc' to do the job - you can
 enter text from keyboard to send it to cwdaemon.
 
 example.c (accompanied by 'make' files) is an example program in C.
