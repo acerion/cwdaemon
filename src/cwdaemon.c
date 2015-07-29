@@ -347,7 +347,14 @@ static unsigned char ptt_flag = 0;
 /* Don't turn PTT off until cwdaemon sends back an echo to client.
    client may request echoing back to it a reply when cwdaemon finishes
    playing given request. PTT shouldn't be turned off when sending the
-   reply (TODO: why it shouldn't?). */
+   reply (TODO: why it shouldn't?).
+
+   This flag is set whenever client sends request for sending back a
+   reply (i.e. either <ESC>h request, or caret request).
+
+   This flag is re-set whenever such reply is sent (to be more
+   precise: after playing a requested text, but just before sending to
+   the client the requested reply). */
 #define PTT_ACTIVE_ECHO		0x04
 
 
@@ -1166,6 +1173,7 @@ int cwdaemon_receive(void)
 
 	request_buffer[recv_rc] = '\0';
 
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
 	if (request_buffer[0] != 27) {
 		/* No ESCAPE. All received data should be treated
 		   as text to be sent using Morse code. */
@@ -1178,6 +1186,7 @@ int cwdaemon_receive(void)
 		}
 		return 1;
 	} else {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "escaped request: \"%s\"", request_buffer);
 		cwdaemon_handle_escaped_request(request_buffer);
 		return 0;
 	}
@@ -1560,6 +1569,7 @@ void cwdaemon_play_request(char *request)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
 			cw_send_character(*x);
 			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Morse character \"%c\" has been queued in libcw", *x);
+
 			x++;
 			if (cw_get_gap() == 2) {
 				if (*x == '^') {
@@ -1727,7 +1737,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = %02x/%s\n\n",
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = %02x/%s",
 		       cw_get_tone_queue_length(), ptt_flag, cwdaemon_debug_ptt_flags());
 
 	return;
