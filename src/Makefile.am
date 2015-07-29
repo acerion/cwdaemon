@@ -1,6 +1,6 @@
 # Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
 #		       and many authors, see the AUTHORS file.
-# Copyright (C) 2012 - 2014 Kamil Ignacak (acerion@wp.pl)
+# Copyright (C) 2012 - 2015 Kamil Ignacak (acerion@wp.pl)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,5 +26,3 @@ cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c null.c
 cwdaemon_CPPFLAGS = -I$(top_srcdir)/src/
 # target-specific linker flags (objects to link)
 cwdaemon_LDADD = @UNIXCW_LIBS@
-
-
