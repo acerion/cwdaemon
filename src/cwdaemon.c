@@ -754,7 +754,7 @@ void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 #endif
 
 		ptt_flag |= PTT_ACTIVE_AUTO;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
 	return;
@@ -774,7 +774,7 @@ void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 {
 	device->ptt(device, OFF);
 	ptt_flag = 0;
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (%02d, %d)", ptt_flag, __LINE__);
+	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
 
@@ -792,6 +792,8 @@ void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
 
    Parameter type is uint32_t, which gives us maximum of 4294967295
    seconds, i.e. ~136 years. Should be enough.
+
+   TODO: change the argument type to size_t.
 
    \param seconds - time of tuning
 */
@@ -1026,9 +1028,10 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 
 	   It is important to set this flag at the beginning of the function. */
 	ptt_flag |= PTT_ACTIVE_ECHO;
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_ECHO (%02d, %d)", ptt_flag, __LINE__);
+	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_ECHO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
-	memcpy(&reply_addr, &request_addr, sizeof(reply_addr)); /* Remember sender. */
+	/* We are sending reply to the same host that sent a request. */
+	memcpy(&reply_addr, &request_addr, sizeof(reply_addr));
 	reply_addrlen = request_addrlen;
 
 	strncpy(reply, request, n);
@@ -1123,7 +1126,7 @@ int cwdaemon_recvfrom(char *request, int n)
 	}
 
 	/* Remove CRLF if present. TCP buffer may end with '\n', so make
-	   sure that every request is consistently ended with NUL.
+	   sure that every request is consistently ended with NUL only.
 	   Do it early, do it now. */
 	int z;
 	while (recv_rc > 0
@@ -1144,6 +1147,8 @@ int cwdaemon_recvfrom(char *request, int n)
 
    Watch the socket and if there is an escape character check what it is,
    otherwise play morse.
+
+   FIXME: duplicate return value (zero and zero).
 
    \return 0 when an escape code has been received
    \return 0 when no request or an empty request has been received
@@ -1176,7 +1181,13 @@ int cwdaemon_receive(void)
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
 	if (request_buffer[0] != 27) {
 		/* No ESCAPE. All received data should be treated
-		   as text to be sent using Morse code. */
+		   as text to be sent using Morse code.
+
+		   Note that this does not exclude possibility of
+		   caret request (e.g. "some text^"), which does
+		   require sending a reply to client. Such request is
+		   correctly handled by cwdaemon_play_request(). */
+		*/
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			strcat(request_queue, request_buffer);
@@ -1216,7 +1227,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		global_cwdevice->reset(global_cwdevice);
 
 		ptt_flag = 0;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "resetting completed");
 
@@ -1266,7 +1277,7 @@ void cwdaemon_handle_escaped_request(char *request)
 				cwdaemon_set_ptt_off(global_cwdevice, "PTT off");
 			}
 			ptt_flag &= 0;
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (%02d, %d)", ptt_flag, __LINE__);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 		}
 		break;
 	case '5':
@@ -1550,9 +1561,9 @@ void cwdaemon_play_request(char *request)
 		case '^':
 			/* Send echo to main program when CW playing is done. */
 			*x = '\0';     /* Remove '^' and possible trailing garbage. */
-			/* I'm guessing here that '^' can be found at
-			   the end of request, and it means "echo text of current
-			   request back to sender once you finish playing it". */
+			/* '^' can be found at the end of request, and
+			   it means "echo text of current request back
+			   to client once you finish playing it". */
 			cwdaemon_prepare_reply(reply_buffer, request, strlen(request));
 
 			/* cwdaemon will wait for queue-empty callback
@@ -1654,7 +1665,7 @@ void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
 	int len = cw_get_tone_queue_length();
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: start, TQ len = %d, PTT flag = %02x/%s",
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: start, TQ len = %d, PTT flag = 0x%02x/%s",
 		       len, ptt_flag, cwdaemon_debug_ptt_flags());
 
 	if (len > tq_low_watermark) {
@@ -1677,7 +1688,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   Feel free to correct me ;) */
 
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 1, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 1, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
@@ -1687,14 +1698,14 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   the server (i.e. cwdaemon) after the server plays
 		   all characters. */
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 2, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 2, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		/* Since echo is being sent, we can turn the flag off.
 		   For some reason cwdaemon works better when we turn the
 		   flag off before sending the reply, rather than turning
 		   if after sending the reply. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: PTT flag -PTT_ACTIVE_ECHO, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: PTT flag -PTT_ACTIVE_ECHO, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
@@ -1734,10 +1745,10 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 	} else {
 		/* TODO: how to correctly handle this case?
 		   Should we do something? */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = %02d/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = %02x/%s",
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = 0x%02x/%s",
 		       cw_get_tone_queue_length(), ptt_flag, cwdaemon_debug_ptt_flags());
 
 	return;
@@ -2333,12 +2344,12 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 		}
 
 		ptt_flag |= PTT_ACTIVE_MANUAL;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 	} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
 
 		ptt_flag &= ~PTT_ACTIVE_MANUAL;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (%02d, %d)", ptt_flag, __LINE__);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
 
@@ -2349,7 +2360,7 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 			} else {
 				/* still sending, cannot yet switch PTT off */
 				ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
-				cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (%02d, %d)", ptt_flag, __LINE__);
+				cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reverting from PTT (manual) to PTT (auto) now");
 			}
