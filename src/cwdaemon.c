@@ -820,6 +820,12 @@ void cwdaemon_tune(uint32_t seconds)
 
 /**
    \brief Reset some initial parameters of cwdaemon and libcw
+
+   TODO: split this function into:
+   cwdaemon_reset_basic_params()
+   cwdaemon_reset_libcw_output()
+   and call these two functions separately instead of this one.
+   This function that combines these two doesn't make much sense.
 */
 void cwdaemon_reset_almost_all(void)
 {
@@ -922,7 +928,13 @@ void cwdaemon_reset_libcw_output(void)
 {
 	/* This function is called when cwdaemon receives '0' escape code.
 	   README describes this code as "Reset to default values".
-	   Therefore we use default_* below. */
+	   Therefore we use default_* below.
+
+	   However, the function is called after "current_" values
+	   have been reset to "default_" values. So maybe we could use
+	   "current_" values and somehow encapsulate the calls to
+	   cw_set_*() functions? The calls are also made elsewhere.
+	*/
 
 	/* Delete old generator (if it exists). */
 	cwdaemon_close_libcw_output();
@@ -1179,6 +1191,7 @@ int cwdaemon_receive(void)
 	request_buffer[recv_rc] = '\0';
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
+	/* TODO: replace the magic number 27 with constant. */
 	if (request_buffer[0] != 27) {
 		/* No ESCAPE. All received data should be treated
 		   as text to be sent using Morse code.
@@ -1187,7 +1200,6 @@ int cwdaemon_receive(void)
 		   caret request (e.g. "some text^"), which does
 		   require sending a reply to client. Such request is
 		   correctly handled by cwdaemon_play_request(). */
-		*/
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			strcat(request_queue, request_buffer);
@@ -1228,8 +1240,7 @@ void cwdaemon_handle_escaped_request(char *request)
 
 		ptt_flag = 0;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "resetting completed");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "resetting completed");
 
 		break;
 	case '2':
@@ -1357,6 +1368,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		break;
 	case 'c':
 		{
+			/* FIXME: change this uint32_t to size_t. */
 			uint32_t seconds = 0;
 			/* Tune for a number of seconds. */
 			if (cwdaemon_params_tune(&seconds, request + 2)) {
