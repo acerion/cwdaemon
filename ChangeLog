@@ -1,3 +1,7 @@
+2015-08-02 Kamil Ignacak
+	* tests: adding test/cwtest_esc2.pl file with tests for <ESC>2
+	requests.
+
 2015-07-29 Kamil Ignacak
 	* examples and tests: moving some files from test/ to examples/.
 	The goal is on one hand to have small set of very simple examples
