@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 
-# cwdaemon_client.pl - module with utility functions for cwdaemon
-# client applications
-#
+# Module with utility functions for cwdaemon client applications.
+
+
 # Copyright (C) 2012 Jenö Vágó  HA5SE
 # Copyright (C) 2012 - 2014 Kamil Ignacak
 #
@@ -61,7 +61,7 @@ sub receive
 	return  ($received_prefix, $received_text, undef);
     }
 
-   
+
     # At this point 'reply' may be an empty string.
     return ($received_prefix, $received_text, $received_postfix);
     #return (undef, $received_text, $received_postfix);
@@ -82,7 +82,7 @@ sub send_request_esc_h
     my $cwsocket            = shift;
     my $request_text        = shift;
     my $reply_expected_text = shift;
-    
+
     # Use "<ESC>h" request to define reply text that server should
     # send to client after playing a text from regular request.
     print $cwsocket chr(27) . "h" . $reply_expected_text;
@@ -108,7 +108,7 @@ sub send_request_caret
     # a. ask server to play given text, and
     # b. define reply text that server should send to client after
     # playing the text
-    
+
     # "^" after the text tells the server to use request text as a
     # reply text.
     print $cwsocket $request_text . '^';
