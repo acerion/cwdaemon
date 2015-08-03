@@ -1,8 +1,10 @@
 #!/usr/bin/perl
 
 
-# cwtest_esc2.pl - test script for cwdaemon
-# Copyright (C) 2012 - 2014 Kamil Ignacak
+# Test script for cwdaemon.
+
+
+# Copyright (C) 2015 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,14 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-#
 
 
-#
 # This script tests cwdaemon's responses to <ESC>2 escaped
 # request. The request is used to modify speed of sending Morse code
 # (wpm).
-#
 
 
 
@@ -37,7 +36,11 @@ use Getopt::Long;
 
 
 
+use cwdaemon::test::common;
 
+
+
+# Values are taken from libcw.h
 my $speed_min = 4;
 my $speed_max = 60;
 
@@ -51,8 +54,12 @@ my $cycle = 0;
 my $input_text = "p";
 
 
+my $delta = 1;   # Change (in wpm) per one step in a loop.
+
+
 my $result = GetOptions("cycles=i"     => \$cycles,
-			"input_text=s" => \$input_text)
+			"input_text=s" => \$input_text,
+			"delta=i"      => \$delta)
 
     or die "Problems with getting options: $@\n";
 
@@ -82,6 +89,8 @@ sub INT_handler
 $SIG{'INT'} = 'INT_handler';
 
 
+
+cwdaemon::test::common::set_initial_parameters($cwsocket);
 
 
 
@@ -124,7 +133,7 @@ $cwsocket->close();
 sub cwdaemon_test0
 {
     # Speed going from min to max
-    for (my $speed = $speed_min; $speed <= $speed_max; $speed++) {
+    for (my $speed = $speed_min; $speed <= $speed_max; $speed += $delta) {
 
 	print "    Setting speed $speed (up)\n";
 	print $cwsocket chr(27).'2'.$speed;
@@ -134,8 +143,8 @@ sub cwdaemon_test0
     }
 
 
-    # Speed going from max to mi
-    for (my $speed = $speed_max; $speed >= $speed_min; $speed--) {
+    # Speed going from max to min
+    for (my $speed = $speed_max; $speed >= $speed_min; $speed -= $delta) {
 
 	print "    Setting speed $speed (down)\n";
 	print $cwsocket chr(27).'2'.$speed;
