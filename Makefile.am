@@ -7,7 +7,8 @@ CLEANFILES =  *~
 CWDAEMON_EXAMPLE_FILES=README examples/example.pl examples/example.sh \
 	examples/example.c examples/Makefile.am examples/Makefile.in
 CWDAEMON_TEST_FILES=test/cwtest.pl test/cwdaemon/client.pm \
-	test/cwtest_esc2.pl
+	test/cwtest_esc2.pl test/cwtest_esc3.pl test/cwtest_escg.pl \
+	test/cwdaemon/test/common.pm
 CWDAEMON_PATCHES=patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.diff patches/cwdaemon-mt.patch
 CWDAEMON_SCHEMATICS_FILES=doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
 	doc/schematics/serialport_circuit.jpg doc/schematics/serialport_circuit.ps
