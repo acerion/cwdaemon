@@ -26,4 +26,4 @@ example_SOURCES = example.c
 # target-specific linker flags (objects to link)
 # example_LDADD =
 
-
+CLEANFILES = *~
