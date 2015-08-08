@@ -4,8 +4,11 @@ application interfacing cwdaemon.
 
 example.sh is the most simple one, using 'nc' to do the job - you can
 enter text from keyboard to send it to cwdaemon.
+Run the example script by calling it directly: ./example.sh
 
 example.c (accompanied by 'make' files) is an example program in C.
+Run the example program after compiling example.c file with "make"
+command by calling the program directly: ./example
 
 example.pl is an example script in Perl 5.
-
+Run the example script by calling it directly: ./example.pl
