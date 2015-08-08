@@ -1,5 +1,6 @@
 2015-08-08 Kamil Ignacak
 	* tests: adding test/cwtest_esc7.pl file with tests for <ESC>7
+	requests.  adding test/cwtest_escf.pl file with tests for <ESC>f
 	requests.
 
 2015-08-02 Kamil Ignacak
