@@ -39,28 +39,44 @@ use cwdaemon::test::common;
 
 
 
-# Values are taken from libcw.h
+# These two values are taken from libcw.h
 my $tone_min = 0;
 my $tone_max = 4000;
 
+my $tone_initial = 300;        # Initial valid value set before trying to set invalid values
+my $tone_invalid1 = -15;       # Simple invalid value
+my $tone_invalid2 = 4015;      # Simple invalid value
 
 
-# How many times to run a basic set of tests.
-my $cycles = 5;
+
+my $request_code = '3';   # Code of Escape request
+
+
+my $cycles = 5;           # How many times to run a basic set of tests.
 my $cycle = 0;
+my $input_text = "s";     # Text to be played
+my $delta = 50;           # Change (in Hz) per one step in a loop.
 
 
-my $input_text = "s";
-
-
-my $delta = 50;   # Change (in Hz) per one step in a loop.
+my $test_set = "vi";      # Set of tests: valid and invalid parameter values
 
 
 my $result = GetOptions("cycles=i"     => \$cycles,
-			"input_text=s" => \$input_text,
-			"delta=i"      => \$delta)
+			"input-text=s" => \$input_text,
+			"delta=i"      => \$delta,
+			"test-set=s"   => \$test_set)
 
     or die "Problems with getting options: $@\n";
+
+
+
+
+
+if (!($test_set =~ "v")
+    && !($test_set =~ "i")) {
+
+    exit;
+}
 
 
 
@@ -89,7 +105,7 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
-cwdaemon::test::common::set_initial_parameters($cwsocket);
+cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 
 
 
@@ -101,13 +117,19 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n";
 
-    print "Testing setting tone in valid range\n";
-    &cwdaemon_test0;
 
-    print "\n";
+    if ($test_set =~ "v") {
+	print "Testing setting tone in valid range\n";
+	&cwdaemon_test0;
 
-    print "Testing setting invalid values\n";
-    &cwdaemon_test1;
+	print "\n";
+    }
+
+
+    if ($test_set =~ "i") {
+	print "Testing setting tone in invalid range\n";
+	&cwdaemon_test1;
+    }
 }
 
 
@@ -135,7 +157,7 @@ sub cwdaemon_test0
     for (my $tone = $tone_min; $tone <= $tone_max; $tone += $delta) {
 
 	print "    Setting tone $tone (up)\n";
-	print $cwsocket chr(27).'3'.$tone;
+	print $cwsocket chr(27).$request_code.$tone;
 
 	print $cwsocket $input_text."^";
 	my $reply = <$cwsocket>;
@@ -146,7 +168,7 @@ sub cwdaemon_test0
     for (my $tone = $tone_max; $tone >= $tone_min; $tone -= $delta) {
 
 	print "    Setting tone $tone (down)\n";
-	print $cwsocket chr(27).'3'.$tone;
+	print $cwsocket chr(27).$request_code.$tone;
 
 	print $cwsocket $input_text."^";
 	my $reply = <$cwsocket>;
@@ -162,74 +184,30 @@ sub cwdaemon_test0
 # Testing setting invalid values of <ESC>3 request
 sub cwdaemon_test1
 {
-    my $valid_tone = 300;
-
-    # First set a valid tone
-    print "    Setting initial valid tone $valid_tone\n";
-    print $cwsocket chr(27).'3'.$valid_tone;
-
-    print $cwsocket $input_text."^";
-    my $reply = <$cwsocket>;
+    # Set an initial valid value as a preparation
+    cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $tone_initial);
 
 
+    # Try setting a simple invalid value
+    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $tone_invalid1);
 
 
-    # Then try to set tone that is too low
-    my $invalid_tone = $tone_min - 1;
-
-    print "    Trying to set invalid low tone $invalid_tone\n";
-    print $cwsocket chr(27).'3'.$invalid_tone;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
+    # Try setting a simple invalid value
+    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $tone_invalid2);
 
 
+    # Try setting value that is a bit too low and then value that is a
+    # bit too high
+    cwdaemon::test::common::esc_set_min1_max1_send($cwsocket, $request_code, $input_text, $tone_min, $tone_max);
 
 
-    # Then try to set tone that is too low
-    $invalid_tone = $tone_max + 1;
-
-    print "    Trying to set invalid high tone $invalid_tone\n";
-    print $cwsocket chr(27).'3'.$invalid_tone;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
+    # Try setting 'out of range' long values
+    cwdaemon::test::common::esc_set_oor_long_send($cwsocket, $request_code, $input_text);
 
 
+    # Try setting 'not a number' values
+    cwdaemon::test::common::esc_set_nan_send($cwsocket, $request_code, $input_text);
 
-
-    # Try to set totally invalid tone
-    $invalid_tone = -1;
-
-    print "    Trying to set negative tone $invalid_tone\n";
-    print $cwsocket chr(27).'3'.$invalid_tone;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
-
-
-
-
-    # Another attempt at totally invalid tone
-    $invalid_tone = $tone_max * 100000;
-
-    print "    Trying to set very large tone $invalid_tone\n";
-    print $cwsocket chr(27).'3'.$invalid_tone;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
-
-
-
-
-    # Now something that is not a number
-    $invalid_tone = "k";
-
-    print "    Trying to set completely invalid value $invalid_tone\n";
-    print $cwsocket chr(27).'3'.$invalid_tone;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
 
     return;
 }

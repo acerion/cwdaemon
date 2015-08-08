@@ -40,28 +40,44 @@ use cwdaemon::test::common;
 
 
 
-# Values are taken from libcw.h
+# These two values are taken from libcw.h
 my $speed_min = 4;
 my $speed_max = 60;
 
+my $speed_initial = 10;        # Initial valid value set before trying to set invalid values
+my $speed_invalid1 = 0;        # Simple invalid value
+my $speed_invalid2 = -1;       # Simple invalid value
 
 
-# How many times to run a basic set of tests.
-my $cycles = 5;
+
+my $request_code = '2';   # Code of Escape request
+
+
+my $cycles = 5;           # How many times to run a basic set of tests.
 my $cycle = 0;
+my $input_text = "p";     # Text to be played.
+my $delta = 1;            # Change (in wpm) per one step in a loop.
 
 
-my $input_text = "p";
-
-
-my $delta = 1;   # Change (in wpm) per one step in a loop.
+my $test_set = "vi";      # Set of tests: valid and invalid parameter values
 
 
 my $result = GetOptions("cycles=i"     => \$cycles,
-			"input_text=s" => \$input_text,
-			"delta=i"      => \$delta)
+			"input-text=s" => \$input_text,
+			"delta=i"      => \$delta,
+			"test-set=s"   => \$test_set)
 
     or die "Problems with getting options: $@\n";
+
+
+
+
+
+if (!($test_set =~ "v")
+    && !($test_set =~ "i")) {
+
+    exit;
+}
 
 
 
@@ -90,7 +106,7 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
-cwdaemon::test::common::set_initial_parameters($cwsocket);
+cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 
 
 
@@ -102,13 +118,19 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n";
 
-    print "Testing setting speed in valid range\n";
-    &cwdaemon_test0;
 
-    print "\n";
+    if ($test_set =~ "v") {
+	print "Testing setting speed in valid range\n";
+	&cwdaemon_test0;
 
-    print "Testing setting invalid values\n";
-    &cwdaemon_test1;
+	print "\n";
+    }
+
+
+    if ($test_set =~ "i") {
+	print "Testing setting speed in invalid range\n";
+	&cwdaemon_test1;
+    }
 }
 
 
@@ -136,7 +158,7 @@ sub cwdaemon_test0
     for (my $speed = $speed_min; $speed <= $speed_max; $speed += $delta) {
 
 	print "    Setting speed $speed (up)\n";
-	print $cwsocket chr(27).'2'.$speed;
+	print $cwsocket chr(27).$request_code.$speed;
 
 	print $cwsocket $input_text."^";
 	my $reply = <$cwsocket>;
@@ -147,7 +169,7 @@ sub cwdaemon_test0
     for (my $speed = $speed_max; $speed >= $speed_min; $speed -= $delta) {
 
 	print "    Setting speed $speed (down)\n";
-	print $cwsocket chr(27).'2'.$speed;
+	print $cwsocket chr(27).$request_code.$speed;
 
 	print $cwsocket $input_text."^";
 	my $reply = <$cwsocket>;
@@ -163,87 +185,30 @@ sub cwdaemon_test0
 # Testing setting invalid values of <ESC>2 request
 sub cwdaemon_test1
 {
-    my $valid_speed = 10;
-
-    # First set a valid speed
-    print "    Setting initial valid speed $valid_speed\n";
-    print $cwsocket chr(27).'2'.$valid_speed;
-
-    print $cwsocket $input_text."^";
-    my $reply = <$cwsocket>;
+    # Set an initial valid value as a preparation
+    cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $speed_initial);
 
 
+    # Try setting a simple invalid value
+    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $speed_invalid1);
 
 
-    # Then try to set speed that is too low
-    my $invalid_speed = $speed_min - 1;
-
-    print "    Trying to set invalid low speed $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
+    # Try setting a simple invalid value
+    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $speed_invalid2);
 
 
+    # Try setting value that is a bit too low and then value that is a
+    # bit too high
+    cwdaemon::test::common::esc_set_min1_max1_send($cwsocket, $request_code, $input_text, $speed_min, $speed_max);
 
 
-    # Then try to set speed that is too low
-    $invalid_speed = $speed_max + 1;
-
-    print "    Trying to set invalid high speed $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
+    # Try setting 'out of range' long values
+    cwdaemon::test::common::esc_set_oor_long_send($cwsocket, $request_code, $input_text);
 
 
+    # Try setting 'not a number' values
+    cwdaemon::test::common::esc_set_nan_send($cwsocket, $request_code, $input_text);
 
-
-    # Try to set a special case: zero (well, nothing really special
-    # there, it's just an interesting value, let's see what happens).
-    $invalid_speed = 0;
-
-    print "    Trying to set zero speed $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
-
-
-
-
-    # Try to set totally invalid speed
-    $invalid_speed = -1;
-
-    print "    Trying to set negative speed $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
-
-
-
-
-    # Another attempt at totally invalid speed
-    $invalid_speed = $speed_max * 100000;
-
-    print "    Trying to set very large speed $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
-
-
-
-
-    # Now something that is not a number
-    $invalid_speed = "k";
-
-    print "    Trying to set completely invalid value $invalid_speed\n";
-    print $cwsocket chr(27).'2'.$invalid_speed;
-
-    print $cwsocket $input_text."^";
-    $reply = <$cwsocket>;
 
     return;
 }
