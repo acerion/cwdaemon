@@ -262,6 +262,11 @@ top_srcdir = @top_srcdir@
 
 # source code files used to build example program
 example_SOURCES = example.c
+# target-specific preprocessor flags (#defs and include dirs)
+# example_CPPFLAGS =
+# target-specific linker flags (objects to link)
+# example_LDADD =
+CLEANFILES = *~
 all: all-am
 
 .SUFFIXES:
@@ -434,6 +439,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -526,10 +532,6 @@ uninstall-am:
 	mostlyclean-generic pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am
 
-# target-specific preprocessor flags (#defs and include dirs)
-# example_CPPFLAGS =
-# target-specific linker flags (objects to link)
-# example_LDADD =
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
