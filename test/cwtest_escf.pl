@@ -93,7 +93,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
     print "\n";
 
 
-    print "Testing switching audio systems\n";
+    print "Testing switching sound systems\n";
     &cwdaemon_test0;
 
     print "\n";
@@ -117,7 +117,7 @@ $cwsocket->close();
 
 
 
-# Testing setting audio systems
+# Testing setting sound systems
 sub cwdaemon_test0
 {
     # Volume going from min to max
