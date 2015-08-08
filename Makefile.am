@@ -2,7 +2,11 @@ SUBDIRS=src doc examples
 
 AM_CFLAGS = @UNIXCW_CFLAGS@
 
-CLEANFILES = *~
+CLEANFILES = *~ \
+	./test/*~ \
+	./test/cwdaemon/*~ \
+	./test/cwdaemon/test/*~
+
 
 CWDAEMON_EXAMPLE_FILES=README \
 	examples/example.pl \
