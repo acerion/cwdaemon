@@ -19,6 +19,7 @@ CWDAEMON_TEST_FILES=test/cwtest.pl \
 	test/cwtest_esc7.pl \
 	test/cwtest_escf.pl \
 	test/cwtest_escg.pl \
+	test/cwtest_short_space.pl \
 	test/cwdaemon/client.pm \
 	test/cwdaemon/test/common.pm
 
