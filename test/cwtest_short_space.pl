@@ -5,7 +5,9 @@
 # 
 # This script checks if cwdaemon is linking to libcw version that is
 # affected by "short space" problem. This problem results in cwdaemon
-# hanging on space character sent in some circumstance.
+# hanging on space character sent in some circumstance. The fix for
+# this problem should be implemented in libcw, the test only checks
+# that libcw has this fix implemented.
 
 
 # Copyright (C) 2015 Kamil Ignacak
