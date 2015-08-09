@@ -1,3 +1,10 @@
+2015-08-09 Kamil Ignacak
+	* tests: adding test/cwtest_short_space.pl test file checking for
+	"short space" problem in libcw. The problem causes cwdaemon to
+	hang on space character in some circumstances. The fix for this
+	problem should be implemented in libcw, the test only checks that
+	libcw has this fix implemented.
+
 2015-08-08 Kamil Ignacak
 	* tests: adding test/cwtest_esc7.pl file with tests for <ESC>7
 	requests.  adding test/cwtest_escf.pl file with tests for <ESC>f
