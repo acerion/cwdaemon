@@ -18,6 +18,7 @@ CWDAEMON_TEST_FILES=test/cwtest.pl \
 	test/cwtest_esc3.pl \
 	test/cwtest_esc5.pl test/cwtest_esc5.sh \
 	test/cwtest_esc7.pl \
+	test/cwtest_escd.pl \
 	test/cwtest_escf.pl \
 	test/cwtest_escg.pl \
 	test/cwtest_short_space.pl \
@@ -67,5 +68,3 @@ rpm: Makefile
 	make dist
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
-
-
