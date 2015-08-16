@@ -78,20 +78,17 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
-cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-
 
 
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-
     print "Cycle $cycle/$cycles\n";
-
     print "\n";
 
 
     print "Testing switching sound systems\n";
+    cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
     &cwdaemon_test0;
 
     print "\n";
@@ -118,7 +115,6 @@ $cwsocket->close();
 # Testing setting sound systems
 sub cwdaemon_test0
 {
-    # Volume going from min to max
     foreach my $s (split(//, $sound_systems)) {
 
 	print "    Setting sound system \"$s\"\n";
