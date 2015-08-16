@@ -89,7 +89,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "Testing switching keying devices\n";
     cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-    &cwdaemon_test0;
+    &cwdaemon_test;
 
     print "\n";
 }
@@ -113,7 +113,7 @@ $cwsocket->close();
 
 
 # Testing setting keying devices
-sub cwdaemon_test0
+sub cwdaemon_test
 {
     foreach my $d (split(/,/, $devices)) {
 

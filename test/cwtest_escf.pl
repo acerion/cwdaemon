@@ -89,7 +89,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "Testing switching sound systems\n";
     cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-    &cwdaemon_test0;
+    &cwdaemon_test;
 
     print "\n";
 }
@@ -113,7 +113,7 @@ $cwsocket->close();
 
 
 # Testing setting sound systems
-sub cwdaemon_test0
+sub cwdaemon_test
 {
     foreach my $s (split(//, $sound_systems)) {
 

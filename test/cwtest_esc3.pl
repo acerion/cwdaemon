@@ -116,7 +116,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
     if ($test_set =~ "v") {
 	print "Testing setting tone in valid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-	&cwdaemon_test0;
+	&cwdaemon_test_valid;
 
 	print "\n";
     }
@@ -125,7 +125,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
     if ($test_set =~ "i") {
 	print "Testing setting tone in invalid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-	&cwdaemon_test1;
+	&cwdaemon_test_invalid;
     }
 }
 
@@ -148,7 +148,7 @@ $cwsocket->close();
 
 
 # Testing setting tone in valid range
-sub cwdaemon_test0
+sub cwdaemon_test_valid
 {
     # Tone going from min to max
     for (my $tone = $tone_min; $tone <= $tone_max; $tone += $delta) {
@@ -179,7 +179,7 @@ sub cwdaemon_test0
 
 
 # Testing setting invalid values of <ESC>3 request
-sub cwdaemon_test1
+sub cwdaemon_test_invalid
 {
     # Set an initial valid value as a preparation
     cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $tone_initial);

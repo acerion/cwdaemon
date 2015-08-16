@@ -115,7 +115,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
     if ($test_set =~ "v") {
 	print "Testing setting volume in valid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-	&cwdaemon_test0;
+	&cwdaemon_test_valid;
 
 	print "\n";
     }
@@ -124,7 +124,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
     if ($test_set =~ "i") {
 	print "Testing setting volume in invalid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-	&cwdaemon_test1;
+	&cwdaemon_test_invalid;
     }
 }
 
@@ -147,7 +147,7 @@ $cwsocket->close();
 
 
 # Testing setting volume in valid range
-sub cwdaemon_test0
+sub cwdaemon_test_valid
 {
     # Volume going from min to max
     for (my $volume = $volume_min; $volume <= $volume_max; $volume += $delta) {
@@ -178,7 +178,7 @@ sub cwdaemon_test0
 
 
 # Testing setting invalid values of <ESC>g request
-sub cwdaemon_test1
+sub cwdaemon_test_invalid
 {
     # Set an initial valid value as a preparation
     cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $volume_initial);
