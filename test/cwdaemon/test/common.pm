@@ -61,6 +61,10 @@ sub esc_set_initial_parameters
     print "    Setting initial weight $initial_weight\n";
     print $cwsocket chr(27).'7'.$initial_weight;
 
+    my $initial_delay = 0;      # As in cwdaemon.c
+    print "    Setting initial delay $initial_delay\n";
+    print $cwsocket chr(27).'d'.$initial_delay;
+
     return;
 }
 
@@ -158,6 +162,65 @@ sub esc_set_oor_long_send
     print $cwsocket $input_text."^";
     $reply = <$cwsocket>;
 
+
+
+    return;
+}
+
+
+
+
+
+# Try setting invalid, float values of integer parameter
+#
+# cwdaemon reads values of some escaped requests (speed, tone,
+# weighting and some other) as "long int". Try to see what happens
+# when values sent to cwdaemon are float numbers.
+#
+# Notice that all sent values have non-zero part after decimal
+# point. These will be rejected.
+#
+# Any string representing float value with all zeros after decimal
+# point will be accepted.  TODO: perhaps there should be a test for
+# this case.
+sub esc_set_invalid_float_send
+{
+    my $cwsocket = shift;
+    my $request_code = shift;
+    my $input_text = shift;
+
+
+    my $n_floats = 30;
+    my $invalid_value = 0.01;
+
+    for (my $f = 0; $f < $n_floats; $f++) {
+
+	my $invalid_string = sprintf("%f", $invalid_value);
+
+	print "    Trying to set positive float value $invalid_string\n";
+	print $cwsocket chr(27).$request_code.$invalid_string;
+
+	print $cwsocket $input_text."^";
+	my $reply = <$cwsocket>;
+
+	$invalid_value *= 3.1;
+    }
+
+
+    $invalid_value = -0.01;
+
+    for (my $f = 0; $f < $n_floats; $f++) {
+
+	my $invalid_string = sprintf("%f", $invalid_value);
+
+	print "    Trying to set negative float value $invalid_string\n";
+	print $cwsocket chr(27).$request_code.$invalid_string;
+
+	print $cwsocket $input_text."^";
+	my $reply = <$cwsocket>;
+
+	$invalid_value *= 3.1;
+    }
 
 
     return;
