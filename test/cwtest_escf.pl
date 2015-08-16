@@ -44,7 +44,7 @@ my $request_code = 'f';       # Code of Escape request
 my $cycles = 5;               # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";         # Text to be played
-my $sound_systems = "ncaops"; # None, Console, Alsa, OSS, PulseAudio, Soundcard
+my $sound_systems = "ncaopsi"; # None, Console, Alsa, OSS, PulseAudio, Soundcard, invalid
 
 
 my $result = GetOptions("cycles=i"         => \$cycles,
