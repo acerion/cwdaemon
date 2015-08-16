@@ -103,21 +103,18 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
-cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-
 
 
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-
     print "Cycle $cycle/$cycles\n";
-
     print "\n";
 
 
     if ($test_set =~ "v") {
 	print "Testing setting volume in valid range\n";
+	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test0;
 
 	print "\n";
@@ -126,6 +123,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     if ($test_set =~ "i") {
 	print "Testing setting volume in invalid range\n";
+	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test1;
     }
 }
@@ -201,6 +199,10 @@ sub cwdaemon_test1
 
     # Try setting 'out of range' long values
     cwdaemon::test::common::esc_set_oor_long_send($cwsocket, $request_code, $input_text);
+
+
+    # Try setting invalid float values
+    cwdaemon::test::common::esc_set_invalid_float_send($cwsocket, $request_code, $input_text);
 
 
     # Try setting 'not a number' values
