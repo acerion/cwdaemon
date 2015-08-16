@@ -42,7 +42,6 @@ use cwdaemon::test::common;
 my $delay_min = 0;
 my $delay_max = 50;
 
-my $delay_initial = 0;         # Initial valid value set before trying to set invalid values
 my $delay_invalid1 = -5;       # Simple invalid value
 my $delay_invalid2 = 99;       # Simple invalid value
 
@@ -104,22 +103,24 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
-cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
-
 
 
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-
     print "Cycle $cycle/$cycles\n";
-
     print "\n";
 
 
     if ($test_set =~ "v") {
 	print "Testing setting PTT delay in valid range\n";
-	&cwdaemon_test0;
+
+	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
+
+	print "\n";
+	sleep 1;
+
+	&cwdaemon_test_valid;
 
 	print "\n";
     }
@@ -127,7 +128,13 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     if ($test_set =~ "i") {
 	print "Testing setting PTT delay in invalid range\n";
-	&cwdaemon_test1;
+
+	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
+
+	print "\n";
+	sleep 1;
+
+	&cwdaemon_test_invalid;
     }
 }
 
@@ -150,7 +157,7 @@ $cwsocket->close();
 
 
 # Testing setting PTT delay in valid range
-sub cwdaemon_test0
+sub cwdaemon_test_valid
 {
     # PTT delay going from min to max
     for (my $delay = $delay_min; $delay <= $delay_max; $delay += $delta) {
@@ -181,12 +188,8 @@ sub cwdaemon_test0
 
 
 # Testing setting invalid values of <ESC>d request
-sub cwdaemon_test1
+sub cwdaemon_test_invalid
 {
-    # Set an initial valid value as a preparation
-    cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $delay_initial);
-
-
     # Try setting a simple invalid value
     cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $delay_invalid1);
 
@@ -202,6 +205,10 @@ sub cwdaemon_test1
 
     # Try setting 'out of range' long values
     cwdaemon::test::common::esc_set_oor_long_send($cwsocket, $request_code, $input_text);
+
+
+    # Try setting invalid float values
+    cwdaemon::test::common::esc_set_invalid_float_send($cwsocket, $request_code, $input_text);
 
 
     # Try setting 'not a number' values
