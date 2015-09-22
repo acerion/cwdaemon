@@ -1209,7 +1209,14 @@ int cwdaemon_receive(void)
 		}
 		return 1;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "escaped request: \"%s\"", request_buffer);
+		/* Don't print literal escape value, use <ESC>
+		   symbol. First reason is that the literal value
+		   doesn't look good in console (some non-printable
+		   glyph), second reason is that printing <ESC>c to
+		   terminal makes funny things with the lines already
+		   printed to the terminal (tested in xfce4-terminal
+		   and xterm). */
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "escaped request: \"<ESC>%s\"", request_buffer + 1);
 		cwdaemon_handle_escaped_request(request_buffer);
 		return 0;
 	}
@@ -1386,7 +1393,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			if (rv == 0) {
 				/* Value totally invalid. */
 				cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-					       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+					       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
 					       request + 2,
 					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			} else if (rv == 1) {
@@ -1842,7 +1849,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 					   strict, and accept only
 					   fully valid optarg. */
 					cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-						       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+						       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
 						       optarg,
 						       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 					exit(EXIT_FAILURE);
@@ -1939,7 +1946,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 			   are very strict, and accept only fully
 			   valid optarg. */
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-				       "invalid requested PTT delay [ms]: \"%s\" (should be between %d and %d inclusive)",
+				       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
 				       optarg,
 				       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			exit(EXIT_FAILURE);
@@ -2036,7 +2043,7 @@ bool cwdaemon_params_priority(int *priority, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested process priority: \"%s\" (should be between -20 and 20 inclusive)",
+			       "invalid requested process priority: \"%s\" (should be integer between -20 and 20 inclusive)",
 			       optarg);
 		return false;
 	} else {
@@ -2053,7 +2060,7 @@ bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
-			       "invalid requested morse speed [wpm]: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested morse speed [wpm]: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg, CW_SPEED_MIN, CW_SPEED_MAX);
 		return false;
 	} else {
@@ -2072,7 +2079,7 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 	/* TODO: replace cwdaemon_get_long() with cwdaemon_get_uint32() */
 	if (!cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > CWDAEMON_TUNE_SECONDS_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
-			       "invalid requested tuning time [s]: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested tuning time [s]: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg, 0, CWDAEMON_TUNE_SECONDS_MAX);
 		return false;
 	} else {
@@ -2125,7 +2132,7 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT delay [ms]: \"%s\" (should be integer value between %d and %d inclusive)",
+			       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg,
 			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 
@@ -2174,7 +2181,7 @@ bool cwdaemon_params_volume(int *volume, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested volume [%%]: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested volume [%%]: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
 		return false;
 	} else {
@@ -2198,7 +2205,7 @@ bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested weighting: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested weighting: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
 		return false;
 	} else {
@@ -2215,7 +2222,7 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested tone [Hz]: \"%s\" (should be between %d and %d inclusive)",
+			       "invalid requested tone [Hz]: \"%s\" (should be integer between %d and %d inclusive)",
 			       optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
 		return false;
 	} else {
