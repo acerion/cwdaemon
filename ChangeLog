@@ -1,3 +1,7 @@
+2015-09-22 Kamil Ignacak
+	* tests: small improvements after next round of running test
+	scripts.
+
 2015-08-10 Kamil Ignacak
 	* test: adding test/cwtest_esc5.{pl|sh} files that are used to
 	test cwdaemon's response to <Esc>5 escape request (asking cwdaemon
