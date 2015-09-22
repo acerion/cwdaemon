@@ -89,7 +89,7 @@ for (my $i = 0; $i < $cycles; $i++) {
 
 
 
-
+print("\nThe end. Asking cwdaemon to exit...\n");
 # Exit cwdaemon (Escaped request '5').
 print $cwsocket chr(27).'5';
 
