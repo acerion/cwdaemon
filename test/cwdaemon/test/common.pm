@@ -190,7 +190,7 @@ sub esc_set_invalid_float_send
     my $input_text = shift;
 
 
-    my $n_floats = 30;
+    my $n_floats = 15;
     my $invalid_value = 0.01;
 
     for (my $f = 0; $f < $n_floats; $f++) {
