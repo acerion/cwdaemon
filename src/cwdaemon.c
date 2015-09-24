@@ -2004,7 +2004,7 @@ bool cwdaemon_params_cwdevice(const char *optarg)
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 		       "requested cwdevice \"%s\"", optarg);
 
-	if (!cwdaemon_cwdevice_set(&global_cwdevice, optarg) == -1) {
+	if (!cwdaemon_cwdevice_set(&global_cwdevice, optarg)) {
 		return false;
 	} else {
 		return true;
@@ -2793,7 +2793,7 @@ bool cwdaemon_cwdevices_init(void)
 #elif defined HAVE_DEV_PPBUS_PPI_H    /* FreeBSD (ppbus/ppi). */
 	cwdevice_lp.desc = strdup("ppi0");
 #else                                 /* FIXME: where is OpenBSD? */
-	cwdevice_lp.desc = NULL;
+
 #endif
 
 
@@ -2840,10 +2840,12 @@ void cwdaemon_cwdevices_free(void)
 		cwdevice_null.desc = NULL;
 	}
 
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 	if (cwdevice_lp.desc) {
 		free(cwdevice_lp.desc);
 		cwdevice_lp.desc = NULL;
 	}
+#endif
 
 	return;
 }
