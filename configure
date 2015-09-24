@@ -626,8 +626,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-UNIXCW_LIBS
-UNIXCW_CFLAGS
+LIBCW_LIBS
+LIBCW_CFLAGS
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
@@ -739,8 +739,8 @@ CPP
 PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
-UNIXCW_CFLAGS
-UNIXCW_LIBS'
+LIBCW_CFLAGS
+LIBCW_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1379,9 +1379,9 @@ Some influential environment variables:
               directories to add to pkg-config's search path
   PKG_CONFIG_LIBDIR
               path overriding pkg-config's built-in search path
-  UNIXCW_CFLAGS
-              C compiler flags for UNIXCW, overriding pkg-config
-  UNIXCW_LIBS linker flags for UNIXCW, overriding pkg-config
+  LIBCW_CFLAGS
+              C compiler flags for LIBCW, overriding pkg-config
+  LIBCW_LIBS  linker flags for LIBCW, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -5875,18 +5875,6 @@ fi
 done
 
 
-for ac_header in libcw.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "libcw.h" "ac_cv_header_libcw_h" "$ac_includes_default"
-if test "x$ac_cv_header_libcw_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCW_H 1
-_ACEOF
-
-fi
-
-done
-
 #AC_CHECK_HEADERS(sys/soundcard.h soundcard.h)
 #if test "$ac_cv_header_sys_soundcard_h" = 'no' \
 #	       && test "$ac_cv_header_soundcard_h" == 'no'; then
@@ -6315,11 +6303,11 @@ $as_echo "no" >&6; }
 fi
 
 pkg_failed=no
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for UNIXCW" >&5
-$as_echo_n "checking for UNIXCW... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBCW" >&5
+$as_echo_n "checking for LIBCW... " >&6; }
 
-if test -n "$UNIXCW_CFLAGS"; then
-    pkg_cv_UNIXCW_CFLAGS="$UNIXCW_CFLAGS"
+if test -n "$LIBCW_CFLAGS"; then
+    pkg_cv_LIBCW_CFLAGS="$LIBCW_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 5\""; } >&5
@@ -6327,7 +6315,7 @@ if test -n "$UNIXCW_CFLAGS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_CFLAGS=`$PKG_CONFIG --cflags "libcw >= 5" 2>/dev/null`
+  pkg_cv_LIBCW_CFLAGS=`$PKG_CONFIG --cflags "libcw >= 5" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6335,8 +6323,8 @@ fi
  else
     pkg_failed=untried
 fi
-if test -n "$UNIXCW_LIBS"; then
-    pkg_cv_UNIXCW_LIBS="$UNIXCW_LIBS"
+if test -n "$LIBCW_LIBS"; then
+    pkg_cv_LIBCW_LIBS="$LIBCW_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw >= 5\""; } >&5
@@ -6344,7 +6332,7 @@ if test -n "$UNIXCW_LIBS"; then
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_UNIXCW_LIBS=`$PKG_CONFIG --libs "libcw >= 5" 2>/dev/null`
+  pkg_cv_LIBCW_LIBS=`$PKG_CONFIG --libs "libcw >= 5" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -6365,47 +6353,34 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcw >= 5" 2>&1`
+	        LIBCW_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcw >= 5" 2>&1`
         else
-	        UNIXCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcw >= 5" 2>&1`
+	        LIBCW_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcw >= 5" 2>&1`
         fi
 	# Put the nasty error message in config.log where it belongs
-	echo "$UNIXCW_PKG_ERRORS" >&5
+	echo "$LIBCW_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libcw >= 5) were not met:
-
-$UNIXCW_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables UNIXCW_CFLAGS
-and UNIXCW_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find libcw pkgconfig information - unable to build cwdaemon" >&5
+$as_echo "$as_me: WARNING: Cannot find libcw pkgconfig information - unable to build cwdaemon" >&2;}
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables UNIXCW_CFLAGS
-and UNIXCW_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find libcw pkgconfig information - unable to build cwdaemon" >&5
+$as_echo "$as_me: WARNING: Cannot find libcw pkgconfig information - unable to build cwdaemon" >&2;}
 else
-	UNIXCW_CFLAGS=$pkg_cv_UNIXCW_CFLAGS
-	UNIXCW_LIBS=$pkg_cv_UNIXCW_LIBS
+	LIBCW_CFLAGS=$pkg_cv_LIBCW_CFLAGS
+	LIBCW_LIBS=$pkg_cv_LIBCW_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
+
+
+			   { $as_echo "$as_me:${as_lineno-$LINENO}: result:     libcw CLFAGS is ${LIBCW_CFLAGS}" >&5
+$as_echo "    libcw CLFAGS is ${LIBCW_CFLAGS}" >&6; }
+			   { $as_echo "$as_me:${as_lineno-$LINENO}: result:     libcw LIBS is ${LIBCW_LIBS}" >&5
+$as_echo "    libcw LIBS is ${LIBCW_LIBS}" >&6; }
+
 fi
-
-
 
 
 ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec"

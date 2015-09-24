@@ -113,7 +113,8 @@ am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 	cwdaemon-lp.$(OBJEXT) cwdaemon-ttys.$(OBJEXT) \
 	cwdaemon-null.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
-cwdaemon_DEPENDENCIES =
+am__DEPENDENCIES_1 =
+cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -200,6 +201,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBCW_CFLAGS = @LIBCW_CFLAGS@
+LIBCW_LIBS = @LIBCW_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -222,8 +225,6 @@ RPMBUILD = @RPMBUILD@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-UNIXCW_CFLAGS = @UNIXCW_CFLAGS@
-UNIXCW_LIBS = @UNIXCW_LIBS@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -271,9 +272,9 @@ top_srcdir = @top_srcdir@
 # source code files used to build cwdaemon program
 cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c null.c
 # target-specific preprocessor flags (#defs and include dirs)
-cwdaemon_CPPFLAGS = -I$(top_srcdir)/src/
+cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} #-I$(top_srcdir)/src/
 # target-specific linker flags (objects to link)
-cwdaemon_LDADD = @UNIXCW_LIBS@
+cwdaemon_LDADD = ${LIBCW_LIBS}
 all: all-am
 
 .SUFFIXES:
