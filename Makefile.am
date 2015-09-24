@@ -1,6 +1,6 @@
 SUBDIRS=src doc examples
 
-AM_CFLAGS = @UNIXCW_CFLAGS@
+#AM_CFLAGS = @UNIXCW_CFLAGS@
 
 CLEANFILES = *~ \
 	./test/*~ \
