@@ -33,7 +33,6 @@ dev/ppbus/ppi.h sys/stat.h])
 # getopt_long()
 AC_CHECK_HEADERS([getopt.h])
 
-AC_CHECK_HEADERS(libcw.h)
 #AC_CHECK_HEADERS(sys/soundcard.h soundcard.h)
 #if test "$ac_cv_header_sys_soundcard_h" = 'no' \
 #	       && test "$ac_cv_header_soundcard_h" == 'no'; then
@@ -65,9 +64,13 @@ fi
 CFLAGS="${CFLAGS} -std=c99"
 
 
-PKG_CHECK_MODULES(UNIXCW, [libcw >= 5])
-AC_SUBST(UNIXCW_CFLAGS)
-AC_SUBST(UNIXCW_LIBS)
+PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
+			   AC_SUBST(LIBCW_CFLAGS)
+			   AC_SUBST(LIBCW_LIBS)
+			   AC_MSG_RESULT([    libcw CLFAGS is ${LIBCW_CFLAGS}])
+			   AC_MSG_RESULT([    libcw LIBS is ${LIBCW_LIBS}])
+			   ],
+			   [AC_MSG_WARN([Cannot find libcw pkgconfig information - unable to build cwdaemon])])
 
 
 AC_OUTPUT([Makefile
