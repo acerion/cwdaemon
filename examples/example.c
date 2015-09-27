@@ -313,7 +313,7 @@ int main(int argc, char **argv)
 
 	printf("test message abort\n");
 	result = netkeyer(K_MESSAGE, "paris paris");
-	sleep(1.2);
+	sleep(1);
 	result = netkeyer(K_ABORT, "");
 	sleep(1);
 
