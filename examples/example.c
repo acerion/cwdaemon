@@ -345,14 +345,14 @@ int main(int argc, char **argv)
 	result = netkeyer(K_PTT, "1");
 	result = netkeyer(K_MESSAGE, "paris");
 	sleep(2);
-	result = netkeyer(K_PTT, "");
+	result = netkeyer(K_PTT, "0");
 
 	printf("same with different TOD\n");
 	result = netkeyer(K_TOD, "20");
 	result = netkeyer(K_PTT, "1");
 	result = netkeyer(K_MESSAGE, "paris");
 	sleep(2);
-	result = netkeyer(K_PTT, "");
+	result = netkeyer(K_PTT, "0");
 	result = netkeyer(K_TOD, "0");
 
 	/* almost done, reset keyer */
@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 	result = netkeyer(K_RESET, "");
 
 
-	printf("test message abort with SIGALRM");
+	printf("test message abort with SIGALRM\n");
 	signal(SIGALRM, catchint);
 	result = netkeyer(K_MESSAGE, "paris paris");
 	alarm(2);
