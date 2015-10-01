@@ -1,7 +1,22 @@
-cwdaemon 0.10.1 / 2015.06.26
+cwdaemon 0.10.2 / 2015.10.XX
 
-Copying the repository to github.com. github will be now the new home
-of cwdaemon.
+New release. Changes since previous release:
+
+* Copying the repository to github.com. github will be now the new
+  home of cwdaemon.
+
+* Testing against libcw 6.5.1 from unixcw 3.5.0.
+
+* Compiling and testing on following platforms:
+ - Debian GNU/Linux 8 jessie/sid, x86_64, gcc 4.9.2;
+ - Alpine Linux 3.1, x86_64, gcc 4.8.3, musl 1.1.5;
+ - FreeBSD 10.0, x86_64, clang 3.3;
+
+* Fixing compilation error found during tests on Alpine Linux.
+
+* Improving test sets (test/ directory).
+
+* Improving examples of interfacing cwdaemon (examples/ directory).
 
 
 ----
