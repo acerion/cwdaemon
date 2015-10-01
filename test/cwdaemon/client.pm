@@ -5,7 +5,7 @@
 
 
 # Copyright (C) 2012 Jenö Vágó  HA5SE
-# Copyright (C) 2012 - 2014 Kamil Ignacak
+# Copyright (C) 2012 - 2015 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
