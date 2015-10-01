@@ -1,7 +1,7 @@
-You will need to have the the libcw6.1.1 development libraries and
-headers installed to install cwdaemon 0.10.1.
+You will need to have the the libcw6 library and header files
+installed to compile and install cwdaemon 0.10.2.
 
-libcw6.1.1 is a part of unicw-3.3.1 package which can be found here:
+libcw is a part of unicw package which can be found here:
 http://unixcw.sourceforge.net/
 
 After installing libcw6 development files do:
@@ -9,6 +9,9 @@ After installing libcw6 development files do:
 1: ./configure
 2: make
 3: make install (as root)
+
+Before doing step 1, you may need to update your PKG_CONFIG_PATH
+environment variable so that it contains location of libcw.pc file.
 
 The cwdaemon program is installed in /usr/local/sbin.
 
