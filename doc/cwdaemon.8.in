@@ -1,4 +1,4 @@
-.TH CWDAEMON 8 "Morse daemon" "ver. 0.10.1"
+.TH CWDAEMON 8 "Morse daemon" "ver. 0.10.2"
 
 .SH NAME
 cwdaemon \- morse daemon for the serial or parallel port
