@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(cwdaemon, 0.10.1, acerion@wp.pl)
+AC_INIT(cwdaemon, 0.10.2, acerion@wp.pl)
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CONFIG_SRCDIR([src/cwdaemon.c])
