@@ -1,3 +1,11 @@
+cwdaemon (0.10.2-1) unstable; urgency=low
+
+  * New version of upstream package that includes improved test sets
+    and that was tested against most recent libcw (libcw 6.5.1 from
+    unixcw 3.5.0 package).
+
+ -- Kamil Ignacak <acerion@wp.pl>  Thu, 01 Oct 2015 21:10:00 +0100
+
 cwdaemon (0.10.1-1) unstable; urgency=low
 
   * New version of upstream package that fixes two major errors and
