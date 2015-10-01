@@ -1,5 +1,5 @@
-Cwdaemon-0.9
-============
+cwdaemon-0.10.2
+===============
 
 Cwdaemon is a small daemon which uses the pc parallel or serial port and a
 simple transistor switch to output morse code to a transmitter from a text
@@ -149,23 +149,23 @@ actual requests. <ESC> is ASCII escape character (decimal 27, hex 1B).
 Most of the requests are so called "escape requests", because they
 start with Escape character.
 
-<ESC>"0"                 Reset to default values
-<ESC>"2"<"speed value">  Set keying speed (5 ... 60 wpm)
-<ESC>"3"<"tone value">   Set sidetone (300 ... 1000 Hz)
-<ESC>"3"<"0">            Sound off
-<ESC>"4"                 Abort message
-<ESC>"5"                 Stop (Exit) the daemon
-<ESC>"6"                 Set uninterruptable (word- ) mode for simulator
-<ESC>"7"<"weight value"> Set weighting (-50 ... 50)
-<ESC>"8"<"device">       Set device for keying (same as -d)
-<ESC>"9"<"port number">  Obsolete
-<ESC>"a"<"0|1">          PTT keying off or on
-<ESC>"b"<"0|1">          SSB signal from microphone or soundcard
-<ESC>"c"<"x">            Tune x seconds long (limit = 10 seconds)
-<ESC>"d"<"delay">        PTT on delay 0..50 (0 .. 50ms)
-<ESC>"e"<"bandindex">	 Band info output on pins 2, 7, 8, 9 of the parport
+<ESC>0                   Reset to default values
+<ESC>2<speed value>      Set keying speed (5 ... 60 wpm)
+<ESC>3<tone value>       Set sidetone (300 ... 1000 Hz)
+<ESC>3<0>                Sound off
+<ESC>4                   Abort message
+<ESC>5                   Stop (Exit) the daemon
+<ESC>6                   Set uninterruptable (word- ) mode for simulator
+<ESC>7<weight value>     Set weighting (-50 ... 50)
+<ESC>8<device>           Set device for keying (same as -d)
+<ESC>9<port number>      Obsolete
+<ESC>a<0|1>              PTT keying off or on
+<ESC>b<0|1>              SSB signal from microphone or soundcard
+<ESC>c<x>                Tune x seconds long (limit = 10 seconds)
+<ESC>d<delay>            PTT on delay 0..50 (0 .. 50ms)
+<ESC>e<bandindex>        Band info output on pins 2, 7, 8, 9 of the parport
                          (pin 2 = lsb, 9 = msb, e.g. 1000 = 160m, 1001 = 10m)
-<ESC>"f"<"sound system"> Set sound system, same as '-x' command line option.
+<ESC>f<sound system>     Set sound system, same as '-x' command line option.
                          Recognized values are:
                          c - console buzzer (PC speaker) - default system,
                          o - OSS,
@@ -177,8 +177,8 @@ start with Escape character.
                          switching from ALSA or PulseAudio to OSS audio
                          system. This is because OSS waits until audio device
                          stops being blocked by ALSA or PulseAudio.
-<ESC>"g"<"volume">       Set soundcard volume (0 .. 100).
-<ESC>h<"text">           This request must be followed by a second request
+<ESC>g<volume>           Set soundcard volume (0 .. 100).
+<ESC>h<text>             This request must be followed by a second request
                          containing only text to be played by cwdaemon. Once
 			 the cwdaemon finishes playing the text from second
 			 request, it replies to the client with "h"+"text"
@@ -257,10 +257,18 @@ Cwdaemon parallel and serial port circuitry
 See the examples in the schematics directory.
 
 
-Testing cwdaemon
-----------------
-Please review and run the test/cwtest.sh test program. It only works with
-netcat installed.
+Tests and examples
+------------------
+Test scripts in Perl are located in test/ directory.
+Example programs are located in examples/ directory.
+
+
+Platforms
+---------
+cwdaemon 0.10.2 has been compiled and tested on following platforms:
+ - Debian GNU/Linux 8, x86_64, gcc 4.9.2, libcw 6.5.1
+ - Alpine Linux 3.2.0, x86_64, gcc 5.2.0, libcw 6.5.1
+ - FreeBSD 10.0, x86_64, clang 3.3, libcw 6.5.1
 
 
 Credits
