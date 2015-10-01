@@ -1,3 +1,7 @@
+2015-09-24 Kamil Ignacak
+	* tests: fixing two problems (one compilation error and one
+	warning) in cwdaemon.c after tests on Alpine Linux.
+
 2015-09-22 Kamil Ignacak
 	* tests: small improvements after next round of running test
 	scripts.
