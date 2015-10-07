@@ -20,6 +20,9 @@ This device does exactly nothing (no rig keying, no ssb keying, etc.).
 Cwdaemon also handles PTT, and band index output for automatic switching of
 antennas, filters etc. Pinout is compatible with the standard (CT, TRlog).
 
+cwdaemon is available on github: https://github.com/acerion/cwdaemon
+cwdaemon's older webpage is http://cwdaemon.sourceforge.net/
+
 
 Please note
 -----------
