@@ -316,7 +316,7 @@ CWDAEMON_PATCHES = patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.
 CWDAEMON_SCHEMATICS_FILES = doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
 	doc/schematics/serialport_circuit.jpg doc/schematics/serialport_circuit.ps
 
-EXTRA_DIST = cwdaemon.spec.in cwdaemon.spec \
+EXTRA_DIST = cwdaemon.spec.in \
 	$(CWDAEMON_EXAMPLE_FILES) \
 	$(CWDAEMON_TEST_FILES) \
 	$(CWDAEMON_CWDAEMON_PATCHES) \
