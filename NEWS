@@ -1,9 +1,9 @@
-cwdaemon 0.10.2 / 2015.10.XX
+cwdaemon 0.10.2 / 2015.10.07
 
 New release. Changes since previous release:
 
 * Copying the repository to github.com. github will be now the new
-  home of cwdaemon.
+  home of cwdaemon. The address is https://github.com/acerion/cwdaemon
 
 * Testing against libcw 6.5.1 from unixcw 3.5.0.
 
