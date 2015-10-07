@@ -6,6 +6,8 @@ debuild_command='debuild -us -uc'
 
 
 
+export LC_ALL=C
+
 
 echo ""
 echo ""
