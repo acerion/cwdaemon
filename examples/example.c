@@ -29,7 +29,7 @@
  * Usage: 'example' or 'example <portname>'
  */
 
-#define _POSIX_SOURCE /* getaddrinfo() and friends. */
+#define _POSIX_C_SOURCE 201112L /* getaddrinfo() and friends. */
 
 #include <stdlib.h>
 #include <stdio.h>
