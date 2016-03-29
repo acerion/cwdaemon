@@ -83,7 +83,7 @@ Command line argument: -n, --nofork
 Escaped request: N/A
 
 .IP
-Debug information will be printed to stdout (unless different debug outut is selected, or debug output is silenced by setting debug output verbosity).
+Debug information will be printed to stdout (unless different debug output is selected, or debug output is silenced by setting debug output verbosity).
 
 
 
