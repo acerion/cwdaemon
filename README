@@ -228,7 +228,10 @@ qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps.
                          Repeated '+' and '-' characters are allowed,
                          in such cases increase and decrease of speed is
                          multiple of 2 wpm.
-de d~l~2~w~r~j pse k     Add half-space delay after each character
+de ~d~l~2~w~rj pse k     Add half-space delay after characters
+                         NOTE: the delay is added after the character
+                         _following_ the tilde (~). E.g. AB~CD results in
+                         a delay between C and D.
 
 
 Default startup values
