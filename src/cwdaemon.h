@@ -43,6 +43,8 @@ typedef struct cwdev_s {
 	int (*ssbway) (struct cwdev_s *, int onoff);
 	int (*switchband) (struct cwdev_s *, unsigned char bandswitch);
 	int (*footswitch) (struct cwdev_s *);
+	int (*optparse) (struct cwdev_s *, const char *);
+	void *cookie; /* can be used by optparse */
 	int fd;
 	char *desc; /* "parport0", "ttyS0", "null" - name of device used for keying. */
 }

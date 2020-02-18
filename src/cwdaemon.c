@@ -427,6 +427,7 @@ static bool cwdaemon_params_libcwflags(const char *optarg);
 static bool cwdaemon_params_debugfile(const char *optarg);
 static bool cwdaemon_params_system(int *system, const char *optarg);
 static bool cwdaemon_params_ptt_on_off(const char *optarg);
+static bool cwdaemon_params_options(const char *optarg);
 
 
 
@@ -449,6 +450,8 @@ cwdevice cwdevice_ttys = {
 	.ssbway     = NULL,
 	.switchband = NULL,
 	.footswitch = NULL,
+	.optparse   = NULL,
+	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -462,6 +465,8 @@ cwdevice cwdevice_null = {
 	.ssbway     = NULL,
 	.switchband = NULL,
 	.footswitch = NULL,
+	.optparse   = NULL,
+	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -476,6 +481,8 @@ cwdevice cwdevice_lp = {
 	.ssbway     = lp_ssbway,
 	.switchband = lp_switchband,
 	.footswitch = lp_footswitch,
+	.optparse   = NULL,
+	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -1776,7 +1783,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 
 
-static const char   *cwdaemon_args_short = "d:hniy:I:f:p:P:s:t:T:v:Vw:x:";
+static const char   *cwdaemon_args_short = "d:hniy:I:f:o:p:P:s:t:T:v:Vw:x:";
 
 static struct option cwdaemon_args_long[] = {
 	{ "cwdevice",    required_argument,       0, 0},  /* Keying device. */
@@ -1795,6 +1802,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
+	{ "options",     required_argument,       0, 0},  /* Driver-specific options. */
 	{ "help",        no_argument,             0, 0},  /* Print help text and exit. */
 
 	{ 0,             0,                       0, 0} };
@@ -1894,6 +1902,11 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 					exit(EXIT_FAILURE);
 				}
 
+			} else if (!strcmp(optname, "options")) {
+				if (!cwdaemon_params_options(optarg)) {
+					exit(EXIT_FAILURE);
+				}
+
 			} else {
 				cwdaemon_args_help();
 				exit(EXIT_SUCCESS);
@@ -1990,6 +2003,11 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		break;
 	case 'x':
 		if (!cwdaemon_params_system(&default_audio_system, optarg)) {
+			exit(EXIT_FAILURE);
+		}
+		break;
+	case 'o':
+		if (!cwdaemon_params_options(optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -2389,7 +2407,18 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 	return true;
 }
 
-
+bool cwdaemon_params_options(const char *optarg)
+{
+	if (global_cwdevice == NULL) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "-o option must be used after -d <device>");
+		return false;
+	}
+	if (global_cwdevice->optparse == NULL) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "selected device does not support -o option");
+		return false;
+	}
+	return (bool)global_cwdevice->optparse(global_cwdevice, optarg);
+}
 
 
 
