@@ -2576,6 +2576,8 @@ void cwdaemon_args_help(void)
 
 	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
+	printf("-o, --options <opts>\n");
+	printf("        Provide device-specific options (e.g. DTR/RTS handling)\n");
 	printf("-p, --port <port>\n");
 	printf("        Use a different UDP port number (> 1023, default: %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
