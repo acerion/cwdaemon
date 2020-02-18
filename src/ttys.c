@@ -30,6 +30,7 @@
 #if STDC_HEADERS
 # include <stdlib.h>
 # include <stddef.h>
+# include <string.h>
 #else
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -182,3 +183,47 @@ ttys_ptt (cwdevice * dev, int onoff)
 	}
 	return 0;
 }
+
+/* Parse -o <opts> invocation */
+int ttys_optparse (cwdevice * dev, const char * opts)
+{
+	struct driveroptions *dropt = dev->cookie;
+
+	const char *equal = strchr(opts, '=');
+	if (equal == NULL) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "no '=' in <opts>: %s", opts);
+		return 0;
+	}
+
+	size_t kwlen = equal - opts;
+	if (!strncasecmp(opts, "key", kwlen)) {
+		/* key=DTR | RTS | none */
+		if (!strcasecmp(equal + 1, "dtr"))
+			dropt->key = TIOCM_DTR;
+		else if (!strcasecmp(equal + 1, "rts"))
+			dropt->key = TIOCM_RTS;
+		else if (!strcasecmp(equal + 1, "none"))
+			dropt->key = 0;
+		else {
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			return 0;
+		}
+	} else if (!strncasecmp(opts, "ptt", kwlen)) {
+		/* ptt=RTS | DTR | none */
+		if (!strcasecmp(equal + 1, "dtr"))
+			dropt->ptt = TIOCM_DTR;
+		else if (!strcasecmp(equal + 1, "rts"))
+			dropt->ptt = TIOCM_RTS;
+		else if (!strcasecmp(equal + 1, "none"))
+			dropt->ptt = 0;
+		else {
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			return 0;
+		}
+	} else {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
+		return 0;
+	}
+	return 1;
+}
+

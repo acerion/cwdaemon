@@ -86,6 +86,7 @@ int ttys_free (cwdevice * dev);
 int ttys_reset (cwdevice * dev);
 int ttys_cw (cwdevice * dev, int onoff);
 int ttys_ptt (cwdevice * dev, int onoff);
+int ttys_optparse (cwdevice * dev, const char * opts);
 
 int null_init (cwdevice * dev, int fd);
 int null_free (cwdevice * dev);
