@@ -62,6 +62,13 @@
    Serial port functions.
 */
 
+struct driveroptions
+{
+    int key; // TIOCM_DTR by default
+    int ptt; // TIOCM_RTS by default
+};
+
+
 
 /**
    \brief Get fd for serial port
@@ -101,8 +108,19 @@ int
 ttys_init (cwdevice * dev, int fd)
 {
 
+	dev->cookie = malloc(sizeof(struct driveroptions));
+	if (dev->cookie == NULL) {
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "malloc() failed");
+		exit(EXIT_FAILURE);
+	}
 	dev->fd = fd;
 	dev->reset (dev);
+
+	// modem control signals default to DTR for CW key, RTS for SSB PTT
+	struct driveroptions *dropt = dev->cookie;
+	dropt->key = TIOCM_DTR;
+	dropt->ptt = TIOCM_RTS;
+
 	return 0;
 }
 
@@ -127,9 +145,15 @@ ttys_reset (cwdevice * dev)
 int
 ttys_cw (cwdevice * dev, int onoff)
 {
-	int result, y = TIOCM_DTR;
+	struct driveroptions *dropt = dev->cookie;
 
-	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &y);
+	if (dropt->key == 0)
+		// CW keying opted out
+		return 0;
+
+	int result;
+
+	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->key);
 	if (result < 0)
 	{
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
@@ -142,9 +166,15 @@ ttys_cw (cwdevice * dev, int onoff)
 int
 ttys_ptt (cwdevice * dev, int onoff)
 {
-	int result, y = TIOCM_RTS;
+	struct driveroptions *dropt = dev->cookie;
 
-	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &y);
+	if (dropt->ptt == 0)
+		// PTT opted out
+		return 0;
+
+	int result;
+
+	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->ptt);
 	if (result < 0)
 	{
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
