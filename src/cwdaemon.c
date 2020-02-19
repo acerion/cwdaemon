@@ -144,6 +144,7 @@
    version               -V, --version             N/A
    keying device         -d, --cwdevice            8
    don't fork daemon     -n, --nofork              N/A
+   driver option         -o, --options             N/A
    network port          -p, --port                9 (obsolete)
    process priority      -P, --priority            N/A
    Morse speed (wpm)     -s, --wpm                 2
