@@ -208,6 +208,7 @@ int ttys_optparse (cwdevice * dev, const char * opts)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
 			return 0;
 		}
+		ttys_cw(dev, 0);
 	} else if (!strncasecmp(opts, "ptt", kwlen)) {
 		/* ptt=RTS | DTR | none */
 		if (!strcasecmp(equal + 1, "dtr"))
@@ -220,6 +221,7 @@ int ttys_optparse (cwdevice * dev, const char * opts)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
 			return 0;
 		}
+		ttys_ptt(dev, 0);
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
 		return 0;
