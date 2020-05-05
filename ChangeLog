@@ -1,3 +1,6 @@
+2016-03-29 Kamil Ignacak
+	* applying two fixes coming from Colin Tuckley (Debian Developer)
+
 2015-10-05 Kamil Ignacak
 	* updating files in debian/ directory
 
@@ -227,9 +230,9 @@
 	* patching: applying patches from debian/patches:
 	01-Removed-bashism-from-cwsetup.patch by Michael Meskes <meskes@debian.org>
 	02-libcw3-transition.patch by Kamil Ignacak <acerion@wp.pl>
-	03-generator-start.patch by Jenö Vago <ha5se@ha5hrk.hu>
-	04-buffer-end.patch by Jenö Vago <ha5se@ha5hrk.hu>
-	05-ptt-off-wait.patch by Jenö Vago <ha5se@ha5hrk.hu>
+	03-generator-start.patch by Jenö Vago <ha5se@yyyy.xx>
+	04-buffer-end.patch by Jenö Vago <ha5se@yyyy.xx>
+	05-ptt-off-wait.patch by Jenö Vago <ha5se@yyyy.xx>
 	06-install-scripts-as-scripts.patch by Kamal Mostafa <kamal@whence.com>
 	Since the patches have been applied, I will remove them.
 	* debian/: upgrading debian/* files.
