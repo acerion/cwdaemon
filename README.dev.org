@@ -1,0 +1,5 @@
+* TODO
+** Pin assignments
+Look at possibility to re-define pin assignments.
+Search for "cwdaemon suggestion" e-mail from Herman Tibor HA4TI
+https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib.744068/#post-5732680
