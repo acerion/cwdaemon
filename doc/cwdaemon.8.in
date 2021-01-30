@@ -88,6 +88,39 @@ Debug information will be printed to stdout (unless different debug output is se
 
 
 .TP
+\fBProvide device-specific options\fR
+.IP
+Command line argument: -o, --options <opts>
+
+.IP
+Escaped request: N/A
+
+.IP
+This passes <opts> to the driver for the device selected by the -d /
+--cwdevice option. Multiple <opts> can be passed in multiple -o
+invocations. These options must always follow the -d / --cwdevice
+option on the commandline.
+
+.IP
+The driver for serial devices understands the following option strings:
+
+.IP
+\fBkey=DTR | RTS | none\fR
+
+.IP
+Use DTR or RTS for CW keying, or disable CW keying at all.
+Default is DTR.
+
+.IP
+\fBptt=RTS | DTR | none\fR
+
+.IP
+Use RTS or DTS for SSB PTT, or disable PTT.
+Default is RTS.
+
+
+
+.TP
 \fBSet network UDP port\fR
 .IP
 Command line argument: -p, --port <port number>
