@@ -28,16 +28,8 @@ dev/ppbus/ppi.h sys/stat.h])
 
 # AC_HEADER_TIME
 
-#AC_CHECK_HEADERS(sys/kd.h sys/vtkd.h sys/kbio.h)
-
 # getopt_long()
 AC_CHECK_HEADERS([getopt.h])
-
-#AC_CHECK_HEADERS(sys/soundcard.h soundcard.h)
-#if test "$ac_cv_header_sys_soundcard_h" = 'no' \
-#	       && test "$ac_cv_header_soundcard_h" == 'no'; then
-#	AC_MSG_ERROR(Cannot find sys/soundcard.h or soundcard.h)
-#fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
@@ -45,20 +37,14 @@ AC_TYPE_PID_T
 # Checks for library functions.
 AC_FUNC_FORK
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([bzero socket strerror])
+AC_CHECK_FUNCS([socket strerror])
 AC_CHECK_FUNCS([setpriority])
-# check for single precision versions of sin() and floor()
-#AC_CHECK_LIB([m],[sinf],[AC_DEFINE([HAVE_SINF],[1],[libm includes sinf])])
-#AC_CHECK_LIB([m],[floorf],[AC_DEFINE([HAVE_FLOORF],[1],[libm includes floorf])])
-#AC_CHECK_LIB([m],[sin])
-#AC_CHECK_LIB([ossaudio],[_oss_ioctl])
 
 
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
-  #CFLAGS="${CFLAGS} -Wall"
   CFLAGS="${CFLAGS} -Wall -W -pedantic -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wredundant-decls"
 fi
 CFLAGS="${CFLAGS} -std=c99"
