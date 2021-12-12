@@ -45,7 +45,15 @@ AC_CHECK_FUNCS([setpriority])
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
-  CFLAGS="${CFLAGS} -Wall -W -pedantic -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wredundant-decls"
+  CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
+  CFLAGS="${CFLAGS} -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings"
+  CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
+  CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
+
+  # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
+  CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
+  CFLAGS="${CFLAGS} -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion"
+  CFLAGS="${CFLAGS} -Wshadow -Wformat=2"
 fi
 CFLAGS="${CFLAGS} -std=c99"
 
