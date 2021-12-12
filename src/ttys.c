@@ -20,7 +20,7 @@
  * 02110-1301, USA.
  */
 
-#define _BSD_SOURCE /* S_IFMT and related. */
+#define _DEFAULT_SOURCE /* S_IFMT and related. TODO (acerion) 2021.12.12: check validity of this comment. */
 
 #include "config.h"
 
@@ -80,8 +80,10 @@ int dev_get_tty(const char *fname)
 	int fd, m;
 
 	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-	if (m >= sizeof(nm))
-		return (-1);
+	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
+		return -1;
+	}
+
 	if ((fd = open(nm, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1)
 		return (-1);
 	if (fstat(fd, &st) == -1)

@@ -25,6 +25,8 @@
 
 #include "config.h"
 
+#include <stdbool.h>
+
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif

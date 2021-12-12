@@ -29,7 +29,7 @@
  * Usage: 'example' or 'example <portname>'
  */
 
-#define _POSIX_C_SOURCE 201112L /* getaddrinfo() and friends. */
+#define _POSIX_C_SOURCE 200112L /* getaddrinfo() and friends. */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -264,8 +264,8 @@ int main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-	/* tests start here, no error handling */
-	int result;
+	/* tests start here, no error handling. TODO (acerion) 2021.12.12: add error handling? */
+	 __attribute__((unused)) int result = 0;
 	if (argc > 1) {
 		result = netkeyer(K_DEVICE, argv[1]);
 		printf("opening port %s\n", argv[1]);
