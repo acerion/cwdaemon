@@ -83,58 +83,58 @@
 */
 int dev_get_parport(const char *fname)
 {
-       char nm[MAXPATHLEN];
-       struct stat st;
-       int fd, m;
+	char nm[MAXPATHLEN];
+	struct stat st;
+	int fd, m;
 
-       m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-       if (m >= sizeof(nm))
-               return (-1);
-       if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
-               return (-1);
-       if (fstat(fd, &st) == -1)
-               goto out;
-       if ((st.st_mode & S_IFMT) != S_IFCHR)
-               goto out;
-       if (ioctl(fd, PPGETMODE, &m) == -1)
-               goto out;
-       return (fd);
+	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
+	if (m >= sizeof(nm))
+		return (-1);
+	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
+		return (-1);
+	if (fstat(fd, &st) == -1)
+		goto out;
+	if ((st.st_mode & S_IFMT) != S_IFCHR)
+		goto out;
+	if (ioctl(fd, PPGETMODE, &m) == -1)
+		goto out;
+	return (fd);
 out:
-       close(fd);
-       return (-1);
+	close(fd);
+	return (-1);
 }
 
 #elif defined(HAVE_DEV_PPBUS_PPI_H)    /* FreeBSD (ppbus/ppi) */
 
 int dev_get_parport(const char *fname)
 {
-       char nm[MAXPATHLEN];
-       struct stat st;
-       unsigned char c;
-       int fd, m;
+	char nm[MAXPATHLEN];
+	struct stat st;
+	unsigned char c;
+	int fd, m;
 
-       m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-       if (m >= sizeof(nm))
-               return (-1);
-       if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
-               return (-1);
-       if (fstat(fd, &st) == -1)
-               goto out;
-       if ((st.st_mode & S_IFMT) != S_IFCHR)
-               goto out;
-       if (ioctl(fd, PPISSTATUS, &c) == -1)
-               goto out;
-       return (fd);
+	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
+	if (m >= sizeof(nm))
+		return (-1);
+	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
+		return (-1);
+	if (fstat(fd, &st) == -1)
+		goto out;
+	if ((st.st_mode & S_IFMT) != S_IFCHR)
+		goto out;
+	if (ioctl(fd, PPISSTATUS, &c) == -1)
+		goto out;
+	return (fd);
 out:
-       close(fd);
-       return (-1);
+	close(fd);
+	return (-1);
 }
 
 #else                                  /* Fallback (nothing) */
 
 int dev_get_parport(const char *fname)
 {
-       return (-1);
+	return (-1);
 }
 
 #endif

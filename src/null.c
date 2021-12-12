@@ -52,26 +52,26 @@ int dev_get_null(const char *fname)
 
 int null_init(cwdevice *dev, int fd)
 {
-       dev->fd = fd;
-       return 0;
+	dev->fd = fd;
+	return 0;
 }
 
 int null_free(__attribute__((unused)) cwdevice *dev)
 {
-       return 0;
+	return 0;
 }
 
 int null_reset(__attribute__((unused)) cwdevice *dev)
 {
-       return 0;
+	return 0;
 }
 
 int null_cw(__attribute__((unused)) cwdevice *dev, __attribute__((unused)) int onoff)
 {
-       return 0;
+	return 0;
 }
 
 int null_ptt(__attribute__((unused)) cwdevice *dev, __attribute__((unused)) int onoff)
 {
-       return 0;
+	return 0;
 }
