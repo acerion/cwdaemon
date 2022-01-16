@@ -1,5 +1,5 @@
 # Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
-# Copyright (C) 2012 - 2015 Kamil Ignacak (acerion@wp.pl)
+# Copyright (C) 2012 - 2022 Kamil Ignacak (acerion@wp.pl)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,13 +17,21 @@
 #
 
 # program(s) to be built in current dir
-noinst_PROGRAMS = example
+noinst_PROGRAMS = example example2
 
 # source code files used to build example program
 example_SOURCES = example.c
 # target-specific preprocessor flags (#defs and include dirs)
-# example_CPPFLAGS =
+example_CPPFLAGS = -Wall -Wextra -pedantic -std=c99
 # target-specific linker flags (objects to link)
 # example_LDADD =
 
+# source code files used to build example program
+example2_SOURCES = example2.c
+# target-specific preprocessor flags (#defs and include dirs)
+example2_CPPFLAGS = -Wall -Wextra -pedantic -std=c99
+# target-specific linker flags (objects to link)
+# example2_LDADD =
+
 CLEANFILES = *~
+

@@ -15,7 +15,7 @@
 @SET_MAKE@
 
 # Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
-# Copyright (C) 2012 - 2015 Kamil Ignacak (acerion@wp.pl)
+# Copyright (C) 2012 - 2022 Kamil Ignacak (acerion@wp.pl)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -104,7 +104,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-noinst_PROGRAMS = example$(EXEEXT)
+noinst_PROGRAMS = example$(EXEEXT) example2$(EXEEXT)
 subdir = examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -116,9 +116,12 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_example_OBJECTS = example.$(OBJEXT)
+am_example_OBJECTS = example-example.$(OBJEXT)
 example_OBJECTS = $(am_example_OBJECTS)
 example_LDADD = $(LDADD)
+am_example2_OBJECTS = example2-example2.$(OBJEXT)
+example2_OBJECTS = $(am_example2_OBJECTS)
+example2_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -134,8 +137,13 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/example.Po
+am__depfiles_remade = ./$(DEPDIR)/example-example.Po \
+	./$(DEPDIR)/example2-example2.Po
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 AM_V_CC = $(am__v_CC_@AM_V@)
@@ -148,8 +156,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(example_SOURCES)
-DIST_SOURCES = $(example_SOURCES)
+SOURCES = $(example_SOURCES) $(example2_SOURCES)
+DIST_SOURCES = $(example_SOURCES) $(example2_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -276,9 +284,16 @@ top_srcdir = @top_srcdir@
 # source code files used to build example program
 example_SOURCES = example.c
 # target-specific preprocessor flags (#defs and include dirs)
-# example_CPPFLAGS =
+example_CPPFLAGS = -Wall -Wextra -std=c99
 # target-specific linker flags (objects to link)
 # example_LDADD =
+
+# source code files used to build example program
+example2_SOURCES = example2.c
+# target-specific preprocessor flags (#defs and include dirs)
+example2_CPPFLAGS = -Wall -Wextra -std=c99
+# target-specific linker flags (objects to link)
+# example2_LDADD =
 CLEANFILES = *~
 all: all-am
 
@@ -321,13 +336,18 @@ example$(EXEEXT): $(example_OBJECTS) $(example_DEPENDENCIES) $(EXTRA_example_DEP
 	@rm -f example$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(example_OBJECTS) $(example_LDADD) $(LIBS)
 
+example2$(EXEEXT): $(example2_OBJECTS) $(example2_DEPENDENCIES) $(EXTRA_example2_DEPENDENCIES) 
+	@rm -f example2$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(example2_OBJECTS) $(example2_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example-example.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/example2-example2.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -348,6 +368,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+example-example.o: example.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example-example.o -MD -MP -MF $(DEPDIR)/example-example.Tpo -c -o example-example.o `test -f 'example.c' || echo '$(srcdir)/'`example.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example-example.Tpo $(DEPDIR)/example-example.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example.c' object='example-example.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example-example.o `test -f 'example.c' || echo '$(srcdir)/'`example.c
+
+example-example.obj: example.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example-example.obj -MD -MP -MF $(DEPDIR)/example-example.Tpo -c -o example-example.obj `if test -f 'example.c'; then $(CYGPATH_W) 'example.c'; else $(CYGPATH_W) '$(srcdir)/example.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example-example.Tpo $(DEPDIR)/example-example.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example.c' object='example-example.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example-example.obj `if test -f 'example.c'; then $(CYGPATH_W) 'example.c'; else $(CYGPATH_W) '$(srcdir)/example.c'; fi`
+
+example2-example2.o: example2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example2_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example2-example2.o -MD -MP -MF $(DEPDIR)/example2-example2.Tpo -c -o example2-example2.o `test -f 'example2.c' || echo '$(srcdir)/'`example2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example2-example2.Tpo $(DEPDIR)/example2-example2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example2.c' object='example2-example2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example2_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example2-example2.o `test -f 'example2.c' || echo '$(srcdir)/'`example2.c
+
+example2-example2.obj: example2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example2_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT example2-example2.obj -MD -MP -MF $(DEPDIR)/example2-example2.Tpo -c -o example2-example2.obj `if test -f 'example2.c'; then $(CYGPATH_W) 'example2.c'; else $(CYGPATH_W) '$(srcdir)/example2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/example2-example2.Tpo $(DEPDIR)/example2-example2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='example2.c' object='example2-example2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(example2_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o example2-example2.obj `if test -f 'example2.c'; then $(CYGPATH_W) 'example2.c'; else $(CYGPATH_W) '$(srcdir)/example2.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -474,7 +522,8 @@ clean: clean-am
 clean-am: clean-generic clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/example.Po
+		-rm -f ./$(DEPDIR)/example-example.Po
+	-rm -f ./$(DEPDIR)/example2-example2.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -520,7 +569,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/example.Po
+		-rm -f ./$(DEPDIR)/example-example.Po
+	-rm -f ./$(DEPDIR)/example2-example2.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
