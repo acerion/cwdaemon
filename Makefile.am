@@ -1,4 +1,4 @@
-SUBDIRS=src doc examples
+SUBDIRS=src doc examples test
 
 #AM_CFLAGS = @UNIXCW_CFLAGS@
 
