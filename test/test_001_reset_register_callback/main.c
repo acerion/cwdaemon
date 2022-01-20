@@ -27,17 +27,18 @@
 #define _GNU_SOURCE /* strcasestr() */
 
 #include <errno.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
+
 
 
 
 #include <libcw.h>
 #include <libcw2.h>
+
+
+
 
 #include "cw_rec_utils.h"
 #include "../library/socket.h"
@@ -49,7 +50,7 @@
 // LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib ~/sbin/cwdaemon -d ttyS0 -n -x p  -s 10 -T 1000 > /dev/null
 
 
-static bool on_key_state_change(void * sink, unsigned int arg);
+static bool on_key_state_change(void * sink, bool key_is_down);
 static int receive_from_key_source(cw_easy_receiver_t * easy_rec, char * buffer, size_t size);
 static void send_to_cwdaemon(int fd, const char * text);
 
@@ -62,12 +63,11 @@ static cw_easy_receiver_t g_easy_rec = { 0 };
 
 
 
-bool on_key_state_change(void * arg_easy_rec, unsigned int arg)
+bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 {
 	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
-	const bool is_down = !!(arg & TIOCM_DTR);
-	cw_easy_receiver_sk_event(easy_rec, is_down);
-	// fprintf(stderr, "DTR = %d\n", is_down);
+	cw_easy_receiver_sk_event(easy_rec, key_is_down);
+	// fprintf(stderr, "key is %s\n", key_is_down ? "down" : "up");
 
 	return true;
 }
@@ -147,12 +147,14 @@ int main(void)
 
 
 	cw_key_source_t source = {
-		.poll_interval_us   = 100,
-		.poll_once          = key_source_poll_once,
+		.open_fn            = key_source_serial_open,
+		.close_fn           = key_source_serial_close,
 		.new_key_state_cb   = on_key_state_change,
 		.new_key_state_sink = easy_rec,
+		.poll_interval_us   = KEY_SOURCE_DEFAULT_INTERVAL_US,
+		.poll_once_fn       = key_source_serial_poll_once,
 	};
-	if (!key_source_open(&source)) {
+	if (!source.open_fn(&source)) {
 		return -1;
 	}
 	key_source_start(&source);
@@ -184,7 +186,7 @@ int main(void)
 
 	cw_generator_stop();
 	key_source_stop(&source);
-	key_source_close(&source);
+	source.close_fn(&source);
 	cwdaemon_disconnect(fd);
 
 	return result;

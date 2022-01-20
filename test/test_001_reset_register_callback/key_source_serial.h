@@ -14,8 +14,26 @@
 
 
 
-bool key_source_open(cw_key_source_t * source);
-void key_source_close(cw_key_source_t * source);
+/**
+   Implementation of cw_key_source_t::open_fn function specific to serial line file
+*/
+bool key_source_serial_open(cw_key_source_t * source);
+
+
+
+
+/**
+   Implementation of cw_key_source_t::close_fn function specific to serial line file
+*/
+void key_source_serial_close(cw_key_source_t * source);
+
+
+
+
+/**
+   Implementation of cw_key_source_t::poll_once_fn function specific to serial line file
+*/
+bool key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down);
 
 
 

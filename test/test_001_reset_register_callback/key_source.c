@@ -70,21 +70,21 @@ static void * key_source_poll_thread(void * arg_key_source)
 {
 	cw_key_source_t * source = (cw_key_source_t *) arg_key_source;
 	while (source->do_polling) {
-		unsigned int key_state = 0;
+		bool key_is_down = false;
 
-		if (!source->poll_once(source, &key_state)) {
+		if (!source->poll_once_fn(source, &key_is_down)) {
 			fprintf(stderr, "[EE] Failed to poll once\n");
 			return NULL;
 		}
 
 		/* avoid unnecessary screen updates */
-		if (key_state == source->old_key_state) {
+		if (key_is_down == source->previous_key_is_down) {
 			usleep(source->poll_interval_us);
 			continue;
 		}
-		source->old_key_state = key_state;
+		source->previous_key_is_down = key_is_down;
 
-		source->new_key_state_cb(source->new_key_state_sink, key_state);
+		source->new_key_state_cb(source->new_key_state_sink, key_is_down);
 
 		usleep(source->poll_interval_us);
 	}
@@ -95,18 +95,5 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
-bool key_source_poll_once(cw_key_source_t * source, unsigned int * key_state)
-{
-	int fd = (int) source->inner;
-	errno = 0;
-	int status = ioctl(fd, TIOCMGET, key_state);
-	if (status != 0) {
-		char buf[32] = { 0 };
-		strerror_r(errno, buf, sizeof (buf));
-		fprintf(stderr, "[EE]: ioctl(TIOCMGET): %s\n", buf);
-		return false;
-	}
-	return true;
-}
 
 

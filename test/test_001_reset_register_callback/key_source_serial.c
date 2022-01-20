@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -47,7 +48,7 @@ static const char * g_device = "/dev/ttyS0";
 
 
 
-bool key_source_open(cw_key_source_t * source)
+bool key_source_serial_open(cw_key_source_t * source)
 {
 	/* Open serial port. */
 	errno = 0;
@@ -58,7 +59,7 @@ bool key_source_open(cw_key_source_t * source)
 		fprintf(stderr, "[EE]: open(%s): %s\n", g_device, buf);
 		return false;
 	}
-	source->inner = (uintptr_t) fd;
+	source->source_reference = (uintptr_t) fd;
 
 	return true;
 }
@@ -66,11 +67,29 @@ bool key_source_open(cw_key_source_t * source)
 
 
 
-void key_source_close(cw_key_source_t * source)
+void key_source_serial_close(cw_key_source_t * source)
 {
-	int fd = (int) source->inner;
+	int fd = (int) source->source_reference;
 	close(fd);
 }
 
+
+
+
+bool key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down)
+{
+	int fd = (int) source->source_reference;
+	errno = 0;
+	unsigned int value = 0;
+	int status = ioctl(fd, TIOCMGET, &value);
+	if (status != 0) {
+		char buf[32] = { 0 };
+		strerror_r(errno, buf, sizeof (buf));
+		fprintf(stderr, "[EE]: ioctl(TIOCMGET): %s\n", buf);
+		return false;
+	}
+	*key_is_down = !!(value & TIOCM_DTR);
+	return true;
+}
 
 
