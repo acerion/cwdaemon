@@ -181,11 +181,12 @@ start with Escape character.
                          system. This is because OSS waits until audio device
                          stops being blocked by ALSA or PulseAudio.
 <ESC>g<volume>           Set soundcard volume (0 .. 100).
+
 <ESC>h<text>             This request must be followed by a second request
                          containing only text to be played by cwdaemon. Once
 			 the cwdaemon finishes playing the text from second
-			 request, it replies to the client with "h"+"text"
-			 from first request.
+			 request, it replies to the client with "h"+<text>+"\r\n",
+			 where <text> is a text from first request.
 
 			 "text" is optional.
 
