@@ -174,6 +174,10 @@
 */
 
 
+/* This flag is necessary until I'm done with writing a good test for the
+   ticket. It may be necessary even afterwards, just to be able to quickly
+   restore faulty behaviour and run a test against it. */
+#define CWDAEMON_GITHUB_ISSUE_6_FIXED
 
 
 /* cwdaemon constants. */
@@ -849,6 +853,11 @@ void cwdaemon_reset_almost_all(void)
 	current_verbosity    = default_verbosity;
 
 	cwdaemon_reset_libcw_output();
+
+#ifdef CWDAEMON_GITHUB_ISSUE_6_FIXED
+	fprintf(stderr, "With re-registration fixed\n");
+	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+#endif
 
 	return;
 }
@@ -2731,7 +2740,10 @@ int main(int argc, char *argv[])
 	}
 
 
+#ifndef CWDAEMON_GITHUB_ISSUE_6_FIXED
+	fprintf(stderr, "With re-registration not fixed\n");
 	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+#endif
 
 
 	/* The main loop of cwdaemon. */
