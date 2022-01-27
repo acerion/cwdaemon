@@ -26,6 +26,7 @@
 
 #define _GNU_SOURCE /* strerror_r() */
 
+#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -34,7 +35,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <errno.h>
+
+
+
 #include "key_source_serial.h"
 
 

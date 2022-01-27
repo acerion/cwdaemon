@@ -40,6 +40,12 @@
 
 
 
+/* Default interval for polling a key source [microseconds]. */
+#define KEY_SOURCE_DEFAULT_INTERVAL_US 100
+
+
+
+
 static void * key_source_poll_thread(void * arg_key_source);
 
 
@@ -74,15 +80,14 @@ static void * key_source_poll_thread(void * arg_key_source)
 			return NULL;
 		}
 
-		/* avoid unnecessary screen updates */
 		if (key_is_down == source->previous_key_is_down) {
-			usleep(source->poll_interval_us);
-			continue;
+			/* Key state not changed, do nothing. */
+		} else {
+			source->previous_key_is_down = key_is_down;
+			source->new_key_state_cb(source->new_key_state_sink, key_is_down);
 		}
-		source->previous_key_is_down = key_is_down;
 
-		source->new_key_state_cb(source->new_key_state_sink, key_is_down);
-
+		/* TODO 2022.01.26: use libcw.h/cw_usleep_internal() */
 		usleep(source->poll_interval_us);
 	}
 
@@ -92,5 +97,15 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
+void key_source_configure_polling(cw_key_source_t * source, int interval_us, poll_once_fn_t poll_once_fn)
+{
+	if (0 == interval_us) {
+		source->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;
+	} else {
+		source->poll_interval_us = interval_us;
+	}
+
+	source->poll_once_fn = poll_once_fn;
+}
 
 
