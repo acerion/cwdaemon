@@ -63,6 +63,7 @@
 #define K_SWITCH      14     // set band switch output pins 2,7,8,9 on lpt
 #define K_SDEVICE     15     // set sound device
 #define K_VOLUME      16     // volume for soundcard
+#define K_REPLY       17     // Ask cwdaemon to send specified reply after playing text.
 
 
 
@@ -211,6 +212,11 @@ static int netkeyer(int fd, int request, const char * value)
 		case K_VOLUME:
 			buf[0] = 27;
 			sprintf(buf + 1, "g");
+			sprintf(buf + 2, "%s", value);
+			break;
+		case K_REPLY: /* TODO 2022.01.26: test this. */
+			buf[0] = 27;
+			sprintf(buf + 1, "h");
 			sprintf(buf + 2, "%s", value);
 			break;
 		default:
