@@ -179,16 +179,16 @@ int main(void)
 	cw_easy_receiver_start(easy_rec);
 
 	cw_key_source_t source = {
-		.open_fn            = key_source_serial_open,
-		.close_fn           = key_source_serial_close,
+		.open_fn            = cw_key_source_serial_open,
+		.close_fn           = cw_key_source_serial_close,
 		.new_key_state_cb   = on_key_state_change,
 		.new_key_state_sink = easy_rec,
 	};
-	key_source_configure_polling(&source, 0, key_source_serial_poll_once);
+	cw_key_source_configure_polling(&source, 0, cw_key_source_serial_poll_once);
 	if (!source.open_fn(&source)) {
 		return -1;
 	}
-	key_source_start(&source);
+	cw_key_source_start(&source);
 
 	cw_clear_receive_buffer();
 	cw_easy_receiver_clear(easy_rec);
@@ -230,7 +230,7 @@ int main(void)
 
 	/* Cleanup. */
 	cw_generator_stop();
-	key_source_stop(&source);
+	cw_key_source_stop(&source);
 	source.close_fn(&source);
 	cwdaemon_disconnect(fd);
 

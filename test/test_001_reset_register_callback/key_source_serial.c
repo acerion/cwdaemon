@@ -48,7 +48,7 @@ static const char * g_device = "/dev/ttyS0";
 
 
 
-bool key_source_serial_open(cw_key_source_t * source)
+bool cw_key_source_serial_open(cw_key_source_t * source)
 {
 	/* Open serial port. */
 	errno = 0;
@@ -67,7 +67,7 @@ bool key_source_serial_open(cw_key_source_t * source)
 
 
 
-void key_source_serial_close(cw_key_source_t * source)
+void cw_key_source_serial_close(cw_key_source_t * source)
 {
 	int fd = (int) source->source_reference;
 	close(fd);
@@ -76,7 +76,7 @@ void key_source_serial_close(cw_key_source_t * source)
 
 
 
-bool key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down)
+bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down)
 {
 	int fd = (int) source->source_reference;
 	errno = 0;

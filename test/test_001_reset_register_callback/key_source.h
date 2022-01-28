@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_KEY_SOURCE_H
-#define CWDAEMON_KEY_SOURCE_H
+#ifndef CW_KEY_SOURCE_H
+#define CW_KEY_SOURCE_H
 
 
 
@@ -70,7 +70,7 @@ typedef struct cw_key_source_t {
 /**
    Start polling the source
 */
-void key_source_start(cw_key_source_t * source);
+void cw_key_source_start(cw_key_source_t * source);
 
 
 
@@ -78,7 +78,7 @@ void key_source_start(cw_key_source_t * source);
 /**
    Stop polling the source
 */
-void key_source_stop(cw_key_source_t * source);
+void cw_key_source_stop(cw_key_source_t * source);
 
 
 
@@ -93,10 +93,10 @@ void key_source_stop(cw_key_source_t * source);
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
-void key_source_configure_polling(cw_key_source_t * source, int poll_interval_us, poll_once_fn_t poll_once_fn);
+void cw_key_source_configure_polling(cw_key_source_t * source, int poll_interval_us, poll_once_fn_t poll_once_fn);
 
 
 
 
-#endif /* #ifndef CWDAEMON_KEY_SOURCE_H */
+#endif /* #ifndef CW_KEY_SOURCE_H */
 

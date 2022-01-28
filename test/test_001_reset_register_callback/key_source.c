@@ -51,7 +51,7 @@ static void * key_source_poll_thread(void * arg_key_source);
 
 
 
-void key_source_start(cw_key_source_t * source)
+void cw_key_source_start(cw_key_source_t * source)
 {
 	source->do_polling = true;
 	pthread_create(&source->thread_id, NULL, key_source_poll_thread, source);
@@ -60,7 +60,7 @@ void key_source_start(cw_key_source_t * source)
 
 
 
-void key_source_stop(cw_key_source_t * source)
+void cw_key_source_stop(cw_key_source_t * source)
 {
 	source->do_polling = false;
 	pthread_cancel(source->thread_id);
@@ -97,7 +97,7 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
-void key_source_configure_polling(cw_key_source_t * source, int interval_us, poll_once_fn_t poll_once_fn)
+void cw_key_source_configure_polling(cw_key_source_t * source, int interval_us, poll_once_fn_t poll_once_fn)
 {
 	if (0 == interval_us) {
 		source->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;
