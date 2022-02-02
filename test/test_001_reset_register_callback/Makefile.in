@@ -13,25 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
-# Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
-#		       and many authors, see the AUTHORS file.
-# Copyright (C) 2012 - 2022 Kamil Ignacak (acerion@wp.pl)
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along
-# with this program; if not, write to the Free Software Foundation, Inc.,
-# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -116,8 +97,8 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_test_OBJECTS = test-main.$(OBJEXT) test-key_source.$(OBJEXT) \
-	test-key_source_serial.$(OBJEXT) test-cw_rec_utils.$(OBJEXT) \
-	test-socket.$(OBJEXT)
+	test-key_source_serial.$(OBJEXT) test-misc.$(OBJEXT) \
+	test-cw_rec_utils.$(OBJEXT) test-socket.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 am__DEPENDENCIES_1 =
 test_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -141,7 +122,7 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/test-cw_rec_utils.Po \
 	./$(DEPDIR)/test-key_source.Po \
 	./$(DEPDIR)/test-key_source_serial.Po ./$(DEPDIR)/test-main.Po \
-	./$(DEPDIR)/test-socket.Po
+	./$(DEPDIR)/test-misc.Po ./$(DEPDIR)/test-socket.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -285,7 +266,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
-test_SOURCES = main.c key_source.c key_source_serial.c cw_rec_utils.c ../library/socket.c
+test_SOURCES = main.c key_source.c key_source_serial.c ../library/misc.c ../library/cw_rec_utils.c ../library/socket.c
 # target-specific preprocessor flags (#defs and include dirs)
 test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
@@ -342,6 +323,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-key_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-key_source_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-socket.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -406,19 +388,33 @@ test-key_source_serial.obj: key_source_serial.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-key_source_serial.obj `if test -f 'key_source_serial.c'; then $(CYGPATH_W) 'key_source_serial.c'; else $(CYGPATH_W) '$(srcdir)/key_source_serial.c'; fi`
 
-test-cw_rec_utils.o: cw_rec_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-cw_rec_utils.o -MD -MP -MF $(DEPDIR)/test-cw_rec_utils.Tpo -c -o test-cw_rec_utils.o `test -f 'cw_rec_utils.c' || echo '$(srcdir)/'`cw_rec_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-cw_rec_utils.Tpo $(DEPDIR)/test-cw_rec_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cw_rec_utils.c' object='test-cw_rec_utils.o' libtool=no @AMDEPBACKSLASH@
+test-misc.o: ../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-misc.o -MD -MP -MF $(DEPDIR)/test-misc.Tpo -c -o test-misc.o `test -f '../library/misc.c' || echo '$(srcdir)/'`../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-misc.Tpo $(DEPDIR)/test-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/misc.c' object='test-misc.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-cw_rec_utils.o `test -f 'cw_rec_utils.c' || echo '$(srcdir)/'`cw_rec_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-misc.o `test -f '../library/misc.c' || echo '$(srcdir)/'`../library/misc.c
 
-test-cw_rec_utils.obj: cw_rec_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-cw_rec_utils.obj -MD -MP -MF $(DEPDIR)/test-cw_rec_utils.Tpo -c -o test-cw_rec_utils.obj `if test -f 'cw_rec_utils.c'; then $(CYGPATH_W) 'cw_rec_utils.c'; else $(CYGPATH_W) '$(srcdir)/cw_rec_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-cw_rec_utils.Tpo $(DEPDIR)/test-cw_rec_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cw_rec_utils.c' object='test-cw_rec_utils.obj' libtool=no @AMDEPBACKSLASH@
+test-misc.obj: ../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-misc.obj -MD -MP -MF $(DEPDIR)/test-misc.Tpo -c -o test-misc.obj `if test -f '../library/misc.c'; then $(CYGPATH_W) '../library/misc.c'; else $(CYGPATH_W) '$(srcdir)/../library/misc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-misc.Tpo $(DEPDIR)/test-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/misc.c' object='test-misc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-cw_rec_utils.obj `if test -f 'cw_rec_utils.c'; then $(CYGPATH_W) 'cw_rec_utils.c'; else $(CYGPATH_W) '$(srcdir)/cw_rec_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-misc.obj `if test -f '../library/misc.c'; then $(CYGPATH_W) '../library/misc.c'; else $(CYGPATH_W) '$(srcdir)/../library/misc.c'; fi`
+
+test-cw_rec_utils.o: ../library/cw_rec_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-cw_rec_utils.o -MD -MP -MF $(DEPDIR)/test-cw_rec_utils.Tpo -c -o test-cw_rec_utils.o `test -f '../library/cw_rec_utils.c' || echo '$(srcdir)/'`../library/cw_rec_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-cw_rec_utils.Tpo $(DEPDIR)/test-cw_rec_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/cw_rec_utils.c' object='test-cw_rec_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-cw_rec_utils.o `test -f '../library/cw_rec_utils.c' || echo '$(srcdir)/'`../library/cw_rec_utils.c
+
+test-cw_rec_utils.obj: ../library/cw_rec_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-cw_rec_utils.obj -MD -MP -MF $(DEPDIR)/test-cw_rec_utils.Tpo -c -o test-cw_rec_utils.obj `if test -f '../library/cw_rec_utils.c'; then $(CYGPATH_W) '../library/cw_rec_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/cw_rec_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-cw_rec_utils.Tpo $(DEPDIR)/test-cw_rec_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/cw_rec_utils.c' object='test-cw_rec_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-cw_rec_utils.obj `if test -f '../library/cw_rec_utils.c'; then $(CYGPATH_W) '../library/cw_rec_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/cw_rec_utils.c'; fi`
 
 test-socket.o: ../library/socket.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-socket.o -MD -MP -MF $(DEPDIR)/test-socket.Tpo -c -o test-socket.o `test -f '../library/socket.c' || echo '$(srcdir)/'`../library/socket.c
@@ -563,6 +559,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/test-key_source.Po
 	-rm -f ./$(DEPDIR)/test-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/test-main.Po
+	-rm -f ./$(DEPDIR)/test-misc.Po
 	-rm -f ./$(DEPDIR)/test-socket.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -613,6 +610,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/test-key_source.Po
 	-rm -f ./$(DEPDIR)/test-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/test-main.Po
+	-rm -f ./$(DEPDIR)/test-misc.Po
 	-rm -f ./$(DEPDIR)/test-socket.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

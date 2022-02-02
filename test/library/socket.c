@@ -1,5 +1,5 @@
 /*
- * example.c - example program for cwdaemon
+ * socket.c - socket functions for cwdaemon tests
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
  * Copyright (C) 2012 - 2022 Kamil Ignacak <acerion@wp.pl>
  *
@@ -43,7 +43,7 @@
 
 
 
-int cwdaemon_connect(const char * address, const char * port)
+int cwdaemon_socket_connect(const char * address, const char * port)
 {
 	/* Code in this function has been copied from
 	   getaddrinfo() man page. */
@@ -91,7 +91,7 @@ int cwdaemon_connect(const char * address, const char * port)
 
 
 
-int cwdaemon_disconnect(int fd)
+int cwdaemon_socket_disconnect(int fd)
 {
 	if (fd < 0) {
 		return 0;
@@ -106,7 +106,7 @@ int cwdaemon_disconnect(int fd)
 
 
 
-int cwdaemon_send_request(int fd, int request, const char * value)
+int cwdaemon_socket_send_request(int fd, int request, const char * value)
 {
 	char buf[80] = { 0 };
 
@@ -134,7 +134,7 @@ int cwdaemon_send_request(int fd, int request, const char * value)
 		buf[0] = 27;
 		sprintf(buf + 1, "4");
 		break;
-	case CWDAEMON_REQUEST_STOP:
+	case CWDAEMON_REQUEST_EXIT:
 		buf[0] = 27;
 		sprintf(buf + 1, "5");
 		break;

@@ -51,7 +51,7 @@
 #define K_SPEED        2
 #define K_TONE         3
 #define K_ABORT        4
-#define K_STOP         5
+#define K_STOP         5     // Tell cwdaemon process to exit cleanly. Also known as EXIT.
 #define K_WORDMODE     6
 #define K_WEIGHT       7
 #define K_DEVICE       8
