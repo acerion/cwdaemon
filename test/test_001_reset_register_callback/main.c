@@ -77,6 +77,17 @@ bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 int main(void)
 {
 	cwdaemon_process_t child = { 0 };
+	cwdaemon_opts_t opts = {
+		.tone           = "1000",
+		.sound_system   = "p",
+		.nofork         = "-n",
+		.cwdevice       = "ttyS0",
+	};
+	snprintf(opts.wpm, sizeof (opts.wpm), "%d", 10);
+
+	const char * path = "/home/acerion/sbin/cwdaemon";
+	child.pid = cwdaemon_start(path, &opts);
+
 	const char * cwdaemon_address = "127.0.0.1";
 	const char * cwdaemon_port = "6789";
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
@@ -139,7 +150,15 @@ int main(void)
 	cw_generator_stop();
 	cw_key_source_stop(&source);
 	source.close_fn(&source);
+
+	/* This should stop the cwdaemon that runs in background. */
+	cwdaemon_process_do_delayed_termination(&child, 100);
+	cwdaemon_process_wait_for_exit(&child);
+
+	/* cwdaemon is stopped, but let's still try to close socket on our
+	   end. */
 	cwdaemon_socket_disconnect(child.fd);
+
 
 	return result;
 }

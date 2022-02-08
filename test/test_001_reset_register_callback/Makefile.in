@@ -98,7 +98,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_test_OBJECTS = test-main.$(OBJEXT) test-key_source.$(OBJEXT) \
 	test-key_source_serial.$(OBJEXT) test-misc.$(OBJEXT) \
-	test-cw_rec_utils.$(OBJEXT) test-socket.$(OBJEXT)
+	test-cw_rec_utils.$(OBJEXT) test-socket.$(OBJEXT) \
+	test-process.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
 am__DEPENDENCIES_1 =
 test_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -122,7 +123,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/test-cw_rec_utils.Po \
 	./$(DEPDIR)/test-key_source.Po \
 	./$(DEPDIR)/test-key_source_serial.Po ./$(DEPDIR)/test-main.Po \
-	./$(DEPDIR)/test-misc.Po ./$(DEPDIR)/test-socket.Po
+	./$(DEPDIR)/test-misc.Po ./$(DEPDIR)/test-process.Po \
+	./$(DEPDIR)/test-socket.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -266,7 +268,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
-test_SOURCES = main.c key_source.c key_source_serial.c ../library/misc.c ../library/cw_rec_utils.c ../library/socket.c
+test_SOURCES = main.c key_source.c key_source_serial.c ../library/misc.c ../library/cw_rec_utils.c ../library/socket.c ../library/process.c
 # target-specific preprocessor flags (#defs and include dirs)
 test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
@@ -324,6 +326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-key_source_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-misc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-process.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-socket.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -429,6 +432,20 @@ test-socket.obj: ../library/socket.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/socket.c' object='test-socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-socket.obj `if test -f '../library/socket.c'; then $(CYGPATH_W) '../library/socket.c'; else $(CYGPATH_W) '$(srcdir)/../library/socket.c'; fi`
+
+test-process.o: ../library/process.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-process.o -MD -MP -MF $(DEPDIR)/test-process.Tpo -c -o test-process.o `test -f '../library/process.c' || echo '$(srcdir)/'`../library/process.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-process.Tpo $(DEPDIR)/test-process.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/process.c' object='test-process.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-process.o `test -f '../library/process.c' || echo '$(srcdir)/'`../library/process.c
+
+test-process.obj: ../library/process.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test-process.obj -MD -MP -MF $(DEPDIR)/test-process.Tpo -c -o test-process.obj `if test -f '../library/process.c'; then $(CYGPATH_W) '../library/process.c'; else $(CYGPATH_W) '$(srcdir)/../library/process.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test-process.Tpo $(DEPDIR)/test-process.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/process.c' object='test-process.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test-process.obj `if test -f '../library/process.c'; then $(CYGPATH_W) '../library/process.c'; else $(CYGPATH_W) '$(srcdir)/../library/process.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -560,6 +577,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/test-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/test-main.Po
 	-rm -f ./$(DEPDIR)/test-misc.Po
+	-rm -f ./$(DEPDIR)/test-process.Po
 	-rm -f ./$(DEPDIR)/test-socket.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -611,6 +629,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/test-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/test-main.Po
 	-rm -f ./$(DEPDIR)/test-misc.Po
+	-rm -f ./$(DEPDIR)/test-process.Po
 	-rm -f ./$(DEPDIR)/test-socket.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

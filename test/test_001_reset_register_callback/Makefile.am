@@ -2,7 +2,7 @@
 check_PROGRAMS = test
 
 # source code files used to build cwdaemon program
-test_SOURCES = main.c key_source.c key_source_serial.c ../library/misc.c ../library/cw_rec_utils.c ../library/socket.c
+test_SOURCES = main.c key_source.c key_source_serial.c ../library/misc.c ../library/cw_rec_utils.c ../library/socket.c ../library/process.c
 # target-specific preprocessor flags (#defs and include dirs)
 test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
