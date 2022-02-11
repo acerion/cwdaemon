@@ -13,6 +13,7 @@
 
 #include "process.h"
 #include "socket.h"
+#include "misc.h"
 
 
 
@@ -22,14 +23,25 @@ static void * terminate_cwdaemon_fn(void * child_arg);
 
 
 
+// LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib ~/sbin/cwdaemon -d ttyS0 -n -x p  -s 10 -T 1000 > /dev/null
 /* TODO: make sure that child process is killed when a test is terminated
    with Ctrl+C. */
 
 
 
 
-pid_t cwdaemon_start(const char * path, const cwdaemon_opts_t * opts)
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child)
 {
+	int l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
+	if (opts->use_random_l4_port) {
+		int random_port = find_unused_random_local_udp_port();
+		if (random_port > 0) {
+			l4_port = random_port;
+		} else {
+			/* Too bad, use a default port. Not the end of the world. */
+		}
+	}
+
 	pid_t pid = fork();
 	if (0 == pid) {
 		char * const env[] = { "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib", NULL };
@@ -45,7 +57,7 @@ pid_t cwdaemon_start(const char * path, const cwdaemon_opts_t * opts)
 			argv[a++] = "-x";
 			argv[a++] = opts->sound_system;
 		}
-		if ('\0' != opts->nofork[0]) {
+		if (opts->nofork) {
 			argv[a++] = "-n";
 		}
 		if ('\0' != opts->cwdevice[0]) {
@@ -57,9 +69,14 @@ pid_t cwdaemon_start(const char * path, const cwdaemon_opts_t * opts)
 			argv[a++] = opts->wpm;
 		}
 
+		char port_buf[16] = { 0 };
+		snprintf(port_buf, sizeof (port_buf), "%d", l4_port);
+		argv[a++] = "-p";
+		argv[a++] = port_buf;
+
 		execve(path, (char * const *) argv, env);
 		fprintf(stderr, "[EE] Returning after failed exec(): %s\n", strerror(errno));
-		return 0;
+		return -1;
 	} else {
 		/*
 		  300 milliseconds. Give the process some time to start.
@@ -73,10 +90,13 @@ pid_t cwdaemon_start(const char * path, const cwdaemon_opts_t * opts)
 		  discard errors at the beginning of received text, but why
 		  add another factor that decreases quality of receiving?
 		*/
-		usleep(60 * 1000);
+		usleep(300 * 1000);
 
-		fprintf(stderr, "[II] cwdaemon started, pid = %d\n", pid);
-		return pid;
+		fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
+
+		child->pid = pid;
+		child->l4_port = l4_port;
+		return 0;
 	}
 }
 

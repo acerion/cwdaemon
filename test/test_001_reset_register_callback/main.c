@@ -48,9 +48,6 @@
 
 
 
-// LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib ~/sbin/cwdaemon -d ttyS0 -n -x p  -s 10 -T 1000 > /dev/null
-
-
 static bool on_key_state_change(void * sink, bool key_is_down);
 
 
@@ -76,20 +73,27 @@ bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 int main(void)
 {
+	srand(time(NULL));
+
 	cwdaemon_process_t child = { 0 };
 	cwdaemon_opts_t opts = {
-		.tone           = "1000",
-		.sound_system   = "p",
-		.nofork         = "-n",
-		.cwdevice       = "ttyS0",
+		.tone               = "1000",
+		.sound_system       = "p",
+		.nofork             = true,
+		.cwdevice           = "ttyS0",
+		.use_random_l4_port = true
 	};
 	snprintf(opts.wpm, sizeof (opts.wpm), "%d", 10);
 
 	const char * path = "/home/acerion/sbin/cwdaemon";
-	child.pid = cwdaemon_start(path, &opts);
+	if (0 != cwdaemon_start(path, &opts, &child)) {
+		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
+		exit(EXIT_FAILURE);
+	}
 
 	const char * cwdaemon_address = "127.0.0.1";
-	const char * cwdaemon_port = "6789";
+	char cwdaemon_port[16] = { 0 };
+	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", child.l4_port);
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
 #if 0
 	cw_enable_adaptive_receive();
@@ -159,6 +163,9 @@ int main(void)
 	   end. */
 	cwdaemon_socket_disconnect(child.fd);
 
+	if (result) {
+		fprintf(stderr, "[EE] Test failed, result = %d\n", result);
+	}
 
 	return result;
 }

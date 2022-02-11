@@ -26,7 +26,9 @@
 
 #define _GNU_SOURCE /* strcasestr() */
 
+#include <arpa/inet.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -154,4 +156,84 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 
 	return 0;
 }
+
+
+
+
+static bool is_local_udp_port_used(int port)
+{
+	struct sockaddr_in request_addr = { 0 };
+	request_addr.sin_family = AF_INET;
+	request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	request_addr.sin_port = htons(port);
+	socklen_t request_addrlen = sizeof (request_addr);
+
+	int fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd == -1) {
+		fprintf(stderr, "[EE] can't open socket\n");
+		 /* Since we can't open a socket we can't be really sure, but
+		    to be safe return true here. */
+		return true;
+	}
+
+	int b = bind(fd, (struct sockaddr *) &request_addr, request_addrlen);
+	close(fd);
+	return -1 == b;
+}
+
+
+
+
+int find_unused_random_local_udp_port(void)
+{
+	const int lower = 1024;
+	const int upper = 65535;
+
+	int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
+	for (int i = 0; i < n; i++) {
+		int port = rand();
+		port %= ((upper + 1) - lower);
+		port += lower;
+
+		if (!is_local_udp_port_used(port)) {
+			return port;
+		}
+	}
+	return 0;
+}
+
+
+
+
+static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
+{
+	struct timeval tv = { .tv_sec = 2 };
+
+	char port_buf[16] = { 0 };
+	snprintf(port_buf, sizeof (port_buf), "%d", port);
+	int fd = cwdaemon_socket_connect(server, port_buf);
+	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
+
+	const char * requested_message_value = "e";
+	const char * requested_reply_value   = "t";
+
+	int a = cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_REPLY, requested_message_value);
+	int b = cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
+
+	/* Try receiving preconfigured reply. Receiving it means we
+	   don't have to poll key for new key events because there
+	   will be no more key events to receive (cwdaemon has
+	   completed toggling tty pin). */
+	char recv_buf[32] = { 0 };
+	int r = recv(fd, recv_buf, sizeof (recv_buf), 0);
+	close(fd);
+
+	// TODO: we should compare recv_buf with requested_reply_value.
+
+	//fprintf(stderr, "port %d, socket %d, send a %d, send b %d, rec %d\n", port, fd, a, b, r);
+
+	return -1 != r;
+}
+
+
 

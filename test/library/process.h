@@ -4,14 +4,16 @@
 
 
 
+#include <stdbool.h>
 #include <sys/types.h> /* pid_t */
 
 
 
 
 typedef struct cwdaemon_process_t {
-	int fd;
-	pid_t pid;
+	int fd;       /* Socket, on which the process will be reachable. */
+	pid_t pid;    /* pid of cwdaemon process. */
+	int l4_port;  /* Network port, on which cwdaemon will be listening. */
 } cwdaemon_process_t;
 
 
@@ -20,15 +22,21 @@ typedef struct cwdaemon_process_t {
 typedef struct {
 	char tone[10];
 	char sound_system[5];
-	char nofork[5];
+	bool nofork;             /* -n, --nofork; don't fork. */
 	char cwdevice[16];
 	char wpm[10];
+	bool use_random_l4_port; /* -p, --port; if false, a default cwdaemon port will be used. */
 } cwdaemon_opts_t;
 
 
 
 
-pid_t cwdaemon_start(const char * path, const cwdaemon_opts_t * opts);
+/**
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child);
+
 
 
 
