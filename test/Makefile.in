@@ -478,12 +478,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = test_001_basic_process_control \
-	test_001_reset_register_callback \
-	test_002_always_succeed
+	test_001_reset_register_callback
 
 TESTS = test_001_basic_process_control/test \
-	test_001_reset_register_callback/test \
-	test_002_always_succeed/test
+	test_001_reset_register_callback/test
 
 all: all-recursive
 
@@ -769,13 +767,6 @@ test_001_basic_process_control/test.log: test_001_basic_process_control/test
 test_001_reset_register_callback/test.log: test_001_reset_register_callback/test
 	@p='test_001_reset_register_callback/test'; \
 	b='test_001_reset_register_callback/test'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_002_always_succeed/test.log: test_002_always_succeed/test
-	@p='test_002_always_succeed/test'; \
-	b='test_002_always_succeed/test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
