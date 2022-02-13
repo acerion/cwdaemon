@@ -72,6 +72,7 @@ AC_OUTPUT([Makefile
 	doc/Makefile
 	examples/Makefile
 	test/Makefile
+	test/test_001_basic_process_control/Makefile
 	test/test_001_reset_register_callback/Makefile
 	test/test_002_always_succeed/Makefile
 	doc/cwdaemon.8
