@@ -4,7 +4,7 @@ check_PROGRAMS = test
 # source code files used to build cwdaemon program
 test_SOURCES = main.c
 # target-specific preprocessor flags (#defs and include dirs)
-test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} -I../library/
+test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
 test_LDADD = ${LIBCW_LIBS} $(top_builddir)/test/library/lib_cwdaemon_test.a
 

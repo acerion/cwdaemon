@@ -43,8 +43,8 @@
 #include "../library/cw_rec_utils.h"
 #include "../library/socket.h"
 #include "../library/misc.h"
-#include "key_source.h"
-#include "key_source_serial.h"
+#include "../library/key_source.h"
+#include "../library/key_source_serial.h"
 
 
 
