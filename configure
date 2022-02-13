@@ -6384,7 +6384,7 @@ $as_echo "    libcw LIBS is ${LIBCW_LIBS}" >&6; }
 fi
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile test/Makefile test/test_001_basic_process_control/Makefile test/test_001_reset_register_callback/Makefile doc/cwdaemon.8 cwdaemon.spec"
+ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile test/Makefile test/test_001_basic_process_control/Makefile test/test_002_reset_register_callback/Makefile doc/cwdaemon.8 cwdaemon.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7130,7 +7130,7 @@ do
     "examples/Makefile") CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
     "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
     "test/test_001_basic_process_control/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_001_basic_process_control/Makefile" ;;
-    "test/test_001_reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_001_reset_register_callback/Makefile" ;;
+    "test/test_002_reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_002_reset_register_callback/Makefile" ;;
     "doc/cwdaemon.8") CONFIG_FILES="$CONFIG_FILES doc/cwdaemon.8" ;;
     "cwdaemon.spec") CONFIG_FILES="$CONFIG_FILES cwdaemon.spec" ;;
 
