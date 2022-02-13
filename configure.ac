@@ -6,6 +6,7 @@ AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CONFIG_SRCDIR([src/cwdaemon.c])
 AC_PROG_GCC_TRADITIONAL
+AC_PROG_RANLIB # Because of utility library built in in test/library/
 AC_CONFIG_HEADERS([config.h])
 
 
@@ -72,6 +73,7 @@ AC_OUTPUT([Makefile
 	doc/Makefile
 	examples/Makefile
 	test/Makefile
+	test/library/Makefile
 	test/test_001_basic_process_control/Makefile
 	test/test_002_reset_register_callback/Makefile
 	doc/cwdaemon.8

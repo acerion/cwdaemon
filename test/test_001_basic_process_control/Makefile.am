@@ -2,13 +2,13 @@
 check_PROGRAMS = test
 
 # source code files used to build cwdaemon program
-test_SOURCES = main.c ../library/key_source.c ../library/key_source_serial.c ../library/cw_rec_utils.c ../library/misc.c ../library/socket.c ../library/process.c
+test_SOURCES = main.c
 # target-specific preprocessor flags (#defs and include dirs)
 test_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} -I../library/
 # target-specific linker flags (objects to link)
-test_LDADD = ${LIBCW_LIBS} -lpthread
+test_LDADD = ${LIBCW_LIBS} $(top_builddir)/test/library/lib_cwdaemon_test.a
 
-test_CFLAGS = -std=c99
+test_CFLAGS = -std=c99 -pthread
 
 test_LDFLAGS = -Wl,-rpath=${prefix}/lib
 

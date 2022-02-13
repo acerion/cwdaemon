@@ -1,6 +1,7 @@
-SUBDIRS=test_001_basic_process_control \
-	test_002_reset_register_callback
+SUBDIRS=library                                   \
+        test_001_basic_process_control            \
+        test_002_reset_register_callback
 
-TESTS=test_001_basic_process_control/test \
-	test_002_reset_register_callback/test
+TESTS=test_001_basic_process_control/test         \
+      test_002_reset_register_callback/test
 
