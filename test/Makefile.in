@@ -429,6 +429,7 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+RANLIB = @RANLIB@
 RPMBUILD = @RPMBUILD@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -477,11 +478,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = test_001_basic_process_control \
-	test_002_reset_register_callback
+SUBDIRS = library                                   \
+        test_001_basic_process_control            \
+        test_002_reset_register_callback
 
-TESTS = test_001_basic_process_control/test \
-	test_002_reset_register_callback/test
+TESTS = test_001_basic_process_control/test         \
+      test_002_reset_register_callback/test
 
 all: all-recursive
 
