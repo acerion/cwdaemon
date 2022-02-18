@@ -30,42 +30,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-
-
-
-#include <libcw.h>
-#include <libcw2.h>
+#include <time.h>
 
 
 
 
-#include "../library/cw_rec_utils.h"
 #include "../library/socket.h"
 #include "../library/misc.h"
-#include "../library/key_source.h"
-#include "../library/key_source_serial.h"
 
 
 
-static bool on_key_state_change(void * sink, bool key_is_down);
+
+static void cleanup(void);
 
 
 
 
 /* global variables */
-static cw_easy_receiver_t g_easy_rec = { 0 };
+static cwdaemon_process_t g_cwdaemon_child = { 0 };
 
 
 
 
-bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
+static void cleanup(void)
 {
-	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
-	cw_easy_receiver_sk_event(easy_rec, key_is_down);
-	// fprintf(stderr, "key is %s\n", key_is_down ? "down" : "up");
+	test_helpers_teardown();
 
-	return true;
+	/* This should stop the cwdaemon that runs in background. */
+	cwdaemon_process_do_delayed_termination(&g_cwdaemon_child, 100);
+	cwdaemon_process_wait_for_exit(&g_cwdaemon_child);
+
+	/* cwdaemon is stopped, but let's still try to close socket on our
+	   end. */
+	cwdaemon_socket_disconnect(g_cwdaemon_child.fd);
 }
 
 
@@ -74,100 +71,44 @@ bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 int main(void)
 {
 	srand(time(NULL));
+	int wpm = 10;
+	atexit(cleanup);
 
-	cwdaemon_process_t child = { 0 };
 	cwdaemon_opts_t opts = {
 		.tone               = "1000",
 		.sound_system       = "p",
 		.nofork             = true,
 		.cwdevice           = "ttyS0",
-		.use_random_l4_port = true
+		.wpm                = wpm,
 	};
-	snprintf(opts.wpm, sizeof (opts.wpm), "%d", 10);
-
-	const char * path = "/home/acerion/sbin/cwdaemon";
-	if (0 != cwdaemon_start(path, &opts, &child)) {
+	if (0 != cwdaemon_start_and_connect(&opts, &g_cwdaemon_child)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 
-	const char * cwdaemon_address = "127.0.0.1";
-	char cwdaemon_port[16] = { 0 };
-	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", child.l4_port);
-	cw_easy_receiver_t * easy_rec = &g_easy_rec;
-#if 0
-	cw_enable_adaptive_receive();
-#else
-	cw_set_receive_speed(10);
-#endif
+	test_helpers_setup(wpm);
 
-	cw_generator_new(CW_AUDIO_NULL, NULL);
-	cw_generator_start();
-
-	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, easy_rec);
-	cw_easy_receiver_start(easy_rec);
-
-	cw_key_source_t source = {
-		.open_fn            = cw_key_source_serial_open,
-		.close_fn           = cw_key_source_serial_close,
-		.new_key_state_cb   = on_key_state_change,
-		.new_key_state_sink = easy_rec,
-	};
-	cw_key_source_configure_polling(&source, 0, cw_key_source_serial_poll_once);
-	if (!source.open_fn(&source)) {
-		return -1;
-	}
-	cw_key_source_start(&source);
-
-	cw_clear_receive_buffer();
-	cw_easy_receiver_clear(easy_rec);
-
-	gettimeofday(&easy_rec->main_timer, NULL);
-
-	child.fd = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
-	int result = 0;
 
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	cwdaemon_request_t request1 = {
-		.id              = CWDAEMON_REQUEST_MESSAGE,
-		.value           = "paris",
-		.requested_reply = "sent",
-	};
-	result += cwdaemon_request_message_and_receive(&child, &request1, easy_rec);
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon_child, "paris")) {
+		fprintf(stderr, "[EE] failed to send first request\n");
+		exit(EXIT_FAILURE);
+	}
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	cwdaemon_socket_send_request(child.fd, CWDAEMON_REQUEST_RESET, "");
+	cwdaemon_socket_send_request(g_cwdaemon_child.fd, CWDAEMON_REQUEST_RESET, "");
 
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	cwdaemon_request_t request2 = {
-		.id              = CWDAEMON_REQUEST_MESSAGE,
-		.value           = "texas",
-		.requested_reply = "sent",
-	};
-	result += cwdaemon_request_message_and_receive(&child, &request2, easy_rec);
-
-	/* Cleanup. */
-	cw_generator_stop();
-	cw_key_source_stop(&source);
-	source.close_fn(&source);
-
-	/* This should stop the cwdaemon that runs in background. */
-	cwdaemon_process_do_delayed_termination(&child, 100);
-	cwdaemon_process_wait_for_exit(&child);
-
-	/* cwdaemon is stopped, but let's still try to close socket on our
-	   end. */
-	cwdaemon_socket_disconnect(child.fd);
-
-	if (result) {
-		fprintf(stderr, "[EE] Test failed, result = %d\n", result);
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon_child, "texas")) {
+		fprintf(stderr, "[EE] Failed to send second request\n");
+		exit(EXIT_FAILURE);
 	}
 
-	return result;
+	exit(EXIT_SUCCESS);
 }
 
 

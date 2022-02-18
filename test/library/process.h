@@ -4,6 +4,7 @@
 
 
 
+#include <arpa/inet.h>
 #include <stdbool.h>
 #include <sys/types.h> /* pid_t */
 
@@ -24,8 +25,25 @@ typedef struct {
 	char sound_system[5];
 	bool nofork;             /* -n, --nofork; don't fork. */
 	char cwdevice[16];
-	char wpm[10];
-	bool use_random_l4_port; /* -p, --port; if false, a default cwdaemon port will be used. */
+	int wpm;
+
+	/* IP address of machine where cwdaemon is available, If empty, local
+	   IP will be used. */
+	char l3_address[INET6_ADDRSTRLEN];
+
+	/*
+	  Layer 4 port where cwdaemon is available. Passed to cwdaemon
+	  through -p/--port command line arg.
+
+	  negative value: use default cwdaemon port;
+	  0: use random port;
+	  positive value: use given port value;
+
+	  I'm using zero to signify random port, because this should be the
+	  default testing method: to run a cwdaemon with default port, and
+	  zero is the easiest value to assign to this field.
+	*/
+	int l4_port;
 } cwdaemon_opts_t;
 
 
@@ -35,8 +53,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child);
-
+int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * child);
 
 
 

@@ -34,34 +34,84 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <libcw.h>
+#include <libcw2.h>
+
 #include "process.h"
 #include "socket.h"
 #include "misc.h"
 #include "cw_rec_utils.h"
+#include "key_source.h"
+#include "key_source_serial.h"
+
+
 
 
 static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char * buffer, size_t size, const char * expected_reply);
+static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
 
 
-static void send_message_request_to_cwdaemon(int fd, cwdaemon_request_t * request)
+
+
+static cw_easy_receiver_t g_easy_rec = { 0 };
+static cw_key_source_t g_key_source = {
+	.open_fn            = cw_key_source_serial_open,
+	.close_fn           = cw_key_source_serial_close,
+	.new_key_state_cb   = on_key_state_change,
+	.new_key_state_sink = &g_easy_rec,
+};
+
+
+
+
+int test_helpers_setup(int speed)
 {
-	/* Ask cwdaemon to send us this reply back after playint text, so
-	   that we don't wait in receive_from_key_source() for longer than
-	   it's necessary to play and key requested text. */
-	cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_REPLY, request->requested_reply);
+#if 0
+	cw_enable_adaptive_receive();
+#else
+	cw_set_receive_speed(speed);
+#endif
 
-	char value[64] = { 0 };
-	snprintf(value, sizeof (value), "start %s", request->value);
-	cwdaemon_socket_send_request(fd, request->id, value);
+	cw_generator_new(CW_AUDIO_NULL, NULL);
+	cw_generator_start();
+
+	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, &g_easy_rec);
+	cw_easy_receiver_start(&g_easy_rec);
+
+
+	cw_key_source_configure_polling(&g_key_source, 0, cw_key_source_serial_poll_once);
+	if (!g_key_source.open_fn(&g_key_source)) {
+		return -1;
+	}
+	cw_key_source_start(&g_key_source);
+
+	cw_clear_receive_buffer();
+	cw_easy_receiver_clear(&g_easy_rec);
+
+	gettimeofday(&g_easy_rec.main_timer, NULL);
+
+	return 0;
 }
 
 
 
 
-int cwdaemon_request_message_and_receive(cwdaemon_process_t * child, cwdaemon_request_t * request, cw_easy_receiver_t * easy_rec)
+void test_helpers_teardown(void)
 {
-	char receive_buffer[30] = { 0 };
-	int result = 0;
+	/* Cleanup. */
+	cw_generator_stop();
+	cw_key_source_stop(&g_key_source);
+	g_key_source.close_fn(&g_key_source);
+
+	return;
+}
+
+
+
+
+int cwdaemon_play_text_and_receive(cwdaemon_process_t * child, const char * message_value)
+{
+	cw_easy_receiver_t * easy_rec = &g_easy_rec;
 
 	/* When comparing strings, remember that a receiver may have received
 	   first characters incorrectly. receive_from_key_source() prefixes a
@@ -73,18 +123,32 @@ int cwdaemon_request_message_and_receive(cwdaemon_process_t * child, cwdaemon_re
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
 
-
+	const char * requested_reply_value = "reply";
 	char expected_reply[64] = { 0 };
 	/* Notice the initial 'h'. Notice terminating "\r\n". */
-	snprintf(expected_reply, sizeof (expected_reply), "h%s\r\n", request->requested_reply);
+	snprintf(expected_reply, sizeof (expected_reply), "h%s\r\n", requested_reply_value);
 
-	send_message_request_to_cwdaemon(child->fd, request);
-	result += receive_from_key_source(child->fd, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply);
-	if (!strcasestr(receive_buffer, request->value)) {
-		result--;
+
+	/* Ask cwdaemon to send us this reply back after playint text, so
+	   that we don't wait in receive_from_key_source() for longer than
+	   it's necessary to play and key requested text. */
+	cwdaemon_socket_send_request(child->fd, CWDAEMON_REQUEST_REPLY, requested_reply_value);
+
+	char value[64] = { 0 };
+	snprintf(value, sizeof (value), "start %s", message_value);
+	cwdaemon_socket_send_request(child->fd, CWDAEMON_REQUEST_MESSAGE, value);
+
+
+	char receive_buffer[30] = { 0 };
+	if (0 != receive_from_key_source(child->fd, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
+		fprintf(stderr, "[EE] Failed to receive from key source\n");
+		return -1;
 	}
-
-	return result;
+	if (NULL == strcasestr(receive_buffer, message_value)) {
+		fprintf(stderr, "[EE] Received text ('%s') is not present in requested value ('%s')\n", receive_buffer, message_value);
+		return -1;
+	}
+	return 0;
 }
 
 
@@ -108,6 +172,10 @@ int cwdaemon_request_message_and_receive(cwdaemon_process_t * child, cwdaemon_re
    @param easy_rec easy receiver
    @param[out] buffer output buffer where received text will be put
    @param[in] size size of @p buffer
+   @param[in] expected_reply value that we expect to receive
+
+   @return 0 if no errors occurred
+   @return -1 otherwise
 */
 static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char * buffer, size_t size, const char * expected_reply)
 {
@@ -205,6 +273,7 @@ int find_unused_random_local_udp_port(void)
 
 
 
+__attribute__((unused))
 static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 {
 	struct timeval tv = { .tv_sec = 2 };
@@ -217,23 +286,36 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 	const char * requested_message_value = "e";
 	const char * requested_reply_value   = "t";
 
-	int a = cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_REPLY, requested_message_value);
-	int b = cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
+	cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_REPLY, requested_message_value);
+	cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
 
-	/* Try receiving preconfigured reply. Receiving it means we
-	   don't have to poll key for new key events because there
-	   will be no more key events to receive (cwdaemon has
-	   completed toggling tty pin). */
+	/* Try receiving preconfigured reply. Receiving it means that there
+	   is a process on the other side of socket that behaves like
+	   cwdaemon. */
 	char recv_buf[32] = { 0 };
 	int r = recv(fd, recv_buf, sizeof (recv_buf), 0);
 	close(fd);
 
 	// TODO: we should compare recv_buf with requested_reply_value.
 
-	//fprintf(stderr, "port %d, socket %d, send a %d, send b %d, rec %d\n", port, fd, a, b, r);
+	//fprintf(stderr, "port %d, socket %d, rec %d\n", port, fd, r);
 
 	return -1 != r;
 }
+
+
+
+
+
+static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
+{
+	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
+	cw_easy_receiver_sk_event(easy_rec, key_is_down);
+	// fprintf(stderr, "key is %s\n", key_is_down ? "down" : "up");
+
+	return true;
+}
+
 
 
 

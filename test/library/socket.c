@@ -58,7 +58,7 @@ int cwdaemon_socket_connect(const char * address, const char * port)
 	struct addrinfo * result = NULL;
 	int rv = getaddrinfo(address, port, &hints, &result);
 	if (rv) {
-		fprintf(stderr, "getaddrinfo(): %s\n", gai_strerror(rv));
+		fprintf(stderr, "[EE] call to getaddrinfo() failed %s\n", gai_strerror(rv));
 		return -1;
 	}
 
@@ -83,7 +83,7 @@ int cwdaemon_socket_connect(const char * address, const char * port)
 	freeaddrinfo(result); /* No longer needed */
 
 	if (-1 == fd) {
-		fprintf(stderr, "Could not connect\n");
+		fprintf(stderr, "[EE] Could not open a socket to cwdaemon\n");
 	}
 	return fd;
 }

@@ -18,6 +18,7 @@
 
 
 
+static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child);
 static void * terminate_cwdaemon_fn(void * child_arg);
 
 
@@ -32,13 +33,23 @@ static void * terminate_cwdaemon_fn(void * child_arg);
 
 int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child)
 {
-	int l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
-	if (opts->use_random_l4_port) {
+	const int default_l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
+	int l4_port = 0;
+	if (opts->l4_port < 0) {
+		l4_port = default_l4_port;
+	} else if (opts->l4_port == 0) {
 		int random_port = find_unused_random_local_udp_port();
 		if (random_port > 0) {
 			l4_port = random_port;
 		} else {
-			/* Too bad, use a default port. Not the end of the world. */
+			l4_port = default_l4_port; /* Too bad, use a default port. Not the end of the world. */
+		}
+	} else {
+		if (opts->l4_port >= 1024 && opts->l4_port <= 65535) {
+			l4_port = opts->l4_port;
+		} else {
+			fprintf(stderr, "[EE] invalid L4 port value %d\n", opts->l4_port);
+			return -1;
 		}
 	}
 
@@ -64,9 +75,11 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			argv[a++] = "-d";
 			argv[a++] = opts->cwdevice;
 		}
-		if ('\0' != opts->wpm[0]) {
+		char wpm_buf[16] = { 0 };
+		if (opts->wpm) {
+			snprintf(wpm_buf, sizeof (wpm_buf), "%d", opts->wpm);
 			argv[a++] = "-s";
-			argv[a++] = opts->wpm;
+			argv[a++] = wpm_buf;
 		}
 
 		char port_buf[16] = { 0 };
@@ -141,7 +154,11 @@ static void * terminate_cwdaemon_fn(void * child_arg)
 int cwdaemon_process_wait_for_exit(cwdaemon_process_t * child)
 {
 	int wstatus = 0;
-	pid_t waited_child = wait(&wstatus);
+	pid_t waited_pid = waitpid(child->pid, &wstatus, 0);
+	if (waited_pid != child->pid) {
+		fprintf(stderr, "[EE] waitpid() returns %d after waiting for child %d\n", waited_pid, child->pid);
+		return -1;
+	}
 	if (!! WIFEXITED(wstatus)) {
 		fprintf(stderr, "[II] Child cwdaemon process exited cleanly\n");
 		return 0;
@@ -153,6 +170,35 @@ int cwdaemon_process_wait_for_exit(cwdaemon_process_t * child)
 		}
 		return -1;
 	}
+}
+
+
+
+
+int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * child)
+{
+	const char * path = "/home/acerion/sbin/cwdaemon";
+	if (0 != cwdaemon_start(path, opts, child)) {
+		fprintf(stderr, "[EE] Failed to start cwdaemon\n");
+		return -1;
+	}
+
+	char cwdaemon_address[INET6_ADDRSTRLEN] = { 0 };
+	if (0 == strlen(opts->l3_address)) {
+		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", "127.0.0.1");
+	} else {
+		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", opts->l3_address);
+	}
+	char cwdaemon_port[16] = { 0 };
+	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", child->l4_port);
+
+	child->fd = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
+	if (child->fd < 0) {
+		fprintf(stderr, "[EE] Failed to connect to cwdaemon socket\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 

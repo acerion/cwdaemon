@@ -10,16 +10,19 @@
 
 
 
-typedef struct {
-	int id;
-	char value[32];
-	char requested_reply[32];
-} cwdaemon_request_t;
+/**
+   @brief Ask cwdaemon to play a text message, receive it on serial line console
+
+   @param[in] child cwdaemon child process used for the test
+   @param[in] messsage_value text to played
+
+   @return 0 if text was received successfully
+   @return -1 otherwise
+*/
+int cwdaemon_play_text_and_receive(cwdaemon_process_t * child, const char * message_value);
 
 
 
-
-int cwdaemon_request_message_and_receive(cwdaemon_process_t * child, cwdaemon_request_t * request, cw_easy_receiver_t * easy_rec);
 
 /**
    @brief Find a UDP port that is not used on local machine
@@ -31,6 +34,12 @@ int cwdaemon_request_message_and_receive(cwdaemon_process_t * child, cwdaemon_re
    @return 0 on failure
 */
 int find_unused_random_local_udp_port(void);
+
+
+
+
+int test_helpers_setup(int speed);
+void test_helpers_teardown(void);
 
 
 
