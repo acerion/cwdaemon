@@ -1,0 +1,11 @@
+Test basic control of cwdaemon process:
+1. starting of cwdaemon process with some command line options,
+2. stopping of cwdaemon process through EXIT (esc + '5') request.
+
+The first sub-test is mostly for the benefit of other cwdaemon tests - we
+really want to know that a cwdaemon process can be started successfully.
+
+The second part checks if esc+'5' request which is part of official, public
+"interface" to cwdaemon is correctly causing cwdaemon to exit.
+
+
