@@ -43,23 +43,26 @@
 
 
 
-static void cleanup(void);
+static void cwdaemon_cleanup(void);
 
 
 
 
-static cwdaemon_process_t g_cwdaemon_child = { 0 };
+static cwdaemon_process_t g_cwdaemon = { 0 };
 
 
 
 
-static void cleanup(void)
+/**
+   Close socket to test instance of cwdaemon. cwdaemon may be stopped, but
+   let's still try to close socket on our end.
+*/
+static void cwdaemon_cleanup(void)
 {
-	test_helpers_teardown();
-
-	/* cwdaemon is stopped, but let's still try to close socket on our
-	   end. */
-	cwdaemon_socket_disconnect(g_cwdaemon_child.fd);
+	if (g_cwdaemon.fd >= 0) {
+		cwdaemon_socket_disconnect(g_cwdaemon.fd);
+		g_cwdaemon.fd = -1;
+	}
 }
 
 
@@ -69,30 +72,34 @@ int main(void)
 {
 	srand(time(NULL));
 	int wpm = 10;
-	atexit(cleanup);
 
-	cwdaemon_opts_t opts = {
+	cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = "1000",
 		.sound_system   = "p",
 		.nofork         = "-n",
 		.cwdevice       = "ttyS0",
 		.wpm            = wpm,
 	};
-	if (0 != cwdaemon_start_and_connect(&opts, &g_cwdaemon_child)) {
+	atexit(cwdaemon_cleanup);
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &g_cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 
-	test_helpers_setup(wpm);
-
+	atexit(test_helpers_cleanup);
+	helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
+	if (0 != test_helpers_setup(&helpers_opts)) {
+		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
+		exit(EXIT_FAILURE);
+	}
 
 
 
 	/* Test that a cwdaemon is really started by asking cwdaemon to play
 	   a text and observing the text keyed on serial line port. */
 	{
-		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon_child, "paris")) {
-			fprintf(stderr, "[EE] cwdaemon is probably not running\n");
+		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris")) {
+			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -103,19 +110,20 @@ int main(void)
 	/* Test that EXIT request works. */
 	{
 		/* First ask nicely for a clean exit. */
-		cwdaemon_socket_send_request(g_cwdaemon_child.fd, CWDAEMON_REQUEST_EXIT, "");
+		cwdaemon_socket_send_request(g_cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
 		sleep(2);
 
 		int wstatus = 0;
-		if (0 == waitpid(g_cwdaemon_child.pid, &wstatus, WNOHANG)) {
+		if (0 == waitpid(g_cwdaemon.pid, &wstatus, WNOHANG)) {
 			/* Process still exists, kill it. */
 			fprintf(stderr, "[EE] Child cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
 			/* The fact that we need to kill cwdaemon with a signal is a
 			   bug. It will be detected by a test executable when the
 			   executable calls wait() on child pid. */
-			kill(g_cwdaemon_child.pid, SIGKILL);
+			kill(g_cwdaemon.pid, SIGKILL);
+			fprintf(stderr, "[EE] cwdaemon was forcibly killed, exiting\n");
 			exit(EXIT_FAILURE);
 		}
 	}

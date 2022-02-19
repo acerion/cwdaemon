@@ -49,10 +49,17 @@
 
 static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char * buffer, size_t size, const char * expected_reply);
 static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
+static int test_helper_key_source_setup(cw_key_source_t * key_source);
+static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const helpers_opts_t * opts);
 
 
 
 
+/*
+  These are global in this file because it's easier for me that way, and I
+  don't plan to have tests that will require multiple parallel instances of
+  easy receiver or key source.
+*/
 static cw_easy_receiver_t g_easy_rec = { 0 };
 static cw_key_source_t g_key_source = {
 	.open_fn            = cw_key_source_serial_open,
@@ -64,31 +71,47 @@ static cw_key_source_t g_key_source = {
 
 
 
-int test_helpers_setup(int speed)
+/**
+   Configure and start some objects used during tests of cwdaemon
+*/
+int test_helpers_setup(const helpers_opts_t * opts)
+{
+	if (0 != test_helper_easy_receiver_setup(&g_easy_rec, opts)) {
+		fprintf(stderr, "[EE] Failed to set up easy receiver\n");
+		return -1;
+	}
+	if (0 != test_helper_key_source_setup(&g_key_source)) {
+		fprintf(stderr, "[EE] Failed to set up key source\n");
+		return -1;
+	}
+	return 0;
+}
+
+
+
+
+/**
+   Configure and start a receiver used during tests of cwdaemon
+*/
+static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const helpers_opts_t * opts)
 {
 #if 0
 	cw_enable_adaptive_receive();
 #else
-	cw_set_receive_speed(speed);
+	cw_set_receive_speed(opts->wpm);
 #endif
 
 	cw_generator_new(CW_AUDIO_NULL, NULL);
 	cw_generator_start();
 
-	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, &g_easy_rec);
-	cw_easy_receiver_start(&g_easy_rec);
-
-
-	cw_key_source_configure_polling(&g_key_source, 0, cw_key_source_serial_poll_once);
-	if (!g_key_source.open_fn(&g_key_source)) {
-		return -1;
-	}
-	cw_key_source_start(&g_key_source);
-
+	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, easy_rec);
+	cw_easy_receiver_start(easy_rec);
 	cw_clear_receive_buffer();
-	cw_easy_receiver_clear(&g_easy_rec);
+	cw_easy_receiver_clear(easy_rec);
 
-	gettimeofday(&g_easy_rec.main_timer, NULL);
+	// TODO acerion 2022.02.18 this seems to be not needed because it's
+	// already done in cw_easy_receiver_start().
+	//gettimeofday(&easy_rec->main_timer, NULL);
 
 	return 0;
 }
@@ -96,7 +119,23 @@ int test_helpers_setup(int speed)
 
 
 
-void test_helpers_teardown(void)
+/**
+   Configure and start a key source used during tests of cwdaemon
+*/
+static int test_helper_key_source_setup(cw_key_source_t * key_source)
+{
+	cw_key_source_configure_polling(key_source, 0, cw_key_source_serial_poll_once);
+	if (!key_source->open_fn(key_source)) {
+		return -1;
+	}
+	cw_key_source_start(key_source);
+	return 0;
+}
+
+
+
+
+void test_helpers_cleanup(void)
 {
 	/* Cleanup. */
 	cw_generator_stop();
@@ -109,7 +148,7 @@ void test_helpers_teardown(void)
 
 
 
-int cwdaemon_play_text_and_receive(cwdaemon_process_t * child, const char * message_value)
+int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value)
 {
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
 
@@ -132,15 +171,15 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * child, const char * mess
 	/* Ask cwdaemon to send us this reply back after playint text, so
 	   that we don't wait in receive_from_key_source() for longer than
 	   it's necessary to play and key requested text. */
-	cwdaemon_socket_send_request(child->fd, CWDAEMON_REQUEST_REPLY, requested_reply_value);
+	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_REPLY, requested_reply_value);
 
 	char value[64] = { 0 };
 	snprintf(value, sizeof (value), "start %s", message_value);
-	cwdaemon_socket_send_request(child->fd, CWDAEMON_REQUEST_MESSAGE, value);
+	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_MESSAGE, value);
 
 
 	char receive_buffer[30] = { 0 };
-	if (0 != receive_from_key_source(child->fd, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
+	if (0 != receive_from_key_source(cwdaemon->fd, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
 		fprintf(stderr, "[EE] Failed to receive from key source\n");
 		return -1;
 	}
@@ -228,6 +267,14 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 
 
 
+/**
+   @brief Test if give local Layer 4 port is used (open) or not
+
+   @param[in] port port number to test
+
+   @return true if given port is used (open), or if due to error this cannot be checked
+   @return false otherwise
+*/
 static bool is_local_udp_port_used(int port)
 {
 	struct sockaddr_in request_addr = { 0 };
@@ -252,12 +299,17 @@ static bool is_local_udp_port_used(int port)
 
 
 
+/*
+  TODO acerion 2022.02.18: this function should probably be slightly biased
+  towards cwdaemon's default port. With the bias we can test the most common
+  setup more often, while still being able to test uncommon cases.
+*/
 int find_unused_random_local_udp_port(void)
 {
 	const int lower = 1024;
 	const int upper = 65535;
 
-	int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
+	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
 	for (int i = 0; i < n; i++) {
 		int port = rand();
 		port %= ((upper + 1) - lower);
@@ -273,6 +325,10 @@ int find_unused_random_local_udp_port(void)
 
 
 
+/*
+  Alternative implementation of function looking for unused port. May work
+  with remote machines too (but I didn't test it all that well).
+*/
 __attribute__((unused))
 static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 {
@@ -306,7 +362,11 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 
 
 
+/**
+   @brief Inform an easy receiver that a key has a new state (up or down)
 
+   A simple wrapper that seems to be convenient.
+*/
 static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 {
 	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;

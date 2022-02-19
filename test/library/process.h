@@ -14,7 +14,7 @@
 typedef struct cwdaemon_process_t {
 	int fd;       /* Socket, on which the process will be reachable. */
 	pid_t pid;    /* pid of cwdaemon process. */
-	int l4_port;  /* Network port, on which cwdaemon will be listening. */
+	int l4_port;  /* Network port, on which cwdaemon has been started and is listening. */
 } cwdaemon_process_t;
 
 
@@ -53,7 +53,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * child);
+int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
 
 
 
@@ -68,7 +68,7 @@ int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * chil
 
    This function is non-blocking.
 */
-void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * child, int delay_ms);
+void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms);
 
 
 
@@ -80,7 +80,7 @@ void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * child, int del
    @return 0 if process exited cleanly as asked
    @return -1 if process didn't exit cleanly and was killed by cwdaemon_process_do_delayed_termination().
 */
-int cwdaemon_process_wait_for_exit(cwdaemon_process_t * child);
+int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon);
 
 
 

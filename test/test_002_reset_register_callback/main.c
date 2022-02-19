@@ -24,7 +24,6 @@
 
 
 #define _DEFAULT_SOURCE
-#define _GNU_SOURCE /* strcasestr() */
 
 #include <errno.h>
 #include <stdio.h>
@@ -41,28 +40,33 @@
 
 
 
-static void cleanup(void);
+static void cwdaemon_cleanup(void);
 
 
 
 
 /* global variables */
-static cwdaemon_process_t g_cwdaemon_child = { 0 };
+static cwdaemon_process_t g_cwdaemon = { 0 };
 
 
 
 
-static void cleanup(void)
+/**
+   Stop test instance of cwdaemon.
+
+   Close socket to the cwdaemon. cwdaemon is stopped, but let's still try to
+   close socket on our end.
+*/
+static void cwdaemon_cleanup(void)
 {
-	test_helpers_teardown();
-
 	/* This should stop the cwdaemon that runs in background. */
-	cwdaemon_process_do_delayed_termination(&g_cwdaemon_child, 100);
-	cwdaemon_process_wait_for_exit(&g_cwdaemon_child);
+	cwdaemon_process_do_delayed_termination(&g_cwdaemon, 100);
+	cwdaemon_process_wait_for_exit(&g_cwdaemon);
 
-	/* cwdaemon is stopped, but let's still try to close socket on our
-	   end. */
-	cwdaemon_socket_disconnect(g_cwdaemon_child.fd);
+	if (g_cwdaemon.fd >= 0) {
+		cwdaemon_socket_disconnect(g_cwdaemon.fd);
+		g_cwdaemon.fd = -1;
+	}
 }
 
 
@@ -72,39 +76,46 @@ int main(void)
 {
 	srand(time(NULL));
 	int wpm = 10;
-	atexit(cleanup);
 
-	cwdaemon_opts_t opts = {
+	cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = "1000",
 		.sound_system       = "p",
 		.nofork             = true,
 		.cwdevice           = "ttyS0",
 		.wpm                = wpm,
 	};
-	if (0 != cwdaemon_start_and_connect(&opts, &g_cwdaemon_child)) {
+	atexit(cwdaemon_cleanup);
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &g_cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 
-	test_helpers_setup(wpm);
+	atexit(test_helpers_cleanup);
+	helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
+	if (0 != test_helpers_setup(&helpers_opts)) {
+		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
+		exit(EXIT_FAILURE);
+	}
+
+
 
 
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon_child, "paris")) {
-		fprintf(stderr, "[EE] failed to send first request\n");
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris")) {
+		fprintf(stderr, "[EE] failed to send first request, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	cwdaemon_socket_send_request(g_cwdaemon_child.fd, CWDAEMON_REQUEST_RESET, "");
+	cwdaemon_socket_send_request(g_cwdaemon.fd, CWDAEMON_REQUEST_RESET, "");
 
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon_child, "texas")) {
-		fprintf(stderr, "[EE] Failed to send second request\n");
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "texas")) {
+		fprintf(stderr, "[EE] Failed to send second request, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 

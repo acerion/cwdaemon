@@ -18,8 +18,8 @@
 
 
 
-static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child);
-static void * terminate_cwdaemon_fn(void * child_arg);
+static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
+static void * terminate_cwdaemon_fn(void * cwdaemon_arg);
 
 
 
@@ -31,7 +31,7 @@ static void * terminate_cwdaemon_fn(void * child_arg);
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * child)
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
 {
 	const int default_l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
 	int l4_port = 0;
@@ -87,10 +87,19 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		argv[a++] = "-p";
 		argv[a++] = port_buf;
 
+		fprintf(stderr, "====== A\n");
+		int b = 0;
+		while (argv[b]) {
+			fprintf(stderr, "%s ", argv[b]);
+			b++;
+		}
+		fprintf(stderr, "\n");
+
 		execve(path, (char * const *) argv, env);
 		fprintf(stderr, "[EE] Returning after failed exec(): %s\n", strerror(errno));
 		return -1;
 	} else {
+		fprintf(stderr, "====== B\n");
 		/*
 		  300 milliseconds. Give the process some time to start.
 		  Delay introduced after I noticed that a receiver test that
@@ -107,8 +116,8 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 		fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
 
-		child->pid = pid;
-		child->l4_port = l4_port;
+		cwdaemon->pid = pid;
+		cwdaemon->l4_port = l4_port;
 		return 0;
 	}
 }
@@ -116,34 +125,34 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 
 
-void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * child, int delay_ms)
+void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms)
 {
 	usleep(1000 * delay_ms);
 	static pthread_t thread_id;
-	pthread_create(&thread_id, NULL, terminate_cwdaemon_fn, child);
+	pthread_create(&thread_id, NULL, terminate_cwdaemon_fn, cwdaemon);
 }
 
 
 
 
-static void * terminate_cwdaemon_fn(void * child_arg)
+static void * terminate_cwdaemon_fn(void * cwdaemon_arg)
 {
-	cwdaemon_process_t * child = (cwdaemon_process_t *) child_arg;
+	cwdaemon_process_t * cwdaemon = (cwdaemon_process_t *) cwdaemon_arg;
 
 	/* First ask nicely for a clean exit. */
-	cwdaemon_socket_send_request(child->fd, CWDAEMON_REQUEST_EXIT, "");
+	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_EXIT, "");
 
 	/* Give cwdaemon some time to exit cleanly. */
 	sleep(2);
 
 	int wstatus = 0;
-	if (0 == waitpid(child->pid, &wstatus, WNOHANG)) {
+	if (0 == waitpid(cwdaemon->pid, &wstatus, WNOHANG)) {
 		/* Process still exists, kill it. */
 		fprintf(stderr, "[WW] Child cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
 		/* The fact that we need to kill cwdaemon with a signal is a
 		   bug. It will be detected by a test executable when the
 		   executable calls wait() on child pid. */
-		kill(child->pid, SIGKILL);
+		kill(cwdaemon->pid, SIGKILL);
 	}
 	return NULL;
 }
@@ -151,12 +160,12 @@ static void * terminate_cwdaemon_fn(void * child_arg)
 
 
 
-int cwdaemon_process_wait_for_exit(cwdaemon_process_t * child)
+int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon)
 {
 	int wstatus = 0;
-	pid_t waited_pid = waitpid(child->pid, &wstatus, 0);
-	if (waited_pid != child->pid) {
-		fprintf(stderr, "[EE] waitpid() returns %d after waiting for child %d\n", waited_pid, child->pid);
+	pid_t waited_pid = waitpid(cwdaemon->pid, &wstatus, 0);
+	if (waited_pid != cwdaemon->pid) {
+		fprintf(stderr, "[EE] waitpid() returns %d after waiting for child %d\n", waited_pid, cwdaemon->pid);
 		return -1;
 	}
 	if (!! WIFEXITED(wstatus)) {
@@ -175,10 +184,10 @@ int cwdaemon_process_wait_for_exit(cwdaemon_process_t * child)
 
 
 
-int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * child)
+int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
 {
 	const char * path = "/home/acerion/sbin/cwdaemon";
-	if (0 != cwdaemon_start(path, opts, child)) {
+	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon\n");
 		return -1;
 	}
@@ -190,10 +199,10 @@ int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * chil
 		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", opts->l3_address);
 	}
 	char cwdaemon_port[16] = { 0 };
-	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", child->l4_port);
+	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", cwdaemon->l4_port);
 
-	child->fd = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
-	if (child->fd < 0) {
+	cwdaemon->fd = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
+	if (cwdaemon->fd < 0) {
 		fprintf(stderr, "[EE] Failed to connect to cwdaemon socket\n");
 		return -1;
 	}

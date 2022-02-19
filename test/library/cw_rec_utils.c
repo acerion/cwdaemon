@@ -358,6 +358,8 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 
 #ifdef XCWCP_WITH_REC_TEST
 		if (CW_SUCCESS != cw_rec_tester_on_character(easy_rec->rec_tester, erd, &timer)) {
+			/* FIXME acerion 2022.02.19: this is a library code,
+			   so don't call exit(). */
 			exit(EXIT_FAILURE);
 		}
 #endif
@@ -436,6 +438,8 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 
 #ifdef XCWCP_WITH_REC_TEST
 		if (CW_SUCCESS != cw_rec_tester_on_space(easy_rec->rec_tester, erd, &timer)) {
+			/* FIXME acerion 2022.02.19: this is a library code,
+			   so don't call exit(). */
 			exit(EXIT_FAILURE);
 		}
 #endif
