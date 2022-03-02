@@ -248,10 +248,10 @@ Device = parport0
 Sound device = console buzzer
 
 
-Tty driver tuning
+tty driver tuning
 -----------------
 
-The default Tty driver pinout uses DTR (pin 4 on DB-9) for keying CW,
+The default tty driver pinout uses DTR (pin 4 on DB-9) for keying CW,
 and RTS (pin 7 on DB-9) for PTT.  This is the equivalent of
 
 -o key=DTR -o ptt=RTS

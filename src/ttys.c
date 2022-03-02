@@ -63,10 +63,9 @@
    Serial port functions.
 */
 
-struct driveroptions
-{
-    int key; // TIOCM_DTR by default
-    int ptt; // TIOCM_RTS by default
+struct driveroptions {
+	int key; /* Pin/line used for keying. TIOCM_DTR by default. */
+	int ptt; /* Pin/line used for PTT.    TIOCM_RTS by default. */
 };
 
 
@@ -144,15 +143,16 @@ ttys_reset (cwdevice * dev)
 }
 
 
-/* CW keying - bit1 (pin 4 for DB-9) */
+/* CW keying on pin indicated by dev->key. */
 int
 ttys_cw (cwdevice * dev, int onoff)
 {
 	struct driveroptions *dropt = dev->cookie;
 
-	if (dropt->key == 0)
+	if (dropt->key == 0) {
 		// CW keying opted out
 		return 0;
+	}
 
 	int result;
 
@@ -171,9 +171,10 @@ ttys_ptt (cwdevice * dev, int onoff)
 {
 	struct driveroptions *dropt = dev->cookie;
 
-	if (dropt->ptt == 0)
+	if (dropt->ptt == 0) {
 		// PTT opted out
 		return 0;
+	}
 
 	int result;
 
@@ -187,47 +188,72 @@ ttys_ptt (cwdevice * dev, int onoff)
 }
 
 /* Parse -o <opts> invocation */
-int ttys_optparse (cwdevice * dev, const char * opts)
+bool ttys_optparse (cwdevice * dev, const char * opts)
 {
 	struct driveroptions *dropt = dev->cookie;
 
 	const char *equal = strchr(opts, '=');
 	if (equal == NULL) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "no '=' in <opts>: %s", opts);
-		return 0;
+		return false;
 	}
 
 	size_t kwlen = equal - opts;
 	if (!strncasecmp(opts, "key", kwlen)) {
 		/* key=DTR | RTS | none */
-		if (!strcasecmp(equal + 1, "dtr"))
+		if (!strcasecmp(equal + 1, "dtr")) {
 			dropt->key = TIOCM_DTR;
-		else if (!strcasecmp(equal + 1, "rts"))
+		} else if (!strcasecmp(equal + 1, "rts")) {
 			dropt->key = TIOCM_RTS;
-		else if (!strcasecmp(equal + 1, "none"))
+		} else if (!strcasecmp(equal + 1, "none")) {
 			dropt->key = 0;
-		else {
+		} else {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
-			return 0;
+			return false;
 		}
 		ttys_cw(dev, 0);
 	} else if (!strncasecmp(opts, "ptt", kwlen)) {
 		/* ptt=RTS | DTR | none */
-		if (!strcasecmp(equal + 1, "dtr"))
+		if (!strcasecmp(equal + 1, "dtr")) {
 			dropt->ptt = TIOCM_DTR;
-		else if (!strcasecmp(equal + 1, "rts"))
+		} else if (!strcasecmp(equal + 1, "rts")) {
 			dropt->ptt = TIOCM_RTS;
-		else if (!strcasecmp(equal + 1, "none"))
+		} else if (!strcasecmp(equal + 1, "none")) {
 			dropt->ptt = 0;
-		else {
+		} else {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
-			return 0;
+			return false;
 		}
 		ttys_ptt(dev, 0);
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
-		return 0;
+		return false;
 	}
-	return 1;
+	return true;
+}
+
+
+
+/**
+   @brief Validate parsed driver options
+*/
+bool ttys_optvalidate(cwdevice * dev)
+{
+	struct driveroptions *dropt = dev->cookie;
+	if (NULL == dropt) {
+		/* dev->cookie should have been initialized by ttys_init(). */
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "can't validate driver options");
+		return false;
+	}
+
+	if (0 != dropt->key
+	    && 0 != dropt->ptt
+	    && dropt->key == dropt->ptt) {
+		/* You can't use the same tty pin for two purposes. */
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %d", dropt->key);
+		return false;
+	}
+
+	return true;
 }
 

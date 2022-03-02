@@ -434,7 +434,7 @@ static bool cwdaemon_params_libcwflags(const char *optarg);
 static bool cwdaemon_params_debugfile(const char *optarg);
 static bool cwdaemon_params_system(int *system, const char *optarg);
 static bool cwdaemon_params_ptt_on_off(const char *optarg);
-static bool cwdaemon_params_options(const char *optarg);
+static bool cwdaemon_params_options(cwdevice * dev, const char *optarg);
 
 
 
@@ -458,6 +458,7 @@ cwdevice cwdevice_ttys = {
 	.switchband = NULL,
 	.footswitch = NULL,
 	.optparse   = ttys_optparse,
+	.optvalidate = ttys_optvalidate,
 	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
@@ -473,6 +474,7 @@ cwdevice cwdevice_null = {
 	.switchband = NULL,
 	.footswitch = NULL,
 	.optparse   = NULL,
+	.optvalidate = NULL,
 	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
@@ -489,6 +491,7 @@ cwdevice cwdevice_lp = {
 	.switchband = lp_switchband,
 	.footswitch = lp_footswitch,
 	.optparse   = NULL,
+	.optvalidate = NULL,
 	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
@@ -1915,7 +1918,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else if (!strcmp(optname, "options")) {
-				if (!cwdaemon_params_options(optarg)) {
+				if (!cwdaemon_params_options(global_cwdevice, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -2019,7 +2022,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		}
 		break;
 	case 'o':
-		if (!cwdaemon_params_options(optarg)) {
+		if (!cwdaemon_params_options(global_cwdevice, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -2419,17 +2422,30 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 	return true;
 }
 
-bool cwdaemon_params_options(const char *optarg)
+/**
+   @brief Parse -o/--options command line argument
+
+   @param[in/out] dev device for which to configure the options
+   @param[in] optarg value of the argument
+
+   @return true on successful parse
+   @return false otherwise
+*/
+bool cwdaemon_params_options(cwdevice * dev, const char *optarg)
 {
-	if (global_cwdevice == NULL) {
+	/* FIXME: the program sets global_cwdevice to null device (in
+	   cwdaemon_cwdevice_init()) before command line args are parsed, so
+	   this pointer should never be NULL. How to recognize if -o options
+	   were passed AFTER -d? */
+	if (dev == NULL) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "-o option must be used after -d <device>");
 		return false;
 	}
-	if (global_cwdevice->optparse == NULL) {
+	if (dev->optparse == NULL) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "selected device does not support -o option");
 		return false;
 	}
-	return (bool)global_cwdevice->optparse(global_cwdevice, optarg);
+	return dev->optparse(dev, optarg);
 }
 
 
@@ -2455,6 +2471,13 @@ void cwdaemon_args_parse(int argc, char *argv[])
 		cwdaemon_args_process_short(p, optarg);
 	}
 #endif
+
+	if (global_cwdevice && global_cwdevice->optvalidate) {
+		if (!global_cwdevice->optvalidate(global_cwdevice)) {
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "cw device options are not valid");
+			exit(EXIT_FAILURE);
+		}
+	}
 	return;
 }
 
@@ -2586,10 +2609,18 @@ void cwdaemon_args_help(void)
 #endif
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
 
+	printf("-o, --options <opts>\n");
+	printf("        Use <opts> to configure device selected by -d / -cwdevice option.\n");
+	printf("        Multiple <opts> can be passed in multiple -o invocations.\n");
+	printf("        These options must always follow the -d / --cwdevice option\n");
+	printf("        on the command line.\n");
+	printf("        Driver for serial line devices understands the following options:\n");
+	printf("        key=DTR | RTS | none (default is DTR)\n");
+	printf("        ptt=RTS | DTR | none (default is RTS)\n");
+
 	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
-	printf("-o, --options <opts>\n");
-	printf("        Provide device-specific options (e.g. DTR/RTS handling)\n");
+
 	printf("-p, --port <port>\n");
 	printf("        Use a different UDP port number (> 1023, default: %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
