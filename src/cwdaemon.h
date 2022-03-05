@@ -36,6 +36,26 @@
 
 #define MAX_DEVICE 20
 
+/* Notice that the range accepted by cwdaemon is different than that
+   accepted by libcw. */
+#define CWDAEMON_MORSE_WEIGHTING_DEFAULT        0
+#define CWDAEMON_MORSE_WEIGHTING_MIN          -50
+#define CWDAEMON_MORSE_WEIGHTING_MAX           50
+
+#define CWDAEMON_MORSE_SPEED_DEFAULT           24 /* [wpm] */
+#define CWDAEMON_MORSE_TONE_DEFAULT           800 /* [Hz] */
+#define CWDAEMON_MORSE_VOLUME_DEFAULT          70 /* [%] */
+
+#define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
+
+/* TODO: why the limitation to 50 ms? Is it enough? */
+#define CWDAEMON_PTT_DELAY_DEFAULT              0 /* [ms] */
+#define CWDAEMON_PTT_DELAY_MIN                  0 /* [ms] */
+#define CWDAEMON_PTT_DELAY_MAX                 50 /* [ms] */
+
+
+
+
 typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);

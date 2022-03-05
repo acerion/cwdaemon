@@ -120,7 +120,7 @@ am__installdirs = "$(DESTDIR)$(sbindir)"
 PROGRAMS = $(sbin_PROGRAMS)
 am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 	cwdaemon-lp.$(OBJEXT) cwdaemon-ttys.$(OBJEXT) \
-	cwdaemon-null.$(OBJEXT)
+	cwdaemon-null.$(OBJEXT) cwdaemon-help.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
 cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -140,8 +140,8 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/cwdaemon-cwdaemon.Po \
-	./$(DEPDIR)/cwdaemon-lp.Po ./$(DEPDIR)/cwdaemon-null.Po \
-	./$(DEPDIR)/cwdaemon-ttys.Po
+	./$(DEPDIR)/cwdaemon-help.Po ./$(DEPDIR)/cwdaemon-lp.Po \
+	./$(DEPDIR)/cwdaemon-null.Po ./$(DEPDIR)/cwdaemon-ttys.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -286,7 +286,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c null.c
+cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c ttys.c null.c help.c
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} #-I$(top_srcdir)/src/
 # target-specific linker flags (objects to link)
@@ -378,6 +378,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-cwdaemon.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-help.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-lp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-null.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-ttys.Po@am__quote@ # am--include-marker
@@ -457,6 +458,20 @@ cwdaemon-null.obj: null.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='null.c' object='cwdaemon-null.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-null.obj `if test -f 'null.c'; then $(CYGPATH_W) 'null.c'; else $(CYGPATH_W) '$(srcdir)/null.c'; fi`
+
+cwdaemon-help.o: help.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-help.o -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-help.Tpo $(DEPDIR)/cwdaemon-help.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='help.c' object='cwdaemon-help.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
+
+cwdaemon-help.obj: help.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-help.obj -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-help.Tpo $(DEPDIR)/cwdaemon-help.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='help.c' object='cwdaemon-help.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -586,6 +601,7 @@ clean-am: clean-generic clean-sbinPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/cwdaemon-cwdaemon.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-help.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po
@@ -635,6 +651,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/cwdaemon-cwdaemon.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-help.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po

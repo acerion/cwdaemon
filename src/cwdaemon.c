@@ -115,6 +115,9 @@
 #include <libcw.h>
 #include <libcw_debug.h>
 #include "cwdaemon.h"
+#include "help.h"
+
+
 
 
 /**
@@ -182,22 +185,6 @@
 
 
 /* cwdaemon constants. */
-#define CWDAEMON_MORSE_SPEED_DEFAULT           24 /* [wpm] */
-#define CWDAEMON_MORSE_TONE_DEFAULT           800 /* [Hz] */
-#define CWDAEMON_MORSE_VOLUME_DEFAULT          70 /* [%] */
-
-/* TODO: why the limitation to 50 ms? Is it enough? */
-#define CWDAEMON_PTT_DELAY_DEFAULT              0 /* [ms] */
-#define CWDAEMON_PTT_DELAY_MIN                  0 /* [ms] */
-#define CWDAEMON_PTT_DELAY_MAX                 50 /* [ms] */
-
-/* Notice that the range accepted by cwdaemon is different than that
-   accepted by libcw. */
-#define CWDAEMON_MORSE_WEIGHTING_DEFAULT        0
-#define CWDAEMON_MORSE_WEIGHTING_MIN          -50
-#define CWDAEMON_MORSE_WEIGHTING_MAX           50
-
-#define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 #define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
 
@@ -407,7 +394,6 @@ void cwdaemon_udelay(unsigned long us);
 static void cwdaemon_args_parse(int argc, char *argv[]);
 static void cwdaemon_args_process_short(int c, const char *optarg);
 static void cwdaemon_args_process_long(int argc, char *argv[]);
-static void cwdaemon_args_help(void);
 
 /* These two are called only in code handling command line options. No
    request can prompt cwdaemon to inform about version or to fork.
@@ -2580,105 +2566,6 @@ void cwdaemon_debug_open(void)
 			exit(EXIT_FAILURE);
 		}
 	}
-
-	return;
-}
-
-
-
-
-
-void cwdaemon_args_help(void)
-{
-	printf("Usage: %s [option]...\n", PACKAGE);
-	printf("Long options may not be supported on your system.\n\n");
-
-	printf("-h, --help\n");
-	printf("        Print this help and exit.\n");
-	printf("-V, --version\n");
-	printf("        Print version information and exit.\n");
-
-	printf("-d, --cwdevice <device>\n");
-	printf("        Use a different device.\n");
-#if defined (HAVE_LINUX_PPDEV_H)
-	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default: parport0)\n");
-#elif defined (HAVE_DEV_PPBUS_PPI_H)
-	printf("        (e.g. ttyd0,1,2, ppi0,1, etc. default: ppi0)\n");
-#else
-#ifdef BSD
-	printf("        (e.g. ttyd0,1,2, etc. default: ttyd0)\n");
-#else
-	printf("        (e.g. ttyS0,1,2, etc. default: ttyS0)\n");
-#endif
-#endif
-	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
-
-	printf("-o, --options <opts>\n");
-	printf("        Use <opts> to configure device selected by -d / -cwdevice option.\n");
-	printf("        Multiple <opts> can be passed in multiple -o invocations.\n");
-	printf("        These options must always follow the -d / --cwdevice option\n");
-	printf("        on the command line.\n");
-	printf("        Driver for serial line devices understands the following options:\n");
-	printf("        key=DTR | RTS | none (default is DTR)\n");
-	printf("        ptt=RTS | DTR | none (default is RTS)\n");
-
-	printf("-n, --nofork\n");
-	printf("        Do not fork. Print debug information to stdout.\n");
-
-	printf("-p, --port <port>\n");
-	printf("        Use a different UDP port number (> 1023, default: %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
-#if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
-	printf("-P, --priority <priority>\n");
-	printf("        Set program's priority (-20 - 20, default: 0).\n");
-#endif
-	printf("-s, --wpm <speed>\n");
-	printf("        Set Morse speed [wpm] (%d - %d, default: %d).\n",
-	       CW_SPEED_MIN, CW_SPEED_MAX, CWDAEMON_MORSE_SPEED_DEFAULT);
-	printf("-t, --pttdelay <time>\n");
-	printf("        Set PTT delay [ms] (%d - %d, default: %d).\n",
-	       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX, CWDAEMON_PTT_DELAY_DEFAULT);
-	printf("-x, --system <sound system>\n");
-	printf("        Use a specific sound system:\n");
-	printf("        c = console buzzer (default)\n");
-	printf("        o = OSS\n");
-	printf("        a = ALSA\n");
-	printf("        p = PulseAudio\n");
-	printf("        n = null (no audio)\n");
-	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
-	printf("-v, --volume <volume>\n");
-	printf("        Set volume for soundcard output [%%] (%d - %d, default: %d).\n",
-	       CW_VOLUME_MIN, CW_VOLUME_MAX, CWDAEMON_MORSE_VOLUME_DEFAULT);
-	printf("-w, --weighting <weight>\n");
-	printf("        Set weighting (%d - %d, default: %d).\n",
-	       CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX, CWDAEMON_MORSE_WEIGHTING_DEFAULT);
-	printf("-T, --tone <tone>\n");
-	printf("        Set initial tone [Hz] (%d - %d, default: %d).\n",
-	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
-	printf("-i\n");
-	printf("        Increase verbosity of debug strings printed by cwademon.\n");
-	printf("        Repeat for even more verbosity (e.g. -iii).\n");
-	printf("        Alternatively you can use -y/--verbosity option.\n");
-	printf("-y, --verbosity <threshold>\n");
-	printf("        Set verbosity level threshold for debug strings printed by cwdaemon.\n");
-	printf("        Recognized values:\n");
-	printf("        n = none\n");
-	printf("        e = errors\n");
-	printf("        w = warnings (default)\n");
-	printf("        i = information\n");
-	printf("        d = details\n");
-	printf("        Alternatively you can use -i option.\n");
-	printf("-I, --libcwflags <flags>\n");
-	printf("        Numeric value of debug flags to be passed to libcw.\n");
-	printf("-f, --debugfile <output>\n");
-	printf("        Print debug information to <output> instead of stdout.\n");
-	printf("        Value of <output> can be explicitly stated as \"stdout\"\n");
-	printf("        (when not forking).\n");
-	printf("        Value of <output> can be also \"stderr\" (when not forking).\n");
-	printf("        Special value of <output> being \"syslog\" is reserved for\n");
-	printf("        future use. For now it will be rejected as invalid.\n");
-	printf("        Passing path to disc file as value of <output> works in both\n");
-	printf("        situations: when forking and when not forking.\n");
-	printf("\n");
 
 	return;
 }
