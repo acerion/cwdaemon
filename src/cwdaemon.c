@@ -366,14 +366,14 @@ static unsigned char ptt_flag = 0;
 
 
 
-void cwdaemon_set_ptt_on(cwdevice *device, const char *info);
-void cwdaemon_set_ptt_off(cwdevice *device, const char *info);
-void cwdaemon_switch_band(cwdevice *device, unsigned int band);
+void cwdaemon_set_ptt_on(cwdevice * dev, const char *info);
+void cwdaemon_set_ptt_off(cwdevice * dev, const char *info);
+void cwdaemon_switch_band(cwdevice * dev, unsigned int band);
 
 void cwdaemon_play_request(char *request);
 
 void cwdaemon_tune(uint32_t seconds);
-void cwdaemon_keyingevent(void *arg, int keystate);
+void cwdaemon_keyingevent(void * arg, int keystate);
 void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
@@ -384,7 +384,7 @@ int     cwdaemon_recvfrom(char *request, int n);
 int     cwdaemon_receive(void);
 void    cwdaemon_handle_escaped_request(char *request);
 
-void cwdaemon_reset_almost_all(void);
+void cwdaemon_reset_almost_all(cwdevice * dev);
 
 /* Functions managing cwdevices. */
 bool cwdaemon_cwdevices_init(void);
@@ -718,15 +718,15 @@ void cwdaemon_udelay(unsigned long us)
    The function works only for a subset of devices that are able to
    perform band switching. Currently the only such device is parallel port.
 
-   \brief device - device to use to switch band
-   \brief band - band number to switch to (a hex number)
+   \brief dev device to use to switch band
+   \brief band band number to switch to (a hex number)
 */
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-void cwdaemon_switch_band(cwdevice *device, unsigned int band)
+void cwdaemon_switch_band(cwdevice * dev, unsigned int band)
 {
 	unsigned int bit_pattern = (band & 0x01) | ((band & 0x0e) << 4);
-	if (device->switchband) {
-		device->switchband(device, bit_pattern);
+	if (dev->switchband) {
+		dev->switchband(dev, bit_pattern);
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "set band switch to %x", band);
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "band switch output not implemented");
@@ -743,16 +743,16 @@ void cwdaemon_switch_band(cwdevice *device, unsigned int band)
 /**
    \brief Switch PTT on
 
-   \param device - current keying device
-   \param info - debug information displayed when performing the switching
+   \param dev current keying device
+   \param info debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
+void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 {
 	/* For backward compatibility it is assumed that ptt_delay=0
 	   means "cwdaemon shouldn't turn PTT on, at all". */
 
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
-		device->ptt(device, ON);
+		dev->ptt(dev, ON);
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
 
 
@@ -784,12 +784,12 @@ void cwdaemon_set_ptt_on(cwdevice *device, const char *info)
 /**
    \brief Switch PTT off
 
-   \param device - current keying device
-   \param info - debug information displayed when performing the switching
+   \param dev current keying device
+   \param info debug information displayed when performing the switching
 */
-void cwdaemon_set_ptt_off(cwdevice *device, const char *info)
+void cwdaemon_set_ptt_off(cwdevice * dev, const char *info)
 {
-	device->ptt(device, OFF);
+	dev->ptt(dev, OFF);
 	ptt_flag = 0;
 	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
@@ -843,8 +843,10 @@ void cwdaemon_tune(uint32_t seconds)
    cwdaemon_reset_libcw_output()
    and call these two functions separately instead of this one.
    This function that combines these two doesn't make much sense.
+
+   @param dev current keying device
 */
-void cwdaemon_reset_almost_all(void)
+void cwdaemon_reset_almost_all(cwdevice * dev)
 {
 	current_morse_speed  = default_morse_speed;
 	current_morse_tone   = default_morse_tone;
@@ -867,7 +869,7 @@ void cwdaemon_reset_almost_all(void)
 
 #ifdef CWDAEMON_GITHUB_ISSUE_6_FIXED
 	fprintf(stderr, "With re-registration fixed\n");
-	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+	cw_register_keying_callback(cwdaemon_keyingevent, dev);
 #endif
 
 	return;
@@ -1253,6 +1255,7 @@ int cwdaemon_receive(void)
 */
 void cwdaemon_handle_escaped_request(char *request)
 {
+	cwdevice * dev = global_cwdevice;
 	long lv;
 
 	/* Take action depending on Escape code. */
@@ -1262,7 +1265,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested resetting of parameters");
 		request_queue[0] = '\0';
-		cwdaemon_reset_almost_all();
+		cwdaemon_reset_almost_all(dev);
 		wordmode = 0;
 		async_abort = 0;
 		global_cwdevice->reset(global_cwdevice);
@@ -1672,15 +1675,16 @@ void cwdaemon_play_request(char *request)
    libcw calls cwdaemon_keyingevent() on changes of software key ->
    cwdaemon_keyingevent() changes state of a bit on cwdaemon's keying device
 
-   \param arg - unused argument
-   \param keystate - state of a key, as seen by libcw
+   \param arg current keying device
+   \param keystate state of a key, as seen by libcw
 */
-void cwdaemon_keyingevent(__attribute__((unused)) void *arg, int keystate)
+void cwdaemon_keyingevent(void * arg, int keystate)
 {
+	cwdevice * dev = (cwdevice *) arg;
 	if (keystate == 1) {
-		global_cwdevice->cw(global_cwdevice, ON);
+		dev->cw(dev, ON);
 	} else {
-		global_cwdevice->cw(global_cwdevice, OFF);
+		dev->cw(dev, OFF);
 	}
 
 	inactivity_seconds = 0;
@@ -2706,6 +2710,7 @@ int main(int argc, char *argv[])
 	cwdaemon_cwdevice_init();
 
 	cwdaemon_args_parse(argc, argv);
+	cwdevice * dev = global_cwdevice;
 
 	atexit(cwdaemon_debug_close);
 	/* Call cwdaemon_debug_open() after parsing command line
@@ -2792,7 +2797,7 @@ int main(int argc, char *argv[])
 	   sure that libcw has been initialized and is used only by
 	   child process, not by parent process. */
 	atexit(cwdaemon_close_libcw_output);
-	cwdaemon_reset_almost_all();
+	cwdaemon_reset_almost_all(dev);
 	if (!has_audio_output) {
 		/* Failed to open libcw output. */
 		exit(EXIT_FAILURE);
@@ -2805,7 +2810,7 @@ int main(int argc, char *argv[])
 
 #ifndef CWDAEMON_GITHUB_ISSUE_6_FIXED
 	fprintf(stderr, "With re-registration not fixed\n");
-	cw_register_keying_callback(cwdaemon_keyingevent, NULL);
+	cw_register_keying_callback(cwdaemon_keyingevent, dev);
 #endif
 
 
