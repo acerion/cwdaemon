@@ -61,18 +61,6 @@
 # include <arpa/inet.h>
 #endif
 
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-#if HAVE_NETDB
-# include <netdb.h>
-#endif
-#if HAVE_NETINET_IN_H
-# include <netinet/in.h>
-#endif
-#if HAVE_SYS_SOCKET_H
-# include <sys/socket.h>
-#endif
 #if HAVE_SYSLOG_H
 # include <syslog.h>
 #endif
@@ -250,14 +238,6 @@ static bool has_audio_output = false;
 
 
 
-/* Network variables. */
-
-/* cwdaemon usually receives requests from client, but on occasions
-   it needs to send a reply back. This is why in addition to
-   request_* we also have reply_* */
-
-static int socket_descriptor = 0;
-
 /* Default UDP port we listen on. Can be changed only through command
    line switch.
 
@@ -267,13 +247,12 @@ static int socket_descriptor = 0;
  */
 static int port = CWDAEMON_NETWORK_PORT_DEFAULT;
 
-static struct sockaddr_in request_addr;
-static socklen_t          request_addrlen;
-
-static struct sockaddr_in reply_addr;
-static socklen_t          reply_addrlen;
 
 static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
+
+
+static cwdaemon_t g_cwdaemon = { .socket_descriptor = -1 };
+
 
 
 
@@ -361,13 +340,15 @@ void cwdaemon_play_request(char *request);
 
 void cwdaemon_tune(uint32_t seconds);
 void cwdaemon_keyingevent(void * arg, int keystate);
-void cwdaemon_prepare_reply(char *reply, const char *request, size_t n);
+void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
-bool    cwdaemon_initialize_socket(void);
-void    cwdaemon_close_socket(void);
-ssize_t cwdaemon_sendto(const char *reply);
-int     cwdaemon_recvfrom(char *request, int n);
+bool    cwdaemon_initialize_socket(cwdaemon_t * cwdaemon);
+void    cwdaemon_close_socket(cwdaemon_t * cwdaemon);
+ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char * reply);
+int     cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char * request, int size);
+
+void    cwdaemon_close_socket_wrapper(void);
 int     cwdaemon_receive(void);
 void    cwdaemon_handle_escaped_request(char *request);
 
@@ -1038,11 +1019,12 @@ bool cwdaemon_get_long(const char *buf, long *lvp)
        first defines reply, and the second defines text to be played.
        First should be echoed back (but not played), second should be played.
 
+   \param cwdaemon cwdaemon instance
    \param reply - buffer for reply (allocated by caller)
    \param request - buffer with request
    \param n - size of data in request
 */
-void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
+void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *request, size_t n)
 {
 	/* Since we need to prepare a reply, we need to mark our
 	   intent to send echo. The echo (reply) will be sent to client
@@ -1053,8 +1035,8 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
 	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_ECHO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 	/* We are sending reply to the same host that sent a request. */
-	memcpy(&reply_addr, &request_addr, sizeof(reply_addr));
-	reply_addrlen = request_addrlen;
+	memcpy(&cwdaemon->reply_addr, &cwdaemon->request_addr, sizeof(cwdaemon->reply_addr));
+	cwdaemon->reply_addrlen = cwdaemon->request_addrlen;
 
 	strncpy(reply, request, n);
 	reply[n] = '\0'; /* FIXME: where is boundary checking? */
@@ -1075,19 +1057,20 @@ void cwdaemon_prepare_reply(char *reply, const char *request, size_t n)
    Wrapper around sendto(), sending a \p reply to client.
    Client is specified by reply_* network variables.
 
+   \param cwdaemon cwdaemon instance
    \param reply - reply to be sent
 
    \return -1 on failure
    \return number of characters sent on success
 */
-ssize_t cwdaemon_sendto(const char *reply)
+ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 {
 	size_t len = strlen(reply);
 	/* TODO: Do we *really* need to end replies with CRLF? */
 	assert(reply[len - 2] == '\r' && reply[len - 1] == '\n');
 
-	ssize_t rv = sendto(socket_descriptor, reply, len, 0,
-			    (struct sockaddr *) &reply_addr, reply_addrlen);
+	ssize_t rv = sendto(cwdaemon->socket_descriptor, reply, len, 0,
+			    (struct sockaddr *) &cwdaemon->reply_addr, cwdaemon->reply_addrlen);
 
 	if (rv == -1) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "sendto: \"%s\"", strerror(errno));
@@ -1108,23 +1091,24 @@ ssize_t cwdaemon_sendto(const char *reply)
    Possible trailing '\r' and '\n' characters are stripped.
    Request is ended with '\0'.
 
-   \param request - buffer for received request
-   \param n - size of the buffer
+   \param cwdaemon cwdaemon instance
+   \param request buffer for received request
+   \param size size of the buffer
 
    \return -2 if peer has performed an orderly shutdown
    \return -1 if an error occurred during call to recvfrom
    \return  0 if no request has been received
    \return length of received request otherwise
  */
-int cwdaemon_recvfrom(char *request, int n)
+int cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
 {
-	ssize_t recv_rc = recvfrom(socket_descriptor,
+	ssize_t recv_rc = recvfrom(cwdaemon->socket_descriptor,
 				   request,
-				   n,
+				   size,
 				   0, /* flags */
-				   (struct sockaddr *) &request_addr,
+				   (struct sockaddr *) &cwdaemon->request_addr,
 				   /* TODO: request_addrlen may be modified. Check it. */
-				   &request_addrlen);
+				   &cwdaemon->request_addrlen);
 
 	if (recv_rc == -1) { /* No requests available? */
 
@@ -1180,9 +1164,9 @@ int cwdaemon_receive(void)
 {
 	/* The request may be a printable string, so +1 for ending NUL
 	   added somewhere below is necessary. */
-	char request_buffer[CWDAEMON_MESSAGE_SIZE_MAX + 1];
+	char request_buffer[CWDAEMON_MESSAGE_SIZE_MAX + 1]; /* TODO 2022.03.06: verify if we really need the +1. */
 
-	ssize_t recv_rc = cwdaemon_recvfrom(request_buffer, CWDAEMON_MESSAGE_SIZE_MAX);
+	ssize_t recv_rc = cwdaemon_recvfrom(&g_cwdaemon, request_buffer, CWDAEMON_MESSAGE_SIZE_MAX);
 
 	if (recv_rc == -2) {
 		/* Sender has closed connection. */
@@ -1297,7 +1281,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "requested aborting of message - executing (character mode is active)");
 			if (ptt_flag & PTT_ACTIVE_ECHO) {
 				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "echo \"break\"");
-				cwdaemon_sendto("break\r\n");
+				cwdaemon_sendto(&g_cwdaemon, "break\r\n");
 			}
 			request_queue[0] = '\0';
 			cw_flush_tone_queue();
@@ -1314,7 +1298,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		errno = 0;
 #if 0
 		char address[INET_ADDRSTRLEN];
-		inet_ntop(request_addr.sin_family, (struct in_addr*) &(request_addr.sin_addr.s_addr),
+		inet_ntop(g_cwdaemon.request_addr.sin_family, (struct in_addr*) &(g_cwdaemon.request_addr.sin_addr.s_addr),
 			  address, INET_ADDRSTRLEN);
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested exit of daemon (client address: %s)", address);
@@ -1530,7 +1514,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		   the client didn't specify reply text, the 'h' will
 		   be the only content of server's reply. */
 
-		cwdaemon_prepare_reply(reply_buffer, request + 1, strlen(request + 1));
+		cwdaemon_prepare_reply(&g_cwdaemon, reply_buffer, request + 1, strlen(request + 1));
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reply is ready, waiting for message from client (reply: \"%s\")", reply_buffer);
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
@@ -1594,7 +1578,7 @@ void cwdaemon_play_request(char *request)
 			/* '^' can be found at the end of request, and
 			   it means "echo text of current request back
 			   to client once you finish playing it". */
-			cwdaemon_prepare_reply(reply_buffer, request, strlen(request));
+			cwdaemon_prepare_reply(&g_cwdaemon, reply_buffer, request, strlen(request));
 
 			/* cwdaemon will wait for queue-empty callback
 			   before sending the reply. */
@@ -1741,7 +1725,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
-		cwdaemon_sendto(reply_buffer);
+		cwdaemon_sendto(&g_cwdaemon, reply_buffer);
 		/* If this line is uncommented, the callback erases a valid
 		   reply that should be sent back to client. Commenting the
 		   line fixes the problem, and doesn't seem to introduce
@@ -2667,7 +2651,7 @@ int main(int argc, char *argv[])
 	}
 
 	atexit(cwdaemon_close_socket);
-	if (!cwdaemon_initialize_socket()) {
+	if (!cwdaemon_initialize_socket(&g_cwdaemon)) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -2708,7 +2692,7 @@ int main(int argc, char *argv[])
 		struct timeval udptime;
 
 		FD_ZERO(&readfd);
-		FD_SET(socket_descriptor, &readfd);
+		FD_SET(g_cwdaemon.socket_descriptor, &readfd);
 
 		if (inactivity_seconds < 30) {
 			udptime.tv_sec = 1;
@@ -2719,8 +2703,8 @@ int main(int argc, char *argv[])
 
 		udptime.tv_usec = 0;
 		/* udptime.tv_usec = 999000; */	/* 1s is more than enough */
-		int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
-		/* int fd_count = select(socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
+		int fd_count = select(g_cwdaemon.socket_descriptor + 1, &readfd, NULL, NULL, &udptime);
+		/* int fd_count = select(g_cwdaemon.socket_descriptor + 1, &readfd, NULL, NULL, NULL); */
 		if (fd_count == -1 && errno != EINTR) {
 			cwdaemon_errmsg("Select");
 		} else {
@@ -2963,39 +2947,41 @@ void cwdaemon_cwdevice_free(void)
 
    Initialize network socket and other network variables.
 
+   \param cwdaemon cwdaemon instance
+
    \return false on failure
    \return true on success
 */
-bool cwdaemon_initialize_socket(void)
+bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon)
 {
-	memset(&request_addr, '\0', sizeof (request_addr));
-	request_addr.sin_family = AF_INET;
-	request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	request_addr.sin_port = htons(port);
-	request_addrlen = sizeof (request_addr);
+	memset(&cwdaemon->request_addr, '\0', sizeof (cwdaemon->request_addr));
+	cwdaemon->request_addr.sin_family = AF_INET;
+	cwdaemon->request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	cwdaemon->request_addr.sin_port = htons(port);
+	cwdaemon->request_addrlen = sizeof (cwdaemon->request_addr);
 
-	socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
-	if (socket_descriptor == -1) {
+	cwdaemon->socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
+	if (cwdaemon->socket_descriptor == -1) {
 		cwdaemon_errmsg("Socket open");
 		return false;
 	}
 
-	if (bind(socket_descriptor,
-		 (struct sockaddr *) &request_addr,
-		 request_addrlen) == -1) {
+	if (bind(cwdaemon->socket_descriptor,
+		 (struct sockaddr *) &cwdaemon->request_addr,
+		 cwdaemon->request_addrlen) == -1) {
 
 		cwdaemon_errmsg("Bind");
 		return false;
 	}
 
-	int save_flags = fcntl(socket_descriptor, F_GETFL);
+	int save_flags = fcntl(cwdaemon->socket_descriptor, F_GETFL);
 	if (save_flags == -1) {
 		cwdaemon_errmsg("Trying get flags");
 		return false;
 	}
 	save_flags |= O_NONBLOCK;
 
-	if (fcntl(socket_descriptor, F_SETFL, save_flags) == -1) {
+	if (fcntl(cwdaemon->socket_descriptor, F_SETFL, save_flags) == -1) {
 		cwdaemon_errmsg("Trying non-blocking");
 		return false;
 	}
@@ -3005,14 +2991,22 @@ bool cwdaemon_initialize_socket(void)
 
 
 
-
-void cwdaemon_close_socket(void)
+void cwdaemon_close_socket_wrapper(void)
 {
-	if (socket_descriptor) {
-		if (close(socket_descriptor) == -1) {
+	cwdaemon_close_socket(&g_cwdaemon);
+	return;
+}
+
+
+
+void cwdaemon_close_socket(cwdaemon_t * cwdaemon)
+{
+	if (-1 != cwdaemon->socket_descriptor) {
+		if (close(cwdaemon->socket_descriptor) == -1) {
 			cwdaemon_errmsg("Close socket");
 			exit(EXIT_FAILURE);
 		}
+		cwdaemon->socket_descriptor = -1;
 	}
 
 	return;

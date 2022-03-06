@@ -23,7 +23,31 @@
 #ifndef _CWDAEMON_H
 #define _CWDAEMON_H
 
+
+
+
+#include "config.h"
+
+
+
+
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_NETDB
+# include <netdb.h>
+#endif
+#if HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
+#if HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+
 #include <stdbool.h>
+
+
+
 
 #ifndef OFF
 # define OFF 0
@@ -118,4 +142,26 @@ int null_reset (cwdevice * dev);
 int null_cw (cwdevice * dev, int onoff);
 int null_ptt (cwdevice * dev, int onoff);
 
+
+
+
+/**
+   Instance of a cwdaemon
+*/
+typedef struct cwdaemon_t {
+	int socket_descriptor;
+
+	/* cwdaemon usually receives requests from client, but on occasions
+	   it needs to send a reply back. This is why in addition to
+	   request_* we also have reply_* */
+	struct sockaddr_in request_addr;
+	socklen_t          request_addrlen;
+	struct sockaddr_in reply_addr;
+	socklen_t          reply_addrlen;
+} cwdaemon_t;
+
+
+
+
 #endif /* _CWDAEMON_H */
+
