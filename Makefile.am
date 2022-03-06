@@ -1,4 +1,7 @@
-SUBDIRS=src doc examples test
+SUBDIRS=src doc examples
+if CWDAEMON_TESTS
+SUBDIRS+=test
+endif
 
 #AM_CFLAGS = @UNIXCW_CFLAGS@
 

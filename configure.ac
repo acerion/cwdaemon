@@ -59,22 +59,47 @@ fi
 CFLAGS="${CFLAGS} -std=c99"
 
 
+
+
+# Build tests? No by default.
+AC_ARG_ENABLE(cwdaemon_tests,
+    AS_HELP_STRING([--enable-cwdaemon-tests], [enable cwdaemon tests]),
+    [],
+    [enable_cwdaemon_tests=no])
+
+AC_MSG_CHECKING([whether to build cwdaemon tests])
+if test x$enable_cwdaemon_tests = xyes ; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL([CWDAEMON_TESTS], [test x$enable_cwdaemon_tests = xyes])
+
+
+
+
 PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
 			   AC_SUBST(LIBCW_CFLAGS)
 			   AC_SUBST(LIBCW_LIBS)
 			   AC_MSG_RESULT([    libcw CLFAGS is ${LIBCW_CFLAGS}])
 			   AC_MSG_RESULT([    libcw LIBS is ${LIBCW_LIBS}])
 			   ],
-			   [AC_MSG_WARN([Cannot find libcw pkgconfig information - unable to build cwdaemon])])
+			   [AC_MSG_WARN([cannot find libcw pkgconfig information - unable to build cwdaemon])])
 
 
 AC_OUTPUT([Makefile
 	src/Makefile
 	doc/Makefile
 	examples/Makefile
+	doc/cwdaemon.8
+	cwdaemon.spec])
+
+if test x$enable_cwdaemon_tests = xyes ; then
+   AC_OUTPUT([
 	test/Makefile
 	test/library/Makefile
 	test/test_001_basic_process_control/Makefile
 	test/test_002_reset_register_callback/Makefile
-	doc/cwdaemon.8
-	cwdaemon.spec])
+	])
+fi
+
