@@ -76,7 +76,7 @@ void cw_key_source_serial_close(cw_key_source_t * source)
 
 
 
-bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down)
+bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down, bool * ptt_is_on)
 {
 	int fd = (int) source->source_reference;
 	errno = 0;
@@ -88,7 +88,10 @@ bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down
 		fprintf(stderr, "[EE]: ioctl(TIOCMGET): %s\n", buf);
 		return false;
 	}
-	*key_is_down = !!(value & TIOCM_DTR);
+	const unsigned int keying_pin = source->param_keying; /* E.g. TIOCM_DTR. */
+	const unsigned int ptt_pin    = source->param_ptt;    /* E.g. TIOCM_RTS. */
+	*key_is_down = !!(value & keying_pin);
+	*ptt_is_on   = !!(value & ptt_pin);
 	return true;
 }
 

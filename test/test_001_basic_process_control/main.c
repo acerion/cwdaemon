@@ -39,6 +39,8 @@
 #include "../library/process.h"
 #include "../library/socket.h"
 #include "../library/misc.h"
+#include "../library/key_source.h"
+#include "../library/key_source_serial.h"
 
 
 
@@ -87,8 +89,12 @@ int main(void)
 	}
 
 	atexit(test_helpers_cleanup);
-	helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
-	if (0 != test_helpers_setup(&helpers_opts)) {
+	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
+	const cw_key_source_params_t key_source_params = {
+		.param_keying = TIOCM_DTR, /* The default tty line on which keying is being done. */
+		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
+	};
+	if (0 != test_helpers_setup(&helpers_opts, &key_source_params)) {
 		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
 		exit(EXIT_FAILURE);
 	}

@@ -5,6 +5,7 @@
 
 
 #include <stdbool.h>
+#include <sys/ioctl.h> /* For those users of the key source that need to specify TIOCM_XXX tty pin. */
 
 
 
@@ -33,7 +34,7 @@ void cw_key_source_serial_close(cw_key_source_t * source);
 /**
    Implementation of cw_key_source_t::poll_once_fn function specific to serial line file
 */
-bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down);
+bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down, bool * ptt_is_on);
 
 
 

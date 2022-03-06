@@ -74,16 +74,21 @@ static void * key_source_poll_thread(void * arg_key_source)
 	cw_key_source_t * source = (cw_key_source_t *) arg_key_source;
 	while (source->do_polling) {
 		bool key_is_down = false;
+		bool ptt_is_on = false;
 
-		if (!source->poll_once_fn(source, &key_is_down)) {
+		if (!source->poll_once_fn(source, &key_is_down, &ptt_is_on)) {
 			fprintf(stderr, "[EE] Failed to poll once\n");
 			return NULL;
 		}
 
-		if (key_is_down == source->previous_key_is_down) {
-			/* Key state not changed, do nothing. */
+		/* TODO: ptt state is not being passed anywhere and is not
+		   taken into consideration when testing cwdaemon. Use the
+		   value somewhere. */
+		if (key_is_down == source->previous_key_is_down && ptt_is_on == source->previous_ptt_is_on) {
+			/* Key state and ptt state not changed, do nothing. */
 		} else {
 			source->previous_key_is_down = key_is_down;
+			source->previous_ptt_is_on = ptt_is_on;
 			source->new_key_state_cb(source->new_key_state_sink, key_is_down);
 		}
 

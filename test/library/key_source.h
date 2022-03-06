@@ -12,8 +12,37 @@
 
 
 
+/**
+   Source of information about state of key (key down/key up).
+
+   Structure holding the state of key.
+
+   Structure holding functions that poll the source, waiting for state of the
+   key to change.
+
+   Structure holding a callback that will be called when change to state of
+   key has been detected.
+
+   As cwdaemon shows, the other interesting data is the state of PTT pin. The
+   structure is not fully ready to support PTT yet.
+*/
+
+
+
+
 struct cw_key_source_t;
-typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_down);
+typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_down, bool * ptt_is_on);
+
+
+
+
+/**
+   Structure used by client code to configure key source.
+*/
+typedef struct cw_key_source_params_t {
+	unsigned int param_keying; /* See cw_key_source_t::param_keying. */
+	unsigned int param_ptt;    /* See cw_key_source_t::param_ptt. */
+} cw_key_source_params_t;
 
 
 
@@ -40,8 +69,9 @@ typedef struct cw_key_source_t {
 	int poll_interval_us;
 
 	/* User-provided function function that checks once, at given moment,
-	   if key is down or up. State of key is returned through @p
-	   key_is_down. */
+	   if key is down or up, and if ptt is on or off. State of key is
+	   returned through @p key_is_down. State of ptt is returned through
+	   @p ptt_is_on */
 	poll_once_fn_t poll_once_fn;
 
 	/* Reference to low-level resource related to key source. It may be
@@ -49,10 +79,26 @@ typedef struct cw_key_source_t {
 	   open/close/poll_once functions. */
 	intptr_t source_reference;
 
+	/* Low-level integer parameter specifying where in a keying source to
+	   find information about keying. E.g. for ttyS0 it will be a
+	   pin/line from which to read key state (cwdaemon uses DTR line by
+	   default, but it can be tuned through "-o"). */
+	unsigned int param_keying;
+
+	/* Low-level integer parameter specifying where in a keying source to
+	   find information about ptt. E.g. for ttyS0 it will be a
+	   pin/line from which to read ptt state (cwdaemon uses RTS line by
+	   default, but it can be tuned through "-o"). */
+	unsigned int param_ptt;
+
 	/* Previous state of key, used to recognize when state of key changed
 	   and when to call "key state change" callback.
 	   For internal usage only. */
 	bool previous_key_is_down;
+	/* Previous state of ptt, used to recognize when state of ptt changed
+	   and when to call "ptt state change" callback.
+	   For internal usage only. */
+	bool previous_ptt_is_on;
 
 	/* Flag for internal forever loop in which polling is done.
 	   For internal usage only. */

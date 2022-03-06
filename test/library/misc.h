@@ -6,6 +6,7 @@
 
 #include "process.h"
 #include "cw_rec_utils.h"
+#include "key_source.h"
 
 
 
@@ -52,11 +53,12 @@ int find_unused_random_local_udp_port(void);
     - key source (to monitor serial line)
 
    @param[in] opts options for test helpers
+   @param[in] key_source_params parameters for key source
 
    @return 0 if setup was successful,
    @return -1 otherwise
 */
-int test_helpers_setup(const helpers_opts_t * opts);
+int test_helpers_setup(const helpers_opts_t * opts, const cw_key_source_params_t * key_source_params);
 
 
 
