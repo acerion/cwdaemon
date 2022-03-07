@@ -104,6 +104,7 @@
 #include <libcw_debug.h>
 #include "cwdaemon.h"
 #include "help.h"
+#include "socket.h"
 
 
 
@@ -245,7 +246,7 @@ static bool has_audio_output = false;
    port using network request, but now this code path is marked as
    "obsolete".
  */
-static int port = CWDAEMON_NETWORK_PORT_DEFAULT;
+static int g_network_port = CWDAEMON_NETWORK_PORT_DEFAULT;
 
 
 static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
@@ -343,14 +344,10 @@ void cwdaemon_keyingevent(void * arg, int keystate);
 void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *request, size_t n);
 void cwdaemon_tone_queue_low_callback(void *arg);
 
-bool    cwdaemon_initialize_socket(cwdaemon_t * cwdaemon);
-void    cwdaemon_close_socket(cwdaemon_t * cwdaemon);
-ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char * reply);
-int     cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char * request, int size);
 
-void    cwdaemon_close_socket_wrapper(void);
-int     cwdaemon_receive(void);
-void    cwdaemon_handle_escaped_request(char *request);
+void cwdaemon_close_socket_wrapper(void);
+int  cwdaemon_receive(void);
+void cwdaemon_handle_escaped_request(char *request);
 
 void cwdaemon_reset_almost_all(cwdevice * dev);
 
@@ -387,7 +384,7 @@ static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
 static bool cwdaemon_params_cwdevice(const char *optarg);
-static bool cwdaemon_params_port(const char *optarg);
+static bool cwdaemon_params_network_port(const char *optarg, int * port);
 static bool cwdaemon_params_priority(int *priority, const char *optarg);
 static bool cwdaemon_params_wpm(int *wpm, const char *optarg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg);
@@ -1046,105 +1043,6 @@ void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *requ
 
 	return;
 }
-
-
-
-
-
-/**
-   \brief Wrapper around sendto()
-
-   Wrapper around sendto(), sending a \p reply to client.
-   Client is specified by reply_* network variables.
-
-   \param cwdaemon cwdaemon instance
-   \param reply - reply to be sent
-
-   \return -1 on failure
-   \return number of characters sent on success
-*/
-ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
-{
-	size_t len = strlen(reply);
-	/* TODO: Do we *really* need to end replies with CRLF? */
-	assert(reply[len - 2] == '\r' && reply[len - 1] == '\n');
-
-	ssize_t rv = sendto(cwdaemon->socket_descriptor, reply, len, 0,
-			    (struct sockaddr *) &cwdaemon->reply_addr, cwdaemon->reply_addrlen);
-
-	if (rv == -1) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "sendto: \"%s\"", strerror(errno));
-		return -1;
-	} else {
-		return rv;
-	}
-}
-
-
-
-
-
-/**
-   \brief Receive request sent through socket
-
-   Received request is returned through \p request.
-   Possible trailing '\r' and '\n' characters are stripped.
-   Request is ended with '\0'.
-
-   \param cwdaemon cwdaemon instance
-   \param request buffer for received request
-   \param size size of the buffer
-
-   \return -2 if peer has performed an orderly shutdown
-   \return -1 if an error occurred during call to recvfrom
-   \return  0 if no request has been received
-   \return length of received request otherwise
- */
-int cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
-{
-	ssize_t recv_rc = recvfrom(cwdaemon->socket_descriptor,
-				   request,
-				   size,
-				   0, /* flags */
-				   (struct sockaddr *) &cwdaemon->request_addr,
-				   /* TODO: request_addrlen may be modified. Check it. */
-				   &cwdaemon->request_addrlen);
-
-	if (recv_rc == -1) { /* No requests available? */
-
-		if (errno == EAGAIN || errno == EWOULDBLOCK) { /* "a portable application should check for both possibilities" */
-			/* Yup, no requests available from non-blocking socket. Good luck next time. */
-			/* TODO: how much CPU time does it cost to loop waiting for a request?
-			   Would it be reasonable to configure the socket as blocking?
-			   How large is receive timeout? */
-
-			return 0;
-		} else {
-			/* Some other error. May be a serious error. */
-			cwdaemon_errmsg("Recvfrom");
-			return -1;
-		}
-	} else if (recv_rc == 0) {
-		/* "peer has performed an orderly shutdown" */
-		return -2;
-	} else {
-		; /* pass */
-	}
-
-	/* Remove CRLF if present. TCP buffer may end with '\n', so make
-	   sure that every request is consistently ended with NUL only.
-	   Do it early, do it now. */
-	int z;
-	while (recv_rc > 0
-	       && ( (z = request[recv_rc - 1]) == '\n' || z == '\r') ) {
-
-		request[--recv_rc] = '\0';
-	}
-
-	return recv_rc;
-}
-
-
 
 
 
@@ -1825,7 +1723,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				cwdaemon_params_nofork();
 
 			} else if (!strcmp(optname, "port")) {
-				if (!cwdaemon_params_port(optarg)) {
+				if (!cwdaemon_params_network_port(optarg, &g_network_port)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1926,7 +1824,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 		cwdaemon_params_nofork();
 		break;
 	case 'p':
-		if (!cwdaemon_params_port(optarg)) {
+		if (!cwdaemon_params_network_port(optarg, &g_network_port)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -2029,7 +1927,7 @@ void cwdaemon_params_nofork(void)
 }
 
 
-bool cwdaemon_params_port(const char *optarg)
+bool cwdaemon_params_network_port(const char *optarg, int * port)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
@@ -2037,9 +1935,9 @@ bool cwdaemon_params_port(const char *optarg)
 			       "invalid requested port number: \"%s\"", optarg);
 		return false;
 	} else {
-		port = lv;
+		*port = lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested port number: \"%ld\"", port);
+			       "requested port number: \"%ld\"", *port);
 		return true;
 	}
 }
@@ -2650,8 +2548,8 @@ int main(int argc, char *argv[])
 		signal(SIGINT, cwdaemon_catch_sigint);
 	}
 
-	atexit(cwdaemon_close_socket);
-	if (!cwdaemon_initialize_socket(&g_cwdaemon)) {
+	atexit(cwdaemon_close_socket_wrapper);
+	if (!cwdaemon_initialize_socket(&g_cwdaemon, g_network_port)) {
 		exit(EXIT_FAILURE);
 	}
 
@@ -2942,73 +2840,10 @@ void cwdaemon_cwdevice_free(void)
 
 
 
-/**
-   \brief Initialize network variables
-
-   Initialize network socket and other network variables.
-
-   \param cwdaemon cwdaemon instance
-
-   \return false on failure
-   \return true on success
-*/
-bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon)
-{
-	memset(&cwdaemon->request_addr, '\0', sizeof (cwdaemon->request_addr));
-	cwdaemon->request_addr.sin_family = AF_INET;
-	cwdaemon->request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	cwdaemon->request_addr.sin_port = htons(port);
-	cwdaemon->request_addrlen = sizeof (cwdaemon->request_addr);
-
-	cwdaemon->socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
-	if (cwdaemon->socket_descriptor == -1) {
-		cwdaemon_errmsg("Socket open");
-		return false;
-	}
-
-	if (bind(cwdaemon->socket_descriptor,
-		 (struct sockaddr *) &cwdaemon->request_addr,
-		 cwdaemon->request_addrlen) == -1) {
-
-		cwdaemon_errmsg("Bind");
-		return false;
-	}
-
-	int save_flags = fcntl(cwdaemon->socket_descriptor, F_GETFL);
-	if (save_flags == -1) {
-		cwdaemon_errmsg("Trying get flags");
-		return false;
-	}
-	save_flags |= O_NONBLOCK;
-
-	if (fcntl(cwdaemon->socket_descriptor, F_SETFL, save_flags) == -1) {
-		cwdaemon_errmsg("Trying non-blocking");
-		return false;
-	}
-
-	return true;
-}
-
-
-
 void cwdaemon_close_socket_wrapper(void)
 {
 	cwdaemon_close_socket(&g_cwdaemon);
 	return;
 }
 
-
-
-void cwdaemon_close_socket(cwdaemon_t * cwdaemon)
-{
-	if (-1 != cwdaemon->socket_descriptor) {
-		if (close(cwdaemon->socket_descriptor) == -1) {
-			cwdaemon_errmsg("Close socket");
-			exit(EXIT_FAILURE);
-		}
-		cwdaemon->socket_descriptor = -1;
-	}
-
-	return;
-}
 
