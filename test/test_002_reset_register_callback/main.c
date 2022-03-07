@@ -108,7 +108,7 @@ int main(void)
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris")) {
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris", false)) {
 		fprintf(stderr, "[EE] failed to send first request, exiting\n");
 		exit(EXIT_FAILURE);
 	}
@@ -119,7 +119,7 @@ int main(void)
 
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "texas")) {
+	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "texas", false)) {
 		fprintf(stderr, "[EE] Failed to send second request, exiting\n");
 		exit(EXIT_FAILURE);
 	}

@@ -100,6 +100,7 @@ if test x$enable_cwdaemon_tests = xyes ; then
 	test/library/Makefile
 	test/test_001_basic_process_control/Makefile
 	test/test_002_reset_register_callback/Makefile
+	test/test_003_cwdevice_tty_line_options/Makefile
 	])
 fi
 

@@ -26,6 +26,8 @@ typedef struct {
 	bool nofork;             /* -n, --nofork; don't fork. */
 	char cwdevice[16];
 	int wpm;
+	unsigned int param_keying;
+	unsigned int param_ptt;
 
 	/* IP address of machine where cwdaemon is available, If empty, local
 	   IP will be used. */

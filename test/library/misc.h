@@ -24,11 +24,12 @@ typedef struct {
 
    @param[in] cwdaemon cwdaemon child process used for the test
    @param[in] messsage_value text to played
+   @param[in] expected_failed_receive whether a receiver is expected to receive the message incorrectly (i.e. not receive it at all)
 
    @return 0 if text was received successfully
    @return -1 otherwise
 */
-int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value);
+int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value, bool expected_failed_receive);
 
 
 

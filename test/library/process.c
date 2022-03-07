@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -81,6 +82,31 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			argv[a++] = "-s";
 			argv[a++] = wpm_buf;
 		}
+		switch (opts->param_keying) {
+		case TIOCM_DTR:
+			argv[a++] = "-o";
+			argv[a++] = "key=dtr";
+			break;
+		case TIOCM_RTS:
+			argv[a++] = "-o";
+			argv[a++] = "key=rts";
+			break;
+		default:
+			break;
+		}
+		switch (opts->param_ptt) {
+			case TIOCM_DTR:
+			argv[a++] = "-o";
+			argv[a++] = "ptt=dtr";
+			break;
+		case TIOCM_RTS:
+			argv[a++] = "-o";
+			argv[a++] = "ptt=rts";
+			break;
+		default:
+			break;
+		}
+
 
 		char port_buf[16] = { 0 };
 		snprintf(port_buf, sizeof (port_buf), "%d", l4_port);

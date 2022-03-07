@@ -150,7 +150,7 @@ void test_helpers_cleanup(void)
 
 
 
-int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value)
+int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value, bool expected_failed_receive)
 {
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
 
@@ -185,11 +185,29 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * m
 		fprintf(stderr, "[EE] Failed to receive from key source\n");
 		return -1;
 	}
-	if (NULL == strcasestr(receive_buffer, message_value)) {
-		fprintf(stderr, "[EE] Received text ('%s') is not present in requested value ('%s')\n", receive_buffer, message_value);
-		return -1;
+
+	const char * needle = strcasestr(receive_buffer, message_value);
+	if (expected_failed_receive) {
+		if (NULL == needle) {
+			fprintf(stderr, "[II] Received text '%s' doesn't match sent text '%s', and a failed receive was expected\n",
+				receive_buffer, message_value);
+			return 0;
+		} else {
+			fprintf(stderr, "[EE] Received text '%s' matches sent text '%s', but a failed receive was expected\n",
+				receive_buffer, message_value);
+			return -1;
+		}
+	} else {
+		if (NULL == needle) {
+			fprintf(stderr, "[EE] Received text '%s' doesn't match sent text '%s\n",
+				receive_buffer, message_value);
+			return -1;
+		} else {
+			fprintf(stderr, "[II] Received text '%s', matches sent text '%s'\n",
+				receive_buffer, message_value);
+			return 0;
+		}
 	}
-	return 0;
 }
 
 

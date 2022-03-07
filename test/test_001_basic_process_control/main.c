@@ -104,7 +104,7 @@ int main(void)
 	/* Test that a cwdaemon is really started by asking cwdaemon to play
 	   a text and observing the text keyed on serial line port. */
 	{
-		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris")) {
+		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris", false)) {
 			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
 			exit(EXIT_FAILURE);
 		}

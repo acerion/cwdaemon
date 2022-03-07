@@ -480,10 +480,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = library                                   \
         test_001_basic_process_control            \
-        test_002_reset_register_callback
+        test_002_reset_register_callback          \
+        test_003_cwdevice_tty_line_options
 
 TESTS = test_001_basic_process_control/test         \
-      test_002_reset_register_callback/test
+      test_002_reset_register_callback/test       \
+      test_003_cwdevice_tty_line_options/test
 
 all: all-recursive
 
@@ -769,6 +771,13 @@ test_001_basic_process_control/test.log: test_001_basic_process_control/test
 test_002_reset_register_callback/test.log: test_002_reset_register_callback/test
 	@p='test_002_reset_register_callback/test'; \
 	b='test_002_reset_register_callback/test'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_003_cwdevice_tty_line_options/test.log: test_003_cwdevice_tty_line_options/test
+	@p='test_003_cwdevice_tty_line_options/test'; \
+	b='test_003_cwdevice_tty_line_options/test'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
