@@ -65,10 +65,40 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			argv[a++] = "-T";
 			argv[a++] = opts->tone;
 		}
-		if ('\0' != opts->sound_system[0]) {
+
+		switch (opts->sound_system) {
+		case CW_AUDIO_CONSOLE:
 			argv[a++] = "-x";
-			argv[a++] = opts->sound_system;
-		}
+			argv[a++] = "c";
+			break;
+		case CW_AUDIO_OSS:
+			argv[a++] = "-x";
+			argv[a++] = "o";
+			break;
+		case CW_AUDIO_ALSA:
+			argv[a++] = "-x";
+			argv[a++] = "a";
+			break;
+		case CW_AUDIO_PA:
+			argv[a++] = "-x";
+			argv[a++] = "p";
+			break;
+		case CW_AUDIO_SOUNDCARD:
+			argv[a++] = "-x";
+			argv[a++] = "s";
+			break;
+		case CW_AUDIO_NULL: /* It's not NONE, it's really NULL! */
+			argv[a++] = "-x";
+			argv[a++] = "n";
+			break;
+		case CW_AUDIO_NONE:
+			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
+			break;
+		default:
+			fprintf(stderr, "[EE] unsupported %d sound system\n", opts->sound_system);
+			return -1;
+		};
+
 		if (opts->nofork) {
 			argv[a++] = "-n";
 		}
@@ -113,7 +143,6 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		argv[a++] = "-p";
 		argv[a++] = port_buf;
 
-		fprintf(stderr, "====== A\n");
 		int b = 0;
 		while (argv[b]) {
 			fprintf(stderr, "%s ", argv[b]);
@@ -125,7 +154,6 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		fprintf(stderr, "[EE] Returning after failed exec(): %s\n", strerror(errno));
 		return -1;
 	} else {
-		fprintf(stderr, "====== B\n");
 		/*
 		  300 milliseconds. Give the process some time to start.
 		  Delay introduced after I noticed that a receiver test that

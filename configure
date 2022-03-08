@@ -6267,6 +6267,7 @@ done
 
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
+  CFLAGS="${CFLAGS} -Wswitch-default -Wimplicit-function-declaration -Wswitch-enum"
   CFLAGS="${CFLAGS} -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings"
   CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"

@@ -23,6 +23,13 @@
 
 
 
+/**
+   Test for "-o" cwdevice options.
+*/
+
+
+
+
 #define _DEFAULT_SOURCE
 
 #include <stdio.h>
@@ -45,86 +52,63 @@
 
 
 
-static void cwdaemon_cleanup(void);
-
-
-
-
-static cwdaemon_process_t g_cwdaemon = { 0 };
-
-
-
-
-/**
-   Close socket to test instance of cwdaemon. cwdaemon may be stopped, but
-   let's still try to close socket on our end.
-*/
-static void cwdaemon_cleanup(void)
-{
-	if (g_cwdaemon.fd >= 0) {
-		cwdaemon_socket_disconnect(g_cwdaemon.fd);
-		g_cwdaemon.fd = -1;
-	}
-}
-
-
 typedef struct {
+	const char * description;
 	unsigned int cwdaemon_param_keying;
 	unsigned int cwdaemon_param_ptt;
 	const char * string_to_play;
 	bool expected_failed_receive;
 	unsigned int key_source_param_keying;
 	unsigned int key_source_param_ptt;
-	const char * description;
 } datum_t;
 
 
 
 
-datum_t data[] = {
+static datum_t g_test_data[] = {
 	/* This is a SUCCESS case. This is a basic case where cwdaemon is
 	   executed without -o options, so it uses default tty lines. Key
 	   source is configured to look at the default line(s) for keying
 	   events. */
-	{ .string_to_play          = "paris",
+	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
+	  .string_to_play          = "paris",
 	  .key_source_param_keying = TIOCM_DTR,
 	  .key_source_param_ptt    = TIOCM_RTS,
-	  .description             = "success case, standard setup without tty lines options passed to cwdaemon",
 	},
 
 	/* This is a SUCCESS case. This is an almost-basic case where
 	   cwdaemon is executed with -o options but the options still tell
 	   cwdaemon to use default tty lines. Key source is configured to
 	   look at the default line(s) for keying events. */
-	{ .cwdaemon_param_keying   = TIOCM_DTR,
+	{ .description             = "success case, standard setup with default tty lines options passed to cwdaemon",
+	  .cwdaemon_param_keying   = TIOCM_DTR,
 	  .cwdaemon_param_ptt      = TIOCM_RTS,
 	  .string_to_play          = "paris",
 	  .key_source_param_keying = TIOCM_DTR,
 	  .key_source_param_ptt    = TIOCM_RTS,
-	  .description             = "success case, standard setup with default tty lines options passed to cwdaemon",
 	},
 
 	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
 	   keying, but a key source (and thus a receiver) is told to look at
 	   RTS for keying events. */
-	{ .cwdaemon_param_keying   = TIOCM_DTR,
+	{ .description             = "failure case, cwdaemon keying DTR, key source monitoring RTS",
+	  .cwdaemon_param_keying   = TIOCM_DTR,
 	  .cwdaemon_param_ptt      = TIOCM_RTS,
 	  .string_to_play          = "paris",
 	  .expected_failed_receive = true,
 	  .key_source_param_keying = TIOCM_RTS,
 	  .key_source_param_ptt    = TIOCM_DTR,
-	  .description             = "failure case, cwdaemon keying DTR, key source monitoring RTS",
 	},
 
 	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
 	   keying, and a key source (and thus a receiver) is told to look
 	   also at RTS for keying events. */
-	{ .cwdaemon_param_keying   = TIOCM_RTS,
+	{ .description             = "success case, cwdaemon keying RTS, key source monitoring RTS",
+	  .cwdaemon_param_keying   = TIOCM_RTS,
 	  .cwdaemon_param_ptt      = TIOCM_DTR,
 	  .string_to_play          = "paris",
 	  .key_source_param_keying = TIOCM_RTS,
 	  .key_source_param_ptt    = TIOCM_DTR,
-	  .description             = "success case, cwdaemon keying RTS, key source monitoring RTS",
 	},
 };
 
@@ -134,38 +118,43 @@ datum_t data[] = {
 int main(void)
 {
 	srand(time(NULL));
-	int wpm = 10;
 
-	for (size_t i = 0; i < (sizeof (data) / sizeof (data[i])); i++) {
-		datum_t * datum = &data[i];
+	const int wpm = 10;
+	cwdaemon_opts_t cwdaemon_opts = {
+		.tone           = "1000",
+		.sound_system   = CW_AUDIO_PA,
+		.nofork         = true,
+		.cwdevice       = "ttyS0",
+		.wpm            = wpm,
+	};
 
-		fprintf(stderr, "\n[II] Starting a test: %s\n", datum->description);
+	const size_t n = sizeof (g_test_data) / sizeof (g_test_data[0]);
+	for (size_t i = 0; i < n; i++) {
+		const datum_t * datum = &g_test_data[i];
+		fprintf(stderr, "\n[II] Starting test #%zd: %s\n", i, datum->description);
 
-		cwdaemon_opts_t cwdaemon_opts = {
-			.tone           = "1000",
-			.sound_system   = "p",
-			.nofork         = "-n",
-			.cwdevice       = "ttyS0",
-			.wpm            = wpm,
-			.param_keying   = datum->cwdaemon_param_keying,
-			.param_ptt      = datum->cwdaemon_param_ptt,
-		};
-		atexit(cwdaemon_cleanup);
-		if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &g_cwdaemon)) {
-			fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
-			exit(EXIT_FAILURE);
-		}
+		bool failure = false;
 
-		atexit(test_helpers_cleanup);
+		cwdaemon_opts.param_keying   = datum->cwdaemon_param_keying;
+		cwdaemon_opts.param_ptt      = datum->cwdaemon_param_ptt;
+
 		const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 		const cw_key_source_params_t key_source_params = {
 			.param_keying = datum->key_source_param_keying,
 			.param_ptt    = datum->key_source_param_ptt,
 		};
+		cwdaemon_process_t cwdaemon = { 0 };
+		if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
+			fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
+			failure = true;
+			goto cleanup;
+		}
 		if (0 != test_helpers_setup(&helpers_opts, &key_source_params)) {
 			fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
-			exit(EXIT_FAILURE);
+			failure = true;
+			goto cleanup;
 		}
+
 
 
 
@@ -180,15 +169,31 @@ int main(void)
 		   The receiver should receive the text that cwdaemon was
 		   playing (unless 'expected_failed_receive' is set to
 		   true). */
-		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, datum->string_to_play, datum->expected_failed_receive)) {
-			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
-			exit(EXIT_FAILURE);
+		if (0 != cwdaemon_play_text_and_receive(&cwdaemon, datum->string_to_play, datum->expected_failed_receive)) {
+			fprintf(stderr, "[EE] Failed at test of datum #%zd\n", i);
+			failure = true;
+			goto cleanup;
 		}
 
 
+
+
+	cleanup:
+		test_helpers_cleanup();
 		/* Terminate this instance of cwdaemon. */
-		cwdaemon_socket_send_request(g_cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
+		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 		sleep(2);
+
+		/* Close socket to test instance of cwdaemon. cwdaemon may be
+		   stopped, but let's still try to close socket on our
+		   end. */
+		if (cwdaemon.fd >= 0) {
+			cwdaemon_socket_disconnect(cwdaemon.fd);
+			cwdaemon.fd = -1;
+		}
+		if (failure) {
+			exit(EXIT_FAILURE);
+		}
 	}
 
 

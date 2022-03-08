@@ -11,6 +11,11 @@
 
 
 
+#include <libcw.h>
+
+
+
+
 typedef struct cwdaemon_process_t {
 	int fd;       /* Socket, on which the process will be reachable. */
 	pid_t pid;    /* pid of cwdaemon process. */
@@ -22,7 +27,7 @@ typedef struct cwdaemon_process_t {
 
 typedef struct {
 	char tone[10];
-	char sound_system[5];
+	enum cw_audio_systems sound_system;
 	bool nofork;             /* -n, --nofork; don't fork. */
 	char cwdevice[16];
 	int wpm;

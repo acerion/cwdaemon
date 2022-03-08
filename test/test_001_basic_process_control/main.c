@@ -23,6 +23,14 @@
 
 
 
+/**
+   Test of EXIT request (and of test code that starts a test instance of
+   cwdaemon).
+*/
+
+
+
+
 #define _DEFAULT_SOURCE
 
 #include <stdio.h>
@@ -45,68 +53,47 @@
 
 
 
-static void cwdaemon_cleanup(void);
-
-
-
-
-static cwdaemon_process_t g_cwdaemon = { 0 };
-
-
-
-
-/**
-   Close socket to test instance of cwdaemon. cwdaemon may be stopped, but
-   let's still try to close socket on our end.
-*/
-static void cwdaemon_cleanup(void)
-{
-	if (g_cwdaemon.fd >= 0) {
-		cwdaemon_socket_disconnect(g_cwdaemon.fd);
-		g_cwdaemon.fd = -1;
-	}
-}
-
-
-
-
 int main(void)
 {
 	srand(time(NULL));
-	int wpm = 10;
 
+	const int wpm = 10;
+	bool failure = false;
+	static cwdaemon_process_t cwdaemon = { 0 };
 	cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = "1000",
-		.sound_system   = "p",
-		.nofork         = "-n",
+		.sound_system   = CW_AUDIO_PA,
+		.nofork         = true,
 		.cwdevice       = "ttyS0",
 		.wpm            = wpm,
 	};
-	atexit(cwdaemon_cleanup);
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &g_cwdaemon)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
-		exit(EXIT_FAILURE);
-	}
-
-	atexit(test_helpers_cleanup);
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	const cw_key_source_params_t key_source_params = {
 		.param_keying = TIOCM_DTR, /* The default tty line on which keying is being done. */
 		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
 	};
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
+		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
+		failure = true;
+		goto cleanup;
+	}
+	atexit(test_helpers_cleanup);
 	if (0 != test_helpers_setup(&helpers_opts, &key_source_params)) {
 		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
-		exit(EXIT_FAILURE);
+		failure = true;
+		goto cleanup;
 	}
+
 
 
 
 	/* Test that a cwdaemon is really started by asking cwdaemon to play
 	   a text and observing the text keyed on serial line port. */
 	{
-		if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris", false)) {
+		if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "paris", false)) {
 			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
-			exit(EXIT_FAILURE);
+			failure = true;
+			goto cleanup;
 		}
 	}
 
@@ -114,30 +101,44 @@ int main(void)
 
 
 	/* Test that EXIT request works. */
+ cleanup:
 	{
 		/* First ask nicely for a clean exit. */
-		cwdaemon_socket_send_request(g_cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
+		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
 		sleep(2);
 
+		/* Now check if test instance of cwdaemon has disappeared as expected. */
 		int wstatus = 0;
-		if (0 == waitpid(g_cwdaemon.pid, &wstatus, WNOHANG)) {
+		if (0 == waitpid(cwdaemon.pid, &wstatus, WNOHANG)) {
 			/* Process still exists, kill it. */
 			fprintf(stderr, "[EE] Child cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
-			/* The fact that we need to kill cwdaemon with a signal is a
-			   bug. It will be detected by a test executable when the
-			   executable calls wait() on child pid. */
-			kill(g_cwdaemon.pid, SIGKILL);
+			/* The fact that we need to kill cwdaemon with a
+			   signal is a bug. */
+			kill(cwdaemon.pid, SIGKILL);
 			fprintf(stderr, "[EE] cwdaemon was forcibly killed, exiting\n");
-			exit(EXIT_FAILURE);
+			failure = true;
+		}
+
+		/*
+		  Close socket to test instance of cwdaemon. cwdaemon may be
+		  stopped, but let's still try to close socket on our end.
+		*/
+		if (cwdaemon.fd >= 0) {
+			cwdaemon_socket_disconnect(cwdaemon.fd);
+			cwdaemon.fd = -1;
 		}
 	}
 
 
 
 
-	exit(EXIT_SUCCESS);
+	if (failure) {
+		exit(EXIT_FAILURE);
+	} else {
+		exit(EXIT_SUCCESS);
+	}
 }
 
 

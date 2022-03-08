@@ -23,6 +23,14 @@
 
 
 
+/**
+   Test for proper re-registration of libcw keying callback when handling RESET
+   request. https://github.com/acerion/cwdaemon/issues/6
+*/
+
+
+
+
 #define _DEFAULT_SOURCE
 
 #include <errno.h>
@@ -41,65 +49,35 @@
 
 
 
-static void cwdaemon_cleanup(void);
-
-
-
-
-/* global variables */
-static cwdaemon_process_t g_cwdaemon = { 0 };
-
-
-
-
-/**
-   Stop test instance of cwdaemon.
-
-   Close socket to the cwdaemon. cwdaemon is stopped, but let's still try to
-   close socket on our end.
-*/
-static void cwdaemon_cleanup(void)
-{
-	/* This should stop the cwdaemon that runs in background. */
-	cwdaemon_process_do_delayed_termination(&g_cwdaemon, 100);
-	cwdaemon_process_wait_for_exit(&g_cwdaemon);
-
-	if (g_cwdaemon.fd >= 0) {
-		cwdaemon_socket_disconnect(g_cwdaemon.fd);
-		g_cwdaemon.fd = -1;
-	}
-}
-
-
-
-
 int main(void)
 {
 	srand(time(NULL));
-	int wpm = 10;
 
+	bool failure = false;
+	const int wpm = 10;
 	cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = "1000",
-		.sound_system       = "p",
+		.sound_system       = CW_AUDIO_PA,
 		.nofork             = true,
 		.cwdevice           = "ttyS0",
 		.wpm                = wpm,
 	};
-	atexit(cwdaemon_cleanup);
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &g_cwdaemon)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
-		exit(EXIT_FAILURE);
-	}
-
-	atexit(test_helpers_cleanup);
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	const cw_key_source_params_t key_source_params = {
 		.param_keying = TIOCM_DTR, /* The default tty line on which keying is being done. */
 		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
 	};
+	cwdaemon_process_t cwdaemon = { 0 };
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
+		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
+		failure = true;
+		goto cleanup;
+	}
+	atexit(test_helpers_cleanup);
 	if (0 != test_helpers_setup(&helpers_opts, &key_source_params)) {
 		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
-		exit(EXIT_FAILURE);
+		failure = true;
+		goto cleanup;
 	}
 
 
@@ -108,23 +86,47 @@ int main(void)
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "paris", false)) {
+	if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "paris", false)) {
 		fprintf(stderr, "[EE] failed to send first request, exiting\n");
-		exit(EXIT_FAILURE);
+		failure = true;
+		goto cleanup;
 	}
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	cwdaemon_socket_send_request(g_cwdaemon.fd, CWDAEMON_REQUEST_RESET, "");
+	cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_RESET, "");
 
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	if (0 != cwdaemon_play_text_and_receive(&g_cwdaemon, "texas", false)) {
+	if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "texas", false)) {
 		fprintf(stderr, "[EE] Failed to send second request, exiting\n");
-		exit(EXIT_FAILURE);
+		failure = true;
+		goto cleanup;
 	}
 
-	exit(EXIT_SUCCESS);
+
+
+
+ cleanup:
+	/* This should stop the cwdaemon that runs in background. */
+	cwdaemon_process_do_delayed_termination(&cwdaemon, 100);
+	cwdaemon_process_wait_for_exit(&cwdaemon);
+
+	/* Close socket to the cwdaemon. cwdaemon is stopped, but let's still
+	   try to close socket on our end. */
+	if (cwdaemon.fd >= 0) {
+		cwdaemon_socket_disconnect(cwdaemon.fd);
+		cwdaemon.fd = -1;
+	}
+
+
+
+
+	if (failure) {
+		exit(EXIT_FAILURE);
+	} else {
+		exit(EXIT_SUCCESS);
+	}
 }
 
 
