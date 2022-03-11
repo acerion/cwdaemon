@@ -34,8 +34,8 @@
 # include <stdio.h>
 #endif
 #if STDC_HEADERS
-# include <stdlib.h>
 # include <stddef.h>
+# include <stdlib.h>
 #else
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -85,21 +85,25 @@ int dev_get_parport(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
-	int fd, m;
 
-	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
+	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
 	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
 		return -1;
 	}
 
-	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
+	int fd = open(nm, O_RDWR | O_NONBLOCK);
+	if (fd == -1) {
 		return (-1);
-	if (fstat(fd, &st) == -1)
+	}
+	if (fstat(fd, &st) == -1) {
 		goto out;
-	if ((st.st_mode & S_IFMT) != S_IFCHR)
+	}
+	if ((st.st_mode & S_IFMT) != S_IFCHR) {
 		goto out;
-	if (ioctl(fd, PPGETMODE, &m) == -1)
+	}
+	if (ioctl(fd, PPGETMODE, &m) == -1) {
 		goto out;
+	}
 	return (fd);
 out:
 	close(fd);
@@ -247,11 +251,7 @@ int
 lp_init (cwdevice * dev, int fd)
 {
 #ifdef HAVE_LINUX_PPDEV_H
-	int mode;
-#endif
-
-#ifdef HAVE_LINUX_PPDEV_H
-	mode = PARPORT_MODE_PCSPP;
+	int mode = PARPORT_MODE_PCSPP;
 
 	if (ioctl (fd, PPSETMODE, &mode) == -1)
 	{
@@ -324,17 +324,19 @@ int
 lp_cw (cwdevice * dev, int onoff)
 {
 #ifdef HAVE_LINUX_PPDEV_H
-	if (onoff == 1)
+	if (onoff == 1) {
 		parport_control (dev->fd, PARPORT_CONTROL_SELECT, 0);
-	else
+	} else {
 		parport_control (dev->fd, PARPORT_CONTROL_SELECT,
 				PARPORT_CONTROL_SELECT);
+	}
 #endif
 #ifdef HAVE_DEV_PPBUS_PPI_H
-	if (onoff == 1)
+	if (onoff == 1) {
 		parport_control (dev->fd, SELECTIN, 0);
-	else
+	} else {
 		parport_control (dev->fd, SELECTIN, SELECTIN);
+	}
 #endif
 	return 0;
 }
@@ -344,18 +346,20 @@ int
 lp_ptt (cwdevice * dev, int onoff)
 {
 #ifdef HAVE_LINUX_PPDEV_H
-	if (onoff == 1)
+	if (onoff == 1) {
 		parport_control (dev->fd, PARPORT_CONTROL_INIT,
 				PARPORT_CONTROL_INIT);
-	else
+	} else {
 		parport_control (dev->fd, PARPORT_CONTROL_INIT, 0);
+	}
 #endif
 #ifdef HAVE_DEV_PPBUS_PPI_H
-	if (onoff == 1)
+	if (onoff == 1) {
 		parport_control (dev->fd, nINIT,
 				nINIT);
-	else
+	} else {
 		parport_control (dev->fd, nINIT, 0);
+	}
 #endif
 	return 0;
 }
@@ -379,17 +383,19 @@ int
 lp_ssbway (cwdevice * dev, int onoff)
 {
 #ifdef HAVE_LINUX_PPDEV_H
-	if (onoff == 1)		/* soundcard */
+	if (onoff == 1)	{   /* soundcard */
 		parport_control (dev->fd, PARPORT_CONTROL_AUTOFD,
 				PARPORT_CONTROL_AUTOFD);
-	else			/* microphone */
+	} else {            /* microphone */
 		parport_control (dev->fd, PARPORT_CONTROL_AUTOFD, 0);
+	}
 #endif
 #ifdef HAVE_DEV_PPBUS_PPI_H
-	if (onoff == 1)		/* soundcard */
+	if (onoff == 1)	{   /* soundcard */
 		parport_control (dev->fd, AUTOFEED, AUTOFEED);
-	else			/* microphone */
+	} else {            /* microphone */
 		parport_control (dev->fd, AUTOFEED, 0);
+	}
 #endif
 	return 0;
 }

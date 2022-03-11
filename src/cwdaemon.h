@@ -20,8 +20,8 @@
  * 02110-1301, USA.
  */
 
-#ifndef _CWDAEMON_H
-#define _CWDAEMON_H
+#ifndef CWDAEMON_H
+#define CWDAEMON_H
 
 
 
@@ -63,7 +63,7 @@
 /* Notice that the range accepted by cwdaemon is different than that
    accepted by libcw. */
 #define CWDAEMON_MORSE_WEIGHTING_DEFAULT        0
-#define CWDAEMON_MORSE_WEIGHTING_MIN          -50
+#define CWDAEMON_MORSE_WEIGHTING_MIN         (-50)
 #define CWDAEMON_MORSE_WEIGHTING_MAX           50
 
 #define CWDAEMON_MORSE_SPEED_DEFAULT           24 /* [wpm] */
@@ -110,7 +110,7 @@ enum cwdaemon_verbosity {
 
 
 
-void cwdaemon_errmsg(const char *info, ...);
+void cwdaemon_errmsg(const char * format, ...) __attribute__ ((format (printf, 1, 2)));
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...);
 
 int dev_get_tty(const char *fname);
@@ -124,7 +124,7 @@ int lp_reset (cwdevice * dev);
 int lp_cw (cwdevice * dev, int onoff);
 int lp_ptt (cwdevice * dev, int onoff);
 int lp_ssbway (cwdevice * dev, int onoff);
-int lp_switchband (cwdevice * dev, unsigned char bandswitch);
+int lp_switchband (cwdevice * dev, unsigned char bitpattern);
 int lp_footswitch (cwdevice * dev);
 #endif
 
@@ -163,5 +163,5 @@ typedef struct cwdaemon_t {
 
 
 
-#endif /* _CWDAEMON_H */
+#endif /* CWDAEMON_H */
 

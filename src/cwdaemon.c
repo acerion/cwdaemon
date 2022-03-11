@@ -37,8 +37,8 @@
 # include <sys/stat.h>
 #endif
 #if STDC_HEADERS
-# include <stdlib.h>
 # include <stddef.h>
+# include <stdlib.h>
 #else
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -91,8 +91,8 @@
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 # include <sys/param.h>
 #endif
-#include <limits.h>
 #include <assert.h>
+#include <limits.h>
 
 #if defined(HAVE_GETOPT_H)
 #include <getopt.h>
@@ -307,7 +307,7 @@ static unsigned char ptt_flag = 0;
    If ptt delay is non-zero, cwdaemon performs delay between turning PTT on
    and starting to play Morse characters.
    TODO: is there a delay before turning PTT off? */
-#define PTT_ACTIVE_AUTO		0x01
+#define PTT_ACTIVE_AUTO		0x01u
 
 /* PTT is turned on and off manually.
    It is the client who decides when to turn the PTT on and off.
@@ -316,7 +316,7 @@ static unsigned char ptt_flag = 0;
    'MANUAL' - the opposite of 'AUTO' where it is cwdaemon that decides
    when to turn PTT on and off.
    Perhaps "PTT_ON_REQUEST" would be a better name of the constant. */
-#define PTT_ACTIVE_MANUAL	0x02
+#define PTT_ACTIVE_MANUAL	0x02u
 
 /* Don't turn PTT off until cwdaemon sends back an echo to client.
    client may request echoing back to it a reply when cwdaemon finishes
@@ -329,7 +329,7 @@ static unsigned char ptt_flag = 0;
    This flag is re-set whenever such reply is sent (to be more
    precise: after playing a requested text, but just before sending to
    the client the requested reply). */
-#define PTT_ACTIVE_ECHO		0x04
+#define PTT_ACTIVE_ECHO	    0x04u
 
 
 
@@ -620,11 +620,14 @@ const char *cwdaemon_debug_ptt_flags(void)
 */
 void cwdaemon_udelay(unsigned long us)
 {
-	struct timespec sleeptime, time_remainder;
+	struct timespec time_remainder = { 0 };
 
-	sleeptime.tv_sec = 0;
-	sleeptime.tv_nsec = us * 1000;
+	struct timespec sleeptime = {
+		.tv_sec  = 0,
+		.tv_nsec = us * 1000
+	};
 
+	/* TODO 2022.03.11: put the nanosleep in a loop. */
 	if (nanosleep(&sleeptime, &time_remainder) == -1) {
 		if (errno == EINTR) {
 			nanosleep(&time_remainder, NULL);
@@ -969,7 +972,7 @@ bool cwdaemon_get_long(const char *buf, long *lvp)
 {
 	errno = 0;
 
-	char *ep;
+	char *ep = NULL;
 	long lv = strtol(buf, &ep, 10);
 	if (buf[0] == '\0' || *ep != '\0') {
 		return false;
@@ -1124,7 +1127,7 @@ int cwdaemon_receive(void)
 void cwdaemon_handle_escaped_request(char *request)
 {
 	cwdevice * dev = global_cwdevice;
-	long lv;
+	long lv = 0;
 
 	/* Take action depending on Escape code. */
 	switch ((int) request[1]) {
@@ -2275,7 +2278,7 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 		ptt_flag &= ~PTT_ACTIVE_MANUAL;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
-		if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers */
+		if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers; FIXME 2022.03.10: shouldn't this be "~PTT_ACTIVE_AUTO"? */
 
 			if (request_queue[0] == '\0'/* no new text in the meantime */
 			    && cw_get_tone_queue_length() <= 1) {
@@ -2335,11 +2338,8 @@ void cwdaemon_args_parse(int argc, char *argv[])
 #if defined(HAVE_GETOPT_H)
 	cwdaemon_args_process_long(argc, argv);
 #else
-	int p;
-
+	int p = 0;
 	while ((p = getopt(argc, argv, cwdaemon_args_short)) != -1) {
-		long lv;
-
 		cwdaemon_args_process_short(p, optarg);
 	}
 #endif
@@ -2522,9 +2522,9 @@ int main(int argc, char *argv[])
 		}
 		umask(0);
 
-		int fd;
+		int fd = open("/dev/null", O_RDWR, 0);
 		/* Replace stdin/stdout/stderr with /dev/null. */
-		if ((fd = open("/dev/null", O_RDWR, 0)) == -1) {
+		if (fd == -1) {
 			syslog(LOG_ERR, "%s\n", "open /dev/null");
 			exit(EXIT_FAILURE);
 		}
@@ -2727,15 +2727,14 @@ void cwdaemon_cwdevices_free(void)
 */
 bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
-	int fd;
-
 	if (!desc || !strlen(desc)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid device description \"%s\"", desc);
 		return false;
 	}
 
-	if ((fd = dev_get_tty(desc)) != -1) {
+	int fd = dev_get_tty(desc);
+	if (fd != -1) {
 		*device = &cwdevice_ttys;
 	}
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)

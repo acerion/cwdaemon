@@ -28,8 +28,8 @@
 # include <stdio.h>
 #endif
 #if STDC_HEADERS
-# include <stdlib.h>
 # include <stddef.h>
+# include <stdlib.h>
 # include <string.h>
 #else
 # if HAVE_STDLIB_H
@@ -84,21 +84,25 @@ int dev_get_tty(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
-	int fd, m;
 
-	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
+	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
 	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
 		return -1;
 	}
 
-	if ((fd = open(nm, O_RDWR | O_NOCTTY | O_NONBLOCK)) == -1)
+	int fd = open(nm, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (fd == -1) {
 		return (-1);
-	if (fstat(fd, &st) == -1)
+	}
+	if (fstat(fd, &st) == -1) {
 		goto out;
-	if ((st.st_mode & S_IFMT) != S_IFCHR)
+	}
+	if ((st.st_mode & S_IFMT) != S_IFCHR) {
 		goto out;
-	if (ioctl(fd, TIOCMGET, &m) == -1)
+	}
+	if (ioctl(fd, TIOCMGET, &m) == -1) {
 		goto out;
+	}
 	return (fd);
 out:
 	close(fd);
@@ -154,11 +158,8 @@ ttys_cw (cwdevice * dev, int onoff)
 		return 0;
 	}
 
-	int result;
-
-	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->key);
-	if (result < 0)
-	{
+	int result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->key);
+	if (result < 0) {
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
 		exit (1);
 	}
@@ -176,11 +177,8 @@ ttys_ptt (cwdevice * dev, int onoff)
 		return 0;
 	}
 
-	int result;
-
-	result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->ptt);
-	if (result < 0)
-	{
+	int result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->ptt);
+	if (result < 0) {
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
 		exit (1);
 	}

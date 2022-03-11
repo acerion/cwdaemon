@@ -42,9 +42,9 @@
 
 
 
-#include "../library/socket.h"
-#include "../library/misc.h"
 #include "../library/key_source_serial.h"
+#include "../library/misc.h"
+#include "../library/socket.h"
 
 
 

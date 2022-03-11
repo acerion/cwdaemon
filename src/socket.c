@@ -187,7 +187,7 @@ int cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
 	/* Remove CRLF if present. TCP buffer may end with '\n', so make
 	   sure that every request is consistently ended with NUL only.
 	   Do it early, do it now. */
-	int z;
+	int z = 0;
 	while (recv_rc > 0
 	       && ( (z = request[recv_rc - 1]) == '\n' || z == '\r') ) {
 

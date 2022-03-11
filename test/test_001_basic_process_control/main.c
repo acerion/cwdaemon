@@ -44,11 +44,11 @@
 
 
 
-#include "../library/process.h"
-#include "../library/socket.h"
-#include "../library/misc.h"
 #include "../library/key_source.h"
 #include "../library/key_source_serial.h"
+#include "../library/misc.h"
+#include "../library/process.h"
+#include "../library/socket.h"
 
 
 

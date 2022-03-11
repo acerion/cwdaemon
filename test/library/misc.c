@@ -30,19 +30,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <libcw.h>
 #include <libcw2.h>
 
-#include "process.h"
-#include "socket.h"
-#include "misc.h"
 #include "cw_rec_utils.h"
 #include "key_source.h"
 #include "key_source_serial.h"
+#include "misc.h"
+#include "process.h"
+#include "socket.h"
 
 
 
@@ -109,7 +109,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 	cw_clear_receive_buffer();
 	cw_easy_receiver_clear(easy_rec);
 
-	// TODO acerion 2022.02.18 this seems to be not needed because it's
+	// TODO (acerion) 2022.02.18 this seems to be not needed because it's
 	// already done in cw_easy_receiver_start().
 	//gettimeofday(&easy_rec->main_timer, NULL);
 
@@ -372,7 +372,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 	int r = recv(fd, recv_buf, sizeof (recv_buf), 0);
 	close(fd);
 
-	// TODO: we should compare recv_buf with requested_reply_value.
+	// TODO (acerion): we should compare recv_buf with requested_reply_value.
 
 	//fprintf(stderr, "port %d, socket %d, rec %d\n", port, fd, r);
 
