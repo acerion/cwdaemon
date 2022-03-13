@@ -1,14 +1,14 @@
 # https://www.gnu.org/software/automake/manual/html_node/Subdirectories-with-AM_005fCONDITIONAL.html
 if CWDAEMON_TESTS
-MAYBE_TESTS=test
+MAYBE_TESTS=tests
 endif
 SUBDIRS=src doc examples $(MAYBE_TESTS)
 
 
 CLEANFILES = *~ \
-	./test/*~ \
-	./test/cwdaemon/*~ \
-	./test/cwdaemon/test/*~
+	./tests/*~ \
+	./tests/cwdaemon/*~ \
+	./tests/cwdaemon/test/*~
 
 
 CWDAEMON_EXAMPLE_FILES=README \
@@ -16,19 +16,19 @@ CWDAEMON_EXAMPLE_FILES=README \
 	examples/example.sh \
 	examples/example.c examples/Makefile.am examples/Makefile.in
 
-CWDAEMON_TEST_FILES=test/cwtest.pl \
-	test/cwtest_esc2.pl \
-	test/cwtest_esc3.pl \
-	test/cwtest_esc5.pl test/cwtest_esc5.sh \
-	test/cwtest_esc64.pl \
-	test/cwtest_esc7.pl \
-	test/cwtest_esc8.pl \
-	test/cwtest_escd.pl \
-	test/cwtest_escf.pl \
-	test/cwtest_escg.pl \
-	test/cwtest_short_space.pl \
-	test/cwdaemon/client.pm \
-	test/cwdaemon/test/common.pm
+CWDAEMON_TEST_FILES=tests/cwtest.pl \
+	tests/cwtest_esc2.pl \
+	tests/cwtest_esc3.pl \
+	tests/cwtest_esc5.pl tests/cwtest_esc5.sh \
+	tests/cwtest_esc64.pl \
+	tests/cwtest_esc7.pl \
+	tests/cwtest_esc8.pl \
+	tests/cwtest_escd.pl \
+	tests/cwtest_escf.pl \
+	tests/cwtest_escg.pl \
+	tests/cwtest_short_space.pl \
+	tests/cwdaemon/client.pm \
+	tests/cwdaemon/test/common.pm
 
 CWDAEMON_PATCHES=patches/cwdaemon-0.5-sergei.diff patches/cwdaemon-0.7-ok1zia.diff patches/cwdaemon-mt.patch
 CWDAEMON_SCHEMATICS_FILES=doc/schematics/parallelport_circuit.jpg doc/schematics/parallelport_circuit.ps \
