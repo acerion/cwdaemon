@@ -626,6 +626,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+LIBCW_LIBDIR
 LIBCW_LIBS
 LIBCW_CFLAGS
 PKG_CONFIG_LIBDIR
@@ -633,6 +634,7 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 CWDAEMON_TESTS_FALSE
 CWDAEMON_TESTS_TRUE
+ABS_TOP_BUILDDIR
 RPMBUILD
 RANLIB
 EGREP
@@ -745,7 +747,8 @@ PKG_CONFIG
 PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 LIBCW_CFLAGS
-LIBCW_LIBS'
+LIBCW_LIBS
+LIBCW_LIBDIR'
 
 
 # Initialize some variables set by options.
@@ -1399,6 +1402,8 @@ Some influential environment variables:
   LIBCW_CFLAGS
               C compiler flags for LIBCW, overriding pkg-config
   LIBCW_LIBS  linker flags for LIBCW, overriding pkg-config
+  LIBCW_LIBDIR
+              value of libdir for libcw, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -6261,6 +6266,12 @@ fi
 done
 
 
+# Needed to have access to local cwdaemon binary that will be tested during
+# "make check". "local" meaning a binary that has not been put into
+# $prefix/sbin yet.
+ABS_TOP_BUILDDIR=abs_top_builddir
+
+
 
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
@@ -6311,7 +6322,8 @@ fi
 
 
 
-
+# LIBCW_LIBDIR is needed to extend value of LD_LIBRARY_PATH used when starting
+# test instance of cwdaemon.
 
 
 
@@ -6511,7 +6523,31 @@ $as_echo "    libcw CLFAGS is ${LIBCW_CFLAGS}" >&6; }
 			   { $as_echo "$as_me:${as_lineno-$LINENO}: result:     libcw LIBS is ${LIBCW_LIBS}" >&5
 $as_echo "    libcw LIBS is ${LIBCW_LIBS}" >&6; }
 
+if test -n "$LIBCW_LIBDIR"; then
+    pkg_cv_LIBCW_LIBDIR="$LIBCW_LIBDIR"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libcw\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libcw") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBCW_LIBDIR=`$PKG_CONFIG --variable="libdir" "libcw" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
 fi
+ else
+    pkg_failed=untried
+fi
+LIBCW_LIBDIR=$pkg_cv_LIBCW_LIBDIR
+
+if test "x$LIBCW_LIBDIR" = x""; then :
+
+fi
+
+fi
+
 
 
 ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec"
@@ -9485,3 +9521,21 @@ fi
 
 fi
 
+
+
+# Put this at the very end, so that these are the last lines seen by
+# user on console with low number of rows.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
+$as_echo "$as_me: ----------------------------------------------------------" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
+$as_echo "$as_me: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:   libcw library path:  ....  $LIBCW_LIBDIR" >&5
+$as_echo "$as_me:   libcw library path:  ....  $LIBCW_LIBDIR" >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}:   CFLAGS:  ................  $CFLAGS" >&5
+$as_echo "$as_me:   CFLAGS:  ................  $CFLAGS" >&6;}
+if test x$enable_cwdaemon_tests = xyes ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}:   enable tests: ...........  yes" >&5
+$as_echo "$as_me:   enable tests: ...........  yes" >&6;}
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
+$as_echo "$as_me: ----------------------------------------------------------" >&6;}

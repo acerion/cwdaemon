@@ -204,6 +204,7 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
+ABS_TOP_BUILDDIR = @ABS_TOP_BUILDDIR@
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -232,6 +233,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBCW_CFLAGS = @LIBCW_CFLAGS@
+LIBCW_LIBDIR = @LIBCW_LIBDIR@
 LIBCW_LIBS = @LIBCW_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@

@@ -183,6 +183,7 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/depcomp \
 	$(top_srcdir)/mkinstalldirs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ABS_TOP_BUILDDIR = @ABS_TOP_BUILDDIR@
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -211,6 +212,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBCW_CFLAGS = @LIBCW_CFLAGS@
+LIBCW_LIBDIR = @LIBCW_LIBDIR@
 LIBCW_LIBS = @LIBCW_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
@@ -298,7 +300,7 @@ lib_cwdaemon_test_a_SOURCES = cw_rec_utils.c       \
                               process.c            \
                               socket.c
 
-lib_cwdaemon_test_a_CFLAGS = $(LIBCW_CFLAGS) -pthread
+lib_cwdaemon_test_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 all: all-am
 
 .SUFFIXES:

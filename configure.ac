@@ -41,6 +41,11 @@ AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([socket strerror])
 AC_CHECK_FUNCS([setpriority])
 
+# Needed to have access to local cwdaemon binary that will be tested during
+# "make check". "local" meaning a binary that has not been put into
+# $prefix/sbin yet.
+AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
+
 
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
@@ -78,12 +83,14 @@ AM_CONDITIONAL([CWDAEMON_TESTS], [test x$enable_cwdaemon_tests = xyes])
 
 
 
-
+# LIBCW_LIBDIR is needed to extend value of LD_LIBRARY_PATH used when starting
+# test instance of cwdaemon.
 PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
 			   AC_SUBST(LIBCW_CFLAGS)
 			   AC_SUBST(LIBCW_LIBS)
 			   AC_MSG_RESULT([    libcw CLFAGS is ${LIBCW_CFLAGS}])
 			   AC_MSG_RESULT([    libcw LIBS is ${LIBCW_LIBS}])
+			   PKG_CHECK_VAR([LIBCW_LIBDIR], [libcw], [libdir])
 			   ],
 			   [AC_MSG_WARN([cannot find libcw pkgconfig information - unable to build cwdaemon])])
 
@@ -105,3 +112,15 @@ if test x$enable_cwdaemon_tests = xyes ; then
 	])
 fi
 
+
+
+# Put this at the very end, so that these are the last lines seen by
+# user on console with low number of rows.
+AC_MSG_NOTICE([----------------------------------------------------------])
+AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
+AC_MSG_NOTICE([  libcw library path:  ....  $LIBCW_LIBDIR])
+AC_MSG_NOTICE([  CFLAGS:  ................  $CFLAGS])
+if test x$enable_cwdaemon_tests = xyes ; then
+    AC_MSG_NOTICE([  enable tests: ...........  yes])
+fi
+AC_MSG_NOTICE([----------------------------------------------------------])

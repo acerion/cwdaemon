@@ -16,5 +16,5 @@ lib_cwdaemon_test_a_SOURCES = cw_rec_utils.c       \
                               process.c            \
                               socket.c
 
-lib_cwdaemon_test_a_CFLAGS = $(LIBCW_CFLAGS) -pthread
+lib_cwdaemon_test_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 

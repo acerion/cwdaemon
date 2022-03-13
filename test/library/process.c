@@ -56,7 +56,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 	pid_t pid = fork();
 	if (0 == pid) {
-		char * const env[] = { "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib", NULL };
+		char * const env[] = { "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" LIBCW_LIBDIR "/", NULL };
 
 		const char * argv[20] = { 0 };
 		int a = 0;
@@ -240,7 +240,7 @@ int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon)
 
 int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
 {
-	const char * path = "/home/acerion/sbin/cwdaemon";
+	const char * path = ROOT_DIR "/src/cwdaemon";
 	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon\n");
 		return -1;
