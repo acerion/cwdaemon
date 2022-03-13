@@ -4310,7 +4310,7 @@ esac
 else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
- # Because of utility library built in in test/library/
+ # Because of utility library built in in tests/library/
 ac_config_headers="$ac_config_headers config.h"
 
 
@@ -6549,7 +6549,7 @@ fi
 fi
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec test/Makefile test/library/Makefile test/test_001_basic_process_control/Makefile test/test_002_reset_register_callback/Makefile test/test_003_cwdevice_tty_line_options/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec tests/Makefile tests/library/Makefile tests/test_001_basic_process_control/Makefile tests/test_002_reset_register_callback/Makefile tests/test_003_cwdevice_tty_line_options/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7299,11 +7299,11 @@ do
     "examples/Makefile") CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
     "doc/cwdaemon.8") CONFIG_FILES="$CONFIG_FILES doc/cwdaemon.8" ;;
     "cwdaemon.spec") CONFIG_FILES="$CONFIG_FILES cwdaemon.spec" ;;
-    "test/Makefile") CONFIG_FILES="$CONFIG_FILES test/Makefile" ;;
-    "test/library/Makefile") CONFIG_FILES="$CONFIG_FILES test/library/Makefile" ;;
-    "test/test_001_basic_process_control/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_001_basic_process_control/Makefile" ;;
-    "test/test_002_reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_002_reset_register_callback/Makefile" ;;
-    "test/test_003_cwdevice_tty_line_options/Makefile") CONFIG_FILES="$CONFIG_FILES test/test_003_cwdevice_tty_line_options/Makefile" ;;
+    "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
+    "tests/library/Makefile") CONFIG_FILES="$CONFIG_FILES tests/library/Makefile" ;;
+    "tests/test_001_basic_process_control/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_001_basic_process_control/Makefile" ;;
+    "tests/test_002_reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_002_reset_register_callback/Makefile" ;;
+    "tests/test_003_cwdevice_tty_line_options/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_003_cwdevice_tty_line_options/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
