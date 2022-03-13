@@ -85,7 +85,6 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-@CWDAEMON_TESTS_TRUE@am__append_1 = test
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -158,8 +157,8 @@ CSCOPE = cscope
 DIST_SUBDIRS = src doc examples test
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/cwdaemon.spec.in AUTHORS COPYING ChangeLog INSTALL \
-	NEWS README TODO compile config.guess config.sub depcomp \
-	install-sh missing mkinstalldirs
+	NEWS README TODO compile config.guess depcomp install-sh \
+	missing mkinstalldirs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -302,9 +301,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = src doc examples $(am__append_1)
 
-#AM_CFLAGS = @UNIXCW_CFLAGS@
+# https://www.gnu.org/software/automake/manual/html_node/Subdirectories-with-AM_005fCONDITIONAL.html
+@CWDAEMON_TESTS_TRUE@MAYBE_TESTS = test
+SUBDIRS = src doc examples $(MAYBE_TESTS)
 CLEANFILES = *~ \
 	./test/*~ \
 	./test/cwdaemon/*~ \

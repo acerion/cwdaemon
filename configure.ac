@@ -100,17 +100,14 @@ AC_OUTPUT([Makefile
 	doc/Makefile
 	examples/Makefile
 	doc/cwdaemon.8
-	cwdaemon.spec])
-
-if test x$enable_cwdaemon_tests = xyes ; then
-   AC_OUTPUT([
+	cwdaemon.spec
 	test/Makefile
 	test/library/Makefile
 	test/test_001_basic_process_control/Makefile
 	test/test_002_reset_register_callback/Makefile
 	test/test_003_cwdevice_tty_line_options/Makefile
 	])
-fi
+
 
 
 

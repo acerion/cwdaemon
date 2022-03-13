@@ -1,9 +1,9 @@
-SUBDIRS=src doc examples
+# https://www.gnu.org/software/automake/manual/html_node/Subdirectories-with-AM_005fCONDITIONAL.html
 if CWDAEMON_TESTS
-SUBDIRS+=test
+MAYBE_TESTS=test
 endif
+SUBDIRS=src doc examples $(MAYBE_TESTS)
 
-#AM_CFLAGS = @UNIXCW_CFLAGS@
 
 CLEANFILES = *~ \
 	./test/*~ \
