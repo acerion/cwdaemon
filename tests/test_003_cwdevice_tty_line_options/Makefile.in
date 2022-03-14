@@ -103,7 +103,7 @@ test_program_DEPENDENCIES =  \
 	$(top_builddir)/tests/library/lib_cwdaemon_tests.a \
 	$(am__DEPENDENCIES_1)
 test_program_LINK = $(CCLD) $(test_program_CFLAGS) $(CFLAGS) \
-	$(test_program_LDFLAGS) $(LDFLAGS) -o $@
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -272,7 +272,6 @@ test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
 test_program_LDADD = $(top_builddir)/tests/library/lib_cwdaemon_tests.a ${LIBCW_LIBS}
 test_program_CFLAGS = -std=c99 -pthread
-test_program_LDFLAGS = -Wl,-rpath=${LIBCW_LIBDIR}
 all: all-am
 
 .SUFFIXES:

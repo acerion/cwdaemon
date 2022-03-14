@@ -10,4 +10,3 @@ test_program_LDADD = $(top_builddir)/tests/library/lib_cwdaemon_tests.a ${LIBCW_
 
 test_program_CFLAGS = -std=c99 -pthread
 
-test_program_LDFLAGS = -Wl,-rpath=${LIBCW_LIBDIR}
