@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PACKAGE="cwdaemon"
-VERSION="0.10.2"
+VERSION="0.11.0"
 debuild_command='debuild -us -uc'
 
 

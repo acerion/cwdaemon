@@ -1,3 +1,20 @@
+cwdaemon 0.11.0 / 2022.xx.yy
+
+New release. Changes since previous release:
+
+*
+
+*
+
+*
+
+* Compiling and testing on following platforms:
+ - Debian GNU/Linux 11, x86_64, gcc 10.2.1, libcw 7.0.0 (unixcw 3.6.0)
+
+
+----
+
+
 cwdaemon 0.10.2 / 2015.10.07
 
 New release. Changes since previous release:

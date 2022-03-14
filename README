@@ -1,4 +1,4 @@
-cwdaemon-0.10.2
+cwdaemon-0.11.0
 ===============
 
 Cwdaemon is a small daemon which uses the pc parallel or serial port and a
@@ -284,16 +284,14 @@ See the examples in the schematics directory.
 
 Tests and examples
 ------------------
-Test scripts in Perl are located in test/ directory.
+Test scripts in Perl are located in tests/ directory.
 Example programs are located in examples/ directory.
 
 
 Platforms
 ---------
-cwdaemon 0.10.2 has been compiled and tested on following platforms:
- - Debian GNU/Linux 8, x86_64, gcc 4.9.2, libcw 6.5.1
- - Alpine Linux 3.2.0, x86_64, gcc 5.2.0, libcw 6.5.1
- - FreeBSD 10.0, x86_64, clang 3.3, libcw 6.5.1
+cwdaemon 0.11.0 has been compiled and tested on following platforms:
+ - Debian GNU/Linux 11, x86_64, gcc 10.2.1, libcw 7.0.0 (unixcw 3.6.0)
 
 
 Credits
