@@ -80,7 +80,7 @@ rm -rf $BUILD_DIR/*
 
 echo ""
 echo ""
-echo "********** Running 'mmake dist' in repository **********"
+echo "********** Running 'make dist' in repository **********"
 sleep 1;
 # prepare $PACKAGE_X.Y.Z.debian.tar.gz
 cd $REPO
