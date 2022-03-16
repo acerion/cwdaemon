@@ -1,41 +1,68 @@
-cwdaemon (0.10.2-1) unstable; urgency=low
+cwdaemon (0.11.0-1) unstable; urgency=medium
 
+  * New version
+
+ -- Kamil Ignacak <acerion@wp.pl>  Wed, 16 Mar 2022 19:33:45 +0100
+
+cwdaemon (0.10.2-3) unstable; urgency=medium
+
+  * Team upload.
+  * Update build-dep for libcw-dev (Closes: #996628)
+  * Remove Colin Tuckley <colint@debian.org> from uploaders (Closes: #990602)
+  * Remove START_CWDAEMON from /etc/default/cwdaemon as per policy
+  * No longer build-dep on autotools-dev or dh-autoreconf
+  * Add Vcs- fields for Salsa packaging repo
+  * Use debhelper-compat 13
+  * Update debian/watch
+  * Bump Standards-Version to 4.6.0
+  * debian/control: Add Pre-Depends: ${misc:Pre-Depends}
+  * Set Rules-Requires-Root: no in debian/control
+
+ -- tony mancill <tmancill@debian.org>  Sun, 17 Oct 2021 15:01:33 -0700
+
+cwdaemon (0.10.2-2) unstable; urgency=medium
+
+  * Fix watch file
+  * Bump Standards-Version to 4.0.0
+  * Clean up init script invocation
+
+ -- Colin Tuckley <colint@debian.org>  Tue, 25 Jul 2017 09:32:30 +0100
+
+cwdaemon (0.10.2-1) unstable; urgency=medium
+
+  [ Kamil Ignacak ]
   * New version of upstream package that includes improved test sets
     and that was tested against most recent libcw (libcw 6.5.1 from
     unixcw 3.5.0 package).
 
- -- Kamil Ignacak <acerion@wp.pl>  Wed, 07 Oct 2015 21:10:00 +0100
+  [ Colin Tuckley ]
+  * Bump Standards-Version to 3.9.7
+  * Use dh-autoreconf
 
-cwdaemon (0.10.1-1) unstable; urgency=low
+ -- Colin Tuckley <colint@debian.org>  Tue, 29 Mar 2016 12:14:50 +0100
 
+cwdaemon (0.10.1-1) unstable; urgency=medium
+
+  [ Kamil Ignacak ]
   * New version of upstream package that fixes two major errors and
     two minor errors. It is recommended to use libcw 6.1.1 from
-    unixcw 3.3.1 with this version of cwdaemon.
+    unixcw 3.3.1 with this version of cwdaemon
+  * Bump Standards-Version to 3.9.5
 
- -- Kamil Ignacak <acerion@wp.pl>  Tue, 22 Apr 2014 22:47:50 +0100
+  [ Colin Tuckley ]
+  * Remove the NMU (not needed with new upstream).
+  * Fix unescaped hyphens in man page.
 
-cwdaemon (0.10.0-1) unstable; urgency=low
+ -- Colin Tuckley <colint@debian.org>  Wed, 25 Jun 2014 11:07:45 +0100
 
-  * New version of upstream package;
+cwdaemon (0.9.5-1.1) unstable; urgency=medium
 
- -- Kamil Ignacak <acerion@wp.pl>  Wed, 15 Jan 2014 19:13:30 +0100
+  * Non-maintainer upload.
+  * debian/rules: (patch from Andreas Moog)
+    - Only run dh_auto_clean if the .deps directory exists
+    (Closes: #724156)
 
-cwdaemon (0.9.7-1) unstable; urgency=low
-
-  * New version of upstream package;
-  * debian/init.d file: The file is installed as /etc/init.d/cwdaemon.
-    Upstream has changed contents of '# Default-Stop:' line from (empty)
-    to '0 1 6', to silence this warning message occurring during
-    installation: 'update-rc.d: warning: default stop runlevel arguments
-    (0 1 6) do not match cwdaemon Default-Stop values (none)'.
-
- -- Kamil Ignacak <acerion@wp.pl>  Fri, 11 Jan 2013 20:14:27 +0100
-
-cwdaemon (0.9.6-1) unstable; urgency=low
-
-  * New version of upstream package;
-
- -- Kamil Ignacak <acerion@wp.pl>  Wed, 04 Jul 2012 19:33:45 +0100
+ -- Colin Tuckley <colint@debian.org>  Thu, 20 Feb 2014 10:30:40 +0000
 
 cwdaemon (0.9.5-1) unstable; urgency=low
 

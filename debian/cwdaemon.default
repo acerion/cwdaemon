@@ -1,9 +1,11 @@
 # /etc/default/cwdaemon
 # OK1ZIA 17 Aug 2004
 
+# START_CWDAEMON=[yes|no] has been removed as per Debian Policy 9.3.3.1
+# https://www.debian.org/doc/debian-policy/ch-opersys.html#managing-the-links
 #
-# Start cwdaemon at boot? yes or no
-START_CWDAEMON=yes
+# If you run systemd, use systemctl to enable/disable.
+# If you run sysvinit, use update-rc.d to enable/disable.
 
 # device without /dev/ e.g. ttyS0, ttyS1, ttyUSB0, ttyd0 (FreeBSD), parport0,
 # parport1, ... or null for no port keying.

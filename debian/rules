@@ -7,7 +7,7 @@ DPKG_EXPORT_BUILDFLAGS = yes
 include /usr/share/dpkg/default.mk
 
 %:
-	dh $@
+	dh $@ --with autoreconf
 
 # Don't strip anything from files containing <some string> in their
 # name.  May be useful during debugging of application.
