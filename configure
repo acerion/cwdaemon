@@ -6298,7 +6298,7 @@ CFLAGS="${CFLAGS} -std=c99"
 if test "${enable_cwdaemon_tests+set}" = set; then :
   enableval=$enable_cwdaemon_tests;
 else
-  enable_cwdaemon_tests=yes
+  enable_cwdaemon_tests=no
 fi
 
 
