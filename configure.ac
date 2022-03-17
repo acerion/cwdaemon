@@ -92,7 +92,7 @@ PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
 			   AC_MSG_RESULT([    libcw LIBS is ${LIBCW_LIBS}])
 			   PKG_CHECK_VAR([LIBCW_LIBDIR], [libcw], [libdir])
 			   ],
-			   [AC_MSG_WARN([cannot find libcw pkgconfig information - unable to build cwdaemon])])
+			   [AC_MSG_ERROR([cannot find libcw pkgconfig information - unable to build cwdaemon])])
 
 
 AC_OUTPUT([Makefile

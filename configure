@@ -6503,13 +6503,11 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBCW_PKG_ERRORS" >&5
 
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cannot find libcw pkgconfig information - unable to build cwdaemon" >&5
-$as_echo "$as_me: WARNING: cannot find libcw pkgconfig information - unable to build cwdaemon" >&2;}
+	as_fn_error $? "cannot find libcw pkgconfig information - unable to build cwdaemon" "$LINENO" 5
 elif test $pkg_failed = untried; then
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cannot find libcw pkgconfig information - unable to build cwdaemon" >&5
-$as_echo "$as_me: WARNING: cannot find libcw pkgconfig information - unable to build cwdaemon" >&2;}
+	as_fn_error $? "cannot find libcw pkgconfig information - unable to build cwdaemon" "$LINENO" 5
 else
 	LIBCW_CFLAGS=$pkg_cv_LIBCW_CFLAGS
 	LIBCW_LIBS=$pkg_cv_LIBCW_LIBS
