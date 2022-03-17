@@ -835,7 +835,6 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 	cwdaemon_reset_libcw_output();
 
 #ifdef CWDAEMON_GITHUB_ISSUE_6_FIXED
-	fprintf(stderr, "With re-registration fixed\n");
 	cw_register_keying_callback(cwdaemon_keyingevent, dev);
 #endif
 
