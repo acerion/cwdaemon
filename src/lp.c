@@ -65,7 +65,14 @@
 # include <sys/param.h>
 #endif
 
+
+
+
 #include "cwdaemon.h"
+#include "lp.h"
+
+
+
 
 /**
    \file lp.c - parport functions

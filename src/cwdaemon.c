@@ -409,7 +409,7 @@ static void cwdaemon_debug_close(void);
 static char cwdaemon_debug_ptt_flag[3 + 1];
 static const char *cwdaemon_debug_ptt_flags(void);
 
-RETSIGTYPE cwdaemon_catch_sigint(int signal);
+void cwdaemon_catch_sigint(int signal);
 
 
 cwdevice cwdevice_ttys = {
@@ -477,7 +477,7 @@ static cwdevice *global_cwdevice = NULL;
 
 
 /* catch ^C when running in foreground */
-RETSIGTYPE cwdaemon_catch_sigint(__attribute__((unused)) int signal)
+void cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 {
 	printf("%s: Exiting\n", PACKAGE);
 	exit(EXIT_SUCCESS);

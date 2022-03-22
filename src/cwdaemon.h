@@ -46,6 +46,10 @@
 
 #include <stdbool.h>
 
+#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
+#include <lp.h>
+#endif
+
 
 
 
@@ -116,17 +120,6 @@ void cwdaemon_debug(int verbosity, const char *func, int line, const char *forma
 int dev_get_tty(const char *fname);
 int dev_get_null(const char *fname);
 int dev_get_parport(const char *fname);
-
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-int lp_init (cwdevice * dev, int fd);
-int lp_free (cwdevice * dev);
-int lp_reset (cwdevice * dev);
-int lp_cw (cwdevice * dev, int onoff);
-int lp_ptt (cwdevice * dev, int onoff);
-int lp_ssbway (cwdevice * dev, int onoff);
-int lp_switchband (cwdevice * dev, unsigned char bitpattern);
-int lp_footswitch (cwdevice * dev);
-#endif
 
 int ttys_init (cwdevice * dev, int fd);
 int ttys_free (cwdevice * dev);
