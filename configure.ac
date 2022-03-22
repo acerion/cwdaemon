@@ -13,7 +13,6 @@ AC_CONFIG_HEADERS([config.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL
-AM_PROG_CC_STDC
 AC_CHECK_PROGS(RPMBUILD, rpmbuild, rpm)
 AM_PROG_CC_C_O # per-target flags in src/Makefile.am
 
@@ -37,7 +36,6 @@ AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_FORK
-AC_TYPE_SIGNAL
 AC_CHECK_FUNCS([socket strerror])
 AC_CHECK_FUNCS([setpriority])
 
@@ -95,7 +93,8 @@ PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
 			   [AC_MSG_ERROR([cannot find libcw pkgconfig information - unable to build cwdaemon])])
 
 
-AC_OUTPUT([Makefile
+
+AC_CONFIG_FILES([Makefile
 	src/Makefile
 	doc/Makefile
 	examples/Makefile
@@ -107,7 +106,7 @@ AC_OUTPUT([Makefile
 	tests/test_002_reset_register_callback/Makefile
 	tests/test_003_cwdevice_tty_line_options/Makefile
 	])
-
+AC_OUTPUT
 
 
 
