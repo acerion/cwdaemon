@@ -36,12 +36,18 @@ typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_d
 
 
 
+#define SOURCE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
+
+
+
+
 /**
    Structure used by client code to configure key source.
 */
 typedef struct cw_key_source_params_t {
 	unsigned int param_keying; /* See cw_key_source_t::param_keying. */
 	unsigned int param_ptt;    /* See cw_key_source_t::param_ptt. */
+	char source_path[SOURCE_PATH_SIZE];      /* See key_source_t::source_path. */
 } cw_key_source_params_t;
 
 
@@ -78,6 +84,10 @@ typedef struct cw_key_source_t {
 	   e.g. a polled file descriptor. To be used by source-type-specific
 	   open/close/poll_once functions. */
 	intptr_t source_reference;
+
+	/* String representation of key source. For regular devices it will
+	   be a path (e.g. "/dev/ttyS0"). */
+	char source_path[SOURCE_PATH_SIZE];
 
 	/* Low-level integer parameter specifying where in a keying source to
 	   find information about keying. E.g. for ttyS0 it will be a

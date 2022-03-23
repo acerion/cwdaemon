@@ -634,6 +634,7 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 CWDAEMON_TESTS_FALSE
 CWDAEMON_TESTS_TRUE
+TEST_CWDEVICE_NAME
 ABS_TOP_BUILDDIR
 RPMBUILD
 RANLIB
@@ -5512,6 +5513,15 @@ ABS_TOP_BUILDDIR=abs_top_builddir
 
 
 
+if test "${test_cwdevice_name}" = ""; then
+   TEST_CWDEVICE_NAME="ttyS0"
+
+else
+   TEST_CWDEVICE_NAME=${test_cwdevice_name}
+
+fi
+
+
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
@@ -7284,6 +7294,8 @@ $as_echo "$as_me:   CFLAGS:  ................  $CFLAGS" >&6;}
 if test x$enable_cwdaemon_tests = xyes ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}:   enable tests: ...........  yes" >&5
 $as_echo "$as_me:   enable tests: ...........  yes" >&6;}
+    { $as_echo "$as_me:${as_lineno-$LINENO}:   test cwdevice name: .....  $TEST_CWDEVICE_NAME" >&5
+$as_echo "$as_me:   test cwdevice name: .....  $TEST_CWDEVICE_NAME" >&6;}
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 $as_echo "$as_me: ----------------------------------------------------------" >&6;}

@@ -102,9 +102,9 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		if (opts->nofork) {
 			argv[a++] = "-n";
 		}
-		if ('\0' != opts->cwdevice[0]) {
+		if ('\0' != opts->cwdevice_name[0]) {
 			argv[a++] = "-d";
-			argv[a++] = opts->cwdevice;
+			argv[a++] = opts->cwdevice_name;
 		}
 		char wpm_buf[16] = { 0 };
 		if (opts->wpm) {
@@ -238,7 +238,7 @@ int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon)
 
 
 
-int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
 {
 	const char * path = ROOT_DIR "/src/cwdaemon";
 	if (0 != cwdaemon_start(path, opts, cwdaemon)) {

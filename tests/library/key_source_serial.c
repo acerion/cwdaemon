@@ -43,20 +43,15 @@
 
 
 
-static const char * g_device = "/dev/ttyS0";
-
-
-
-
 bool cw_key_source_serial_open(cw_key_source_t * source)
 {
 	/* Open serial port. */
 	errno = 0;
-	int fd = open(g_device, O_RDONLY);
+	int fd = open(source->source_path, O_RDONLY);
 	if (fd == -1) {
 		char buf[32] = { 0 };
 		strerror_r(errno, buf, sizeof (buf));
-		fprintf(stderr, "[EE]: open(%s): %s\n", g_device, buf);
+		fprintf(stderr, "[EE]: open(%s): %s\n", source->source_path, buf);
 		return false;
 	}
 	source->source_reference = (uintptr_t) fd;

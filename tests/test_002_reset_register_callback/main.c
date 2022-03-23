@@ -55,17 +55,18 @@ int main(void)
 
 	bool failure = false;
 	const int wpm = 10;
-	cwdaemon_opts_t cwdaemon_opts = {
+	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = "1000",
 		.sound_system       = CW_AUDIO_PA,
 		.nofork             = true,
-		.cwdevice           = "ttyS0",
+		.cwdevice_name      = TEST_CWDEVICE_NAME,
 		.wpm                = wpm,
 	};
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	const cw_key_source_params_t key_source_params = {
 		.param_keying = TIOCM_DTR, /* The default tty line on which keying is being done. */
 		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
+		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 	};
 	cwdaemon_process_t cwdaemon = { 0 };
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {

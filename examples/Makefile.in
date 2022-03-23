@@ -239,6 +239,7 @@ RPMBUILD = @RPMBUILD@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+TEST_CWDEVICE_NAME = @TEST_CWDEVICE_NAME@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@

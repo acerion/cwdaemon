@@ -59,18 +59,19 @@ int main(void)
 
 	const int wpm = 10;
 	bool failure = false;
-	static cwdaemon_process_t cwdaemon = { 0 };
-	cwdaemon_opts_t cwdaemon_opts = {
+	cwdaemon_process_t cwdaemon = { 0 };
+	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = "1000",
-		.sound_system   = CW_AUDIO_PA,
+		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
-		.cwdevice       = "ttyS0",
+		.cwdevice_name  = TEST_CWDEVICE_NAME,
 		.wpm            = wpm,
 	};
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
-	const cw_key_source_params_t key_source_params = {
+	cw_key_source_params_t key_source_params = {
 		.param_keying = TIOCM_DTR, /* The default tty line on which keying is being done. */
 		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
+		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 	};
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");

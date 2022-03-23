@@ -45,6 +45,13 @@ AC_CHECK_FUNCS([setpriority])
 AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
 
 
+if test "${test_cwdevice_name}" = ""; then
+   AC_SUBST([TEST_CWDEVICE_NAME], "ttyS0")
+else
+   AC_SUBST([TEST_CWDEVICE_NAME], ${test_cwdevice_name})
+fi
+
+
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
@@ -118,5 +125,6 @@ AC_MSG_NOTICE([  libcw library path:  ....  $LIBCW_LIBDIR])
 AC_MSG_NOTICE([  CFLAGS:  ................  $CFLAGS])
 if test x$enable_cwdaemon_tests = xyes ; then
     AC_MSG_NOTICE([  enable tests: ...........  yes])
+    AC_MSG_NOTICE([  test cwdevice name: .....  $TEST_CWDEVICE_NAME])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

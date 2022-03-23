@@ -29,7 +29,7 @@ typedef struct {
 	char tone[10];
 	enum cw_audio_systems sound_system;
 	bool nofork;             /* -n, --nofork; don't fork. */
-	char cwdevice[16];
+	char cwdevice_name[16];  /* Name of a device in /dev/. The name does not include "/dev/" */
 	int wpm;
 	unsigned int param_keying;
 	unsigned int param_ptt;
@@ -60,7 +60,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
 
 
 

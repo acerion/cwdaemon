@@ -220,6 +220,7 @@ RPMBUILD = @RPMBUILD@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+TEST_CWDEVICE_NAME = @TEST_CWDEVICE_NAME@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -268,7 +269,7 @@ top_srcdir = @top_srcdir@
 # source code files used to build cwdaemon program
 test_program_SOURCES = main.c
 # target-specific preprocessor flags (#defs and include dirs)
-test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
+test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} -DTEST_CWDEVICE_NAME=\"$(TEST_CWDEVICE_NAME)\"
 # target-specific linker flags (objects to link)
 test_program_LDADD = $(top_builddir)/tests/library/lib_cwdaemon_tests.a ${LIBCW_LIBS}
 test_program_CFLAGS = -std=c99 -pthread

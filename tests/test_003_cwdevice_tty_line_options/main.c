@@ -124,7 +124,7 @@ int main(void)
 		.tone           = "1000",
 		.sound_system   = CW_AUDIO_PA,
 		.nofork         = true,
-		.cwdevice       = "ttyS0",
+		.cwdevice_name  = TEST_CWDEVICE_NAME,
 		.wpm            = wpm,
 	};
 
@@ -142,6 +142,7 @@ int main(void)
 		const cw_key_source_params_t key_source_params = {
 			.param_keying = datum->key_source_param_keying,
 			.param_ptt    = datum->key_source_param_ptt,
+			.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 		};
 		cwdaemon_process_t cwdaemon = { 0 };
 		if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {

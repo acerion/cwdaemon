@@ -124,6 +124,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 */
 static int test_helper_key_source_setup(cw_key_source_t * key_source, const cw_key_source_params_t * key_source_params)
 {
+	snprintf(key_source->source_path, sizeof (key_source->source_path), "%s", key_source_params->source_path);
 	cw_key_source_configure_polling(key_source, 0, cw_key_source_serial_poll_once);
 	if (!key_source->open_fn(key_source)) {
 		return -1;
@@ -199,7 +200,7 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * m
 		}
 	} else {
 		if (NULL == needle) {
-			fprintf(stderr, "[EE] Received text '%s' doesn't match sent text '%s\n",
+			fprintf(stderr, "[EE] Received text '%s' doesn't match sent text '%s'\n",
 				receive_buffer, message_value);
 			return -1;
 		} else {
