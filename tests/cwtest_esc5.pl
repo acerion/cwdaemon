@@ -67,14 +67,18 @@ $SIG{'INT'} = 'INT_handler';
 
 
 
+print "Sending text to play: '$input_text'\n";
 print $cwsocket $input_text."^";
+print "Receiving reply\n";
 my $reply = <$cwsocket>;
+print "Received reply '$reply'\n";
 sleep(1);
 
 
 
 
 # Exit cwdaemon.
+print "Main part of test: sending 'exit' request\n";
 print $cwsocket chr(27).$request_code;
 
 

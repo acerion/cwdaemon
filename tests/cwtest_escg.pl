@@ -53,7 +53,7 @@ my $request_code = 'g';   # Code of Escape request
 my $cycles = 5;           # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";     # Text to be played
-my $delta = 4;            # Change (in %) per one step in a loop.
+my $delta = 5;            # Change (in %) per one step in a loop.
 
 
 my $test_set = "vi";      # Set of tests: valid and invalid parameter values

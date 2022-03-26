@@ -70,6 +70,10 @@ srand($seed);
 
 
 # Number of tokens (tX) and errors (eX) in cwtest_send_X().
+my $global_total = 0;
+my $global_errors = 0;
+my $global_t0 = 0;
+my $global_e0 = 0;
 my $global_t1 = 0;
 my $global_e1 = 0;
 my $global_t2 = 0;
@@ -114,12 +118,47 @@ $SIG{'INT'} = 'INT_handler';
 for ($cycle = 0; $cycle < $cycles; $cycle++) {
 
     &cwdaemon_test0;
+    $global_t0 += $global_total;
+    $global_e0 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     &cwdaemon_test1;
+    $global_t1 += $global_total;
+    $global_e1 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     &cwdaemon_test2;
+    $global_t2 += $global_total;
+    $global_e2 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     &cwdaemon_test3;
+    $global_t3 += $global_total;
+    $global_e3 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     &cwdaemon_test4;
+    $global_t4 += $global_total;
+    $global_e4 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     &cwdaemon_test5;
-    
+    $global_t5 += $global_total;
+    $global_e5 += $global_errors;
+    # clear before next test
+    $global_total = 0;
+    $global_errors = 0;
+
     cwtest_print_stats($cycle, $cycles);
 }
 
@@ -345,16 +384,16 @@ sub cwtest_request
 
 
 	my ($reply_prefix, $reply_text, $reply_postfix) = cwdaemon::client::receive($cwsocket, $request_prefix);
-	$global_t1++;
+	$global_total++;
 
 
 
 	if (!defined($reply_prefix) || !defined($reply_text) || !defined($reply_postfix)) {
-	    $global_e1++;
+	    $global_errors++;
 	    print("undefined\n");
 
 	} elsif ($reply_prefix ne $request_prefix || $reply_text ne $reply_expected_text || $reply_postfix ne "\r\n") {
-	    $global_e1++;
+	    $global_errors++;
 	    print("unequal\n");
 
 	} else {
@@ -406,9 +445,9 @@ sub cwtest_send_hang
 
 	my ($reply_prefix, $reply_text, $reply_postfix) = cwdaemon::client::receive($cwsocket, $request_prefix);
 
-	$global_t1++;
+	$global_total++;
 	if ($reply_text ne $expected) {
-	    $global_e1++;
+	    $global_errors++;
 	    die "die 1, incorrect reply: '$reply_text' != '$expected'\n";
 	}
 
@@ -459,7 +498,15 @@ sub cwtest_print_stats
     printf("\n=================================================\n");
     printf("Finished cycle " . ($cycle + 1) . " / $cycles\n");
 
-    printf("Stats 1: $global_e1 errors / $global_t1 tokens (");
+    printf("Stats for test 0: $global_e0 errors / $global_t0 tokens (");
+    if ($global_t0) {
+	printf("%.4f%%", 1.0 * $global_e0 / $global_t0);
+    } else {
+	printf("%.4f%%", 0.0);
+    }
+    printf(")\n");
+
+    printf("Stats for test 1: $global_e1 errors / $global_t1 tokens (");
     if ($global_t1) {
 	printf("%.4f%%", 1.0 * $global_e1 / $global_t1);
     } else {
@@ -467,7 +514,7 @@ sub cwtest_print_stats
     }
     printf(")\n");
 
-    printf("Stats 2: $global_e2 errors / $global_t2 tokens (");
+    printf("Stats for test 2: $global_e2 errors / $global_t2 tokens (");
     if ($global_t2) {
 	printf("%.4f%%", 1.0 * $global_e2 / $global_t2);
     } else {
@@ -475,7 +522,7 @@ sub cwtest_print_stats
     }
     printf(")\n");
 
-    printf("Stats 3: $global_e3 errors / $global_t3 tokens (");
+    printf("Stats for test 3: $global_e3 errors / $global_t3 tokens (");
     if ($global_t3) {
 	printf("%.4f%%", 1.0 * $global_e3 / $global_t3);
     } else {
@@ -483,7 +530,7 @@ sub cwtest_print_stats
     }
     printf(")\n");
 
-    printf("Stats 4: $global_e4 errors / $global_t4 tokens (");
+    printf("Stats for test 4: $global_e4 errors / $global_t4 tokens (");
     if ($global_t4) {
 	printf("%.4f%%", 1.0 * $global_e4 / $global_t4);
     } else {
@@ -491,7 +538,7 @@ sub cwtest_print_stats
     }
     printf(")\n");
 
-    printf("Stats 5: $global_e5 errors / $global_t5 tokens (");
+    printf("Stats for test 5: $global_e5 errors / $global_t5 tokens (");
     if ($global_t5) {
 	printf("%.4f%%", 1.0 * $global_e5 / $global_t5);
     } else {
