@@ -17,7 +17,7 @@
 #
 
 # program(s) to be built in current dir
-noinst_PROGRAMS = example example2
+noinst_PROGRAMS = example
 
 # source code files used to build example program
 example_SOURCES = example.c
@@ -26,12 +26,4 @@ example_CPPFLAGS = -Wall -Wextra -pedantic -std=c99
 # target-specific linker flags (objects to link)
 # example_LDADD =
 
-# source code files used to build example program
-example2_SOURCES = example2.c
-# target-specific preprocessor flags (#defs and include dirs)
-example2_CPPFLAGS = -Wall -Wextra -pedantic -std=c99
-# target-specific linker flags (objects to link)
-# example2_LDADD =
-
 CLEANFILES = *~
-
