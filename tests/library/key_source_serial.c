@@ -24,6 +24,11 @@
 
 
 
+// TODO: GNU's strerror_r() may not fill provided buffer :(
+// Write own replacement of strerror_r() that bevaves as expected.
+//
+// I don't want to be guessing which version of strerror_r() is being
+// used at compile time: XSI variant or GNU variant.
 #define _GNU_SOURCE /* strerror_r() */
 
 #include <errno.h>
@@ -50,8 +55,8 @@ bool cw_key_source_serial_open(cw_key_source_t * source)
 	int fd = open(source->source_path, O_RDONLY);
 	if (fd == -1) {
 		char buf[32] = { 0 };
-		strerror_r(errno, buf, sizeof (buf));
-		fprintf(stderr, "[EE]: open(%s): %s\n", source->source_path, buf);
+		char * b = strerror_r(errno, buf, sizeof (buf));
+		fprintf(stderr, "[EE] open(%s): %s / %d\n", source->source_path, b, errno);
 		return false;
 	}
 	source->source_reference = (uintptr_t) fd;
@@ -79,8 +84,8 @@ bool cw_key_source_serial_poll_once(cw_key_source_t * source, bool * key_is_down
 	int status = ioctl(fd, TIOCMGET, &value);
 	if (status != 0) {
 		char buf[32] = { 0 };
-		strerror_r(errno, buf, sizeof (buf));
-		fprintf(stderr, "[EE]: ioctl(TIOCMGET): %s\n", buf);
+		char * b = strerror_r(errno, buf, sizeof (buf));
+		fprintf(stderr, "[EE] ioctl(TIOCMGET): %s / %d\n", b, errno);
 		return false;
 	}
 	const unsigned int keying_pin = source->param_keying; /* E.g. TIOCM_DTR. */
