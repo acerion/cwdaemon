@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <stdlib.h> /* getenv() */
 
 
 
@@ -19,8 +20,15 @@
 
 
 
+/* Count of non-NULL items to be put in env[] passed to execve(). */
+#define ENV_MAX_COUNT   2
+
+
+
+
 static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
 static void * terminate_cwdaemon_fn(void * cwdaemon_arg);
+static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 
 
@@ -56,7 +64,11 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 	pid_t pid = fork();
 	if (0 == pid) {
-		char * const env[] = { "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" LIBCW_LIBDIR "/", NULL };
+		char * env[ENV_MAX_COUNT + 1] = { 0 };
+		if (0 != prepare_env(env)) {
+			fprintf(stderr, "[EE] failed to prepare env table for child process\n");
+			return -1;
+		}
 
 		const char * argv[20] = { 0 };
 		int a = 0;
@@ -264,4 +276,72 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t 
 	return 0;
 }
 
+
+
+/**
+   Prepare environment of cwdaemon process started with execve().
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int prepare_env(char * env[ENV_MAX_COUNT + 1])
+{
+#define BUF_SIZE 1024
+
+	int env_i = 0;
+	if (1) {
+		/*
+		  During development phase the libcw library may be located
+		  elsewhere, so point the program to that location.
+		*/
+		static char ld_path[BUF_SIZE] = { 0 };
+		int n = snprintf(ld_path, sizeof (ld_path), "%s", "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" LIBCW_LIBDIR "/");
+		if (n >= BUF_SIZE) {
+			fprintf(stderr, "[EE] overflow when writing ld_path to env table\n");
+			return -1;
+		}
+		env[env_i] = ld_path;
+		env_i++;
+	}
+
+
+	if (1) {
+		/*
+		  Passing this env to cwdaemon is necessary if the cwdaemon
+		  will be connecting to PulseAudio server.
+
+		  On Linux Mint 20.3 an attempt to start cwdaemon as child
+		  process of test binary (through execve()), and make it
+		  connect to PulseAudio server, resulted in "Connection
+		  refused" error.
+
+		  cwdaemon started directly from command line, or with
+		  something other than execve(), has access to full env
+		  table, including XDG_RUNTIME_DIR and the problem doesn't
+		  occur.
+		*/
+		static char xdg_runtime[BUF_SIZE] = { 0 };
+		const char * name = "XDG_RUNTIME_DIR";
+		const char * value = getenv("XDG_RUNTIME_DIR");
+		if (value) {
+			int n = snprintf(xdg_runtime, sizeof (xdg_runtime), "%s=%s", name, value);
+			if (n >= BUF_SIZE) {
+				fprintf(stderr, "[EE] overflow when writing XDG RUNTIME DIR to env table\n");
+				return -1;
+			}
+			env[env_i] = xdg_runtime;
+			env_i++;
+		}
+	}
+
+	if (env_i > ENV_MAX_COUNT) {
+		/* TODO: it may be too late for this check: writing past the array size may have already happened. */
+		fprintf(stderr, "[EE] Count of env items in env table is exceeded: %d > %d\n", env_i, ENV_MAX_COUNT);
+		return -1;
+	}
+
+	env[env_i] = NULL;
+	return 0;
+#undef BUF_SIZE
+}
 
