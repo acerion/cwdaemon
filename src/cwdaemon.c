@@ -105,6 +105,7 @@
 #include "cwdaemon.h"
 #include "help.h"
 #include "socket.h"
+#include "log.h"
 
 
 
@@ -175,7 +176,7 @@
 
 /* cwdaemon constants. */
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
-#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
+#define CWDAEMON_VERBOSITY_DEFAULT     LOG_WARNING /* Threshold of verbosity of debug strings. */
 
 #define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
 #define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
@@ -263,15 +264,6 @@ static cwdaemon_t g_cwdaemon = { .socket_descriptor = -1 };
    stdout. */
 static FILE *cwdaemon_debug_f = NULL;
 static char *cwdaemon_debug_f_path = NULL;
-
-/* This table is addressed with values defined in "enum
-   cwdaemon_verbosity" (src/cwdaemon.h). */
-static const char *cwdaemon_verbosity_labels[] = {
-	"NN",    /* None - obviously this label will never be used. */
-	"EE",    /* Error. */
-	"WW",    /* Warning. */
-	"II",    /* Information. */
-	"DD" };  /* Debug. */
 
 /* An integer that is a result of ORing libcw's debug flags. See
    libcw.h (or is it libcw_debug.h?) for numeric values of the
@@ -521,41 +513,45 @@ void cwdaemon_errmsg(const char *format, ...)
 
 
 
-
 /**
-   \brief Print debug string to debug file
+   \brief Print log string to log output
 
-   Function decides if given \p verbosity level is sufficient to print
-   given \p format debug string, and prints it to predefined file. If
-   current global verbosity level is "None", no information will be
+   Function decides if given \p verbosity level is sufficient to print given
+   \p format log string, and prints it to predefined output. If current
+   global verbosity level is "None" (LOG_EMERG), no information will be
    printed.
 
-   Currently \p verbosity can have one of values defined in enum
-   cwdaemon_verbosity.
+   Supported values of \p priority are: LOG_DEBUG, LOG_INFO, LOG_WARNING,
+   LOG_ERR.
 
    Function accepts printf-line formatting string as last named
    argument (\p format), and a set of optional arguments to be
    inserted into the formatting string.
 
-   \param verbosity - verbosity level of given debug string
+   \param priority - priority level of message
    \param format - formatting string of a debug string being printed
 */
-void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __attribute__((unused)) int line, const char *format, ...)
+void cwdaemon_log(int priority, __attribute__((unused)) const char *func, __attribute__((unused)) int line, const char *format, ...)
 {
-	if (current_verbosity > CWDAEMON_VERBOSITY_N
-	    && verbosity <= current_verbosity
-	    && cwdaemon_debug_f) {
+   if (!cwdaemon_debug_f) {
+      return;
+   }
+   if (current_verbosity == LOG_EMERG) {
+      return;
+   }
+	if (priority > current_verbosity) {
+      return;
+   }
 
-		va_list ap;
-		char s[1024 + 1];
-		va_start(ap, format);
-		vsnprintf(s, 1024, format, ap);
-		va_end(ap);
+   va_list ap;
+   char s[1024 + 1] = { 0 };
+   va_start(ap, format);
+   vsnprintf(s, sizeof (s), format, ap);
+   va_end(ap);
 
-		fprintf(cwdaemon_debug_f, "%s:%s: %s\n", PACKAGE, cwdaemon_verbosity_labels[verbosity], s);
-		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
-		fflush(cwdaemon_debug_f);
-	}
+   fprintf(cwdaemon_debug_f, "[%s] %s: %s\n", log_get_priority_label(priority), PACKAGE, s);
+   // fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
+   fflush(cwdaemon_debug_f);
 
 	return;
 }
@@ -694,9 +690,9 @@ void cwdaemon_switch_band(cwdevice * dev, unsigned int band)
 	unsigned int bit_pattern = (band & 0x01) | ((band & 0x0e) << 4);
 	if (dev->switchband) {
 		dev->switchband(dev, bit_pattern);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "set band switch to %x", band);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "set band switch to %x", band);
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "band switch output not implemented");
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "band switch output not implemented");
 	}
 
 	return;
@@ -720,15 +716,15 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		dev->ptt(dev, ON);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, info);
 
 
 #if 0
 		int rv = cw_queue_tone(current_ptt_delay * CWDAEMON_USECS_PER_MSEC, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {	/* Old libcw may reject freq=0. */
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-				       "cw_queue_tone() failed: rv=%d errno=\"%s\", using udelay() instead",
-				       rv, strerror(errno));
+			cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                      "cw_queue_tone() failed: rv=%d errno=\"%s\", using udelay() instead",
+                      rv, strerror(errno));
 			/* TODO: wouldn't it be simpler to not to call
 			   cw_queue_tone() and use only cwdaemon_udelay()? */
 			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
@@ -738,7 +734,7 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 #endif
 
 		ptt_flag |= PTT_ACTIVE_AUTO;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
 	return;
@@ -758,9 +754,9 @@ void cwdaemon_set_ptt_off(cwdevice * dev, const char *info)
 {
 	dev->ptt(dev, OFF);
 	ptt_flag = 0;
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+	cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, info);
 
 	return;
 }
@@ -862,7 +858,7 @@ bool cwdaemon_open_libcw_output(int audio_system)
 		   output has been closed. In such a situation OSS may fail
 		   to open audio device. Let's give it some time. */
 		for (int i = 0; i < 5; i++) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "delaying switching to OSS, please wait few seconds.");
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "delaying switching to OSS, please wait few seconds.");
 			sleep(4);
 			rv = cw_generator_new(audio_system, NULL);
 			if (rv == CW_SUCCESS) {
@@ -872,7 +868,7 @@ bool cwdaemon_open_libcw_output(int audio_system)
 	}
 	if (rv != CW_FAILURE) {
 		rv = cw_generator_start();
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "starting generator with sound system \"%s\": %s", cw_get_audio_system_label(audio_system), rv ? "success" : "failure");
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "starting generator with sound system \"%s\": %s", cw_get_audio_system_label(audio_system), rv ? "success" : "failure");
 
 	} else {
 		/* FIXME:
@@ -883,7 +879,7 @@ bool cwdaemon_open_libcw_output(int audio_system)
 		   It seems that this error has been fixed with
 		   changes in libcw, committed on 31.12.2012.
 		   To be observed. */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "failed to create generator with sound system \"%s\"", cw_get_audio_system_label(audio_system));
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "failed to create generator with sound system \"%s\"", cw_get_audio_system_label(audio_system));
 	}
 
 	return rv == CW_FAILURE ? false : true;
@@ -929,7 +925,7 @@ void cwdaemon_reset_libcw_output(void)
 	/* Delete old generator (if it exists). */
 	cwdaemon_close_libcw_output();
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "setting sound system \"%s\"", cw_get_audio_system_label(default_audio_system));
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "setting sound system \"%s\"", cw_get_audio_system_label(default_audio_system));
 
 	if (cwdaemon_open_libcw_output(default_audio_system)) {
 		has_audio_output = true;
@@ -1031,7 +1027,7 @@ void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *requ
 
 	   It is important to set this flag at the beginning of the function. */
 	ptt_flag |= PTT_ACTIVE_ECHO;
-	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_ECHO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+	cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag +PTT_ACTIVE_ECHO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 	/* We are sending reply to the same host that sent a request. */
 	memcpy(&cwdaemon->reply_addr, &cwdaemon->request_addr, sizeof(cwdaemon->reply_addr));
@@ -1040,8 +1036,8 @@ void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *requ
 	strncpy(reply, request, n);
 	reply[n] = '\0'; /* FIXME: where is boundary checking? */
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "text of request: \"%s\", text of reply: \"%s\"", request, reply);
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "now waiting for end of transmission before echoing back to client");
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "text of request: \"%s\", text of reply: \"%s\"", request, reply);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "now waiting for end of transmission before echoing back to client");
 
 	return;
 }
@@ -1076,7 +1072,7 @@ int cwdaemon_receive(void)
 		   Shouldn't we recover from the error? */
 		exit(EXIT_FAILURE);
 	} else if (recv_rc == 0) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "...recv_from (no data)");
+		cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "...recv_from (no data)");
 		return 0;
 	} else {
 		; /* pass */
@@ -1084,7 +1080,7 @@ int cwdaemon_receive(void)
 
 	request_buffer[recv_rc] = '\0';
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "-------------------");
 	/* TODO: replace the magic number 27 with constant. */
 	if (request_buffer[0] != 27) {
 		/* No ESCAPE. All received data should be treated
@@ -1094,7 +1090,7 @@ int cwdaemon_receive(void)
 		   caret request (e.g. "some text^"), which does
 		   require sending a reply to client. Such request is
 		   correctly handled by cwdaemon_play_request(). */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "request: \"%s\"", request_buffer);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			strcat(request_queue, request_buffer);
 			cwdaemon_play_request(request_queue);
@@ -1110,7 +1106,7 @@ int cwdaemon_receive(void)
 		   terminal makes funny things with the lines already
 		   printed to the terminal (tested in xfce4-terminal
 		   and xterm). */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "escaped request: \"<ESC>%s\"", request_buffer + 1);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "escaped request: \"<ESC>%s\"", request_buffer + 1);
 		cwdaemon_handle_escaped_request(request_buffer);
 		return 0;
 	}
@@ -1132,8 +1128,7 @@ void cwdaemon_handle_escaped_request(char *request)
 	switch ((int) request[1]) {
 	case '0':
 		/* Reset all values. */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested resetting of parameters");
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested resetting of parameters");
 		request_queue[0] = '\0';
 		cwdaemon_reset_almost_all(dev);
 		wordmode = 0;
@@ -1141,8 +1136,8 @@ void cwdaemon_handle_escaped_request(char *request)
 		global_cwdevice->reset(global_cwdevice);
 
 		ptt_flag = 0;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "resetting completed");
+		cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "resetting completed");
 
 		break;
 	case '2':
@@ -1159,7 +1154,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			if (current_morse_tone > 0) {
 
 				cw_set_frequency(current_morse_tone);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "tone: %d Hz", current_morse_tone);
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "tone: %d Hz", current_morse_tone);
 
 				/* TODO: Should we really be adjusting
 				   volume when the command is for
@@ -1169,18 +1164,18 @@ void cwdaemon_handle_escaped_request(char *request)
 
 			} else { /* current_morse_tone==0, sidetone off */
 				cw_set_volume(0);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "volume off");
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "volume off");
 			}
 		}
 		break;
 	case '4':
 		/* Abort currently sent message. */
 		if (wordmode) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "requested aborting of message - ignoring (word mode is active)");
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested aborting of message - ignoring (word mode is active)");
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "requested aborting of message - executing (character mode is active)");
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested aborting of message - executing (character mode is active)");
 			if (ptt_flag & PTT_ACTIVE_ECHO) {
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "echo \"break\"");
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "echo \"break\"");
 				cwdaemon_sendto(&g_cwdaemon, "break\r\n");
 			}
 			request_queue[0] = '\0';
@@ -1190,7 +1185,7 @@ void cwdaemon_handle_escaped_request(char *request)
 				cwdaemon_set_ptt_off(global_cwdevice, "PTT off");
 			}
 			ptt_flag &= 0;
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+			cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 		}
 		break;
 	case '5':
@@ -1200,11 +1195,9 @@ void cwdaemon_handle_escaped_request(char *request)
 		char address[INET_ADDRSTRLEN];
 		inet_ntop(g_cwdaemon.request_addr.sin_family, (struct in_addr*) &(g_cwdaemon.request_addr.sin_addr.s_addr),
 			  address, INET_ADDRSTRLEN);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested exit of daemon (client address: %s)", address);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested exit of daemon (client address: %s)", address);
 #else
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested exit of daemon");
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested exit of daemon");
 #endif
 		exit(EXIT_SUCCESS);
 
@@ -1213,7 +1206,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		request[0] = '\0';
 		request_queue[0] = '\0';
 		wordmode = 1;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "wordmode set");
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "wordmode set");
 		break;
 	case '7':
 		/* Set weighting of morse code dits and dashes.
@@ -1234,8 +1227,7 @@ void cwdaemon_handle_escaped_request(char *request)
 	case '9':
 		/* Change network port number.
 		   TODO: why this is obsolete? */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
-			       "obsolete request \"9\" (change network port), ignoring");
+		cwdaemon_log(LOG_WARNING, __func__, __LINE__, "obsolete request \"9\" (change network port), ignoring");
 		break;
 	case 'a':
 		/* PTT keying on or off */
@@ -1252,20 +1244,20 @@ void cwdaemon_handle_escaped_request(char *request)
 		if (lv) {
 			if (global_cwdevice->ssbway) {
 				global_cwdevice->ssbway(global_cwdevice, SOUNDCARD);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "\"SSB way\" set to SOUNDCARD", PACKAGE);
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "\"SSB way\" set to SOUNDCARD", PACKAGE);
 			} else {
-				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "\"SSB way\" to SOUNDCARD unimplemented");
+				cwdaemon_log(LOG_WARNING, __func__, __LINE__, "\"SSB way\" to SOUNDCARD unimplemented");
 			}
 		} else {
 			if (global_cwdevice->ssbway) {
 				global_cwdevice->ssbway(global_cwdevice, MICROPHONE);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "\"SSB way\" set to MICROPHONE");
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "\"SSB way\" set to MICROPHONE");
 			} else {
-				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "\"SSB way\" to MICROPHONE unimplemented");
+				cwdaemon_log(LOG_WARNING, __func__, __LINE__, "\"SSB way\" to MICROPHONE unimplemented");
 			}
 		}
 #else
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "\"SSB way\" through parallel port unavailable (parallel port not configured).");
+		cwdaemon_log(LOG_WARNING, __func__, __LINE__, "\"SSB way\" through parallel port unavailable (parallel port not configured).");
 #endif
 		break;
 	case 'c':
@@ -1287,10 +1279,10 @@ void cwdaemon_handle_escaped_request(char *request)
 
 			if (rv == 0) {
 				/* Value totally invalid. */
-				cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-					       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
-					       request + 2,
-					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+				cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                         "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
+                         request + 2,
+                         CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			} else if (rv == 1) {
 				/* Value totally valid. Information
 				   debug string has been already
@@ -1304,11 +1296,11 @@ void cwdaemon_handle_escaped_request(char *request)
 				   cwdaemon_params_pttdelay(), but a
 				   warning debug string must be
 				   printed here. */
-				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
-					       "requested PTT delay [ms] out of range: \"%s\", clipping to \"%d\" (should be between %d and %d inclusive)",
-					       request + 2,
-					       CWDAEMON_PTT_DELAY_MAX,
-					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+				cwdaemon_log(LOG_WARNING, __func__, __LINE__,
+                         "requested PTT delay [ms] out of range: \"%s\", clipping to \"%d\" (should be between %d and %d inclusive)",
+                         request + 2,
+                         CWDAEMON_PTT_DELAY_MAX,
+                         CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			}
 
 			if (rv && current_ptt_delay == 0) {
@@ -1330,7 +1322,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			cwdaemon_switch_band(global_cwdevice, lv);
 		}
 #else
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "band switching through parallel port is unavailable (parallel port not configured)");
+		cwdaemon_log(LOG_WARNING, __func__, __LINE__, "band switching through parallel port is unavailable (parallel port not configured)");
 #endif
 		break;
 	case 'f': {
@@ -1358,13 +1350,11 @@ void cwdaemon_handle_escaped_request(char *request)
 				cwdaemon_close_libcw_output();
 				if (cwdaemon_open_libcw_output(CW_AUDIO_NULL)) {
 
-					cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__,
-						       "fall back to \"Null\" sound system");
+					cwdaemon_log(LOG_WARNING, __func__, __LINE__, "fall back to \"Null\" sound system");
 					current_audio_system = CW_AUDIO_NULL;
 					has_audio_output = true;
 				} else {
-					cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-						       "failed to fall back to \"Null\" sound system");
+					cwdaemon_log(LOG_ERR, __func__, __LINE__, "failed to fall back to \"Null\" sound system");
 					has_audio_output = false;
 				}
 			}
@@ -1415,7 +1405,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		   be the only content of server's reply. */
 
 		cwdaemon_prepare_reply(&g_cwdaemon, reply_buffer, request + 1, strlen(request + 1));
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reply is ready, waiting for message from client (reply: \"%s\")", reply_buffer);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "reply is ready, waiting for message from client (reply: \"%s\")", reply_buffer);
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
 		break;
@@ -1491,9 +1481,9 @@ void cwdaemon_play_request(char *request)
 			/* PTT is now in AUTO. It will be turned off on low
 			   tone queue, in cwdaemon_tone_queue_low_callback(). */
 
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
 			cw_send_character(*x);
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Morse character \"%c\" has been queued in libcw", *x);
+			cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "Morse character \"%c\" has been queued in libcw", *x);
 
 			x++;
 			if (cw_get_gap() == 2) {
@@ -1559,7 +1549,7 @@ void cwdaemon_keyingevent(void * arg, int keystate)
 
 	inactivity_seconds = 0;
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "keying event \"%d\"", keystate);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "keying event \"%d\"", keystate);
 
 	return;
 }
@@ -1580,11 +1570,11 @@ void cwdaemon_keyingevent(void * arg, int keystate)
 void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 {
 	int len = cw_get_tone_queue_length();
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: start, TQ len = %d, PTT flag = 0x%02x/%s",
-		       len, ptt_flag, cwdaemon_debug_ptt_flags());
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: start, TQ len = %d, PTT flag = 0x%02x/%s",
+                len, ptt_flag, cwdaemon_debug_ptt_flags());
 
 	if (len > tq_low_watermark) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: TQ len larger than watermark, TQ len = %d", len);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: TQ len larger than watermark, TQ len = %d", len);
 	}
 
 	if (ptt_flag == PTT_ACTIVE_AUTO
@@ -1603,7 +1593,7 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   Feel free to correct me ;) */
 
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 1, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: branch 1, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		cwdaemon_set_ptt_off(global_cwdevice, "PTT (auto) off");
 
@@ -1613,17 +1603,17 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   the server (i.e. cwdaemon) after the server plays
 		   all characters. */
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 2, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: branch 2, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		/* Since echo is being sent, we can turn the flag off.
 		   For some reason cwdaemon works better when we turn the
 		   flag off before sending the reply, rather than turning
 		   if after sending the reply. */
 		ptt_flag &= ~PTT_ACTIVE_ECHO;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: PTT flag -PTT_ACTIVE_ECHO, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: PTT flag -PTT_ACTIVE_ECHO, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
 		cwdaemon_sendto(&g_cwdaemon, reply_buffer);
 		/* If this line is uncommented, the callback erases a valid
@@ -1653,18 +1643,18 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		   maybe it has something to do with avoiding
 		   recursion? */
 		if (ptt_flag == PTT_ACTIVE_AUTO) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: queueing two empty tones");
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: queueing two empty tones");
 			cw_queue_tone(1, 0); /* ensure Q-empty condition again */
 			cw_queue_tone(1, 0); /* when trailing gap also 'sent' */
 		}
 	} else {
 		/* TODO: how to correctly handle this case?
 		   Should we do something? */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: branch 3, PTT flag = 0x%02x/%s", ptt_flag, cwdaemon_debug_ptt_flags());
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = 0x%02x/%s",
-		       cw_get_tone_queue_length(), ptt_flag, cwdaemon_debug_ptt_flags());
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "low TQ callback: end, TQ len = %d, PTT flag = 0x%02x/%s",
+                cw_get_tone_queue_length(), ptt_flag, cwdaemon_debug_ptt_flags());
 
 	return;
 
@@ -1708,11 +1698,11 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 	while ((c = getopt_long(argc, argv, cwdaemon_args_short, cwdaemon_args_long, &option_index)) != -1) {
 		if (c == 0) {
 
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__,
-				       "long option \"%s\"%s%s\n",
-				       cwdaemon_args_long[option_index].name,
-				       optarg ? "=" : "",
-				       optarg ? optarg : "");
+			cwdaemon_log(LOG_DEBUG, __func__, __LINE__,
+                      "long option \"%s\"%s%s\n",
+                      cwdaemon_args_long[option_index].name,
+                      optarg ? "=" : "",
+                      optarg ? optarg : "");
 
 			const char *optname = cwdaemon_args_long[option_index].name;
 
@@ -1745,10 +1735,10 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 					   line arguments we are very
 					   strict, and accept only
 					   fully valid optarg. */
-					cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-						       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
-						       optarg,
-						       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+					cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                            "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
+                            optarg,
+                            CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 					exit(EXIT_FAILURE);
 				}
 
@@ -1847,10 +1837,10 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 			/* When processing command line arguments we
 			   are very strict, and accept only fully
 			   valid optarg. */
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-				       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
-				       optarg,
-				       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+			cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                      "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
+                      optarg,
+                      CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1908,8 +1898,7 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 
 bool cwdaemon_params_cwdevice(const char *optarg)
 {
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested cwdevice \"%s\"", optarg);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested cwdevice \"%s\"", optarg);
 
 	if (!cwdaemon_cwdevice_set(&global_cwdevice, optarg)) {
 		return false;
@@ -1933,13 +1922,11 @@ bool cwdaemon_params_network_port(const char *optarg, int * port)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < 1024 || lv > 65536) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested port number: \"%s\"", optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid requested port number: \"%s\"", optarg);
 		return false;
 	} else {
 		*port = lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested port number: \"%ld\"", *port);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested port number: \"%ld\"", *port);
 		return true;
 	}
 }
@@ -1949,14 +1936,13 @@ bool cwdaemon_params_priority(int *priority, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < -20 || lv > 20) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested process priority: \"%s\" (should be integer between -20 and 20 inclusive)",
-			       optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested process priority: \"%s\" (should be integer between -20 and 20 inclusive)",
+                   optarg);
 		return false;
 	} else {
 		*priority = (int) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested process priority: \"%ld\"", *priority);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested process priority: \"%ld\"", *priority);
 		return true;
 	}
 }
@@ -1966,14 +1952,13 @@ bool cwdaemon_params_wpm(int *wpm, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_SPEED_MIN || lv > CW_SPEED_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
-			       "invalid requested morse speed [wpm]: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg, CW_SPEED_MIN, CW_SPEED_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__ ,
+                   "invalid requested morse speed [wpm]: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg, CW_SPEED_MIN, CW_SPEED_MAX);
 		return false;
 	} else {
 		*wpm = (int) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested morse speed [wpm]: \"%d\"", *wpm);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested morse speed [wpm]: \"%d\"", *wpm);
 		return true;
 	}
 }
@@ -1985,13 +1970,12 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg)
 
 	/* TODO: replace cwdaemon_get_long() with cwdaemon_get_uint32() */
 	if (!cwdaemon_get_long(optarg, &lv) || lv < 0 || lv > CWDAEMON_TUNE_SECONDS_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__ ,
-			       "invalid requested tuning time [s]: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg, 0, CWDAEMON_TUNE_SECONDS_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__ ,
+                   "invalid requested tuning time [s]: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg, 0, CWDAEMON_TUNE_SECONDS_MAX);
 		return false;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested tuning time [s]: \"%ld\"", lv);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested tuning time [s]: \"%ld\"", lv);
 
 		*seconds = (uint32_t) lv;
 
@@ -2038,10 +2022,10 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg,
-			       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested PTT delay [ms]: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg,
+                   CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 
 		/* 0 means "Value not acceptable in any context." */
 		return 0;
@@ -2074,8 +2058,7 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 	} else { /* Non-negative, in range. */
 		*delay = (int) lv;
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT delay [ms]: \"%ld\"", *delay);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested PTT delay [ms]: \"%ld\"", *delay);
 
 		/* 1 means "Value valid in all contexts." */
 		return 1;
@@ -2087,14 +2070,13 @@ bool cwdaemon_params_volume(int *volume, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_VOLUME_MIN || lv > CW_VOLUME_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested volume [%%]: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested volume [%%]: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg, CW_VOLUME_MIN, CW_VOLUME_MAX);
 		return false;
 	} else {
 		*volume = (int) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested volume [%%]: \"%d\"", *volume);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested volume [%%]: \"%d\"", *volume);
 		return true;
 	}
 }
@@ -2111,14 +2093,13 @@ bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CWDAEMON_MORSE_WEIGHTING_MIN || lv > CWDAEMON_MORSE_WEIGHTING_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested weighting: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested weighting: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg, CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
 		return false;
 	} else {
 		*weighting = (int) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested weighting: \"%ld\"", *weighting);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested weighting: \"%ld\"", *weighting);
 		return true;
 	}
 }
@@ -2128,14 +2109,13 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv) || lv < CW_FREQUENCY_MIN || lv > CW_FREQUENCY_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested tone [Hz]: \"%s\" (should be integer between %d and %d inclusive)",
-			       optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested tone [Hz]: \"%s\" (should be integer between %d and %d inclusive)",
+                   optarg, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
 		return false;
 	} else {
 		*tone = (int) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested tone [Hz]: \"%ld\"", *tone);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested tone [Hz]: \"%ld\"", *tone);
 		return true;
 	}
 }
@@ -2143,12 +2123,23 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 
 void cwdaemon_params_inc_verbosity(int *verbosity)
 {
-	if (*verbosity < CWDAEMON_VERBOSITY_D) {
-		(*verbosity)++;
+   switch (*verbosity) {
+   case LOG_ERR:
+      *verbosity = LOG_WARNING;
+      break;
+   case LOG_WARNING:
+      *verbosity = LOG_INFO;
+      break;
+   case LOG_INFO:
+      *verbosity = LOG_DEBUG;
+      break;
+   default:
+      cwdaemon_log(LOG_INFO, __func__, __LINE__, "can't increase log verbosity any more\n");
+      return;
+   }
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
-	}
+   cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                "log verbosity threshold increased to \"%s\"", log_get_priority_label(*verbosity));
 
 	return;
 }
@@ -2157,23 +2148,24 @@ void cwdaemon_params_inc_verbosity(int *verbosity)
 bool cwdaemon_params_set_verbosity(int *verbosity, const char *optarg)
 {
 	if (!strcmp(optarg, "n") || !strcmp(optarg, "N")) {
-		*verbosity = CWDAEMON_VERBOSITY_N;
+      /* None of logs in this program use LOG_EMERG, so LOG_EMERG is used to
+         disable all logging. */
+		*verbosity = LOG_EMERG;
 	} else if (!strcmp(optarg, "e") || !strcmp(optarg, "E")) {
-		*verbosity = CWDAEMON_VERBOSITY_E;
+		*verbosity = LOG_ERR;
 	} else if (!strcmp(optarg, "w") || !strcmp(optarg, "W")) {
-		*verbosity = CWDAEMON_VERBOSITY_W;
+		*verbosity = LOG_WARNING;
 	} else if (!strcmp(optarg, "i") || !strcmp(optarg, "I")) {
-		*verbosity = CWDAEMON_VERBOSITY_I;
+		*verbosity = LOG_INFO;
 	} else if (!strcmp(optarg, "d") || !strcmp(optarg, "D")) {
-		*verbosity = CWDAEMON_VERBOSITY_D;
+		*verbosity = LOG_DEBUG;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested verbosity level: \"%s\"", optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid requested verbosity level: \"%s\"", optarg);
 		return false;
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__,
+                "requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
 	return true;
 }
 
@@ -2182,15 +2174,15 @@ bool cwdaemon_params_libcwflags(const char *optarg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(optarg, &lv)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested debug flags: \"%s\" (should be numeric value)", optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested debug flags: \"%s\" (should be numeric value)", optarg);
 		libcw_debug_flags = 0;
 
 		return false;
 	} else {
 		libcw_debug_flags = lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested libcw debug flags: \"%ld\"", libcw_debug_flags);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__,
+                   "requested libcw debug flags: \"%ld\"", libcw_debug_flags);
 		return true;
 	}
 }
@@ -2199,20 +2191,19 @@ bool cwdaemon_params_libcwflags(const char *optarg)
 bool cwdaemon_params_debugfile(const char *optarg)
 {
 	if (!strcmp(optarg, "syslog")) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "debug output file \"%s\" not implemented yet, try it in later versions of %s",
-			       optarg, PACKAGE);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "debug output file \"%s\" not implemented yet, try it in later versions of %s",
+                   optarg, PACKAGE);
 		return false;
 	}
 
 	cwdaemon_debug_f_path = strdup(optarg);
 	if (!cwdaemon_debug_f_path) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "failed to copy path to debug file \"%s\"", optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "failed to copy path to debug file \"%s\"", optarg);
 		return false;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested debug file path: \"%s\"", cwdaemon_debug_f_path);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__,
+                   "requested debug file path: \"%s\"", cwdaemon_debug_f_path);
 		return true;
 	}
 }
@@ -2235,14 +2226,14 @@ bool cwdaemon_params_system(int *system, const char *optarg)
 	} else {
 		/* TODO: print only those audio systems that are
 		   supported on given machine. */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(ull - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
-			       optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested sound system: \"%s\" (use c(onsole), o(ss), a(lsa), p(ulseaudio), n(ull - no audio), or s(oundcard - autoselect from OSS/ALSA/PulseAudio))",
+                   optarg);
 		return false;
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested sound system: \"%s\" (\"%s\")", optarg, cw_get_audio_system_label(*system));
+	cwdaemon_log(LOG_INFO, __func__, __LINE__,
+                "requested sound system: \"%s\" (\"%s\")", optarg, cw_get_audio_system_label(*system));
 	return true;
 }
 
@@ -2253,12 +2244,11 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 
 	/* PTT keying on or off */
 	if (!cwdaemon_get_long(optarg, &lv)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested PTT state: \"%s\" (should be numeric value \"0\" or \"1\")", optarg);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid requested PTT state: \"%s\" (should be numeric value \"0\" or \"1\")", optarg);
 		return false;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT state: \"%s\"", optarg);
+		cwdaemon_log(LOG_INFO, __func__, __LINE__, "requested PTT state: \"%s\"", optarg);
 	}
 
 	if (lv) {
@@ -2266,16 +2256,16 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 		if (current_ptt_delay) {
 			cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT (manual, immediate) on");
+			cwdaemon_log(LOG_INFO, __func__, __LINE__, "PTT (manual, immediate) on");
 		}
 
 		ptt_flag |= PTT_ACTIVE_MANUAL;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag +PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 	} else if (ptt_flag & PTT_ACTIVE_MANUAL) {	/* only if manually activated */
 
 		ptt_flag &= ~PTT_ACTIVE_MANUAL;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+		cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag -PTT_ACTIVE_MANUAL (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
 		if (!(ptt_flag & !PTT_ACTIVE_AUTO)) {	/* no PTT modifiers; FIXME 2022.03.10: shouldn't this be "~PTT_ACTIVE_AUTO"? */
 
@@ -2286,9 +2276,9 @@ bool cwdaemon_params_ptt_on_off(const char *optarg)
 			} else {
 				/* still sending, cannot yet switch PTT off */
 				ptt_flag |= PTT_ACTIVE_AUTO;	/* ensure auto-PTT active */
-				cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
+				cwdaemon_log(LOG_DEBUG, __func__, __LINE__, "PTT flag +PTT_ACTIVE_AUTO (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reverting from PTT (manual) to PTT (auto) now");
+				cwdaemon_log(LOG_INFO, __func__, __LINE__, "reverting from PTT (manual) to PTT (auto) now");
 			}
 		}
 	}
@@ -2312,11 +2302,11 @@ bool cwdaemon_params_options(cwdevice * dev, const char *optarg)
 	   this pointer should never be NULL. How to recognize if -o options
 	   were passed AFTER -d? */
 	if (dev == NULL) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "-o option must be used after -d <device>");
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "-o option must be used after -d <device>");
 		return false;
 	}
 	if (dev->optparse == NULL) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "selected device does not support -o option");
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "selected device does not support -o option");
 		return false;
 	}
 	return dev->optparse(dev, optarg);
@@ -2345,7 +2335,7 @@ void cwdaemon_args_parse(int argc, char *argv[])
 
 	if (global_cwdevice && global_cwdevice->optvalidate) {
 		if (!global_cwdevice->optvalidate(global_cwdevice)) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "cw device options are not valid");
+			cwdaemon_log(LOG_ERR, __func__, __LINE__, "cw device options are not valid");
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -2383,7 +2373,7 @@ void cwdaemon_debug_open(void)
 			   matter. This is an error (clash of command
 			   line arguments). */
 
-			fprintf(stdout, "%s:EE: specified debug output to \"%s\" when forking\n",
+			fprintf(stdout, "[EE] %s: specified debug output to \"%s\" when forking\n",
 				PACKAGE, cwdaemon_debug_f_path);
 
 			exit(EXIT_FAILURE);
@@ -2507,7 +2497,7 @@ int main(int argc, char *argv[])
 			exit(EXIT_SUCCESS);
 		}
 
-		// cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Child process reporting.");
+		// cwdaemon_log(LOG_INFO, __func__, __LINE__, "Child process reporting.");
 		openlog("netkeyer", LOG_PID, LOG_DAEMON);
 		pid_t sid = setsid();
 		if (sid < 0) {
@@ -2727,8 +2717,8 @@ void cwdaemon_cwdevices_free(void)
 bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
 	if (!desc || !strlen(desc)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid device description \"%s\"", desc);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "invalid device description \"%s\"", desc);
 		return false;
 	}
 
@@ -2739,8 +2729,8 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 	else if ((fd = dev_get_parport(desc)) != -1) {
 		if (geteuid()) {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-				       "you must run this program as root to use parallel port");
+			cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                      "you must run this program as root to use parallel port");
 			return false;
 		}
 		*device = &cwdevice_lp;
@@ -2749,16 +2739,15 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	else if ((fd = dev_get_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "no valid device found, setting cwdevice to null device");
+		cwdaemon_log(LOG_ERR, __func__, __LINE__,
+                   "no valid device found, setting cwdevice to null device");
 		/* It's better to have null device than NULL
 		   pointer. */
 		*device = &cwdevice_null;
 	}
 
 	if (!*device) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid keyer device: \"%s\"", desc);
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid keyer device: \"%s\"", desc);
 		return false;
 	}
 
@@ -2776,13 +2765,11 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	}
 	(*device)->desc = strdup(desc);
 	if (!(*device)->desc) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "memory allocation error");
+		cwdaemon_log(LOG_ERR, __func__, __LINE__, "memory allocation error");
 		return false;
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "keying device used: \"%s\"", (*device)->desc);
+	cwdaemon_log(LOG_INFO, __func__, __LINE__, "keying device used: \"%s\"", (*device)->desc);
 	(*device)->init(*device, fd);
 
 	return true;

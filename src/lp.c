@@ -69,6 +69,7 @@
 
 
 #include "cwdaemon.h"
+#include "log.h"
 #include "lp.h"
 
 
@@ -276,8 +277,8 @@ lp_init (cwdevice * dev, int fd)
 	if (ioctl (fd, PPCLAIM, NULL) == -1)
 	{
 		cwdaemon_errmsg("Claiming parallel port %s", dev->desc);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "HINT: did you unload the lp kernel module?");
-		cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "HINT: perhaps there is another cwdaemon running?");
+		cwdaemon_log(LOG_WARNING, __func__, __LINE__, "HINT: did you unload the lp kernel module?");
+		cwdaemon_log(LOG_WARNING, __func__, __LINE__, "HINT: perhaps there is another cwdaemon running?");
 		close (fd);
 		exit (1);
 	}
