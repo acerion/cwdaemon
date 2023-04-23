@@ -56,10 +56,6 @@
 #endif
 
 #include "cwdaemon.h"
-#include "log.h"
-
-
-
 
 /**
    \file ttys.c
@@ -120,7 +116,7 @@ ttys_init (cwdevice * dev, int fd)
 
 	dev->cookie = malloc(sizeof(struct driveroptions));
 	if (dev->cookie == NULL) {
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "malloc() failed");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "malloc() failed");
 		exit(EXIT_FAILURE);
 	}
 	dev->fd = fd;
@@ -196,7 +192,7 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 
 	const char *equal = strchr(opts, '=');
 	if (equal == NULL) {
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "no '=' in <opts>: %s", opts);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "no '=' in <opts>: %s", opts);
 		return false;
 	}
 
@@ -210,7 +206,7 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 		} else if (!strcasecmp(equal + 1, "none")) {
 			dropt->key = 0;
 		} else {
-			cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
 			return false;
 		}
 		ttys_cw(dev, 0);
@@ -223,12 +219,12 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 		} else if (!strcasecmp(equal + 1, "none")) {
 			dropt->ptt = 0;
 		} else {
-			cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
 			return false;
 		}
 		ttys_ptt(dev, 0);
 	} else {
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
 		return false;
 	}
 	return true;
@@ -244,7 +240,7 @@ bool ttys_optvalidate(cwdevice * dev)
 	struct driveroptions *dropt = dev->cookie;
 	if (NULL == dropt) {
 		/* dev->cookie should have been initialized by ttys_init(). */
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "can't validate driver options");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "can't validate driver options");
 		return false;
 	}
 
@@ -252,7 +248,7 @@ bool ttys_optvalidate(cwdevice * dev)
 	    && 0 != dropt->ptt
 	    && dropt->key == dropt->ptt) {
 		/* You can't use the same tty pin for two purposes. */
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "key pin and ptt pin have the same value %d", dropt->key);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %d", dropt->key);
 		return false;
 	}
 

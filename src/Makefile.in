@@ -119,9 +119,9 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(sbindir)"
 PROGRAMS = $(sbin_PROGRAMS)
 am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
-	cwdaemon-log.$(OBJEXT) cwdaemon-lp.$(OBJEXT) \
-	cwdaemon-ttys.$(OBJEXT) cwdaemon-null.$(OBJEXT) \
-	cwdaemon-help.$(OBJEXT) cwdaemon-socket.$(OBJEXT)
+	cwdaemon-lp.$(OBJEXT) cwdaemon-ttys.$(OBJEXT) \
+	cwdaemon-null.$(OBJEXT) cwdaemon-help.$(OBJEXT) \
+	cwdaemon-socket.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
 cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -141,9 +141,9 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/cwdaemon-cwdaemon.Po \
-	./$(DEPDIR)/cwdaemon-help.Po ./$(DEPDIR)/cwdaemon-log.Po \
-	./$(DEPDIR)/cwdaemon-lp.Po ./$(DEPDIR)/cwdaemon-null.Po \
-	./$(DEPDIR)/cwdaemon-socket.Po ./$(DEPDIR)/cwdaemon-ttys.Po
+	./$(DEPDIR)/cwdaemon-help.Po ./$(DEPDIR)/cwdaemon-lp.Po \
+	./$(DEPDIR)/cwdaemon-null.Po ./$(DEPDIR)/cwdaemon-socket.Po \
+	./$(DEPDIR)/cwdaemon-ttys.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -291,7 +291,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h
+cwdaemon_SOURCES = cwdaemon.c cwdaemon.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} #-I$(top_srcdir)/src/
 # target-specific linker flags (objects to link)
@@ -384,7 +384,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-cwdaemon.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-help.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-log.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-lp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-null.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-socket.Po@am__quote@ # am--include-marker
@@ -423,20 +422,6 @@ cwdaemon-cwdaemon.obj: cwdaemon.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdaemon.c' object='cwdaemon-cwdaemon.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-cwdaemon.obj `if test -f 'cwdaemon.c'; then $(CYGPATH_W) 'cwdaemon.c'; else $(CYGPATH_W) '$(srcdir)/cwdaemon.c'; fi`
-
-cwdaemon-log.o: log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-log.o -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-log.Tpo $(DEPDIR)/cwdaemon-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='log.c' object='cwdaemon-log.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
-
-cwdaemon-log.obj: log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-log.obj -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-log.Tpo $(DEPDIR)/cwdaemon-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='log.c' object='cwdaemon-log.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
 
 cwdaemon-lp.o: lp.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-lp.o -MD -MP -MF $(DEPDIR)/cwdaemon-lp.Tpo -c -o cwdaemon-lp.o `test -f 'lp.c' || echo '$(srcdir)/'`lp.c
@@ -637,7 +622,6 @@ clean-am: clean-generic clean-sbinPROGRAMS mostlyclean-am
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/cwdaemon-cwdaemon.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-help.Po
-	-rm -f ./$(DEPDIR)/cwdaemon-log.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po
@@ -689,7 +673,6 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/cwdaemon-cwdaemon.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-help.Po
-	-rm -f ./$(DEPDIR)/cwdaemon-log.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po

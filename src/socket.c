@@ -33,7 +33,6 @@
 
 
 
-#include "log.h"
 #include "socket.h"
 
 
@@ -128,7 +127,7 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 			    (struct sockaddr *) &cwdaemon->reply_addr, cwdaemon->reply_addrlen);
 
 	if (rv == -1) {
-		cwdaemon_log(LOG_ERR, __func__, __LINE__, "sendto: \"%s\"", strerror(errno));
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "sendto: \"%s\"", strerror(errno));
 		return -1;
 	} else {
 		return rv;
