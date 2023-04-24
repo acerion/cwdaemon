@@ -104,6 +104,7 @@
 #include <libcw_debug.h>
 #include "cwdaemon.h"
 #include "help.h"
+#include "log.h"
 #include "socket.h"
 
 
@@ -264,14 +265,6 @@ static cwdaemon_t g_cwdaemon = { .socket_descriptor = -1 };
 static FILE *cwdaemon_debug_f = NULL;
 static char *cwdaemon_debug_f_path = NULL;
 
-/* This table is addressed with values defined in "enum
-   cwdaemon_verbosity" (src/cwdaemon.h). */
-static const char *cwdaemon_verbosity_labels[] = {
-	"NN",    /* None - obviously this label will never be used. */
-	"EE",    /* Error. */
-	"WW",    /* Warning. */
-	"II",    /* Information. */
-	"DD" };  /* Debug. */
 
 /* An integer that is a result of ORing libcw's debug flags. See
    libcw.h (or is it libcw_debug.h?) for numeric values of the
@@ -552,7 +545,7 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 		vsnprintf(s, 1024, format, ap);
 		va_end(ap);
 
-		fprintf(cwdaemon_debug_f, "%s:%s: %s\n", PACKAGE, cwdaemon_verbosity_labels[verbosity], s);
+		fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
 		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
 		fflush(cwdaemon_debug_f);
 	}
@@ -2147,7 +2140,7 @@ void cwdaemon_params_inc_verbosity(int *verbosity)
 		(*verbosity)++;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
+                     "requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
 	}
 
 	return;
@@ -2173,7 +2166,7 @@ bool cwdaemon_params_set_verbosity(int *verbosity, const char *optarg)
 	}
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested verbosity level threshold: \"%s\"", cwdaemon_verbosity_labels[*verbosity]);
+						"requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
 	return true;
 }
 

@@ -56,6 +56,7 @@
 #endif
 
 #include "cwdaemon.h"
+#include "log.h"
 
 /**
    \file ttys.c

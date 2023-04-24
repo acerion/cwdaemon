@@ -33,6 +33,7 @@
 
 
 
+#include "log.h"
 #include "socket.h"
 
 

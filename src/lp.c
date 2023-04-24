@@ -69,6 +69,7 @@
 
 
 #include "cwdaemon.h"
+#include "log.h"
 #include "lp.h"
 
 

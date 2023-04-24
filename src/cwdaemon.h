@@ -102,18 +102,6 @@ typedef struct cwdev_s {
 cwdevice;
 
 
-/* cwdaemon debug verbosity levels. */
-enum cwdaemon_verbosity {
-	CWDAEMON_VERBOSITY_N, /* None. Don't display any debug information. */
-	CWDAEMON_VERBOSITY_E, /* Error */
-	CWDAEMON_VERBOSITY_W, /* Warning */
-	CWDAEMON_VERBOSITY_I, /* Info */
-	CWDAEMON_VERBOSITY_D  /* Debug */
-};
-
-
-
-
 void cwdaemon_errmsg(const char * format, ...) __attribute__ ((format (printf, 1, 2)));
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...);
 
