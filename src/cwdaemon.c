@@ -535,9 +535,11 @@ void cwdaemon_errmsg(const char *format, ...)
 */
 void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __attribute__((unused)) int line, const char *format, ...)
 {
+	if (!cwdaemon_debug_f) {
+		return;
+	}
 	if (current_verbosity > CWDAEMON_VERBOSITY_N
-	    && verbosity <= current_verbosity
-	    && cwdaemon_debug_f) {
+		 && verbosity <= current_verbosity) {
 
 		va_list ap;
 		char s[1024 + 1];
