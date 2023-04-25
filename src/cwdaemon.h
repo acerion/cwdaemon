@@ -103,7 +103,7 @@ cwdevice;
 
 
 void cwdaemon_errmsg(const char * format, ...) __attribute__ ((format (printf, 1, 2)));
-void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...);
+void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...) __attribute__ ((format (printf, 4, 5)));
 
 int dev_get_tty(const char *fname);
 int dev_get_null(const char *fname);

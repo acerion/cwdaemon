@@ -715,7 +715,7 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 
 	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		dev->ptt(dev, ON);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "%s", info);
 
 
 #if 0
@@ -755,7 +755,7 @@ void cwdaemon_set_ptt_off(cwdevice * dev, const char *info)
 	ptt_flag = 0;
 	cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, info);
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "%s", info);
 
 	return;
 }
@@ -1247,7 +1247,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		if (lv) {
 			if (global_cwdevice->ssbway) {
 				global_cwdevice->ssbway(global_cwdevice, SOUNDCARD);
-				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "\"SSB way\" set to SOUNDCARD", PACKAGE);
+				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "\"SSB way\" set to SOUNDCARD");
 			} else {
 				cwdaemon_debug(CWDAEMON_VERBOSITY_W, __func__, __LINE__, "\"SSB way\" to SOUNDCARD unimplemented");
 			}
@@ -1934,7 +1934,7 @@ bool cwdaemon_params_network_port(const char *optarg, int * port)
 	} else {
 		*port = lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested port number: \"%ld\"", *port);
+			       "requested port number: \"%d\"", *port);
 		return true;
 	}
 }
@@ -1951,7 +1951,7 @@ bool cwdaemon_params_priority(int *priority, const char *optarg)
 	} else {
 		*priority = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested process priority: \"%ld\"", *priority);
+			       "requested process priority: \"%d\"", *priority);
 		return true;
 	}
 }
@@ -2070,7 +2070,7 @@ int cwdaemon_params_pttdelay(int *delay, const char *optarg)
 		*delay = (int) lv;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT delay [ms]: \"%ld\"", *delay);
+			       "requested PTT delay [ms]: \"%d\"", *delay);
 
 		/* 1 means "Value valid in all contexts." */
 		return 1;
@@ -2113,7 +2113,7 @@ bool cwdaemon_params_weighting(int *weighting, const char *optarg)
 	} else {
 		*weighting = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested weighting: \"%ld\"", *weighting);
+			       "requested weighting: \"%d\"", *weighting);
 		return true;
 	}
 }
@@ -2130,7 +2130,7 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 	} else {
 		*tone = (int) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested tone [Hz]: \"%ld\"", *tone);
+			       "requested tone [Hz]: \"%d\"", *tone);
 		return true;
 	}
 }
