@@ -214,7 +214,7 @@ static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static int current_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-static int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
+int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
 
 /* Level of libcw's tone queue that triggers 'callback for low level
    in tone queue'.  The callback function is
@@ -262,8 +262,8 @@ static cwdaemon_t g_cwdaemon = { .socket_descriptor = -1 };
 
 /* cwdaemon may print debug strings to a disc file instead of
    stdout. */
-static FILE *cwdaemon_debug_f = NULL;
-static char *cwdaemon_debug_f_path = NULL;
+FILE *cwdaemon_debug_f = NULL;
+char *cwdaemon_debug_f_path = NULL;
 
 
 /* An integer that is a result of ORing libcw's debug flags. See
@@ -275,7 +275,7 @@ static long int libcw_debug_flags = 0;
 
 /* Various variables. */
 static int wordmode = 0;               /* Start in character mode. */
-static int forking = 1;                /* We fork by default. */
+bool g_forking = true;                 /* We fork by default. */
 static int process_priority = 0;       /* Scheduling priority of cwdaemon process. */
 static int async_abort = 0;            /* Unused variable. It is used in patches/cwdaemon-mt.patch though. */
 static int inactivity_seconds = 9999;  /* Inactive since nnn seconds. */
@@ -395,9 +395,6 @@ static bool cwdaemon_params_options(cwdevice * dev, const char *optarg);
 
 
 
-static void cwdaemon_debug_open(void);
-static void cwdaemon_debug_close(void);
-
 /* Auto, manual, echo. */
 static char cwdaemon_debug_ptt_flag[3 + 1];
 static const char *cwdaemon_debug_ptt_flags(void);
@@ -475,102 +472,6 @@ void cwdaemon_catch_sigint(__attribute__((unused)) int signal)
 	printf("%s: Exiting\n", PACKAGE);
 	exit(EXIT_SUCCESS);
 }
-
-
-
-
-
-/**
-   \brief Print error string to the console or syslog
-
-   Function checks if cwdaemon has forked, and prints given error string
-   to stdout (if cwdaemon hasn't forked) or to syslog (if cwdaemon has
-   forked).
-
-   Function accepts printf-line formatting string as first argument, and
-   a set of optional arguments to be inserted into the formatting string.
-
-   \param format - first part of an error string, a formatting string
-*/
-void cwdaemon_errmsg(const char *format, ...)
-{
-	va_list ap;
-	char s[1025];
-
-	va_start(ap, format);
-	vsnprintf(s, 1024, format, ap);
-	va_end(ap);
-
-	if (forking) {
-		syslog(LOG_ERR, "%s\n", s);
-	} else {
-		printf("%s: %s failed: \"%s\"\n", PACKAGE, s, strerror(errno));
-		fflush(stdout);
-	}
-
-	return;
-}
-
-
-
-
-
-/**
-   \brief Print debug string to debug file
-
-   Function decides if given \p verbosity level is sufficient to print
-   given \p format debug string, and prints it to predefined file. If
-   current global verbosity level is "None", no information will be
-   printed.
-
-   Currently \p verbosity can have one of values defined in enum
-   cwdaemon_verbosity.
-
-   Function accepts printf-line formatting string as last named
-   argument (\p format), and a set of optional arguments to be
-   inserted into the formatting string.
-
-   \param verbosity - verbosity level of given debug string
-   \param format - formatting string of a debug string being printed
-*/
-void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __attribute__((unused)) int line, const char *format, ...)
-{
-	if (!cwdaemon_debug_f) {
-		return;
-	}
-	if (current_verbosity > CWDAEMON_VERBOSITY_N
-		 && verbosity <= current_verbosity) {
-
-		va_list ap;
-		char s[1024 + 1];
-		va_start(ap, format);
-		vsnprintf(s, 1024, format, ap);
-		va_end(ap);
-
-		fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
-		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
-		fflush(cwdaemon_debug_f);
-	}
-
-	return;
-}
-
-
-
-
-void cwdaemon_debug_close(void)
-{
-	if (cwdaemon_debug_f
-	    && cwdaemon_debug_f != stdout
-	    && cwdaemon_debug_f != stderr) {
-
-		fclose(cwdaemon_debug_f);
-		cwdaemon_debug_f = NULL;
-	}
-
-	return;
-}
-
 
 
 
@@ -1916,9 +1817,9 @@ bool cwdaemon_params_cwdevice(const char *optarg)
 
 void cwdaemon_params_nofork(void)
 {
-	if (forking) {
+	if (g_forking) {
 		printf("%s: Not forking...\n", PACKAGE);
-		forking = 0;
+		g_forking = false;
 	}
 	return;
 }
@@ -2351,105 +2252,6 @@ void cwdaemon_args_parse(int argc, char *argv[])
 
 
 
-/**
-   \brief Configure file descriptor for debug output
- */
-void cwdaemon_debug_open(void)
-{
-	/* First handle a clash of command line arguments. */
-	if (forking) {
-		if (cwdaemon_debug_f_path
-		    && (!strcmp(cwdaemon_debug_f_path, "stdout")
-			|| !strcmp(cwdaemon_debug_f_path, "stderr"))) {
-
-			/* If the path is not specified (path is
-			   NULL), it may imply that the debug output
-			   should be stdout. But since we explicitly
-			   asked for forking, the implied debug output
-			   to stdout will be ignored. This is a valid
-			   situation: explicit request for forking
-			   overrides implicit expectation of debug
-			   file being stdout.
-
-			   On the other hand, if we explicitly asked
-			   for debug output to be stdout or stderr,
-			   and at the same time explicitly asked for
-			   forking, that is completely different
-			   matter. This is an error (clash of command
-			   line arguments). */
-
-			fprintf(stdout, "%s:EE: specified debug output to \"%s\" when forking\n",
-				PACKAGE, cwdaemon_debug_f_path);
-
-			exit(EXIT_FAILURE);
-		}
-	}
-
-
-	/* Handle valid situations (after eliminating possible invalid
-	   situations above). */
-
-	if (!cwdaemon_debug_f_path) {
-
-		if (!forking) {
-			/* stdout is (for historical reasons) a
-			   default file for printing debug strings
-			   when not forking, so if a debug file hasn't
-			   been defined in command line, the
-			   cwdaemon_debug_f_path will be NULL. Treat
-			   this situation accordingly.*/
-
-			fprintf(stderr, "debug output: stdout\n");
-			/* This has been already done in main(), but
-			   do it again to be super-explicit. */
-			cwdaemon_debug_f = stdout;
-		} else {
-			/* Remember that in main() the file is set to
-			   stdout. Obviously we aren't going to use
-			   the stdout when daemon has forked. */
-			cwdaemon_debug_f = NULL;
-		}
-
-	} else if (!strcmp(cwdaemon_debug_f_path, "stdout")) {
-
-		/* We shouldn't get here when forking (invalid
-		   situation handled by first "if" in the
-		   function). */
-		assert(!forking);
-
-		fprintf(stderr, "debug output: stdout\n");
-		cwdaemon_debug_f = stdout;
-
-	} else if (!strcmp(cwdaemon_debug_f_path, "stderr")) {
-
-		/* We shouldn't get here when forking (invalid
-		   situation handled by first "if" in the
-		   function). */
-		assert(!forking);
-
-		fprintf(stderr, "debug output: stderr\n");
-		cwdaemon_debug_f = stderr;
-
-	} else { /* cwdaemon_debug_f_path is a path to disc file. */
-
-		/* We can get here when both forking and not forking. */
-
-		fprintf(stderr, "debug output: %s\n", cwdaemon_debug_f_path);
-
-		cwdaemon_debug_f = fopen(cwdaemon_debug_f_path, "w+");
-		if (!cwdaemon_debug_f) {
-			fprintf(stderr, "%s: failed to open output debug file \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
-			exit(EXIT_FAILURE);
-		}
-	}
-
-	return;
-}
-
-
-
-
-
 /* main program: fork, open network connection and go into an endless loop
    waiting for something to happen on the UDP port */
 int main(int argc, char *argv[])
@@ -2485,9 +2287,9 @@ int main(int argc, char *argv[])
 	   TODO: perhaps opening debug output should be moved to a
 	   later stage, so that as many debug strings as possible are
 	   being printed to stdout before main daemon loop? */
-	cwdaemon_debug_open();
+	cwdaemon_debug_open(g_forking);
 
-	if (forking) {
+	if (g_forking) {
 
 		pid_t pid = fork();
 		if (pid < 0) {
