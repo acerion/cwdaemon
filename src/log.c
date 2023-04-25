@@ -51,7 +51,7 @@ const char * log_get_priority_label(int priority)
 {
    switch (priority) {
    case CWDAEMON_VERBOSITY_E:
-      return "ERR";
+      return "ERROR";
    case CWDAEMON_VERBOSITY_W:
       return "WARN";
    case CWDAEMON_VERBOSITY_I:
@@ -171,7 +171,7 @@ void cwdaemon_debug_open(bool forking)
 			   matter. This is an error (clash of command
 			   line arguments). */
 
-			fprintf(stdout, "%s:EE: specified debug output to \"%s\" when forking\n",
+			fprintf(stdout, "[ERROR] %s: specified debug output to \"%s\" when forking\n",
 				PACKAGE, cwdaemon_debug_f_path);
 
 			exit(EXIT_FAILURE); // TODO 2023.04.24: don't call exit(), return error instead.
