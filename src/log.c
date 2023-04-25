@@ -102,6 +102,36 @@ void cwdaemon_errmsg(const char *format, ...)
 
 
 /**
+   @brief Log error message to current log output (possibly to syslog)
+*/
+void log_message(__attribute__((unused)) int priority, const char * format, ...)
+{
+	if (!g_forking && !cwdaemon_debug_f) {
+		/* No output file defined. */
+		return;
+	}
+
+	va_list ap;
+	char buf[1024] = { 0 };
+	va_start(ap, format);
+	vsnprintf(buf, sizeof (buf), format, ap);
+	va_end(ap);
+
+	if (g_forking) {
+		syslog(LOG_ERR, "%s\n", buf);
+	} else {
+		if (cwdaemon_debug_f) {
+			fprintf(cwdaemon_debug_f, "[ERROR] %s: %s\n", PACKAGE, buf);
+		}
+	}
+
+	return;
+}
+
+
+
+
+/**
    \brief Print debug string to debug file
 
    Function decides if given \p verbosity level is sufficient to print

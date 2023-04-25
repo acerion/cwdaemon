@@ -65,8 +65,8 @@
 # include <sys/param.h>
 #endif
 
-
-
+#include <errno.h>
+#include <string.h>
 
 #include "cwdaemon.h"
 #include "log.h"
@@ -96,20 +96,24 @@ int dev_get_parport(const char *fname)
 
 	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
 	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
+		log_message(LOG_ERR, "Name of lp device is too long: [%s]", fname);
 		return -1;
 	}
-
 	int fd = open(nm, O_RDWR | O_NONBLOCK);
 	if (fd == -1) {
+		log_message(LOG_ERR, "open() failed for lp device [%s]: %s", nm, strerror(errno)); // TODO 2023.04.25: change this to NOTICE
 		return (-1);
 	}
 	if (fstat(fd, &st) == -1) {
+		log_message(LOG_ERR, "fstat() failed for lp device [%s]: %s", nm, strerror(errno));
 		goto out;
 	}
 	if ((st.st_mode & S_IFMT) != S_IFCHR) {
+		log_message(LOG_ERR, "lp device [%s] is not character device", nm);
 		goto out;
 	}
 	if (ioctl(fd, PPGETMODE, &m) == -1) {
+		log_message(LOG_ERR, "ioctl(PPGETMODE) failed for lp device [%s]: %s", nm, strerror(errno));
 		goto out;
 	}
 	return (fd);
@@ -128,16 +132,26 @@ int dev_get_parport(const char *fname)
 	int fd, m;
 
 	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-	if (m >= sizeof(nm))
+	if (m >= sizeof(nm)) {
+		log_message(LOG_ERR, "Name of lp device is too long: [%s]", fname);
 		return (-1);
-	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1)
+	}
+	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1) {
+		log_message(LOG_ERR, "open() failed for lp device [%s]: %s", nm, strerror(errno)); // TODO 2023.04.25: change this to NOTICE
 		return (-1);
-	if (fstat(fd, &st) == -1)
+	}
+	if (fstat(fd, &st) == -1) {
+		log_message(LOG_ERR, "fstat() failed for lp device [%s]: %s", nm, strerror(errno));
 		goto out;
-	if ((st.st_mode & S_IFMT) != S_IFCHR)
+	}
+	if ((st.st_mode & S_IFMT) != S_IFCHR) {
+		log_message(LOG_ERR, "lp device [%s] is not character device", nm);
 		goto out;
-	if (ioctl(fd, PPISSTATUS, &c) == -1)
+	}
+	if (ioctl(fd, PPISSTATUS, &c) == -1) {
+		log_message(LOG_ERR, "ioctl(PPISSTATUS) failed for lp device [%s]: %s", nm, strerror(errno));
 		goto out;
+	}
 	return (fd);
 out:
 	close(fd);

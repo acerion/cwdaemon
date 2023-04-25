@@ -55,6 +55,8 @@
 # include <sys/param.h>
 #endif
 
+#include <errno.h>
+
 #include "cwdaemon.h"
 #include "log.h"
 
@@ -88,20 +90,24 @@ int dev_get_tty(const char *fname)
 
 	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
 	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
+		log_message(LOG_ERR, "Name of tty device is too long: [%s]", fname);
 		return -1;
 	}
-
 	int fd = open(nm, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (fd == -1) {
+		log_message(LOG_ERR, "open() failed for tty device [%s]: %s", nm, strerror(errno)); // TODO 2023.04.25: change this to NOTICE
 		return (-1);
 	}
 	if (fstat(fd, &st) == -1) {
+		log_message(LOG_ERR, "fstat() failed for tty device [%s]: %s", nm, strerror(errno));
 		goto out;
 	}
 	if ((st.st_mode & S_IFMT) != S_IFCHR) {
+		log_message(LOG_ERR, "tty device [%s] is not character device", nm);
 		goto out;
 	}
 	if (ioctl(fd, TIOCMGET, &m) == -1) {
+		log_message(LOG_ERR, "ioctl(TIOCMGET) failed for tty device [%s]: %s", nm, strerror(errno));
 		goto out;
 	}
 	return (fd);

@@ -5,6 +5,7 @@
 
 
 #include <stdbool.h>
+#include <syslog.h>
 
 
 
@@ -26,6 +27,7 @@ void cwdaemon_debug_close(void);
 void cwdaemon_errmsg(const char * format, ...) __attribute__ ((format (printf, 1, 2)));
 void cwdaemon_debug(int verbosity, const char *func, int line, const char *format, ...) __attribute__ ((format (printf, 4, 5)));
 const char * log_get_priority_label(int priority);
+void log_message(__attribute__((unused)) int priority, const char * format, ...) __attribute__ ((format (printf, 2, 3)));
 
 
 
