@@ -51,8 +51,8 @@
 # include <fcntl.h>
 #endif
 #ifdef HAVE_LINUX_PPDEV_H
-# include <linux/ppdev.h>
 # include <linux/parport.h>
+# include <linux/ppdev.h>
 #endif
 #ifdef HAVE_DEV_PPBUS_PPI_H
 # include <dev/ppbus/ppi.h>
