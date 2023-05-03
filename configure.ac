@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.57)
 AC_INIT(cwdaemon, 0.11.0, acerion@wp.pl)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AM_MAINTAINER_MODE
 AC_CONFIG_SRCDIR([src/cwdaemon.c])
 AC_PROG_GCC_TRADITIONAL

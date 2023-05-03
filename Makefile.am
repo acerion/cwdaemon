@@ -40,7 +40,8 @@ EXTRA_DIST = cwdaemon.spec.in \
 	$(CWDAEMON_CWDAEMON_PATCHES) \
 	$(CWDAEMON_SCHEMATICS_FILES) \
 	cwdaemon.png TODO README cwsetup.sh \
-	debian
+	debian \
+	tests_unit/README
 
 
 
@@ -73,3 +74,22 @@ rpm: Makefile
 	make dist
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
+
+
+
+
+# Currently "tests" dir contains higher-level tests. To distinguish dir with
+# unit tests, I'm calling it "tests_unit".
+#
+# This target is meant to be executed quickly, it includes test cases that
+# are completed in a fraction of a second.
+.PHONY = check
+
+UNIT_TESTS = tests_unit/utils
+TESTS = $(UNIT_TESTS)
+check_PROGRAMS = $(UNIT_TESTS)
+
+tests_unit_utils_SOURCES = src/utils.c tests_unit/utils.c
+
+
+
