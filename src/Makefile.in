@@ -121,7 +121,8 @@ PROGRAMS = $(sbin_PROGRAMS)
 am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 	cwdaemon-log.$(OBJEXT) cwdaemon-lp.$(OBJEXT) \
 	cwdaemon-ttys.$(OBJEXT) cwdaemon-null.$(OBJEXT) \
-	cwdaemon-help.$(OBJEXT) cwdaemon-socket.$(OBJEXT)
+	cwdaemon-help.$(OBJEXT) cwdaemon-socket.$(OBJEXT) \
+	cwdaemon-utils.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
 cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -143,7 +144,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/cwdaemon-cwdaemon.Po \
 	./$(DEPDIR)/cwdaemon-help.Po ./$(DEPDIR)/cwdaemon-log.Po \
 	./$(DEPDIR)/cwdaemon-lp.Po ./$(DEPDIR)/cwdaemon-null.Po \
-	./$(DEPDIR)/cwdaemon-socket.Po ./$(DEPDIR)/cwdaemon-ttys.Po
+	./$(DEPDIR)/cwdaemon-socket.Po ./$(DEPDIR)/cwdaemon-ttys.Po \
+	./$(DEPDIR)/cwdaemon-utils.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -291,7 +293,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h
+cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h utils.c utils.h
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} #-I$(top_srcdir)/src/
 # target-specific linker flags (objects to link)
@@ -389,6 +391,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-null.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-ttys.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-utils.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -507,6 +510,20 @@ cwdaemon-socket.obj: socket.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socket.c' object='cwdaemon-socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+
+cwdaemon-utils.o: utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.o -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-utils.Tpo $(DEPDIR)/cwdaemon-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='utils.c' object='cwdaemon-utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+
+cwdaemon-utils.obj: utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.obj -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-utils.Tpo $(DEPDIR)/cwdaemon-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='utils.c' object='cwdaemon-utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -642,6 +659,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-utils.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -694,6 +712,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-utils.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

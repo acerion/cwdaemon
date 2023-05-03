@@ -71,6 +71,7 @@
 #include "cwdaemon.h"
 #include "log.h"
 #include "lp.h"
+#include "utils.h"
 
 
 
@@ -93,10 +94,11 @@ int dev_get_parport(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
+	int m = 0;
 
-	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
-		log_message(LOG_ERR, "Name of lp device is too long: [%s]", fname);
+	int retv = build_full_device_path(nm, sizeof (nm), fname);
+	if (0 != retv) {
+		log_message(LOG_ERR, "Can't build path of lp device from [%s]: %s", fname, strerror(-retv));
 		return -1;
 	}
 	int fd = open(nm, O_RDWR | O_NONBLOCK);
@@ -131,9 +133,9 @@ int dev_get_parport(const char *fname)
 	unsigned char c;
 	int fd, m;
 
-	m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-	if (m >= sizeof(nm)) {
-		log_message(LOG_ERR, "Name of lp device is too long: [%s]", fname);
+	int retv = build_full_device_path(nm, sizeof (nm), fname);
+	if (0 != retv) {
+		log_message(LOG_ERR, "Can't build path of lp device from [%s]: %s", fname, strerror(-retv));
 		return (-1);
 	}
 	if ((fd = open(nm, O_RDWR | O_NONBLOCK)) == -1) {

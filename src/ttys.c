@@ -59,6 +59,7 @@
 
 #include "cwdaemon.h"
 #include "log.h"
+#include "utils.h"
 
 /**
    \file ttys.c
@@ -87,10 +88,11 @@ int dev_get_tty(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
+	int m = 0;
 
-	int m = snprintf(nm, sizeof(nm), "/dev/%s", fname);
-	if (m <= 0 || (unsigned int) m >= sizeof(nm)) {
-		log_message(LOG_ERR, "Name of tty device is too long: [%s]", fname);
+	int retv = build_full_device_path(nm, sizeof (nm), fname);
+	if (0 != retv) {
+		log_message(LOG_ERR, "Can't build path of tty device from [%s]: %s", fname, strerror(-retv));
 		return -1;
 	}
 	int fd = open(nm, O_RDWR | O_NOCTTY | O_NONBLOCK);
