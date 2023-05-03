@@ -41,6 +41,7 @@ EXTRA_DIST = cwdaemon.spec.in \
 	$(CWDAEMON_SCHEMATICS_FILES) \
 	cwdaemon.png TODO README cwsetup.sh \
 	debian \
+	Doxyfile \
 	tests_unit/README
 
 
