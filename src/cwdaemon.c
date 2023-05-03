@@ -1999,6 +1999,11 @@ bool cwdaemon_params_volume(int *volume, const char *optarg)
 void cwdaemon_params_version(void)
 {
 	printf("%s version %s\n", PACKAGE, VERSION);
+
+	uint32_t v = (uint32_t) cw_version();
+	uint32_t current = (v & 0xffff0000) >> 16U;
+	uint32_t revision =  v & 0x0000ffff;
+	printf("libcw version %d.%d\n", current, revision);
 	return;
 }
 
