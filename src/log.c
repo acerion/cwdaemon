@@ -204,7 +204,7 @@ void cwdaemon_debug_open(bool forking)
 			fprintf(stdout, "[ERROR] %s: specified debug output to \"%s\" when forking\n",
 				PACKAGE, cwdaemon_debug_f_path);
 
-			exit(EXIT_FAILURE); // TODO 2023.04.24: don't call exit(), return error instead.
+			exit(EXIT_FAILURE); // TODO (acerion) 2023.04.24: don't call exit(), return error instead.
 		}
 	}
 
@@ -262,7 +262,7 @@ void cwdaemon_debug_open(bool forking)
 		cwdaemon_debug_f = fopen(cwdaemon_debug_f_path, "w+");
 		if (!cwdaemon_debug_f) {
 			fprintf(stderr, "%s: failed to open output debug file \"%s\"\n", PACKAGE, cwdaemon_debug_f_path);
-			exit(EXIT_FAILURE); // TODO: don't call exit(), return error instead.
+			exit(EXIT_FAILURE); // TODO (acerion): don't call exit(), return error instead.
 		}
 	}
 

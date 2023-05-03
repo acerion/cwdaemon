@@ -103,7 +103,7 @@ int dev_get_parport(const char *fname)
 	}
 	int fd = open(nm, O_RDWR | O_NONBLOCK);
 	if (fd == -1) {
-		log_message(LOG_ERR, "open() failed for lp device [%s]: %s", nm, strerror(errno)); // TODO 2023.04.25: change this to NOTICE
+		log_message(LOG_ERR, "open() failed for lp device [%s]: %s", nm, strerror(errno)); // TODO (acerion) 2023.04.25: change this to NOTICE
 		return (-1);
 	}
 	if (fstat(fd, &st) == -1) {
