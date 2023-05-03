@@ -2584,9 +2584,19 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		return false;
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "keying device used: \"%s\"", (*device)->desc);
 	(*device)->init(*device, fd);
+
+	/*
+	  TODO (acerion) 2023.05.03: clang-tidy-11 complains that "Access to
+	  field 'desc' results in a dereference of a null pointer
+	  [clang-analyzer-core.NullDereference]".
+
+	  After checking the situation I decided to add NOLINT for this line.
+
+	  Remove the NOLINT tag in future after clang-tidy on your machine stops
+	  complaining about the issue.
+	*/
+	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "keying device used: \"%s\"", (*device)->desc); // NOLINT
 
 	return true;
 
