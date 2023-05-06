@@ -1,7 +1,7 @@
-CHECK_INCLUDE_PATHS="-I. -I.."
+CHECK_INCLUDE_PATHS="-I. -Isrc/ -Itests_unit/"
 
 # TODO (acerion) 2023.05.03: remove clang-analyzer-valist.Uninitialized
-# from the list of exclusions. Right now it's just a workaround for 
+# from the list of exclusions. Right now it's just a workaround for
 # clang-tidy bug. See https://bugs.llvm.org/show_bug.cgi?id=41311.
 
 CHECK_CHECKS="*"
@@ -15,4 +15,4 @@ CHECK_CHECKS+=",-llvmlibc-restrict-system-libc-headers"
 CHECK_CHECKS+=",-cppcoreguidelines-avoid-non-const-global-variables"
 CHECK_CHECKS+=",-clang-analyzer-valist.Uninitialized"
 
-clang-tidy -checks=$CHECK_CHECKS *.c *.h -- $CHECK_INCLUDE_PATHS
+clang-tidy -checks=$CHECK_CHECKS src/*.c src/*.h tests_unit/*.c -- $CHECK_INCLUDE_PATHS
