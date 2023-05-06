@@ -122,10 +122,9 @@ out:
 int
 ttys_init (cwdevice * dev, int fd)
 {
-
-	dev->cookie = malloc(sizeof(struct driveroptions));
+	dev->cookie = calloc(1, sizeof(struct driveroptions));
 	if (dev->cookie == NULL) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "malloc() failed");
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "calloc() failed");
 		exit(EXIT_FAILURE);
 	}
 	dev->fd = fd;
@@ -144,6 +143,13 @@ ttys_free (cwdevice * dev)
 {
 	dev->reset (dev);
 	close (dev->fd);
+
+	/* Deallocate only after call to ::reset(). */
+	if (dev->cookie) {
+		free(dev->cookie);
+		dev->cookie = NULL;
+	}
+
 	return 0;
 }
 
