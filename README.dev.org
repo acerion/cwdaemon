@@ -1,5 +1,22 @@
+* RULES
+
+You SHOULD use "command line",
+You MUST NOT use "commandline".
+You MAY use "command-line".
+
+You SHOULD start debug messages with capital letters. Example ("Invalid" is the first word in the message):
+    "[ERROR] cwdaemon: Invalid value of option for keying device (expected 'key|ptt=RTS|DTR|none'): [ke=none]"
+
+
+
 * TODO
+
+* DONE
+
 ** Pin assignments
 Look at possibility to re-define pin assignments.
 Search for "cwdaemon suggestion" e-mail from Herman Tibor HA4TI
 https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib.744068/#post-5732680
+
+Done for tty devices through -o/--option command line option.
+
