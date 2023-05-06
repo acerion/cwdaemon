@@ -121,8 +121,10 @@ AC_OUTPUT
 # user on console with low number of rows.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
-AC_MSG_NOTICE([  libcw library path:  ....  $LIBCW_LIBDIR])
-AC_MSG_NOTICE([  CFLAGS:  ................  $CFLAGS])
+AC_MSG_NOTICE([  libcw library path:  ......  $LIBCW_LIBDIR])
+AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
+AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
+AC_MSG_NOTICE([  CFLAGS:  ..................  $CFLAGS])
 if test x$enable_cwdaemon_tests = xyes ; then
     AC_MSG_NOTICE([  enable tests: ...........  yes])
     AC_MSG_NOTICE([  test cwdevice name: .....  $TEST_CWDEVICE_NAME])
