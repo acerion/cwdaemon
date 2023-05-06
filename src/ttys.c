@@ -208,13 +208,13 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 {
 	struct driveroptions *dropt = dev->cookie;
 
-	/* If there is no '=' char in 'opts' then find_opt_value() will try to
-	   find it twice, and won't find it twice. It's a bit sub-optimal, but
-	   this code is not performance-critical. */
+	/* find_opt_value() may be called twice in this function, and each time
+	   it will try to find '=' character in 'opts'. It's a bit sub-optimal,
+	   but this code is not performance-critical. */
 
 	const char * value = NULL;
 	if (opt_success == find_opt_value(opts, "key", &value)) {
-		/* key=DTR | RTS | none */
+		/* key=DTR|RTS|none */
 		if (!strcasecmp(value, "dtr")) {
 			dropt->key = TIOCM_DTR;
 		} else if (!strcasecmp(value, "rts")) {
@@ -222,12 +222,12 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 		} else if (!strcasecmp(value, "none")) {
 			dropt->key = 0;
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value for 'key' option: %s", value);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value for 'key' option: %s", value);
 			return false;
 		}
 		ttys_cw(dev, 0);
 	} else if (opt_success == find_opt_value(opts, "ptt", &value)) {
-		/* ptt=RTS | DTR | none */
+		/* ptt=RTS|DTR|none */
 		if (!strcasecmp(value, "dtr")) {
 			dropt->ptt = TIOCM_DTR;
 		} else if (!strcasecmp(value, "rts")) {
@@ -235,12 +235,12 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 		} else if (!strcasecmp(value, "none")) {
 			dropt->ptt = 0;
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value for 'ptt' option: %s", value);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value for 'ptt' option: %s", value);
 			return false;
 		}
 		ttys_ptt(dev, 0);
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid <options> string (expected 'key|ptt=RTS|DTR|NONE'): %s", opts);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value of option for keying device (expected 'key|ptt=RTS|DTR|none'): [%s]", opts);
 		return false;
 	}
 	return true;
