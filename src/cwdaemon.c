@@ -1797,6 +1797,9 @@ void cwdaemon_args_process_short(int c, const char *optarg)
 			exit(EXIT_FAILURE);
 		}
 		break;
+	default:
+		log_message(LOG_ERR, "Unexpected command line option '%c'", c);
+		break;
 	}
 
 	return;
