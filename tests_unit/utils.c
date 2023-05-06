@@ -43,7 +43,7 @@
 static int test_build_full_device_path_success(void);
 static int test_build_full_device_path_failure(void);
 static int test_build_full_device_path_length(void);
-
+static int test_find_opt_value(void);
 
 
 
@@ -51,6 +51,7 @@ static int (*tests[])(void) = {
 	test_build_full_device_path_success,
 	test_build_full_device_path_failure,
 	test_build_full_device_path_length,
+	test_find_opt_value,
 	NULL
 };
 
@@ -192,4 +193,63 @@ static int test_build_full_device_path_length(void)
 
 	return 0;
 }
+
+
+
+
+/* This function tests both success and failure cases. */
+static int test_find_opt_value(void)
+{
+	const struct {
+		const char * input;
+		const char * searched_key;
+		opt_t expected_retv;
+		const char * expected_value;
+	} test_data[] = {
+		/* Success cases. */
+		{ "ptt=none",         "ptt",          opt_success,  "none"   }, /* Basic case. */
+		{ "day=monday",       "day",          opt_success,  "monday" }, /* Basic case. */
+		{ "Ptt=none",         "ptt",          opt_success,  "none"   }, /* Test for case-insensitive-ness. */
+		{ "day=monday",       "DAY",          opt_success,  "monday" }, /* Test for case-insensitive-ness. */
+		{ "q=a",              "q",            opt_success,  "a"      }, /* Short keyword string. */
+		{ "empty=",           "empty",        opt_success,  ""       }, /* Empty value string. */
+
+
+		/* Failure cases. */
+		{ "pt=none",          "ptt",          opt_key_not_found,    NULL }, /* Initial implementation in ttys.c somehow was able to find "ptt" key in "pt=none". */
+		{ "ptt=none",         "pt",           opt_key_not_found,    NULL }, /* Opposite of above: searched key is shorter than key in input string. */
+		{ "=none",            "pt",           opt_key_not_found,    NULL },
+
+		{ "ptnone",           "ptt",          opt_eq_not_found,     NULL },
+		{ "ptt-none",         "ptt",          opt_eq_not_found,     NULL },
+		{ "ptt none",         "ptt",          opt_eq_not_found,     NULL },
+		{ "ptt",              "ptt",          opt_eq_not_found,     NULL },
+
+		{ "ptt =none",        "ptt",          opt_extra_spaces,     NULL },
+		{ "ptt= none",        "ptt",          opt_extra_spaces,     NULL },
+		{ "ptt = none",       "ptt",          opt_extra_spaces,     NULL },
+	};
+
+	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
+		const char * value = NULL;
+		opt_t retv = find_opt_value(test_data[i].input, test_data[i].searched_key, &value);
+		if (retv != test_data[i].expected_retv) {
+			fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected retv: retv = %d, expected = %d in test #%zd\n",
+			        test_data[i].input, test_data[i].searched_key,
+			        retv, test_data[i].expected_retv, i);
+			return -1;
+		}
+		if (retv == opt_success) {
+			if (0 != strcmp(value, test_data[i].expected_value)) {
+				fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected value: value = [%s], expected = [%s] in test #%zd\n",
+				        test_data[i].input, test_data[i].searched_key,
+				        value, test_data[i].expected_value, i);
+				return -1;
+			}
+		}
+	}
+
+	return 0;
+}
+
 
