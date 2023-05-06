@@ -1,5 +1,5 @@
 You will need to have the the libcw7 library and header files from unixcw
-3.6.0 package installed to compile and install cwdaemon 0.11.0.
+3.6.0 package installed to compile and install cwdaemon 0.12.0.
 
 libcw is a part of unicw package which can be found here:
 http://unixcw.sourceforge.net/

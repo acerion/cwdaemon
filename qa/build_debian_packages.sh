@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PACKAGE="cwdaemon"
-VERSION="0.11.0"
+VERSION="0.12.0"
 
 # https://lintian.debian.org/tags/bad-distribution-in-changes-file.html
 # https://bugs.launchpad.net/ubuntu/+source/lintian/+bug/1303603

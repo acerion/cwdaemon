@@ -1,4 +1,4 @@
-cwdaemon-0.11.0
+cwdaemon-0.12.0
 ===============
 
 Cwdaemon is a small daemon which uses the pc parallel or serial port and a
@@ -290,10 +290,8 @@ Example programs are located in examples/ directory.
 
 Platforms
 ---------
-cwdaemon 0.11.0 has been compiled and tested on following platforms:
- - Debian GNU/Linux 11, x86_64, gcc 10.2.1, libcw 7.0.0 (unixcw 3.6.0)
- - Alpine Linux 3.15, x86_64, gcc 10.3.1, libcw 7.0.0 (unixcw 3.6.0)
- - Ubuntu 18.04.6 LTS, x86_64, gcc 7.5.0, libcw 7.0.0 (unixcw 3.6.0)
+cwdaemon 0.12.0 has been compiled and tested on following platforms:
+ - Debian GNU/Linux 11, x86_64, gcc 10.2.1, libcw TODO (unixcw TODO)
 
 
 Credits
