@@ -43,6 +43,8 @@ then
     test -n "$VOLUME"   && OPTS="$OPTS -v $VOLUME"
     test -n "$WEIGHT"   && OPTS="$OPTS -w $WEIGHT"
     test -n "$SDEVICE"  && OPTS="$OPTS -x $SDEVICE"
+    test -n "$OPT_KEY"  && OPTS="$OPTS -o key=$OPT_KEY"
+    test -n "$OPT_PTT"  && OPTS="$OPTS -o ptt=$OPT_PTT"
 fi
 
 case "$1" in

@@ -34,3 +34,8 @@ DEVICE="parport0"
 # c: console, o: OSS, a: ALSA, p: PulseAudio,
 # s: soundcard (autoselect from OSS/ALSA/PulseAudio), n: none. Default is c.
 #SDEVICE="c"
+
+# Keying device options, for tty (serial) device. Default: OPT_KEY=DTR, OPT_PTT=RTS
+#OPT_KEY=DTR
+#OPT_PTT=RTS
+
