@@ -98,6 +98,10 @@ Debug information will be printed to stdout (unless different debug output is se
 Command line argument: -o, --options <opts>
 
 .IP
+Example command line: cwdaemon -d /dev/ttyUSB0 -o key=RTS -o ptt=none
+Example command line: cwdaemon -d /dev/ttyUSB0 -o key=RTS --option ptt=none
+
+.IP
 Escaped request: N/A
 
 .IP
@@ -385,7 +389,7 @@ FreeBSD, ppi0 (default), ppi1, etc.  OpenBSD does not support parallel
 port operation, and defaults to 'tty00'.
 
 You can also specify a full path to the device in /dev/ dir,
-e.g. '/dev/ttyUSB'.
+e.g. '/dev/ttyUSB0'.
 
 For completeness, a dummy 'null' device is provided.  This device does
 exactly nothing (no rig keying, no ssb keying, etc.).
