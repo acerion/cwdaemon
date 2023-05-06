@@ -1588,7 +1588,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
-	{ "options",     required_argument,       0, 0},  /* Driver-specific options. */
+	{ "options",     required_argument,       0, 'o'},  /* Driver-specific options. */
 	{ "help",        no_argument,             0, 0},  /* Print help text and exit. */
 
 	{ 0,             0,                       0, 0} };
@@ -1688,11 +1688,6 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 					exit(EXIT_FAILURE);
 				}
 
-			} else if (!strcmp(optname, "options")) {
-				if (!cwdaemon_params_options(global_cwdevice, optarg)) {
-					exit(EXIT_FAILURE);
-				}
-
 			} else {
 				cwdaemon_args_help();
 				exit(EXIT_SUCCESS);
@@ -1700,6 +1695,11 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 		} else {
 			cwdaemon_args_process_short(c, optarg);
 		}
+	}
+
+	if (optind < argc) {
+		log_message(LOG_ERR, "Unexpected token in command line: [%s]\n", argv[optind]);
+		exit(EXIT_FAILURE);
 	}
 
 	return;
