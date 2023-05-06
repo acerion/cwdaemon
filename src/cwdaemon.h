@@ -111,7 +111,7 @@ int ttys_free (cwdevice * dev);
 int ttys_reset (cwdevice * dev);
 int ttys_cw (cwdevice * dev, int onoff);
 int ttys_ptt (cwdevice * dev, int onoff);
-bool ttys_optparse (cwdevice * dev, const char * opts);
+bool ttys_optparse (cwdevice * dev, const char * option);
 bool ttys_optvalidate (cwdevice * dev);
 
 int null_init (cwdevice * dev, int fd);

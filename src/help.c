@@ -70,9 +70,9 @@ void cwdaemon_args_help(void)
 	printf("        You can also specify a full path to the device in /dev/ dir.\n");
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
 
-	printf("-o, --options <opts>\n");
-	printf("        Use <opts> to configure device selected by -d / -cwdevice option.\n");
-	printf("        Multiple <opts> values can be passed in multiple -o invocations.\n");
+	printf("-o, --options <option>\n");
+	printf("        Specify <option> to configure device selected by -d / -cwdevice option.\n");
+	printf("        Multiple <option> values can be passed in multiple -o invocations.\n");
 	printf("        These options must always follow the -d / --cwdevice option\n");
 	printf("        on the command line.\n");
 	printf("        Driver for serial line devices understands the following options:\n");

@@ -96,7 +96,7 @@ Debug information will be printed to stdout (unless different debug output is se
 .TP
 \fBProvide device-specific options to keying device's driver\fR
 .IP
-Command line argument: -o, --options <opts>
+Command line argument: -o, --options <option>
 
 .IP
 Example command line: cwdaemon -d /dev/ttyUSB0 -o key=RTS -o ptt=none
@@ -107,8 +107,8 @@ Example command line: cwdaemon -d /dev/ttyUSB0 -o key=RTS --option ptt=none
 Escaped request: N/A
 
 .IP
-This passes <opts> to the driver for the keying device selected by the -d /
---cwdevice option. Multiple <opts> values can be passed in multiple -o
+This passes <option> to the driver for the keying device selected by the -d /
+--cwdevice option. Multiple <option> values can be passed in multiple -o
 invocations. These options must always follow the -d / --cwdevice
 option on the command line.
 

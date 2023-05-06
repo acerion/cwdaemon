@@ -203,17 +203,17 @@ ttys_ptt (cwdevice * dev, int onoff)
 
 
 
-/* Parse -o <opts> invocation */
-bool ttys_optparse (cwdevice * dev, const char * opts)
+/* Parse -o <option> invocation */
+bool ttys_optparse (cwdevice * dev, const char * option)
 {
 	struct driveroptions *dropt = dev->cookie;
 
 	/* find_opt_value() may be called twice in this function, and each time
-	   it will try to find '=' character in 'opts'. It's a bit sub-optimal,
+	   it will try to find '=' character in 'option'. It's a bit sub-optimal,
 	   but this code is not performance-critical. */
 
 	const char * value = NULL;
-	if (opt_success == find_opt_value(opts, "key", &value)) {
+	if (opt_success == find_opt_value(option, "key", &value)) {
 		/* key=DTR|RTS|none */
 		if (!strcasecmp(value, "dtr")) {
 			dropt->key = TIOCM_DTR;
@@ -226,7 +226,7 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 			return false;
 		}
 		ttys_cw(dev, 0);
-	} else if (opt_success == find_opt_value(opts, "ptt", &value)) {
+	} else if (opt_success == find_opt_value(option, "ptt", &value)) {
 		/* ptt=RTS|DTR|none */
 		if (!strcasecmp(value, "dtr")) {
 			dropt->ptt = TIOCM_DTR;
@@ -240,7 +240,7 @@ bool ttys_optparse (cwdevice * dev, const char * opts)
 		}
 		ttys_ptt(dev, 0);
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value of option for keying device (expected 'key|ptt=RTS|DTR|none'): [%s]", opts);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid option for keying device (expected 'key|ptt=RTS|DTR|none'): [%s]", option);
 		return false;
 	}
 	return true;
