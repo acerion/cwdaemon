@@ -43,8 +43,11 @@
 
 void cwdaemon_args_help(void)
 {
-	printf("Usage: %s [option]...\n", PACKAGE);
-	printf("Long options may not be supported on your system.\n\n");
+	printf("Usage: %s [options]\n", PACKAGE);
+#if !defined(HAVE_GETOPT_H)
+	printf("Long options are not supported on your system.\n\n");
+#endif
+	printf("Available options:\n");
 
 	printf("-h, --help\n");
 	printf("        Print this help and exit.\n");
@@ -69,12 +72,12 @@ void cwdaemon_args_help(void)
 
 	printf("-o, --options <opts>\n");
 	printf("        Use <opts> to configure device selected by -d / -cwdevice option.\n");
-	printf("        Multiple <opts> can be passed in multiple -o invocations.\n");
+	printf("        Multiple <opts> values can be passed in multiple -o invocations.\n");
 	printf("        These options must always follow the -d / --cwdevice option\n");
 	printf("        on the command line.\n");
 	printf("        Driver for serial line devices understands the following options:\n");
-	printf("        key=DTR | RTS | none (default is DTR)\n");
-	printf("        ptt=RTS | DTR | none (default is RTS)\n");
+	printf("        key=DTR|RTS|none (without spaces, default is DTR)\n");
+	printf("        ptt=RTS|DTR|none (without spaces, default is RTS)\n");
 
 	printf("-n, --nofork\n");
 	printf("        Do not fork. Print debug information to stdout.\n");
