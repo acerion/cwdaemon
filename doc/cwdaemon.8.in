@@ -67,6 +67,11 @@ Escaped request: N/A
 Command line argument: -d, --cwdevice <device>
 
 .IP
+Example command line: cwdaemon --cwdevice ttyS0
+.br
+Example command line: cwdaemon -d /dev/ttyUSB0
+
+.IP
 Escaped request: <ESC>8<device>
 
 .IP
@@ -378,6 +383,9 @@ but may vary with platform.
 For parallel ports on Linux try parport0 (default) or parport1, and on
 FreeBSD, ppi0 (default), ppi1, etc.  OpenBSD does not support parallel
 port operation, and defaults to 'tty00'.
+
+You can also specify a full path to the device in /dev/ dir,
+e.g. '/dev/ttyUSB'.
 
 For completeness, a dummy 'null' device is provided.  This device does
 exactly nothing (no rig keying, no ssb keying, etc.).

@@ -52,7 +52,7 @@ void cwdaemon_args_help(void)
 	printf("        Print version information and exit.\n");
 
 	printf("-d, --cwdevice <device>\n");
-	printf("        Use a different device.\n");
+	printf("        Use a keying device other than the default\n");
 #if defined (HAVE_LINUX_PPDEV_H)
 	printf("        (e.g. ttyS0,1,2, parport0,1, etc. default: parport0)\n");
 #elif defined (HAVE_DEV_PPBUS_PPI_H)
@@ -64,6 +64,7 @@ void cwdaemon_args_help(void)
 	printf("        (e.g. ttyS0,1,2, etc. default: ttyS0)\n");
 #endif
 #endif
+	printf("        You can also specify a full path to the device in /dev/ dir.\n");
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
 
 	printf("-o, --options <opts>\n");
