@@ -11,9 +11,33 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
 
 * TODO
 
+** BUGS
+*** PulseAudio for system services
+
+Summary:
+cwdaemon started by systemd can't open PulseAudio sound sink.
+
+Reproduction steps:
+ 1. Build and install libcw 7.0,
+ 2. Build and install cwdaemon 0.11.0 or 0.12.0
+ 3. Modify operating systems's init scripts to start the cwdaemon
+ 4. Modify /etc/default/cwdaemon to use PulseAudio
+ 4. systemctl start cwdaemon
+
+If you set sound system in cwdaemon's config to "p" (PulseAudio) then
+cwdaemon/libcw will have problems opening the sound sink.
+
+You can also see this when you start "cwdaemon -n -x p" by hand as root.
+
+This is probably a bug in libcw, but I'm putting it here because it was found
+during work on cwdaemon and I didn't investigate it in libcw yet.
+
+
 * DONE
 
-** Pin assignments
+** FEATURES
+
+*** Pin assignments
 Look at possibility to re-define pin assignments.
 Search for "cwdaemon suggestion" e-mail from Herman Tibor HA4TI
 https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib.744068/#post-5732680
