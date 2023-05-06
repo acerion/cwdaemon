@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_UTILS
-#define CWDAEMON_UTILS
+#ifndef CWDAEMON_UTILS_H
+#define CWDAEMON_UTILS_H
 
 
 
@@ -44,5 +44,38 @@ int build_full_device_path(char * path, size_t size, const char * input);
 
 
 
-#endif /* #ifndef CWDAEMON_UTILS */
+/*! Status of searching for value in option string. */
+typedef enum {
+	opt_success,       /*!< Success: found a keyword followed by '=' char followed by value sub-string (the value sub-string may be empty). */
+	opt_key_not_found, /*!< Failure: keyword not found in input string. */
+	opt_eq_not_found,  /*!< Failure: no '=' character in input string. */
+	opt_extra_spaces   /*!< Failure: unexpected spaces in input string. */
+} opt_t;
+
+/**
+   @brief Look for a keyword in "key=value" option string, return pointer to value sub-string.
+
+   This is not an optimal function, but allows me to re-use code and write
+   unit tests for searching values of keys.
+
+   This function doesn't allow spaces around '=' character.
+   This function allows for empty value sub-string.
+
+   Searching for keyword is case-insensitive.
+
+   Pointer to value sub-string is returned through @p value arg. The pointer
+   points inside of @p input.
+
+   @param[in] input Input string to parse
+   @param[in] keyword Keyword to look for in the input
+   @param[out] value Pointer to beginning of value sub-string in @p input (the sub-string may turn out to be empty)
+
+   @return value of opt_t indicating status of searching
+*/
+opt_t find_opt_value(const char * input, const char * keyword, const char ** value);
+
+
+
+
+#endif /* #ifndef CWDAEMON_UTILS_H */
 

@@ -23,9 +23,11 @@
 
 
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h> /* strncasecmp() */
 
 #include "log.h"
 #include "utils.h"
@@ -77,4 +79,44 @@ int build_full_device_path(char * path, size_t size, const char * input)
 }
 
 
+
+
+opt_t find_opt_value(const char * input, const char * keyword, const char ** value)
+{
+	const char * equal = strchr(input, '=');
+	if (equal == NULL) {
+		return opt_eq_not_found;
+	}
+	if (equal == input) {
+		/* '=' char stands at the beginning of input, so there is no keyword in
+		   string. */
+		return opt_key_not_found;
+	}
+
+	/* Since we now know that 'equal' points past beginning of 'input', it
+	   should be safe to use [-1].
+
+	   Also [1] is safe here: in worst-case scenario it points to terminating
+	   NUL. */
+	if (isspace(equal[-1]) || isspace(equal[1])) {
+		/* No spaces are allowed around '=' char! */
+		return opt_extra_spaces;
+	}
+
+	/* When input string is "pt=none", kwlen will be 2. Without this test the
+	   function would find "ptt" in "pt=none" because the strncasecmp() would
+	   only compare 2 first characters. */
+	size_t kwlen = equal - input;
+	if (kwlen != strlen(keyword)) {
+		return opt_key_not_found;
+	}
+
+	if (0 != strncasecmp(input, keyword, kwlen)) {
+		return opt_key_not_found;
+	}
+
+	/* Parsing above was successful, so return a value (possibly empty). */
+	*value = equal + 1;
+	return opt_success;
+}
 
