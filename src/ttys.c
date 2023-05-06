@@ -200,46 +200,47 @@ ttys_ptt (cwdevice * dev, int onoff)
 	return 0;
 }
 
+
+
+
 /* Parse -o <opts> invocation */
 bool ttys_optparse (cwdevice * dev, const char * opts)
 {
 	struct driveroptions *dropt = dev->cookie;
 
-	const char *equal = strchr(opts, '=');
-	if (equal == NULL) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "no '=' in <opts>: %s", opts);
-		return false;
-	}
+	/* If there is no '=' char in 'opts' then find_opt_value() will try to
+	   find it twice, and won't find it twice. It's a bit sub-optimal, but
+	   this code is not performance-critical. */
 
-	size_t kwlen = equal - opts;
-	if (!strncasecmp(opts, "key", kwlen)) {
+	const char * value = NULL;
+	if (opt_success == find_opt_value(opts, "key", &value)) {
 		/* key=DTR | RTS | none */
-		if (!strcasecmp(equal + 1, "dtr")) {
+		if (!strcasecmp(value, "dtr")) {
 			dropt->key = TIOCM_DTR;
-		} else if (!strcasecmp(equal + 1, "rts")) {
+		} else if (!strcasecmp(value, "rts")) {
 			dropt->key = TIOCM_RTS;
-		} else if (!strcasecmp(equal + 1, "none")) {
+		} else if (!strcasecmp(value, "none")) {
 			dropt->key = 0;
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value for 'key' option: %s", value);
 			return false;
 		}
 		ttys_cw(dev, 0);
-	} else if (!strncasecmp(opts, "ptt", kwlen)) {
+	} else if (opt_success == find_opt_value(opts, "ptt", &value)) {
 		/* ptt=RTS | DTR | none */
-		if (!strcasecmp(equal + 1, "dtr")) {
+		if (!strcasecmp(value, "dtr")) {
 			dropt->ptt = TIOCM_DTR;
-		} else if (!strcasecmp(equal + 1, "rts")) {
+		} else if (!strcasecmp(value, "rts")) {
 			dropt->ptt = TIOCM_RTS;
-		} else if (!strcasecmp(equal + 1, "none")) {
+		} else if (!strcasecmp(value, "none")) {
 			dropt->ptt = 0;
 		} else {
-			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value in <opts>: %s", opts);
+			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid value for 'ptt' option: %s", value);
 			return false;
 		}
 		ttys_ptt(dev, 0);
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid keyword in <opts>: %s", opts);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "invalid <options> string (expected 'key|ptt=RTS|DTR|NONE'): %s", opts);
 		return false;
 	}
 	return true;
