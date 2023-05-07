@@ -42,7 +42,7 @@ EXTRA_DIST = cwdaemon.spec.in \
 	cwdaemon.png TODO README cwsetup.sh \
 	debian \
 	Doxyfile \
-	tests_unit/README
+	tests/unit_tests/README
 
 
 
@@ -80,17 +80,18 @@ rpm: Makefile
 
 
 # Currently "tests" dir contains higher-level tests. To distinguish dir with
-# unit tests, I'm calling it "tests_unit".
+# unit tests, I'm calling it "tests/unit_tests".
 #
 # This target is meant to be executed quickly, it includes test cases that
 # are completed in a fraction of a second.
 .PHONY = check
 
-UNIT_TESTS = tests_unit/utils
+UNIT_TESTS = tests/unit_tests/utils
 TESTS = $(UNIT_TESTS)
 check_PROGRAMS = $(UNIT_TESTS)
+check_CPPFLAGS = -I$(top_srcdir)
 
-tests_unit_utils_SOURCES = src/utils.c tests_unit/utils.c
+tests_unit_tests_utils_SOURCES = src/utils.c tests/unit_tests/utils.c
 
 
 

@@ -100,12 +100,12 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = cwdaemon.spec
 CONFIG_CLEAN_VPATH_FILES =
-am__EXEEXT_1 = tests_unit/utils$(EXEEXT)
+am__EXEEXT_1 = tests/unit_tests/utils$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_tests_unit_utils_OBJECTS = src/utils.$(OBJEXT) \
-	tests_unit/utils.$(OBJEXT)
-tests_unit_utils_OBJECTS = $(am_tests_unit_utils_OBJECTS)
-tests_unit_utils_LDADD = $(LDADD)
+am_tests_unit_tests_utils_OBJECTS = src/utils.$(OBJEXT) \
+	tests/unit_tests/utils.$(OBJEXT)
+tests_unit_tests_utils_OBJECTS = $(am_tests_unit_tests_utils_OBJECTS)
+tests_unit_tests_utils_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -122,7 +122,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = src/$(DEPDIR)/utils.Po \
-	tests_unit/$(DEPDIR)/utils.Po
+	tests/unit_tests/$(DEPDIR)/utils.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -136,8 +136,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(tests_unit_utils_SOURCES)
-DIST_SOURCES = $(tests_unit_utils_SOURCES)
+SOURCES = $(tests_unit_tests_utils_SOURCES)
+DIST_SOURCES = $(tests_unit_tests_utils_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
 	install-data-recursive install-dvi-recursive \
@@ -573,17 +573,18 @@ EXTRA_DIST = cwdaemon.spec.in \
 	cwdaemon.png TODO README cwsetup.sh \
 	debian \
 	Doxyfile \
-	tests_unit/README
+	tests/unit_tests/README
 
 
 # Currently "tests" dir contains higher-level tests. To distinguish dir with
-# unit tests, I'm calling it "tests_unit".
+# unit tests, I'm calling it "tests/unit_tests".
 #
 # This target is meant to be executed quickly, it includes test cases that
 # are completed in a fraction of a second.
 .PHONY = check
-UNIT_TESTS = tests_unit/utils
-tests_unit_utils_SOURCES = src/utils.c tests_unit/utils.c
+UNIT_TESTS = tests/unit_tests/utils
+check_CPPFLAGS = -I$(top_srcdir)
+tests_unit_tests_utils_SOURCES = src/utils.c tests/unit_tests/utils.c
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -649,29 +650,29 @@ src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/$(DEPDIR)
 	@: > src/$(DEPDIR)/$(am__dirstamp)
 src/utils.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-tests_unit/$(am__dirstamp):
-	@$(MKDIR_P) tests_unit
-	@: > tests_unit/$(am__dirstamp)
-tests_unit/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) tests_unit/$(DEPDIR)
-	@: > tests_unit/$(DEPDIR)/$(am__dirstamp)
-tests_unit/utils.$(OBJEXT): tests_unit/$(am__dirstamp) \
-	tests_unit/$(DEPDIR)/$(am__dirstamp)
+tests/unit_tests/$(am__dirstamp):
+	@$(MKDIR_P) tests/unit_tests
+	@: > tests/unit_tests/$(am__dirstamp)
+tests/unit_tests/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) tests/unit_tests/$(DEPDIR)
+	@: > tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
+tests/unit_tests/utils.$(OBJEXT): tests/unit_tests/$(am__dirstamp) \
+	tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
 
-tests_unit/utils$(EXEEXT): $(tests_unit_utils_OBJECTS) $(tests_unit_utils_DEPENDENCIES) $(EXTRA_tests_unit_utils_DEPENDENCIES) tests_unit/$(am__dirstamp)
-	@rm -f tests_unit/utils$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_unit_utils_OBJECTS) $(tests_unit_utils_LDADD) $(LIBS)
+tests/unit_tests/utils$(EXEEXT): $(tests_unit_tests_utils_OBJECTS) $(tests_unit_tests_utils_DEPENDENCIES) $(EXTRA_tests_unit_tests_utils_DEPENDENCIES) tests/unit_tests/$(am__dirstamp)
+	@rm -f tests/unit_tests/utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_unit_tests_utils_OBJECTS) $(tests_unit_tests_utils_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f src/*.$(OBJEXT)
-	-rm -f tests_unit/*.$(OBJEXT)
+	-rm -f tests/unit_tests/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@tests_unit/$(DEPDIR)/utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@tests/unit_tests/$(DEPDIR)/utils.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -942,9 +943,9 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-tests_unit/utils.log: tests_unit/utils$(EXEEXT)
-	@p='tests_unit/utils$(EXEEXT)'; \
-	b='tests_unit/utils'; \
+tests/unit_tests/utils.log: tests/unit_tests/utils$(EXEEXT)
+	@p='tests/unit_tests/utils$(EXEEXT)'; \
+	b='tests/unit_tests/utils'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1200,8 +1201,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f src/$(DEPDIR)/$(am__dirstamp)
 	-rm -f src/$(am__dirstamp)
-	-rm -f tests_unit/$(DEPDIR)/$(am__dirstamp)
-	-rm -f tests_unit/$(am__dirstamp)
+	-rm -f tests/unit_tests/$(DEPDIR)/$(am__dirstamp)
+	-rm -f tests/unit_tests/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1213,7 +1214,7 @@ clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 		-rm -f src/$(DEPDIR)/utils.Po
-	-rm -f tests_unit/$(DEPDIR)/utils.Po
+	-rm -f tests/unit_tests/$(DEPDIR)/utils.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-tags
@@ -1262,7 +1263,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
 		-rm -f src/$(DEPDIR)/utils.Po
-	-rm -f tests_unit/$(DEPDIR)/utils.Po
+	-rm -f tests/unit_tests/$(DEPDIR)/utils.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
