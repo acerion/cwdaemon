@@ -1,3 +1,30 @@
+* Build and test env
+** Packages to install
+
+*** Any Operating System
+clang-tidy
+
+*** Debian
+# For building deb packages
+devscripts (includes 'debuild' script)
+
+*** Linux in general
+
+# For clangd's compile_commands.json ("bear -- ./configure" + "bear -- make")
+bear
+
+* Lessons learned
+
+1. Test a cwdaewmon process that is running as system service
+
+cwdaemon is installed on target OS and is executed as system daemon. This
+means that it may behave differently than when started by hand from build
+directory.
+
+One example of a different behaviour is accessing PulseAudio: cwdaemon
+started by hand by developer has no problems with opening PulseAudio sink,
+but when started as system service by systemd, it can't open PulseAudio sink.
+
 * RULES
 
 You SHOULD use "command line",
@@ -31,6 +58,22 @@ You can also see this when you start "cwdaemon -n -x p" by hand as root.
 
 This is probably a bug in libcw, but I'm putting it here because it was found
 during work on cwdaemon and I didn't investigate it in libcw yet.
+*** Makefiles in deb/usr/share/cwdaemon
+The dir in deb package contains Makefile.am and Makefile.in, which are pretty
+useless for end-user. It would be better to have just a simple Makefile in
+that location.
+
+
+** FEATURES
+*** Add printing of specific envs
+
+Print XDG_RUNTIME_DIR, LD_LIBRARY_PATH and perhaps something else, but only
+if you enable it explicitly in code (#ifdef 0 by default).
+
+This feature may help in debugging different problems.
+
+I had to modify test code (extend env table of process) in order to avoid
+problems with PulseAudio.
 
 
 * DONE
