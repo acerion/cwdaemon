@@ -156,17 +156,17 @@ eval $debuild_command
 
 
 # "-n 1" - no need to confirm a character with Enter
-read -r -n 1 -p "Test second build in build directory? [y/N] " response
+read -r -n 1 -p "Test second build in build directory? [Y/n] " response
 echo
 case $response in
-    [yY][eE][sS]|[yY])
+	[nN][oO]|[nN])
+        echo "Not executing second build"
+        # pass
+        ;;
+    *)
         echo "OK"
         eval $debuild_command
         echo "Second build completed"
-        ;;
-    *)
-        echo "Not executing second build"
-        # pass
         ;;
 esac
 
