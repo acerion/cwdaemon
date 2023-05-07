@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2022 - 2023 Kamil Ignacak <acerion@wp.pl>
  *
  * Code for polling of serial port is based on "statserial - Serial Port
  * Status Utility" (GPL2+).

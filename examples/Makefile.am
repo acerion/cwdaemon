@@ -1,5 +1,5 @@
 # Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
-# Copyright (C) 2012 - 2022 Kamil Ignacak (acerion@wp.pl)
+# Copyright (C) 2012 - 2023 Kamil Ignacak (acerion@wp.pl)
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
