@@ -2007,7 +2007,7 @@ void cwdaemon_params_version(void)
 	uint32_t v = (uint32_t) cw_version();
 	uint32_t current = (v & 0xffff0000) >> 16U;
 	uint32_t revision =  v & 0x0000ffff;
-	printf("libcw version %d.%d\n", current, revision);
+	printf("Linked with libcw version: %d.%d\n", current, revision);
 	return;
 }
 
