@@ -2,7 +2,80 @@ cwdaemon 0.12.0 / 2023.05.XX
 
 New release. Changes since previous release:
 
-*
+* Making handling of command line options more strict
+
+  cwdaemon is more likely to exit when it discovers unhandled (unrecognized)
+  tokens in command line.
+
+  This change is introduced to detect incorrect usage of "-o" command line
+  option. Each option for keying device should be passed through separate
+  "-o" option.
+
+  Incorrect: "cwdaemon -d /dev/ttyUSB0 -o key=DTR ptt=none"
+  Correct:   "cwdaemon -d /dev/ttyUSB0 -o key=DTR -o ptt=none"
+
+  The behaviour of "-o" option itself is not changing. Only the overall
+  parsing of command line options is changing to catch this incorrect
+  situation.
+
+* Init system files have been updated with handing of keying device option
+
+  The "-o"/"--options" command line option has been introduced in cwdaemon
+  0.11.0. In this release the init files for cwdaemon (/etc/init.d/cwdaemon
+  and /etc/default/cwdaemon) are updated to support the new command line
+  option. The files are located in debian/ directory in cwdaemon repo.
+
+* Fixing memory problems occurring when handling tty device options
+
+  - Small, one-time memory allocation was not followed by deallocation.
+  - According to valgrind, a section of code may have relied on uninitialized
+    member of allocated struct..
+
+* "cwdaemon -V" now prints information about used libcw library
+
+  In addition to printing version of cwdaemon program, the command also
+  prints version of used libcw library (this is a run-time information, not a
+  compile-time information).
+
+  This change should help me with debugging users' problems: I will be able
+  to set up an env similar to used by users reporting problems.
+
+* Keying device used by cwdaemon can be now specified by a full path
+
+  Till now "-d"/"--cwdevice" command line option accepted only device name
+  (e.g. "ttyS0"). Starting with this release, the device can be also
+  specified by a full path to device in /dev/ dir (e.g. "/dev/ttyS0").
+
+  The change also impacts "<ESC>8" escaped request.
+
+  This change should help avoiding problems with specifying a keying device.
+
+* Adding error messages in code that tries to open a keying device (tty or lp
+  device)
+
+  This change should help with debugging of issues with keying devices in
+  users' env.
+
+* Format of log messages has been adjusted
+
+  - Tags indicating message priority, printed at the beginning of message,
+    are now "[ERROR]", "[WARN ]", "[INFO ]", "[DEBUG]".
+  - The messages first show priority tag, and then package name (e.g.
+    "[ERROR] cwdaemon: some text").
+  - Format of some messages is now more consistent with most of other
+    messages.
+
+* Adding Doxygen configuration file
+
+* Adding "make check" command
+
+  The command compiles and runs unit tests. The unit tests have been added in
+  this release to quickly test some functionalities of cwdaemon. The unit
+  tests don't require any additional infrastructure (e.g. a keying device)
+  and they don't depend on any additioal libraries or programs. This means
+  that they can be executed anywhere, at any time.
+
+  At this moment the unit tests only cover two newly added utility functions.
 
 
 ----
