@@ -131,7 +131,7 @@ int dev_get_parport(const char *fname)
 	char nm[MAXPATHLEN];
 	struct stat st;
 	unsigned char c;
-	int fd, m;
+	int fd;
 
 	int retv = build_full_device_path(nm, sizeof (nm), fname);
 	if (0 != retv) {

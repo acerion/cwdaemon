@@ -26,6 +26,12 @@
 
 #define _GNU_SOURCE /* strcasestr() */
 
+#include "config.h"
+
+#if HAVE_NETINET_IN_H
+#include <netinet/in.h> /* "struct sockaddr_in" in FreeBSD 13.2 */
+#endif
+
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stdio.h>

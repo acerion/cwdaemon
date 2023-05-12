@@ -1,5 +1,11 @@
 #define _DEFAULT_SOURCE /* usleep() */
-#define _POSIX_C_SOURCE /* kill() */
+#define _POSIX_C_SOURCE 200809L /* kill() */
+
+#include "config.h"
+
+/* For kill() on FreeBSD 13.2 */
+#include <sys/types.h>
+#include <signal.h>
 
 #include <errno.h>
 #include <pthread.h>
