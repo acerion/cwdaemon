@@ -23,6 +23,6 @@ sbin_PROGRAMS = cwdaemon
 # source code files used to build cwdaemon program
 cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h utils.c utils.h
 # target-specific preprocessor flags (#defs and include dirs)
-cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS} #-I$(top_srcdir)/src/
+cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # target-specific linker flags (objects to link)
 cwdaemon_LDADD = ${LIBCW_LIBS}

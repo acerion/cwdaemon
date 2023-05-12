@@ -8,6 +8,7 @@ AC_CONFIG_SRCDIR([src/cwdaemon.c])
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_RANLIB # Because of utility library built in in tests/library/
 AC_CONFIG_HEADERS([config.h])
+PKG_PROG_PKG_CONFIG # Don't call pkg-config directly. Use $PKG_CONFIG.
 
 
 # Checks for programs.
@@ -19,9 +20,7 @@ AM_PROG_CC_C_O # per-target flags in src/Makefile.am
 # Checks for libraries.
 
 # Checks for header files.
-AC_HEADER_STDC
-
-AC_CHECK_HEADERS([errno.h arpa/inet.h fcntl.h netdb.h netinet/in.h \
+AC_CHECK_HEADERS([errno.h arpa/inet.h netinet/in.h fcntl.h netdb.h netinet/in.h \
 stdlib.h string.h strings.h sys/ioctl.h sys/socket.h syslog.h unistd.h \
 sys/time.h time.h linux/ppdev.h stdio.h signal.h stdarg.h termios.h sys/resource.h \
 dev/ppbus/ppi.h sys/stat.h])
@@ -36,8 +35,8 @@ AC_TYPE_PID_T
 
 # Checks for library functions.
 AC_FUNC_FORK
-AC_CHECK_FUNCS([socket strerror])
-AC_CHECK_FUNCS([setpriority])
+AC_CHECK_FUNCS([socket strerror setpriority])
+
 
 # Needed to have access to local cwdaemon binary that will be tested during
 # "make check". "local" meaning a binary that has not been put into
@@ -45,8 +44,9 @@ AC_CHECK_FUNCS([setpriority])
 AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
 
 
+# FreeBSD 13.2: device name: cuau0, user group: dialer
 if test "${test_cwdevice_name}" = ""; then
-   AC_SUBST([TEST_CWDEVICE_NAME], "ttyS0")
+   AC_SUBST([TEST_CWDEVICE_NAME], "cuau0")
 else
    AC_SUBST([TEST_CWDEVICE_NAME], ${test_cwdevice_name})
 fi
@@ -90,14 +90,17 @@ AM_CONDITIONAL([CWDAEMON_TESTS], [test x$enable_cwdaemon_tests = xyes])
 
 # LIBCW_LIBDIR is needed to extend value of LD_LIBRARY_PATH used when starting
 # test instance of cwdaemon.
-PKG_CHECK_MODULES(LIBCW, [libcw >= 5], [
-			   AC_SUBST(LIBCW_CFLAGS)
-			   AC_SUBST(LIBCW_LIBS)
-			   AC_MSG_RESULT([    libcw CLFAGS is ${LIBCW_CFLAGS}])
-			   AC_MSG_RESULT([    libcw LIBS is ${LIBCW_LIBS}])
-			   PKG_CHECK_VAR([LIBCW_LIBDIR], [libcw], [libdir])
-			   ],
-			   [AC_MSG_ERROR([cannot find libcw pkgconfig information - unable to build cwdaemon])])
+if $PKG_CONFIG --atleast-version=5 libcw; then
+   LIBCW_LIBS=`$PKG_CONFIG libcw --libs`
+   LIBCW_CFLAGS=`$PKG_CONFIG libcw --cflags`
+   LIBCW_LIBDIR=`$PKG_CONFIG libcw --variable=libdir`
+else
+   AC_MSG_ERROR(Can't find libcw library)
+fi
+AC_SUBST(LIBCW_LIBS)
+AC_SUBST(LIBCW_CFLAGS)
+AC_SUBST(LIBCW_LIBDIR)
+
 
 
 
@@ -124,9 +127,10 @@ AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration ---
 AC_MSG_NOTICE([  libcw library path:  ......  $LIBCW_LIBDIR])
 AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
 AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
+AC_MSG_NOTICE([  LIBCW_CFLAGS: .............  $LIBCW_CFLAGS])
 AC_MSG_NOTICE([  CFLAGS:  ..................  $CFLAGS])
 if test x$enable_cwdaemon_tests = xyes ; then
-    AC_MSG_NOTICE([  enable tests: ...........  yes])
-    AC_MSG_NOTICE([  test cwdevice name: .....  $TEST_CWDEVICE_NAME])
+    AC_MSG_NOTICE([  enable tests: .............  yes])
+    AC_MSG_NOTICE([  test cwdevice name: .......  $TEST_CWDEVICE_NAME])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])
