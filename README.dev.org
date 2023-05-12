@@ -36,10 +36,9 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
 
 
 
-* TODO
 
-** BUGS
-*** PulseAudio for system services
+* Bugs, features
+** TODO Bug: PulseAudio for system services
 
 Summary:
 cwdaemon started by systemd can't open PulseAudio sound sink.
@@ -58,14 +57,13 @@ You can also see this when you start "cwdaemon -n -x p" by hand as root.
 
 This is probably a bug in libcw, but I'm putting it here because it was found
 during work on cwdaemon and I didn't investigate it in libcw yet.
-*** Makefiles in deb/usr/share/cwdaemon
+
+** TODO Bug: Makefiles in deb/usr/share/cwdaemon
 The dir in deb package contains Makefile.am and Makefile.in, which are pretty
 useless for end-user. It would be better to have just a simple Makefile in
 that location.
 
-
-** FEATURES
-*** Add printing of specific envs
+** TODO Feature: Add printing of specific envs
 
 Print XDG_RUNTIME_DIR, LD_LIBRARY_PATH and perhaps something else, but only
 if you enable it explicitly in code (#ifdef 0 by default).
@@ -75,15 +73,12 @@ This feature may help in debugging different problems.
 I had to modify test code (extend env table of process) in order to avoid
 problems with PulseAudio.
 
-
-* DONE
-
-** FEATURES
-
-*** Pin assignments
+** DONE Feature: Pin assignments
 Look at possibility to re-define pin assignments.
 Search for "cwdaemon suggestion" e-mail from Herman Tibor HA4TI
 https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib.744068/#post-5732680
 
 Done for tty devices through -o/--option command line option.
 
+** TODO Bug: usleep() is obsolete
+Per man page on linux the function is removed in newer POSIX. Replace it with nanosleep().
