@@ -178,7 +178,10 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		  discard errors at the beginning of received text, but why
 		  add another factor that decreases quality of receiving?
 		*/
-		usleep(300 * 1000);
+		int s = usleep(300 * 1000);
+		if (s) {
+			fprintf(stderr, "[EE] sleep in parent has failed: [%s]\n", strerror(errno));
+		}
 
 		fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
 
@@ -193,7 +196,10 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms)
 {
-	usleep(1000 * delay_ms);
+	int s = usleep(1000 * delay_ms);
+	if (s) {
+		fprintf(stderr, "[EE] sleep in delayed termination has failed: [%s]\n", strerror(errno));
+	}
 	static pthread_t thread_id;
 	pthread_create(&thread_id, NULL, terminate_cwdaemon_fn, cwdaemon);
 }
@@ -209,7 +215,10 @@ static void * terminate_cwdaemon_fn(void * cwdaemon_arg)
 	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_EXIT, "");
 
 	/* Give cwdaemon some time to exit cleanly. */
-	sleep(2);
+	int s = sleep(2);
+	if (s) {
+		fprintf(stderr, "[EE] sleep in termination has failed: [%s]\n", strerror(errno));
+	}
 
 	int wstatus = 0;
 	if (0 == waitpid(cwdaemon->pid, &wstatus, WNOHANG)) {

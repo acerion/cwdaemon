@@ -114,7 +114,10 @@ int main(void)
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
-		sleep(2);
+		int s = sleep(2);
+		if (s) {
+			fprintf(stderr, "[EE] sleep in cleanup has failed\n");
+		}
 
 		/* Now check if test instance of cwdaemon has disappeared as expected. */
 		int wstatus = 0;

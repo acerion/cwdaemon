@@ -189,7 +189,10 @@ int main(void)
 		test_helpers_cleanup();
 		/* Terminate this instance of cwdaemon. */
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
-		sleep(2);
+		int s = sleep(2);
+		if (s) {
+			fprintf(stderr, "[EE] sleep in cleanup has failed\n");
+		}
 
 		/* Close socket to test instance of cwdaemon. cwdaemon may be
 		   stopped, but let's still try to close socket on our

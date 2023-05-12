@@ -27,6 +27,7 @@
 #define _GNU_SOURCE /* strcasestr() */
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -247,7 +248,10 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 	int loop_iters = 2000;
 
 	do {
-		usleep(10 * 1000); /* 10 milliseconds. TODO 2022.01.26: use a constant. TODO: use usleep from libcw.h */
+		int s = usleep(10 * 1000); /* 10 milliseconds. TODO 2022.01.26: use a constant. TODO: use usleep from libcw.h */
+		if (s) {
+			fprintf(stderr, "[EE] sleep in receive has failed: [%s]\n", strerror(errno));
+		}
 		loop_iters--;
 		if (0 == loop_iters) {
 			fprintf(stderr, "[NN] Expected reply not received, leaving %s after loop countdown completed\n", __func__);

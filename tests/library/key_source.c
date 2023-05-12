@@ -93,7 +93,10 @@ static void * key_source_poll_thread(void * arg_key_source)
 		}
 
 		/* TODO 2022.01.26: use libcw.h/cw_usleep_internal() */
-		usleep(source->poll_interval_us);
+		int s = usleep(source->poll_interval_us);
+		if (s) {
+			fprintf(stderr, "[EE] sleep in key poll: [%s]\n", strerror(errno));
+		}
 	}
 
 	return NULL;
