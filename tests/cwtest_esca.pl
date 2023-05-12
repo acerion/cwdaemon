@@ -34,6 +34,7 @@ use Getopt::Long;
 
 
 
+use lib "./";
 use cwdaemon::test::common;
 
 

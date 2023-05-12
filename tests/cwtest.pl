@@ -28,6 +28,7 @@ use IO::Handle;
 use Time::HiRes qw(usleep);
 use Getopt::Long;
 
+use lib "./";
 use cwdaemon::client;
 
 

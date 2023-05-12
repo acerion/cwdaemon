@@ -33,6 +33,7 @@ use Getopt::Long;
 use IO::Handle qw( );  # For flush
 
 
+use lib "./";
 use cwdaemon::test::common;
 
 
