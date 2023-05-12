@@ -36,7 +36,6 @@
 #include <unistd.h>
 
 #include <libcw.h>
-#include <libcw2.h>
 
 #include "cw_rec_utils.h"
 #include "key_source.h"
