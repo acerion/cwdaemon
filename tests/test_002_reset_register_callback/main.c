@@ -45,12 +45,18 @@
 #include "../library/key_source_serial.h"
 #include "../library/misc.h"
 #include "../library/socket.h"
+#include "../library/test_env.h"
 
 
 
 
 int main(void)
 {
+	if (!test_env_is_usable(test_env_libcw_without_signals)) {
+		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
+		exit(EXIT_FAILURE);
+	}
+
 	srand(time(NULL));
 
 	bool failure = false;

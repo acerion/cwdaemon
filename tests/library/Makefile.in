@@ -113,7 +113,8 @@ am_lib_cwdaemon_tests_a_OBJECTS =  \
 	lib_cwdaemon_tests_a-key_source_serial.$(OBJEXT) \
 	lib_cwdaemon_tests_a-misc.$(OBJEXT) \
 	lib_cwdaemon_tests_a-process.$(OBJEXT) \
-	lib_cwdaemon_tests_a-socket.$(OBJEXT)
+	lib_cwdaemon_tests_a-socket.$(OBJEXT) \
+	lib_cwdaemon_tests_a-test_env.$(OBJEXT)
 lib_cwdaemon_tests_a_OBJECTS = $(am_lib_cwdaemon_tests_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -136,7 +137,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/lib_cwdaemon_tests_a-key_source_serial.Po \
 	./$(DEPDIR)/lib_cwdaemon_tests_a-misc.Po \
 	./$(DEPDIR)/lib_cwdaemon_tests_a-process.Po \
-	./$(DEPDIR)/lib_cwdaemon_tests_a-socket.Po
+	./$(DEPDIR)/lib_cwdaemon_tests_a-socket.Po \
+	./$(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -290,7 +292,8 @@ noinst_HEADERS = cw_rec_utils.h       \
                  key_source_serial.h  \
                  misc.h               \
                  process.h            \
-                 socket.h
+                 socket.h             \
+                 test_env.h
 
 
 # convenience library
@@ -300,7 +303,8 @@ lib_cwdaemon_tests_a_SOURCES = cw_rec_utils.c       \
                                key_source_serial.c  \
                                misc.c               \
                                process.c            \
-                               socket.c
+                               socket.c             \
+                               test_env.c
 
 lib_cwdaemon_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 all: all-am
@@ -357,6 +361,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_cwdaemon_tests_a-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_cwdaemon_tests_a-process.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_cwdaemon_tests_a-socket.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -463,6 +468,20 @@ lib_cwdaemon_tests_a-socket.obj: socket.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socket.c' object='lib_cwdaemon_tests_a-socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_cwdaemon_tests_a_CFLAGS) $(CFLAGS) -c -o lib_cwdaemon_tests_a-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+
+lib_cwdaemon_tests_a-test_env.o: test_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_cwdaemon_tests_a_CFLAGS) $(CFLAGS) -MT lib_cwdaemon_tests_a-test_env.o -MD -MP -MF $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Tpo -c -o lib_cwdaemon_tests_a-test_env.o `test -f 'test_env.c' || echo '$(srcdir)/'`test_env.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Tpo $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_env.c' object='lib_cwdaemon_tests_a-test_env.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_cwdaemon_tests_a_CFLAGS) $(CFLAGS) -c -o lib_cwdaemon_tests_a-test_env.o `test -f 'test_env.c' || echo '$(srcdir)/'`test_env.c
+
+lib_cwdaemon_tests_a-test_env.obj: test_env.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_cwdaemon_tests_a_CFLAGS) $(CFLAGS) -MT lib_cwdaemon_tests_a-test_env.obj -MD -MP -MF $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Tpo -c -o lib_cwdaemon_tests_a-test_env.obj `if test -f 'test_env.c'; then $(CYGPATH_W) 'test_env.c'; else $(CYGPATH_W) '$(srcdir)/test_env.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Tpo $(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_env.c' object='lib_cwdaemon_tests_a-test_env.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_cwdaemon_tests_a_CFLAGS) $(CFLAGS) -c -o lib_cwdaemon_tests_a-test_env.obj `if test -f 'test_env.c'; then $(CYGPATH_W) 'test_env.c'; else $(CYGPATH_W) '$(srcdir)/test_env.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -594,6 +613,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-socket.Po
+	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -645,6 +665,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-socket.Po
+	-rm -f ./$(DEPDIR)/lib_cwdaemon_tests_a-test_env.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

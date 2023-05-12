@@ -48,6 +48,7 @@
 #include "../library/misc.h"
 #include "../library/key_source.h"
 #include "../library/key_source_serial.h"
+#include "../library/test_env.h"
 
 
 
@@ -117,6 +118,11 @@ static datum_t g_test_data[] = {
 
 int main(void)
 {
+	if (!test_env_is_usable(test_env_libcw_without_signals)) {
+		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
+		exit(EXIT_FAILURE);
+	}
+
 	srand(time(NULL));
 
 	const int wpm = 10;
