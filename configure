@@ -660,6 +660,14 @@ LIBCW_LIBS
 CWDAEMON_TESTS_FALSE
 CWDAEMON_TESTS_TRUE
 TEST_CWDEVICE_NAME
+host_os
+host_vendor
+host_cpu
+host
+build_os
+build_vendor
+build_cpu
+build
 ABS_TOP_BUILDDIR
 RPMBUILD
 PKG_CONFIG_LIBDIR
@@ -1388,6 +1396,10 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
 _ACEOF
 fi
 
@@ -2443,7 +2455,7 @@ as_fn_append ac_func_c_list " fork HAVE_FORK"
 as_fn_append ac_func_c_list " vfork HAVE_VFORK"
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile missing install-sh"
+ac_aux_files="config.guess config.sub compile missing install-sh"
 
 # Locations in which to look for auxiliary files.
 ac_aux_dir_candidates="${srcdir}${PATH_SEPARATOR}${srcdir}/..${PATH_SEPARATOR}${srcdir}/../.."
@@ -5055,6 +5067,7 @@ printf "%s\n" "no" >&6; }
 	fi
 fi # Don't call pkg-config directly. Use $PKG_CONFIG.
 
+
 # Checks for programs.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -6507,14 +6520,125 @@ ABS_TOP_BUILDDIR=abs_top_builddir
 
 
 
-# FreeBSD 13.2: device name: cuau0, user group: dialer
-if test "${test_cwdevice_name}" = ""; then
-   TEST_CWDEVICE_NAME="cuau0"
 
-else
-   TEST_CWDEVICE_NAME=${test_cwdevice_name}
+# This is just a default value that can be overriden later.
+default_test_cwdevice_name="ttyUSBA"
+
+
+
+
+
+  # Make sure we can run config.sub.
+$SHELL "${ac_aux_dir}config.sub" sun4 >/dev/null 2>&1 ||
+  as_fn_error $? "cannot run $SHELL ${ac_aux_dir}config.sub" "$LINENO" 5
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking build system type" >&5
+printf %s "checking build system type... " >&6; }
+if test ${ac_cv_build+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "${ac_aux_dir}config.guess"`
+test "x$ac_build_alias" = x &&
+  as_fn_error $? "cannot guess build type; you must specify one" "$LINENO" 5
+ac_cv_build=`$SHELL "${ac_aux_dir}config.sub" $ac_build_alias` ||
+  as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $ac_build_alias failed" "$LINENO" 5
 
 fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_build" >&5
+printf "%s\n" "$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical build" "$LINENO" 5;;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking host system type" >&5
+printf %s "checking host system type... " >&6; }
+if test ${ac_cv_host+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "${ac_aux_dir}config.sub" $host_alias` ||
+    as_fn_error $? "$SHELL ${ac_aux_dir}config.sub $host_alias failed" "$LINENO" 5
+fi
+
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_host" >&5
+printf "%s\n" "$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) as_fn_error $? "invalid value of canonical host" "$LINENO" 5;;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
+case $host_os in
+    *linux*|*Linux*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected Linux: $host_os" >&5
+printf "%s\n" "$as_me: Detected Linux: $host_os" >&6;}
+	default_test_cwdevice_name="ttyUSB0"
+	;;
+
+	*freebsd*|*FreeBSD*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected FreeBSD: $host_os" >&5
+printf "%s\n" "$as_me: Detected FreeBSD: $host_os" >&6;}
+
+	# Found on FreeBSD 13.2; TODO: double-check; user group: dialer
+	default_test_cwdevice_name="cuau0"
+	;;
+
+	*openbsd*|*OpenBSD*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected OpenBSD: $host_os" >&5
+printf "%s\n" "$as_me: Detected OpenBSD: $host_os" >&6;}
+	;;
+
+	*netbsd*|*NetBSD*)
+	# I didn't test unixcw on NetBSD, but let's give it a
+	# chance.
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected NetBSD: $host_os" >&5
+printf "%s\n" "$as_me: Detected NetBSD: $host_os" >&6;}
+	;;
+
+	*)
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected other OS: $host_os" >&5
+printf "%s\n" "$as_me: Detected other OS: $host_os" >&6;}
+	;;
+esac
+
+
+# AC_SUBST puts the TEST_CWDEVICE_NAME symbol into Makefiles
+TEST_CWDEVICE_NAME=${default_test_cwdevice_name}
+
+
 
 
 # For debug purposes only.
@@ -8068,6 +8192,8 @@ fi
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
 printf "%s\n" "$as_me: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system:  ........  $host_os" >&5
+printf "%s\n" "$as_me:   operating system:  ........  $host_os" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path:  ......  $LIBCW_LIBDIR" >&5
 printf "%s\n" "$as_me:   libcw library path:  ......  $LIBCW_LIBDIR" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ....  $(pkg-config --modversion libcw)" >&5
