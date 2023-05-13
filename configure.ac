@@ -44,12 +44,45 @@ AC_CHECK_FUNCS([socket strerror setpriority])
 AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
 
 
-# FreeBSD 13.2: device name: cuau0, user group: dialer
-if test "${test_cwdevice_name}" = ""; then
-   AC_SUBST([TEST_CWDEVICE_NAME], "cuau0")
-else
-   AC_SUBST([TEST_CWDEVICE_NAME], ${test_cwdevice_name})
-fi
+
+# This is just a default value that can be overriden later.
+default_test_cwdevice_name="ttyUSB0"
+
+
+
+AC_CANONICAL_HOST
+case $host_os in
+    *linux*|*Linux*)
+	AC_MSG_NOTICE([Detected Linux: $host_os])
+	default_test_cwdevice_name="ttyUSB0"
+	;;
+
+	*freebsd*|*FreeBSD*)
+	AC_MSG_NOTICE([Detected FreeBSD: $host_os])
+
+	# Found on FreeBSD 13.2; TODO: double-check; user group: dialer
+	default_test_cwdevice_name="cuau0"
+	;;
+
+	*openbsd*|*OpenBSD*)
+	AC_MSG_NOTICE([Detected OpenBSD: $host_os])
+	;;
+
+	*netbsd*|*NetBSD*)
+	# I didn't test unixcw on NetBSD, but let's give it a
+	# chance.
+	AC_MSG_NOTICE([Detected NetBSD: $host_os])
+	;;
+
+	*)
+	AC_MSG_NOTICE([Detected other OS: $host_os])
+	;;
+esac
+
+
+# AC_SUBST puts the TEST_CWDEVICE_NAME symbol into Makefiles
+AC_SUBST([TEST_CWDEVICE_NAME], ${default_test_cwdevice_name})
+
 
 
 # For debug purposes only.
@@ -124,6 +157,7 @@ AC_OUTPUT
 # user on console with low number of rows.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
+AC_MSG_NOTICE([  operating system:  ........  $host_os])
 AC_MSG_NOTICE([  libcw library path:  ......  $LIBCW_LIBDIR])
 AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
 AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
