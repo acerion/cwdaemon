@@ -54,13 +54,19 @@ AC_CANONICAL_HOST
 case $host_os in
     *linux*|*Linux*)
 	AC_MSG_NOTICE([Detected Linux: $host_os])
+	# Example value of host_os: 'linux-gnu'
+	#
+	# Name of first tty device (USB-to-serial converter) on Linux. User
+	# group: dialout.
 	default_test_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
 	AC_MSG_NOTICE([Detected FreeBSD: $host_os])
-
-	# Found on FreeBSD 13.2; TODO: double-check; user group: dialer
+	# Example value of host_os: 'freebsd13.2'.
+	#
+	# Name of first tty device (USB-to-serial converter) on FreeBSD 13.2.
+	# User group: dialer.
 	default_test_cwdevice_name="cuau0"
 	;;
 

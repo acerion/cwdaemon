@@ -6522,7 +6522,7 @@ ABS_TOP_BUILDDIR=abs_top_builddir
 
 
 # This is just a default value that can be overriden later.
-default_test_cwdevice_name="ttyUSBA"
+default_test_cwdevice_name="ttyUSB0"
 
 
 
@@ -6605,14 +6605,20 @@ case $host_os in
     *linux*|*Linux*)
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected Linux: $host_os" >&5
 printf "%s\n" "$as_me: Detected Linux: $host_os" >&6;}
+	# Example value of host_os: 'linux-gnu'
+	#
+	# Name of first tty device (USB-to-serial converter) on Linux. User
+	# group: dialout.
 	default_test_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: Detected FreeBSD: $host_os" >&5
 printf "%s\n" "$as_me: Detected FreeBSD: $host_os" >&6;}
-
-	# Found on FreeBSD 13.2; TODO: double-check; user group: dialer
+	# Example value of host_os: 'freebsd13.2'.
+	#
+	# Name of first tty device (USB-to-serial converter) on FreeBSD 13.2.
+	# User group: dialer.
 	default_test_cwdevice_name="cuau0"
 	;;
 
