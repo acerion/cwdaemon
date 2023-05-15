@@ -1,4 +1,3 @@
-#define _DEFAULT_SOURCE /* usleep() */
 #define _POSIX_C_SOURCE 200809L /* kill() */
 
 #include "config.h"
@@ -184,9 +183,9 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		  discard errors at the beginning of received text, but why
 		  add another factor that decreases quality of receiving?
 		*/
-		int s = usleep(300 * 1000);
+		int s = usleep_nonintr(300 * 1000);
 		if (s) {
-			fprintf(stderr, "[EE] sleep in parent has failed: [%s]\n", strerror(errno));
+			fprintf(stderr, "[WW] usleep in parent was interrupted\n");
 		}
 
 		fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
@@ -202,9 +201,9 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms)
 {
-	int s = usleep(1000 * delay_ms);
+	int s = usleep_nonintr(1000 * delay_ms);
 	if (s) {
-		fprintf(stderr, "[EE] sleep in delayed termination has failed: [%s]\n", strerror(errno));
+		fprintf(stderr, "[WW] usleep in delayed termination was interrupted\n");
 	}
 	static pthread_t thread_id;
 	pthread_create(&thread_id, NULL, terminate_cwdaemon_fn, cwdaemon);
@@ -221,9 +220,9 @@ static void * terminate_cwdaemon_fn(void * cwdaemon_arg)
 	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_EXIT, "");
 
 	/* Give cwdaemon some time to exit cleanly. */
-	int s = sleep(2);
+	int s = usleep_nonintr(2 * USECS_IN_SECOND);
 	if (s) {
-		fprintf(stderr, "[EE] sleep in termination has failed: [%s]\n", strerror(errno));
+		fprintf(stderr, "[WW] usleep in termination was interrupted\n");
 	}
 
 	int wstatus = 0;

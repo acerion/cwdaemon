@@ -60,10 +60,12 @@
 
 int main(void)
 {
+#if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
 		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	srand(time(NULL));
 
@@ -118,9 +120,9 @@ int main(void)
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
-		int s = sleep(2);
+		int s = usleep_nonintr(2 * USECS_IN_SECOND);
 		if (s) {
-			fprintf(stderr, "[EE] sleep in cleanup has failed\n");
+			fprintf(stderr, "[WW] usleep in cleanup was interrupted\n");
 		}
 
 		/* Now check if test instance of cwdaemon has disappeared as expected. */

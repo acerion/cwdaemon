@@ -24,8 +24,6 @@
 
 
 
-#define _DEFAULT_SOURCE /* usleep() */
-
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -36,6 +34,7 @@
 
 
 #include "key_source.h"
+#include "misc.h"
 
 
 
@@ -93,9 +92,9 @@ static void * key_source_poll_thread(void * arg_key_source)
 		}
 
 		/* TODO 2022.01.26: use libcw.h/cw_usleep_internal() */
-		int s = usleep(source->poll_interval_us);
+		int s = usleep_nonintr(source->poll_interval_us);
 		if (s) {
-			fprintf(stderr, "[EE] sleep in key poll: [%s]\n", strerror(errno));
+			fprintf(stderr, "[WW] usleep in key poll was interrupted\n");
 		}
 	}
 

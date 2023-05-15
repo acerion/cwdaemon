@@ -118,10 +118,12 @@ static datum_t g_test_data[] = {
 
 int main(void)
 {
+#if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
 		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	srand(time(NULL));
 
@@ -189,9 +191,9 @@ int main(void)
 		test_helpers_cleanup();
 		/* Terminate this instance of cwdaemon. */
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
-		int s = sleep(2);
+		int s = usleep_nonintr(2 * USECS_IN_SECOND);
 		if (s) {
-			fprintf(stderr, "[EE] sleep in cleanup has failed\n");
+			fprintf(stderr, "[WW] usleep in cleanup was interrupted\n");
 		}
 
 		/* Close socket to test instance of cwdaemon. cwdaemon may be

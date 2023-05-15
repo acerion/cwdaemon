@@ -52,10 +52,12 @@
 
 int main(void)
 {
+#if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
 		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
 		exit(EXIT_FAILURE);
 	}
+#endif
 
 	srand(time(NULL));
 

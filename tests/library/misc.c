@@ -253,9 +253,9 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 	int loop_iters = 2000;
 
 	do {
-		int s = usleep(10 * 1000); /* 10 milliseconds. TODO 2022.01.26: use a constant. TODO: use usleep from libcw.h */
+		int s = usleep_nonintr(10 * 1000); /* 10 milliseconds. TODO 2022.01.26: use a constant. TODO: use usleep from libcw.h */
 		if (s) {
-			fprintf(stderr, "[EE] sleep in receive has failed: [%s]\n", strerror(errno));
+			fprintf(stderr, "[WW] usleep in receive was interrupted\n");
 		}
 		loop_iters--;
 		if (0 == loop_iters) {
@@ -408,4 +408,25 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 
 
+
+int usleep_nonintr(int usecs)
+{
+	bool was_interrupted = false;
+	struct timespec remaining = { 0 };
+	const int sec = usecs / USECS_IN_SECOND;
+	const int usec = usecs % USECS_IN_SECOND;
+	remaining.tv_sec = sec;
+	remaining.tv_nsec = usec * 1000;
+
+	int rv = 0;
+	do {
+		struct timespec req = { .tv_sec = remaining.tv_sec, .tv_nsec = remaining.tv_nsec };
+		rv = nanosleep(&req, &remaining);
+		if (rv) {
+			was_interrupted = true;
+		}
+	} while (rv);
+
+	return was_interrupted ? 1 : 0;
+}
 
