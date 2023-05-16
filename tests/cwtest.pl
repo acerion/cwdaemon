@@ -61,6 +61,14 @@ my $result = GetOptions("cycles=i"       => \$cycles,
 
 
 
+# Give tester some time to a the description of a test before the test is executed.
+sub pre_test_delay()
+{
+    sleep(4);
+}
+
+
+
 
 my $seed = time;
 print "Using seed $seed.\n\n";
@@ -204,6 +212,7 @@ sub cwdaemon_test1
     print("request: \"<single-character request text>\"\n");
     print("expected reply: \"h<non-empty reply text>\\r\\n\"\n");
     print("\n");
+    pre_test_delay();
 
     print "PTT ON\n\n";
     print $cwsocket chr(27).'a1';
@@ -230,6 +239,7 @@ sub cwdaemon_test2
     print("request: \"<single-character request text>\"\n");
     print("expected reply: \"h\\r\\n\"\n");
     print("\n");
+    pre_test_delay();
 
     print "PTT ON\n\n";
     print $cwsocket chr(27).'a1';
@@ -255,6 +265,7 @@ sub cwdaemon_test3
     print("request: \"<random multi-character request text>\"\n");
     print("expected reply: \"h<reply text specified in escaped request>\\r\\n\"\n");
     print("\n");
+    pre_test_delay();
 
     print "PTT ON\n\n";
     print $cwsocket chr(27).'a1';
@@ -279,6 +290,7 @@ sub cwdaemon_test4
     print("request: \"<single-character request text>^\"\n");
     print("expected reply: \"<single-character reply==request text>\\r\\n\"\n");
     print("\n");
+    pre_test_delay();
 
     print "PTT OFF\n\n";
     print $cwsocket chr(27).'a0';
@@ -304,6 +316,7 @@ sub cwdaemon_test5
     print("request: \"<multi-character request text>^\"\n");
     print("expected reply: \"<multi-character reply==request text>\\r\\n\"\n");
     print("\n");
+    pre_test_delay();
 
     print "PTT OFF\n\n";
     print $cwsocket chr(27).'a0';
