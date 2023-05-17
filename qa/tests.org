@@ -98,6 +98,7 @@ Execute each and every perl script in tests/ directory.
 
 *Preconditions*
 cwdaemon must be working, running on default port, with PulseAudio.
+./src/cwdaemon -n -x p
 
 *Expected result*
 All tests pass
@@ -185,6 +186,11 @@ Test passes
 
 
 ***** TODO tests/cwtest_escf.pl
+
+For this test you may want to start cwdaemon with "info" log level, to see
+information about switching of sound system:
+./src/cwdaemon -n -x p -y i
+
 *Expected result*
 Test passes
 
@@ -345,6 +351,10 @@ Pass
 
 Execute each and every perl script in tests/ directory.
 
+*Preconditions*
+cwdaemon must be working, running on default port, with PulseAudio.
+src/cwdaemon -n -x p
+
 *Expected result*
 All tests pass
 
@@ -370,71 +380,81 @@ Test passes
 Pass
 
 
-***** TODO tests/cwtest_esc3.pl
+***** DONE tests/cwtest_esc3.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_esc5.pl
+***** DONE tests/cwtest_esc5.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_esc64.pl
+***** DONE tests/cwtest_esc64.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_esc7.pl
+***** DONE tests/cwtest_esc7.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_esc8.pl
+***** DONE tests/cwtest_esc8.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_esca.pl
+***** DONE tests/cwtest_esca.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_escc.pl
+***** DONE tests/cwtest_escc.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
+***** DONE tests/cwtest_escd.pl
 
-***** TODO tests/cwtest_escd.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass.
 
+Bugs R0006 and R0007 have been added to README.dev.org. They don't have an
+impact on end-user experience, so they will be fixed in future.
 
 
 ***** TODO tests/cwtest_escf.pl
+
+For this test you may want to start cwdaemon with "info" log level, to see
+information about switching of sound system:
+./src/cwdaemon -n -x p -y i
+
+
 *Expected result*
 Test passes
 

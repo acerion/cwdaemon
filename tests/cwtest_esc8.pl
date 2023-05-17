@@ -45,7 +45,9 @@ my $request_code = '8';       # Code of Escape request
 my $cycles = 5;               # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";         # Text to be played
-my $devices = "null,/dev/tty7,/dev/nonexistent";
+# Some of the devices may be valid at time of execution, other may be
+# invalid.
+my $devices = "null,/dev/ttyUSB0,/dev/tty7,ttyUSB0,/dev/nonexistent";
 
 
 my $result = GetOptions("cycles=i"       => \$cycles,

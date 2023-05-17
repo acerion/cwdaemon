@@ -38,7 +38,7 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
 
 
 * Bugs, features
-** TODO Bug: PulseAudio for system services
+** TODO R0001: Bug: PulseAudio for system services
 
 Summary:
 cwdaemon started by systemd can't open PulseAudio sound sink.
@@ -58,12 +58,12 @@ You can also see this when you start "cwdaemon -n -x p" by hand as root.
 This is probably a bug in libcw, but I'm putting it here because it was found
 during work on cwdaemon and I didn't investigate it in libcw yet.
 
-** TODO Bug: Makefiles in deb/usr/share/cwdaemon
+** TODO R0002: Bug: Makefiles in deb/usr/share/cwdaemon
 The dir in deb package contains Makefile.am and Makefile.in, which are pretty
 useless for end-user. It would be better to have just a simple Makefile in
 that location.
 
-** TODO Feature: Add printing of specific envs
+** TODO R0003: Feature: Add printing of specific envs
 
 Print XDG_RUNTIME_DIR, LD_LIBRARY_PATH and perhaps something else, but only
 if you enable it explicitly in code (#ifdef 0 by default).
@@ -73,12 +73,49 @@ This feature may help in debugging different problems.
 I had to modify test code (extend env table of process) in order to avoid
 problems with PulseAudio.
 
-** DONE Feature: Pin assignments
+** DONE R0004: Feature: Pin assignments
 Look at possibility to re-define pin assignments.
 Search for "cwdaemon suggestion" e-mail from Herman Tibor HA4TI
 https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib.744068/#post-5732680
 
 Done for tty devices through -o/--option command line option.
 
-** TODO Bug: usleep() is obsolete
+** TODO R0005: Bug: usleep() is obsolete
 Per man page on linux the function is removed in newer POSIX. Replace it with nanosleep().
+
+** TODO R0006: Bug: duplicated error message for invalid PTT delay
+
+During execution of cwtest_escd.pl test, when invalid values are sent in
+escaped request, cwdaemon prints error log twice:
+
+[ERROR] cwdaemon: invalid requested PTT delay [ms]: "0.096100" (should be integer between 0 and 50 inclusive)
+[ERROR] cwdaemon: invalid requested PTT delay [ms]: "0.096100" (should be integer between 0 and 50 inclusive)
+
+** TODO R0007: Bug: cwdaemon_params_pttdelay() returns magic values
+
+cwdaemon_params_pttdelay() can return 0/1/2. Replace the integer values with
+enums.
+
+** TODO R0008: Feature: better set of values for 'invalid' functional tests
+
+Some functional tests implemented in Perl are sending float values as invalid
+values of escaped requests. Currently the values look like this:
+
+    Trying to set positive float value 0.010000
+    Trying to set positive float value 0.031000
+    Trying to set positive float value 0.096100
+    Trying to set positive float value 0.297910
+    Trying to set positive float value 0.923521
+    Trying to set positive float value 2.862915
+    Trying to set positive float value 8.875037
+    Trying to set positive float value 27.512614
+    Trying to set positive float value 85.289104
+    Trying to set positive float value 264.396222
+    Trying to set positive float value 819.628287
+    Trying to set positive float value 2540.847690
+    Trying to set positive float value 7876.627838
+
+Testing cwdaemon with both 0.031000 and 0.096100, or with 264.396222 and
+819.628287 doesn't bring much value. The set of values should be
+re-evaluated.
+
