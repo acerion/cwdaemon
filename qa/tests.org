@@ -523,4 +523,256 @@ Test passes
 Pass
 
 
+** TODO <Machine/OS identifier>
+<Additional info about machine, OS, libs, compiler>
+OS:
+C compiler:
+libc:
+libcw:
+
+*** TODO Build system tests
+**** TODO make distcheck
+*Steps*
+Run "make distcheck" in main directory of unixcw.
+
+*Expected result*
+1. Distribution package is built correctly
+2. Unit tests in distribution package pass.
+
+*Actual result*
+
+
+
+**** TODO ./configure flags
+
+Test that all flags supported by ./configure script produce "buildable" code.
+
+*Steps*
+Run ./qa/test_configure_flags.sh
+
+*Expected result*
+
+The script should not report any failure.
+
+Example of failed test:
+
+$ qa/test_configure_flags.sh
+128: ./configure --enable-dev --disable-xcwcp --disable-cwcp --disable-pulseaudio --disable-alsa --disable-oss --disable-console &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+Test of configuration flags FAILED
+$ echo $?
+255
+
+Example of successful test:
+
+$ qa/test_configure_flags.sh
+128: ./configure --enable-dev --disable-xcwcp --disable-cwcp --disable-pulseaudio --disable-alsa --disable-oss --disable-console &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+127: ./configure --enable-dev --disable-xcwcp --disable-cwcp --disable-pulseaudio --disable-alsa --disable-oss &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+126: ./configure --enable-dev --disable-xcwcp --disable-cwcp --disable-pulseaudio --disable-alsa --disable-console &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+[...]
+3: ./configure --disable-oss &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+2: ./configure --disable-console &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+1: ./configure &>/dev/null && make &>/dev/null && make check &>/dev/null && make clean &>/dev/null
+Test of configuration flags SUCCEEDED
+
+
+*Notes*
+The shell script may not work on systems without bash.
+
+*Actual result*
+
+
+*** TODO unit tests
+Tests implemented in tests/unit_tests.
+
+*Steps*
+1. ./configure
+2. make check
+
+*Expected result*
+All tests should be "PASS"
+
+PASS: tests/unit_tests/utils
+============================================================================
+Testsuite summary for cwdaemon 0.12.0
+============================================================================
+# TOTAL: 1
+# PASS:  1
+# SKIP:  0
+# XFAIL: 0
+# FAIL:  0
+# XPASS: 0
+# ERROR: 0
+============================================================================
+
+*Actual result*
+
+
+
+*** TODO functional tests
+
+**** TODO Tests written in Perl
+
+
+Execute each and every perl script in tests/ directory.
+
+*Preconditions*
+cwdaemon must be working, running on default port, with PulseAudio.
+./src/cwdaemon -n -x p
+
+*Expected result*
+All tests pass
+
+*Actual result*
+
+***** TODO tests/cwtest.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+***** TODO tests/cwtest_esc2.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esc3.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esc5.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esc64.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esc7.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esc8.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_esca.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_escc.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_escd.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_escf.pl
+
+For this test you may want to start cwdaemon with "info" log level, to see
+information about switching of sound system:
+./src/cwdaemon -n -x p -y i
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_escg.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/cwtest_short_space.pl
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+
+**** TODO Tests written in C
+
+Execute each and every binary in tests/test_00X*. Run each of them manually
+to see the debugs printed in console.
+
+*Preconditions*
+1. Plug in USB/tty converter to USB socket.
+2. ./configure --enable-cwdaemon-tests
+3. make check (fix compiler error about files from unixcw)
+
+
+*Expected result*
+All tests pass
+
+*Actual result*
+
+
+
+***** TODO tests/test_001_basic_process_control
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/test_002_reset_register_callback
+*Expected result*
+Test passes
+
+*Actual result*
+
+
+
+***** TODO tests/test_003_cwdevice_tty_line_options
+*Expected result*
+Test passes
+
+*Actual result*
+
+
 
