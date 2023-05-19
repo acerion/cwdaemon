@@ -222,7 +222,7 @@ to see the debugs printed in console.
 
 *Preconditions*
 1. Plug in USB/tty converter to USB socket.
-2. ./configure --enable-cwdaemon-tests
+2. ./configure --enable-functional-tests
 3. make check (fix compiler error about files from unixcw)
 
 
@@ -259,15 +259,15 @@ Test passes
 
 
 * STARTED Tests for cwdaemon version 0.12.0
-** DONE Debian GNU/Linux 11
+** STARTED Debian GNU/Linux 11
 
 OS: Debian GNU/Linux 11.7, x86_64
 C compiler: gcc (Debian 10.2.1-6) 10.2.1 20210110
 libc: 2.31-13+deb11u6
 libcw: 3.5.1-4
 
-*** DONE Build system tests
-**** DONE make distcheck
+*** STARTED Build system tests
+**** TODO make distcheck
 *Steps*
 Run "make distcheck" in main directory of unixcw.
 
@@ -488,7 +488,7 @@ to see the debugs printed in console.
 
 *Preconditions*
 1. Plug in USB/tty converter to USB socket.
-2. ./configure --enable-cwdaemon-tests
+2. ./configure --enable-functional-tests
 3. make check (fix compiler error about files from unixcw)
 
 
@@ -523,15 +523,15 @@ Test passes
 Pass
 
 
-** TODO <Machine/OS identifier>
+** STARTED Alpine Linux 3.17
 <Additional info about machine, OS, libs, compiler>
-OS:
-C compiler:
-libc:
-libcw:
+OS: Alpine Linux 3.17, x86_64
+C compiler: gcc (Alpine 12.2.1_git20220924-r4) 12.2.1 20220924
+libc: musl-1.2.3-r4
+libcw: 7.0.0
 
-*** TODO Build system tests
-**** TODO make distcheck
+*** STARTED Build system tests
+**** STARTED make distcheck
 *Steps*
 Run "make distcheck" in main directory of unixcw.
 
