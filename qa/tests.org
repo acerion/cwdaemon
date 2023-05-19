@@ -223,7 +223,7 @@ to see the debugs printed in console.
 *Preconditions*
 1. Plug in USB/tty converter to USB socket.
 2. ./configure --enable-cwdaemon-tests
-3. make check
+3. make check (fix compiler error about files from unixcw)
 
 
 *Expected result*
@@ -259,7 +259,7 @@ Test passes
 
 
 * STARTED Tests for cwdaemon version 0.12.0
-** STARTED Debian GNU/Linux 11
+** DONE Debian GNU/Linux 11
 
 OS: Debian GNU/Linux 11.7, x86_64
 C compiler: gcc (Debian 10.2.1-6) 10.2.1 20210110
@@ -345,9 +345,9 @@ Testsuite summary for cwdaemon 0.12.0
 Pass
 
 
-*** STARTED functional tests
+*** DONE functional tests
 
-**** STARTED Tests written in Perl
+**** DONE Tests written in Perl
 
 Execute each and every perl script in tests/ directory.
 
@@ -359,6 +359,7 @@ src/cwdaemon -n -x p
 All tests pass
 
 *Actual result*
+Pass
 
 ***** DONE tests/cwtest.pl
 
@@ -448,7 +449,7 @@ Bugs R0006 and R0007 have been added to README.dev.org. They don't have an
 impact on end-user experience, so they will be fixed in future.
 
 
-***** TODO tests/cwtest_escf.pl
+***** DONE tests/cwtest_escf.pl
 
 For this test you may want to start cwdaemon with "info" log level, to see
 information about switching of sound system:
@@ -459,27 +460,28 @@ information about switching of sound system:
 Test passes
 
 *Actual result*
+Pass
 
 
 
-***** TODO tests/cwtest_escg.pl
+***** DONE tests/cwtest_escg.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/cwtest_short_space.pl
+***** DONE tests/cwtest_short_space.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
 
-
-**** TODO Tests written in C
+**** DONE Tests written in C
 
 Execute each and every binary in tests/test_00X*. Run each of them manually
 to see the debugs printed in console.
@@ -487,37 +489,38 @@ to see the debugs printed in console.
 *Preconditions*
 1. Plug in USB/tty converter to USB socket.
 2. ./configure --enable-cwdaemon-tests
-3. make check
+3. make check (fix compiler error about files from unixcw)
 
 
 *Expected result*
 All tests pass
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/test_001_basic_process_control
+***** DONE tests/test_001_basic_process_control
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/test_002_reset_register_callback
+***** DONE tests/test_002_reset_register_callback
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
-
-***** TODO tests/test_003_cwdevice_tty_line_options
+***** DONE tests/test_003_cwdevice_tty_line_options
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
 
 
