@@ -1,4 +1,3 @@
 Unit tests for code from src/.
-The unit tests are built in non-recursive fashion from top-level Makefile.
 
 Use "make check" in top-level dir to run the tests.

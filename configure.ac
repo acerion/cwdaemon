@@ -143,6 +143,24 @@ AC_SUBST(LIBCW_LIBDIR)
 
 
 
+# On Alpine Linux 3.17 using busybox/gzip, the "--best" option doesn't exit,
+# and the "-d" and "-{1-9}" don't mix well.
+#
+# case 'cwdaemon-0.12.0.tar.gz' in \
+#*.tar.gz*) \
+#  eval GZIP= gzip --best -dc cwdaemon-0.12.0.tar.gz | ${TAR-tar} xf - ;;\
+#*.tar.bz2*) \
+#  bzip2 -dc cwdaemon-0.12.0.tar.bz2 | ${TAR-tar} xf - ;;\
+# [...[
+#esac
+#gzip: unrecognized option: best
+my_gzip_env="--best"
+if gzip --best -d 2>&1 | grep "unrecognized" > /dev/null; then
+   my_gzip_env=""
+fi
+AC_SUBST(GZIP_ENV, $my_gzip_env)
+
+
 
 AC_CONFIG_FILES([Makefile
 	src/Makefile
@@ -151,6 +169,7 @@ AC_CONFIG_FILES([Makefile
 	doc/cwdaemon.8
 	cwdaemon.spec
 	tests/Makefile
+	tests/unit_tests/Makefile
 	tests/library/Makefile
 	tests/test_001_basic_process_control/Makefile
 	tests/test_002_reset_register_callback/Makefile
