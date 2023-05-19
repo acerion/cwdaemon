@@ -1,14 +1,22 @@
+# https://ftp.gnu.org/old-gnu/Manuals/automake-1.6.1/html_node/automake_5.html
+#
+# "The special prefix `check' indicates that the objects in question should
+# not be built until the make check command is run. Those objects are not
+# installed either."
+
+.PHONY: check
+
 # no header from this dir should be installed
-noinst_HEADERS = cw_rec_utils.h       \
-                 key_source.h         \
-                 key_source_serial.h  \
-                 misc.h               \
-                 process.h            \
-                 socket.h             \
-                 test_env.h
+check_HEADERS = cw_rec_utils.h       \
+                key_source.h         \
+                key_source_serial.h  \
+                misc.h               \
+                process.h            \
+                socket.h             \
+                test_env.h
 
 # convenience library
-noinst_LIBRARIES = lib_tests.a
+check_LIBRARIES = lib_tests.a
 
 lib_tests_a_SOURCES = cw_rec_utils.c       \
                       key_source.c         \
