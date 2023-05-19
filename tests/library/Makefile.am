@@ -8,15 +8,15 @@ noinst_HEADERS = cw_rec_utils.h       \
                  test_env.h
 
 # convenience library
-noinst_LIBRARIES = lib_cwdaemon_tests.a
+noinst_LIBRARIES = lib_tests.a
 
-lib_cwdaemon_tests_a_SOURCES = cw_rec_utils.c       \
-                               key_source.c         \
-                               key_source_serial.c  \
-                               misc.c               \
-                               process.c            \
-                               socket.c             \
-                               test_env.c
+lib_tests_a_SOURCES = cw_rec_utils.c       \
+                      key_source.c         \
+                      key_source_serial.c  \
+                      misc.c               \
+                      process.c            \
+                      socket.c             \
+                      test_env.c
 
-lib_cwdaemon_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
+lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 

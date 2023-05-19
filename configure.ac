@@ -111,19 +111,20 @@ CFLAGS="${CFLAGS} -std=c99"
 
 
 
-# Build tests? No by default.
-AC_ARG_ENABLE(cwdaemon_tests,
-    AS_HELP_STRING([--enable-cwdaemon-tests], [enable cwdaemon tests]),
+# Build functional tests? No by default.
+AC_ARG_ENABLE(functional_tests,
+    AS_HELP_STRING([--enable-functional-tests], [enable functional tests]),
     [],
-    [enable_cwdaemon_tests=no])
+    [enable_functional_tests=no])
 
 AC_MSG_CHECKING([whether to build cwdaemon tests])
-if test x$enable_cwdaemon_tests = xyes ; then
+if test x$enable_functional_tests = xyes ; then
     AC_MSG_RESULT(yes)
 else
     AC_MSG_RESULT(no)
 fi
-AM_CONDITIONAL([CWDAEMON_TESTS], [test x$enable_cwdaemon_tests = xyes])
+AM_CONDITIONAL([FUNCTIONAL_TESTS], [test x$enable_functional_tests = xyes])
+AC_SUBST(FUNCTIONAL_TESTS)
 
 
 
@@ -169,8 +170,8 @@ AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
 AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
 AC_MSG_NOTICE([  LIBCW_CFLAGS: .............  $LIBCW_CFLAGS])
 AC_MSG_NOTICE([  CFLAGS:  ..................  $CFLAGS])
-if test x$enable_cwdaemon_tests = xyes ; then
-    AC_MSG_NOTICE([  enable tests: .............  yes])
+if test x$enable_functional_tests = xyes ; then
+    AC_MSG_NOTICE([  enable functional tests: ..  yes])
     AC_MSG_NOTICE([  test cwdevice name: .......  $TEST_CWDEVICE_NAME])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])
