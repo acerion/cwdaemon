@@ -120,3 +120,36 @@ Testing cwdaemon with both 0.031000 and 0.096100, or with 264.396222 and
 819.628287 doesn't bring much value. The set of values should be
 re-evaluated.
 
+** TODO R0009: Feature: duration of functional tests
+
+Execution time of each functional test (and in future of non-functional test)
+should be:
+
+1. Measured during execution of a test binary (e.g. by subtracting uptime at
+   end from uptime at start); the value should be displayed at the end of test.
+2. The value should be also recorded in qa/tests.org, so that it's possible
+   to estimate duration of functional tests in total.
+3. The value should be then also displayed at the beginning of each
+   functional test, to give tester some expectation for duration of test.
+
+** TODO R0010: Feature: clear indication of results of tests
+
+Each test case in each type of test (functional, non-functional, unit test)
+should clearly and explicitly indicate PASS or FAIL result in output printed
+to console.
+
+Tester should always be unambiguously informed about PASS/FAIL result. He
+should not be forced to read sentences in logs, he should be able to evaluate
+tests' results just by looking at PASS/FAIL indicator in output of logs.
+
+** IN-PROGRESS R0011: Feature: unify handling of short and long command line options
+
+Handling of the short and long options is duplicated between
+cwdaemon_args_process_short() and cwdaemon_args_process_long().
+
+The unification has already started for "-o"/"--options" command line option:
+you can see in cwdaemon_args_long[] that the fourth field of 'struct option'
+is set to 'o', and that the option is handled by call to
+cwdaemon_params_options() only in cwdaemon_args_process_short().
+
+
