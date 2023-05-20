@@ -1,5 +1,4 @@
 #+TODO: TODO STARTED FAILED | DONE SKIPPED
-
 # The vertical bar indicates which states are final states.
 
 * TODO Template for tests plan for cwdaemon version X
@@ -130,7 +129,10 @@ Testsuite summary for cwdaemon 0.12.0
 Execute each and every perl script in tests/ directory.
 
 *Preconditions*
-cwdaemon must be working, running on default port, with PulseAudio.
+
+cwdaemon must be started (automatically or manually), running on default
+port, with <platform's preferred sound system>.
+
 ./src/cwdaemon -n -x p
 
 *Expected result*
@@ -163,8 +165,17 @@ Test passes
 
 
 ***** TODO tests/cwtest_esc5.pl
+
+*Notes*
+Start cwdamon with 'info' threshold for logs to see a log about exiting:
+
+./src/cwdaemon -n -x p -y i
+
 *Expected result*
-Test passes
+1. These logs are visible in console:
+  [INFO ] cwdaemon: escaped request: "<ESC>5"
+  [INFO ] cwdaemon: requested exit of daemon
+2. cwdaemon exits after receiving "<ESC>5" request.
 
 *Actual result*
 
@@ -187,12 +198,22 @@ Test passes
 
 
 ***** TODO tests/cwtest_esc8.pl
+
+*Notes*
+
+Make sure that user with which cwdaemon is running is in a group which has
+"rw" permissions for /dev/ttyS0. The test checks different devices, and one
+of devices should be a valid, accessible tty device. ttyS0 is such a device
+(unless you plugged in an USB-to-serial converter and ttyUSB0 is also
+available).
+
 *Expected result*
-Test passes
+
+1. cwdaemon doesn't crash when is asked to access different keying devices,
+   including non-existent ones.
+2. Test program passes.
 
 *Actual result*
-
-
 
 ***** TODO tests/cwtest_esca.pl
 *Expected result*
@@ -287,9 +308,6 @@ Test passes
 Test passes
 
 *Actual result*
-
-
-
 
 * STARTED Tests for cwdaemon version 0.12.0
 ** STARTED Debian GNU/Linux 11
@@ -589,16 +607,15 @@ Test passes
 *Actual result*
 Pass
 
-
-** STARTED Alpine Linux 3.17
+** DONE Alpine Linux 3.17
 <Additional info about machine, OS, libs, compiler>
 OS: Alpine Linux 3.17, x86_64
 C compiler: gcc (Alpine 12.2.1_git20220924-r4) 12.2.1 20220924
 libc: musl-1.2.3-r4
 libcw: 7.0.0
 
-*** STARTED Build system tests
-**** STARTED make distcheck
+*** DONE Build system tests
+**** DONE make distcheck
 *Steps*
 Run "make distcheck" in main directory of unixcw.
 
@@ -607,10 +624,9 @@ Run "make distcheck" in main directory of unixcw.
 2. Unit tests in distribution package pass.
 
 *Actual result*
+Pass
 
-
-
-**** TODO ./configure flags
+**** SKIPPED ./configure flags
 
 Test that all flags supported by ./configure script produce "buildable" code.
 
@@ -646,9 +662,9 @@ Test of configuration flags SUCCEEDED
 The shell script may not work on systems without bash.
 
 *Actual result*
+Skipped. The package is not ready yet for this test.
 
-
-**** TODO regresion with make distcheck
+**** DONE regresion with make distcheck
 
 Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
 
@@ -679,9 +695,9 @@ make distcheck  # <---- In this step a compilation error was occurring
 Distribution archive is created correctly.
 
 *Actual result*
+Pass
 
-
-*** TODO unit tests
+*** DONE unit tests
 Tests implemented in tests/unit_tests.
 
 *Steps*
@@ -705,18 +721,18 @@ Testsuite summary for cwdaemon 0.12.0
 ============================================================================
 
 *Actual result*
+Pass
 
-
-
-*** TODO functional tests
-
-**** TODO Tests written in Perl
-
+*** DONE functional tests
+**** DONE Tests written in Perl
 
 Execute each and every perl script in tests/ directory.
 
 *Preconditions*
-cwdaemon must be working, running on default port, with PulseAudio.
+
+cwdaemon must be started (automatically or manually), running on default
+port, with PulseAudio.
+
 ./src/cwdaemon -n -x p
 
 *Expected result*
@@ -724,87 +740,98 @@ All tests pass
 
 *Actual result*
 
-***** TODO tests/cwtest.pl
+***** DONE tests/cwtest.pl
 
 *Expected result*
 Test passes
 
 *Actual result*
+Pass (2 cycles)
 
-
-***** TODO tests/cwtest_esc2.pl
+***** DONE tests/cwtest_esc2.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_esc3.pl
+***** DONE tests/cwtest_esc3.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
+***** DONE tests/cwtest_esc5.pl
 
+*Notes*
+Start cwdamon with 'info' threshold for logs to see a log about exiting:
 
-***** TODO tests/cwtest_esc5.pl
+./src/cwdaemon -n -x p -y i
+
+*Expected result*
+1. These logs are visible in console:
+  [INFO ] cwdaemon: escaped request: "<ESC>5"
+  [INFO ] cwdaemon: requested exit of daemon
+2. cwdaemon exits after receiving "<ESC>5" request.
+
+*Actual result*
+Pass
+
+***** DONE tests/cwtest_esc64.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_esc64.pl
+***** DONE tests/cwtest_esc7.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
+***** DONE tests/cwtest_esc8.pl
 
+*Notes*
 
-***** TODO tests/cwtest_esc7.pl
+Make sure that user with which cwdaemon is running is in a group which has
+"rw" permissions for /dev/ttyS0. The test checks different devices, and one
+of devices should be a valid, accessible tty device. ttyS0 is such a device
+(unless you plugged in an USB-to-serial converter and ttyUSB0 is also
+available).
+
+*Expected result*
+
+1. cwdaemon doesn't crash when is asked to access different keying devices,
+   including non-existent ones.
+2. Test program passes.
+
+*Actual result*
+
+***** DONE tests/cwtest_esca.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_esc8.pl
+***** DONE tests/cwtest_escc.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_esca.pl
+***** DONE tests/cwtest_escd.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_escc.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_escd.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_escf.pl
+***** DONE tests/cwtest_escf.pl
 
 For this test you may want to start cwdaemon with "info" log level, to see
 information about switching of sound system:
@@ -814,34 +841,30 @@ information about switching of sound system:
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_escg.pl
+***** DONE tests/cwtest_escg.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/cwtest_short_space.pl
+***** DONE tests/cwtest_short_space.pl
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-
-**** TODO Tests written in C
+**** DONE Tests written in C
 
 Execute each and every binary in tests/test_00X*. Run each of them manually
 to see the debugs printed in console.
 
 *Preconditions*
 1. Plug in USB/tty converter to USB socket.
-2. ./configure --enable-cwdaemon-tests
+2. ./configure --enable-functional-tests
 3. make check (fix compiler error about files from unixcw)
 
 
@@ -849,30 +872,27 @@ to see the debugs printed in console.
 All tests pass
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/test_001_basic_process_control
+***** DONE tests/test_001_basic_process_control
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/test_002_reset_register_callback
+***** DONE tests/test_002_reset_register_callback
 *Expected result*
 Test passes
 
 *Actual result*
+Pass
 
-
-
-***** TODO tests/test_003_cwdevice_tty_line_options
+***** DONE tests/test_003_cwdevice_tty_line_options
 *Expected result*
 Test passes
 
 *Actual result*
-
+Pass
 
 
