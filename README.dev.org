@@ -1,4 +1,5 @@
-* Build and test env
+#+TODO: TODO IN-PROGRESS | DONE WONT-DO
+* Build and test environments
 ** Packages to install
 
 *** Any Operating System
@@ -25,7 +26,7 @@ One example of a different behaviour is accessing PulseAudio: cwdaemon
 started by hand by developer has no problems with opening PulseAudio sink,
 but when started as system service by systemd, it can't open PulseAudio sink.
 
-* RULES
+* Terminology and conventions for code and documentation
 
 You SHOULD use "command line",
 You MUST NOT use "commandline".
