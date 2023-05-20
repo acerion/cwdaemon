@@ -45,9 +45,19 @@ my $request_code = '8';       # Code of Escape request
 my $cycles = 5;               # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";         # Text to be played
-# Some of the devices may be valid at time of execution, other may be
-# invalid.
-my $devices = "null,/dev/ttyUSB0,/dev/tty7,ttyUSB0,/dev/nonexistent";
+
+# Mix of devices:
+# - non-existent devices,
+# - non-tty devices,
+# - devices not accessible to user (wrong permissions),
+# - valid tty devices with proper permissions.
+#
+# ttyS0 should be always present on test machine. Make sure that user with
+# which cwdaemon is started has permissions to access the device.
+#
+# ttyUSB0 may or may not be present, depending on whether you plugged
+# USB-to-serial converter to USB socket.
+my $devices = "ttyS0,null,/dev/ttyUSB0,/dev/tty7,/tmp,ttyUSB0,/dev/nonexistent,/dev/ttyS0";
 
 
 my $result = GetOptions("cycles=i"       => \$cycles,
