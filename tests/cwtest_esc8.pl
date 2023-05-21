@@ -57,7 +57,11 @@ my $input_text = "p";         # Text to be played
 #
 # ttyUSB0 may or may not be present, depending on whether you plugged
 # USB-to-serial converter to USB socket.
-my $devices = "ttyS0,null,/dev/ttyUSB0,/dev/tty7,/tmp,ttyUSB0,/dev/nonexistent,/dev/ttyS0";
+#
+# cuau0 exists on FreeBSD
+#
+# TODO: what about parallel-port devices?
+my $devices = "ttyS0,null,/dev/ttyUSB0,/dev/tty7,/tmp,cuau0,ttyUSB0,/dev/cuau0,/dev/nonexistent,/dev/ttyS0";
 
 
 my $result = GetOptions("cycles=i"       => \$cycles,
