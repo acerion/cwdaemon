@@ -1,11 +1,11 @@
-cwdaemon 0.12.0 / 2023.05.XX
+cwdaemon 0.12.0 / 2023.05.21
 
 New release. Changes since previous release:
 
 * Making handling of command line options more strict
 
-  cwdaemon is more likely to exit when it discovers unhandled (unrecognized)
-  tokens in command line.
+  cwdaemon is more likely to exit when it discovers unrecognized tokens in
+  command line.
 
   This change is introduced to detect incorrect usage of "-o" command line
   option. Each option for keying device should be passed through separate
@@ -29,7 +29,7 @@ New release. Changes since previous release:
 
   - Small, one-time memory allocation was not followed by deallocation.
   - According to valgrind, a section of code may have relied on uninitialized
-    member of allocated struct..
+    member of allocated struct.
 
 * "cwdaemon -V" now prints information about used libcw library
 
@@ -62,8 +62,7 @@ New release. Changes since previous release:
     are now "[ERROR]", "[WARN ]", "[INFO ]", "[DEBUG]".
   - The messages first show priority tag, and then package name (e.g.
     "[ERROR] cwdaemon: some text").
-  - Format of some messages is now more consistent with most of other
-    messages.
+  - Consistency of format of messages has been improved.
 
 * Adding Doxygen configuration file
 
@@ -72,10 +71,16 @@ New release. Changes since previous release:
   The command compiles and runs unit tests. The unit tests have been added in
   this release to quickly test some functionalities of cwdaemon. The unit
   tests don't require any additional infrastructure (e.g. a keying device)
-  and they don't depend on any additioal libraries or programs. This means
+  and they don't depend on any additional libraries or programs. This means
   that they can be executed anywhere, at any time.
 
   At this moment the unit tests only cover two newly added utility functions.
+
+* Compiling and testing on following platforms:
+
+ - Debian GNU/Linux 11.7, x86_64, gcc 10.2.1, libcw 6.6.1 (unixcw 3.5.1-4)
+ - Alpine Linux 3.17, x86_64, gcc 12.2.1, libcw 7.0.0 (unixcw 3.6.0)
+ - FreeBSD 13.2-RELEASE, amd64, gcc 12.2.0, libcw 7.0.0 (unixcw 3.6.0)
 
 
 ----
