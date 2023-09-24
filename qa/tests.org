@@ -13,15 +13,16 @@ libcw:
 *** TODO Build system tests
 **** TODO make distcheck
 *Steps*
-Run "make distcheck" in main directory of unixcw.
+Run "make distcheck" in main directory of the project.
 
 *Expected result*
-1. Distribution package is built correctly
-2. Unit tests in distribution package pass.
+1. Distribution package is built correctly (no errors during creation of
+   archive).
+2. Automatic tests executed during 'make distcheck' pass.
+3. The distribution package contains all files intended for distribution (use
+   your best judgement here).
 
 *Actual result*
-
-
 
 **** TODO ./configure flags
 
