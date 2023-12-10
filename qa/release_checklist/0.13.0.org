@@ -3,11 +3,21 @@
 Based on https://cdw.sourceforge.net/documentation/release_checklist/release_checklist.html
 
 
-* TODO Review opened tickets
+* DONE Review opened tickets
 
 You may have some plans for current dev cycle, but take a look at opened
 tickets. Maybe there is some high-priority ticket that needs to be included
 in current dev cycle?
+
+DONE:
+
+This release will push forward the following tickets from GitHub:
+https://github.com/acerion/cwdaemon/issues/12
+https://github.com/acerion/cwdaemon/issues/10
+
+This release will push forward the following internal tickets:
+R0012
+R0011
 
 * TODO Define scope of changes to be done in this release
 
@@ -19,7 +29,62 @@ If you plan to fix one of tickets from README.dev.org -> 'Bugs, feature
 requests' list, put the ticket numbers on the list below.
 
 The goals of this development cycle are:
-1.
+
+** TODO Must-haves
+
+*** TODO https://github.com/acerion/cwdaemon/issues/12
+Fix it.
+
+*** TODO Review and prioritize items from README.dev.org
+
+See which items are critical.
+Investigate, clarify and document unclear items.
+
+*** TODO Quality of man page
+Carefully review the man page. Fix typos, omissions, misinformations.
+
+*** TODO fortify-source=2
+Add it to compilation options. Fix issues triggered by this option.
+
+*** TODO Basic tests with valgrind
+
+Define scenarios, scripts, procedures needed to cover - in the long run - all
+code paths with valgrind. The scenarios, scripts and procedures should be
+easy to use in repeatable manner.
+
+Use them at least once in this release. In this release we don't need to
+cover 100% of code, but let's make a start.
+
+*** TODO Basic tests with fuzzing of network socket
+
+Define scenarios, scripts, procedures needed to cover with fuzzing - in the
+long run - all code paths related to network socket. The scenarios, scripts
+and procedures should be easy to use in repeatable manner.
+
+Use them at least once in this release. In this release we don't need to
+cover 100% of the network socket code, but let's make a start.
+
+*** TODO R0012: Static code analysis with clang-tidy
+
+Port .clang-tidy and qa/lint_clang_tidy.sh from unixcw. Start using it
+instead of current qa/clang_tidy.sh script. Fix a bunch of issues reported by
+clang-tidy, but don't try to fix them all just yet. You can leave something
+for next release.
+
+** TODO Nice-to-haves
+
+*** TODO https://github.com/acerion/cwdaemon/issues/10
+Understand it better. Fix if necessary.
+
+*** TODO R0011: move forward with the ticket by fixing/adjusting just one more option
+
+Slowly, one option at a time. The options work so don't try to adjust
+everything at once.
+
+*** TODO Unit tests
+
+Try to find some nice small function or two that is easy to unit-test. Add
+unit tests for the function(s) to cwdaemon test suite.
 
 * TODO Add -Werror to CFLAGS
 During development phase you don't want to introduce any issues that can be
