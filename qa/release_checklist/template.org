@@ -19,7 +19,11 @@ If you plan to fix one of tickets from README.dev.org -> 'Bugs, feature
 requests' list, put the ticket numbers on the list below.
 
 The goals of this development cycle are:
-1.
+
+** TODO Must-haves
+
+
+** TODO Nice-to-haves
 
 * TODO Add -Werror to CFLAGS
 During development phase you don't want to introduce any issues that can be
@@ -44,12 +48,12 @@ the past.
 
 Try to read the lessons learned few times during current development cycle.
 
-* TODO Do the actual coding
+* TODO Do the main work: implement release goals
 
 Do whatever you planned to do for given release (see first point in this
 document).
 
-* TODO Stop coding
+* TODO Stop the work on release goals
 
 Regardless of what you did: fixing bugs, refactoring, adding features,
 reviewing code, you need to be able to say "This is where I need to stop".
@@ -245,6 +249,15 @@ Make sure that:
  - the information is factually correct,
  - the sentences and paragraphs are logically correct.
  - the structures of documents are valid.
+
+* TODO Review initial oscope of the release
+
+Some items from initial scope of the release may not have been implemented
+for one reason or another.
+
+Review the unimplemented items. If any items are still valid, add them as
+tickets to project's list of tickets - you don't want to forget about those
+goals!
 
 * TODO Run a spell check on documentation
 
