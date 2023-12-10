@@ -153,3 +153,16 @@ is set to 'o', and that the option is handled by call to
 cwdaemon_params_options() only in cwdaemon_args_process_short().
 
 
+
+** TODO R0012: Static code analysis with clang-tidy
+
+Add/improve tools and procedures for static code analysis with clang-tidy.
+
+** TODO R0013: Static code analysis with cppcheck
+
+Add/improve tools and procedures for static code analysis with cppcheck.
+
+** TODO R0014: Static code analysis with gcc fanalyse
+
+Add/improve tools and procedures for static code analysis with gcc fanalyse.
+
