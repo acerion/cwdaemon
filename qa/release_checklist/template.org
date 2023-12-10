@@ -1,0 +1,355 @@
+#+TODO: TODO STARTED | DONE SKIPPED
+
+Based on https://cdw.sourceforge.net/documentation/release_checklist/release_checklist.html
+
+
+* TODO Review opened tickets
+
+You may have some plans for current dev cycle, but take a look at opened
+tickets. Maybe there is some high-priority ticket that needs to be included
+in current dev cycle?
+
+* TODO Define scope of changes to be done in this release
+
+Describe them here, and stick to them during the development phase. Don't
+extend the scope unless really necessary (e.g. unless you find a serious
+bug).
+
+If you plan to fix one of tickets from README.dev.org -> 'Bugs, feature
+requests' list, put the ticket numbers on the list below.
+
+The goals of this development cycle are:
+1.
+
+* TODO Add -Werror to CFLAGS
+During development phase you don't want to introduce any issues that can be
+caught by compiler. -Werror will make sure that you will fix them before they
+slip into repo.
+
+* TODO Review 'terminology'
+
+Refresh your knowledge of terminology and conventions for code and
+documentation by reading the related section in README.dev.org.
+
+Do this in order to avoid introducing non-compliant changes in code or
+documentation.
+
+* TODO Review 'lessons learned'
+
+The previous development cycle may have happened a long time ago, and you may
+have forgotten the lessons learned during the previous development cycle.
+
+Refresh the lessons now to avoid making the same mistakes that you made in
+the past.
+
+Try to read the lessons learned few times during current development cycle.
+
+* TODO Do the actual coding
+
+Do whatever you planned to do for given release (see first point in this
+document).
+
+* TODO Stop coding
+
+Regardless of what you did: fixing bugs, refactoring, adding features,
+reviewing code, you need to be able to say "This is where I need to stop".
+Constant making changes in code won't help you "freeze" your code and make a
+release.
+
+* TODO Review changes - quality check
+
+Review changes in code, documentation and other files to catch and fix
+problems, and to do last-minute necessary minor improvements.
+
+Review all changes done since previous release.
+
+Update comments and other documentation.
+
+Update @reviewedon tags in functions' top-level comments while doing the
+review.
+
+Don't be afraid to do refactoring if you notice opportunities or necessity to
+do so.
+
+Try to fix problems that you find during the review - especially those that
+may affect end user.
+
+Note down (as "tickets" in README.dev.org or as TODO/FIXME notes in code) any
+problems that won't be fixed in this release.
+
+* TODO Static code analysis
+
+TODO: some functionalities in the package are disabled by default (mostly the
+debug functionalities). You may want to enable them through ./configure
+before running the static analysis.
+
+These checks should be a part of Continuous Integration pipeline, but:
+1. they are not (yet) (TODO: make them part of CI),
+2. an additional 'manual' check of results should ensure that no serious
+   issues have crept in.
+
+** TODO clang-tidy
+
+Use "run-clang-tidy" wrapper program (should be installed from some Linux
+package). The wrapper will use .clang-tidy config file present in package's
+root dir.
+
+"bear" program should be installed from a Linux package.
+
+1. Prepare the project's source code package for clang-tidy: configure it and
+   build compilation database:
+
+    ./configure --enable-dev-receiver-test --enable-dev-libcw-debugging --enable-dev-pcm-samples-file
+    bear -- make && bear --append -- make check
+
+2. Run clang-tidy:
+
+    run-clang-tidy-11
+
+3. Fix reported issues.
+
+** TODO cppcheck
+
+Use ./qa/lint_cppcheck.sh script to run cppcheck. The script passes some
+options to cppcheck.
+
+"bear" program should be installed from a Linux package.
+
+1. Prepare the project's source code package for validation: configure it and
+   build compilation database:
+
+    ./configure --enable-dev-receiver-test --enable-dev-libcw-debugging --enable-dev-pcm-samples-file
+    bear -- make && bear --append -- make check
+
+2. Run cppcheck:
+
+    ./qa/lint_cppcheck.sh
+
+3. Fix reported issues.
+
+* TODO Come up with new version numbers
+Based on scope of changes that you did, come up with new version number of
+unixcw package and of libcw.
+
+For libcw library remember to obey the rules from
+http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html.
+
+** TODO Update the unixcw package number throughout unixcw package
+ - configure.ac/AC_INIT
+ - NEWS + README files
+ - unixcw-x.y.z.lsm (file name and contents)
+ - ./qa/build_debian_packages.sh/VERSION
+ - man pages of cw, cwgen, cwcp, xcwcp
+ - help text in src/cwcp/cwcp.c
+
+** TODO Update the libcw version number throughout unixcw package
+Also come up with new version number of libcw library and update the number
+in following places:
+ - NEWS + README files
+ - configure.ac/LIBCW_VERSION
+ - contents of misc files in debian dir
+ - names of misc files in debian dir
+ - libcw's man page (or page's template): ./src/libcw/libcw.3.m4
+ - libcw's pkg-config file (or file's template): ./src/libcw/libcw.pc.in
+
+** TODO Build Debian packages
+
+Use a script for building Debian packages (qa/build_debian_packages.sh) to
+catch places that weren't updated correctly.
+
+Inspect the built .deb packages, confirm that version numbers of unixcw and
+of libcw are correct.
+
+* TODO New test scenarios document
+
+Make a properly named copy of qa/test_scenarios/template.org. The name of the
+copy should reflect new version number of the package.
+
+* TODO Synchronize with Debian
+** TODO Get *debian.tar.xz archive
+
+Go to https://packages.debian.org/sid/cw, Download *debian.tar.xz archive.
+
+** TODO Evaluate patches from the archive
+
+You may want to apply them to the package. Update NEWS file with information
+that the patches were applied. This will let Debian team know about it
+because it may affect their workflow.
+
+** TODO Merge debian/
+
+Merge current version of files from debian/ dir in the archive into project's
+repo. Let the configuration of the package in the repo be in sync with
+Debian.
+
+** TODO Run qa/build_debian_packages.sh
+
+Run qa/build_debian_packages.sh to confirm that Debian packages can be built
+more or less correctly. Fix any issues you will find.
+
+** TODO Fix compiler warnings
+
+While running qa/build_debian_packages.sh, pay attention to compiler
+warnings. Debian's build scripts may use different complier flags.
+
+* TODO Remove -Werror from CFLAGS
+At this stage of this list there should be no more changes in code. Remove
+-Werror from CFLAGS because after this stage there should be no occasions on
+which you would introduce problems in code.
+
+You don't want to have -Werror in code that you release: computers on which
+this code will be compiled by your users may have different version of
+compiler, and that compiler may discover some issues. You don't want to break
+compilation on users' computers due to -Werror.
+
+* TODO Make sure that debug and optimization compiler flags are correct
+
+Make sure that CFLAGS of code that is almost ready for release doesn't
+contain "-g -O0". Do this before testing phase so that the code that you test
+has been compiled with options similar to options used for release.
+
+* TODO Do the testing per test scenarios
+
+Test your software using test scenarios that you have created. See if you
+need to repeat some tests on different software/hardware platforms. Write
+down bugs that you have found and fixed, you may want to check for them when
+testing next release, to see if you haven't reintroduced them.
+
+The test scenarios describe both manual and automatic tests.
+
+* TODO Make sure that debug and optimization compiler flags are correct (again)
+
+Make sure that CFLAGS of code that is almost ready for release doesn't
+contain "-g -O0". Do this test for a second time (after testing phase): maybe
+you have added the flags during fixing of some issues found during testing
+phase.
+
+* TODO Review the opened tickets, find fixed ones
+
+Review the list of opened tickets from README.dev.org -> "Buts, feature
+requests". It may happen that some of them have been fixed during your work
+in this development cycle, but you didn't notice it.
+
+Read the list of opened tickets, find the tickets that describe already fixed
+bug or already implemented feature, and close them.
+
+* TODO Review descriptions of changes
+
+Review information about what was changed in current releases:
+ - NEWS file
+ - ChangeLog file
+ - README file
+ - man page files (there are several man pages, check them all)
+
+Make sure that:
+ - the information is factually correct,
+ - the sentences and paragraphs are logically correct.
+ - the structures of documents are valid.
+
+* TODO Run a spell check on documentation
+
+Spell-check user-facing files:
+ - NEWS
+ - README
+ - ChangeLog
+ - man page files (there are several man pages, check them all)
+
+* TODO Localization
+
+If you use gettext or any other tool to facilitate localization of your
+application then generate new file with strings intended for translation,
+spell check it, make sure that all cryptic strings have explanatory comment,
+re-generate the file again if needed.
+
+I'm using gettext and friends in cdw, and I have prepared a small script that
+invokes xgettext, the script is:
+
+    #!/bin/bash
+    xgettext src/*.c src/external_tools/*.c --no-wrap --keyword=_ --keyword=gettext_noop --add-comments=2TRANS: -o po/cdw.pot
+
+All translatable strings are called by "gettext_noop()" or "_()" functions
+("_()" is just an alias for "gettext()").
+
+* TODO Update your website files
+
+If your project has a homepage, update content of website files so that the
+website informs visitors about new release, latest changes and new features.
+Do this now, you may want to reuse some content from files updated in point
+9. Test your website offline if you can. Don't put updated website files
+online yet, there is still some testing to do.
+
+Make sure that contact information available on your website is correct.
+
+* TODO Update date in copyright notices
+
+Update date (year) in the copyright statements like this one in all relevant
+files:
+
+    Copyright (C) 2011-2021  John Doe (email@domain.com)
+
+* TODO Prepare release archive
+
+Prepare tar.gz archive with source code tree that you want to release and
+distribute. If you are using Autotools check "make dist" target, it is very
+convenient.
+
+* TODO Make final test using code from release archive
+
+  1. extract the archive in some temporary directory, outside of your regular
+     development directory;
+
+  2. make a standard build using extracted source code tree, just as any
+     regular user would do;
+
+  3. if your program has any unit tests that can be run by user, run them and
+     make sure that all tests are passed;
+
+  4. run the program that you have just built, check that program starts
+     correctly, that all basic functions are running as expected, that there
+     is no crash or error that would discourage user who is checking your
+     program;
+
+* TODO Make final sanity check test using code from repository
+
+  1. do an anonymous checkout of full source code tree from source code
+     management (SCM) repository. This is to check if your SCM repository is
+     accessible to regular users.
+
+  2. make a standard build using checked out source code tree, just as any
+     regular user would do. This is to make sure that build process will be
+     successful: that there are no source code files or build system files
+     missing in repository.
+
+  You don't have to run tests or run the software and check if it works
+  correctly here. You have already did this in point 12, and code in SCM
+  should be the same as in your release archive.
+
+* TODO Update statuses of issues in issue tracker
+
+If you run any sort of bug or issue tracker, or feature request list, and
+there are any issues affected or addressed by current release, update
+statuses of these items: close them, comment them, update them. Don't let
+fixed bugs be still open in your bug tracking system.
+
+* TODO Publish your release archive with your program
+
+Whether you are using sourceforge.net, tigris.org, Alioth, your own website,
+or any other means of publishing archive with your program, publish an
+archive file with source code of your software.
+
+* TODO Update your website
+
+Now that archive with program is available, you can publish your updated
+website as well. Test the website to make sure that all pages are accessible.
+
+* TODO Tag release in SCM repository
+
+If your source code management repository supports tags, you may want to tag
+this specific snapshot with name of release. If you are SCM wizard, you
+should know what to do in such situations anyway :)
+
+This is a bit of a chicken-and-egg situation: if you tag first and then mark
+this item as DONE, then the tagged commit won't represent a fully closed
+release. But if you change this item to DONE and only then tag a commit, you
+will claim that an item is DONE before it's done :)
+
