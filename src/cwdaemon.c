@@ -187,8 +187,8 @@
 #define CWDAEMON_TUNE_SECONDS_MAX  10 /* Maximal time of tuning. TODO: why the limitation to 10 s? Is it enough? */
 
 
-/* For developer's debugging purposes. */
-//extern cw_debug_t cw_debug_object_dev;
+/* For debugging of libcw used by cwdaemon. */
+extern cw_debug_t cw_debug_object;
 
 
 /* Default values of parameters, may be modified only through
@@ -2396,8 +2396,29 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (libcw_debug_flags) { /* debugging libcw as well */
-		cw_set_debug_flags(libcw_debug_flags);
+	if (0 != libcw_debug_flags) { /* debugging libcw as well */
+
+		cw_debug_set_flags(&cw_debug_object, libcw_debug_flags);
+
+		/* Use the same verbosity for libcw as is configured for cwdaemon. */
+		switch (current_verbosity) {
+		case CWDAEMON_VERBOSITY_E:
+			cw_debug_object.level = CW_DEBUG_ERROR;
+			break;
+		case CWDAEMON_VERBOSITY_W:
+			cw_debug_object.level = CW_DEBUG_WARNING;
+			break;
+		case CWDAEMON_VERBOSITY_I:
+			cw_debug_object.level = CW_DEBUG_INFO;
+			break;
+		case CWDAEMON_VERBOSITY_D:
+			cw_debug_object.level = CW_DEBUG_DEBUG;
+			break;
+		case CWDAEMON_VERBOSITY_N:
+		default:
+			cw_debug_object.level = CW_DEBUG_DEBUG;
+			break;
+		}
 	}
 
 

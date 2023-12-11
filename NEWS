@@ -23,6 +23,15 @@ New release. Changes since previous release:
    * Fixing issues found by clang-tidy.
 
 
+ * Debugging of libcw
+
+   When `-I`/`--libcwflags` option is passed to cwdaemon to enable debugging
+   of specific functionalities in libcw, the threshold of libcw debug
+   messages is set to the threshold currently used by cwdaemon.
+
+   Until now the threshold set for libcw debug messages may have been
+   hardcoded to constant value "NONE", which made debugging of libcw
+   impossible.
 
 ----
 

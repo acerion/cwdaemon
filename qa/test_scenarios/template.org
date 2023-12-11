@@ -310,4 +310,63 @@ Test passes
 
 *Actual result*
 
+**** TODO Manual tests of cwdaemon
+
+***** TODO Command-line options
+
+****** TODO '-I'/'--libcwflags'
+
+Confirm that option that specifies debug flags for libcw is working.
+
+In this test cwdaemon is executed:
+ - in non-daemonized mode to observe console logs;
+ - with null keying device because null device is the lowest common denominator;
+
+
+*Steps*
+
+1. Open connection to cwdaemon.
+
+   nc -u localhost 6789
+   OR
+   nc -u 127.0.0.1 6789
+
+2. Run cwdaemon without the tested flag. Notice the 'd' threshold for cwdaemon.
+
+   ./src/cwdaemon -d null -n -x p -y d
+
+3. Send some characters to cwdaemon with nc.
+
+4. Confirm that cwdaemon's log output shows cwdaemon logs, but doesn't show
+   any libcw logs (because '--libcwflags' option is not provided).
+
+5. Kill cwdaemon started in step 2. Start cwdaemon with '--libcwflags'
+   option. Notice the 'd' (DEBUG) threshold for cwdaemon.
+
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y d
+
+6. Send characters to cwdaemon using nc.
+
+7. Confirm that cwdaemon's log output shows cwdaemon logs and show libcw logs
+   with severity INFO or DEBUG.
+
+8. Kill cwdaemon started in step 4. Start cwdaemon with '--libcwflags'
+   option. Notice the 'w' (WARNING) threshold for cwdaemon.
+
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y w
+
+9. Send characters to cwdaemon using nc.
+
+10. Confirm that cwdaemon's log output shows cwdaemon logs. If there are any
+	libcw logs, the logs have severity only WARNING or ERROR.
+
+*Expected result*
+
+1. libcw logs are visible in cwdaemon's log output only if `--libcwflags`
+   flag is used
+
+2. Threshold for libcw logs depends on value of '-y' flag.
+
+*Actual result*
+
 
