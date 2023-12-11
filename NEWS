@@ -7,6 +7,21 @@ New release. Changes since previous release:
 
    * Fixing issues found in C code by current version of clangd LSP server.
 
+   * Improving procedures/tools/scripting for using clang-tidy. It's now
+     easier to invoke clang-tidy on the code base: clang-tidy is invoked
+     through a script that runs run-clang-tidy. run-clang-tidy requires the
+     presence of compile_commands.json, which needs to be created by manually
+     invoking `bear` command.
+
+   * .clang-tidy config file is now added to root dir of project. There are a
+     lot of excluded checks in the config file, but the list of exclusions
+     will be decreased in future releases.
+
+     The list of exclusions will never become empty because some of checks
+     won't apply to this project.
+
+   * Fixing issues found by clang-tidy.
+
 
 
 ----

@@ -64,7 +64,7 @@ and procedures should be easy to use in repeatable manner.
 Use them at least once in this release. In this release we don't need to
 cover 100% of the network socket code, but let's make a start.
 
-*** TODO R0012: Static code analysis with clang-tidy
+*** STARTED R0012: Static code analysis with clang-tidy
 
 Port .clang-tidy and qa/lint_clang_tidy.sh from unixcw. Start using it
 instead of current qa/clang_tidy.sh script. Fix a bunch of issues reported by
@@ -111,7 +111,7 @@ the past.
 
 Try to read the lessons learned few times during current development cycle.
 
-* TODO Do the main work: implement release goals
+* STARTED Do the main work: implement release goals
 
 Do whatever you planned to do for given release (see first point in this
 document).

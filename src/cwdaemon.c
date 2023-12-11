@@ -858,14 +858,18 @@ void cwdaemon_reset_libcw_output(void)
 
    Parse a string with digits, convert it to a long integer
 
-   \param buf - input buffer with a string
-   \param lvp - pointer to output long int variable
+   \param[in] buf input buffer with a string
+   \param[out] lvp pointer to output long int variable
 
    \return false on failure
    \return true on success
 */
-bool cwdaemon_get_long(const char *buf, long *lvp)
+bool cwdaemon_get_long(const char * buf, long * lvp)
 {
+	if (NULL == buf) {
+		return false;
+	}
+
 	errno = 0;
 
 	char *ep = NULL;
@@ -2061,6 +2065,11 @@ void cwdaemon_params_inc_verbosity(int *verbosity)
 
 bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg)
 {
+	if (NULL == opt_arg) {
+		log_message(LOG_ERR, "Invalid arg while setting verbosity\n");
+		return false;
+	}
+
 	if (!strcmp(opt_arg, "n") || !strcmp(opt_arg, "N")) {
 		*verbosity = CWDAEMON_VERBOSITY_N;
 	} else if (!strcmp(opt_arg, "e") || !strcmp(opt_arg, "E")) {
@@ -2103,6 +2112,11 @@ bool cwdaemon_params_libcwflags(const char * opt_arg)
 
 bool cwdaemon_params_debugfile(const char * opt_arg)
 {
+	if (NULL == opt_arg) {
+		log_message(LOG_ERR, "Invalid arg while setting debug file");
+		return false;
+	}
+
 	if (!strcmp(opt_arg, "syslog")) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "debug output file \"%s\" not implemented yet, try it in later versions of %s",
@@ -2125,6 +2139,11 @@ bool cwdaemon_params_debugfile(const char * opt_arg)
 
 bool cwdaemon_params_system(int *system, const char * opt_arg)
 {
+	if (NULL == system || NULL == opt_arg) {
+		log_message(LOG_ERR, "Invalid arg while setting sound system: %d, %d", !!system, !!opt_arg);
+		return false;
+	}
+
 	if (!strncmp(opt_arg, "n", 1)) {
 		*system = CW_AUDIO_NULL;
 	} else if (!strncmp(opt_arg, "c", 1)) {
