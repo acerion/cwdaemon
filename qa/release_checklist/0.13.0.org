@@ -86,12 +86,14 @@ everything at once.
 Try to find some nice small function or two that is easy to unit-test. Add
 unit tests for the function(s) to cwdaemon test suite.
 
-* TODO Add -Werror to CFLAGS
+* SKIPPED Add -Werror to CFLAGS
 During development phase you don't want to introduce any issues that can be
 caught by compiler. -Werror will make sure that you will fix them before they
 slip into repo.
 
-* TODO Review 'terminology'
+Skipped. cwdaemon code base is not ready yet for -Werror.
+
+* STARTED Review 'terminology'
 
 Refresh your knowledge of terminology and conventions for code and
 documentation by reading the related section in README.dev.org.
@@ -99,7 +101,7 @@ documentation by reading the related section in README.dev.org.
 Do this in order to avoid introducing non-compliant changes in code or
 documentation.
 
-* TODO Review 'lessons learned'
+* STARTED Review 'lessons learned'
 
 The previous development cycle may have happened a long time ago, and you may
 have forgotten the lessons learned during the previous development cycle.
