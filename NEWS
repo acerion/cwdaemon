@@ -20,8 +20,11 @@ New release. Changes since previous release:
      The list of exclusions will never become empty because some of checks
      won't apply to this project.
 
-   * Fixing issues found by clang-tidy.
+   * Fixing issues found by clang-tidy (in cwdaemon code and in code
+     implementing unit and functional tests):
 
+      - clang-diagnostic-deprecated-declarations
+      - clang-analyzer-core.NonNullParamChecker
 
  * Debugging of libcw
 
