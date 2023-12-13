@@ -27,6 +27,7 @@ New release. Changes since previous release:
       - clang-analyzer-core.NonNullParamChecker
       - readability-duplicate-include
       - bugprone-narrowing-conversions
+      - google-readability-casting
 
  * Debugging of libcw
 

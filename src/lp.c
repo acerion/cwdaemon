@@ -398,7 +398,7 @@ lp_footswitch (cwdevice * dev)
 	footswitch = parport_read_data (dev->fd);
 	/* returns decimal 8 if pin 15 is high */
 #endif
-	return (int)((footswitch & 0x08) >> 3);
+	return ((footswitch & 0x08) >> 3);
 	/* bit 0=1 footswitch up, bit 0=0 footswitch down*/
 }
 
