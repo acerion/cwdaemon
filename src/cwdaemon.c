@@ -247,8 +247,11 @@ static bool has_audio_output = false;
    There is a code path suggesting that it was possible to change the
    port using network request, but now this code path is marked as
    "obsolete".
+
+   Using uint16_t because in the end the value is assigned to "in_port_t
+   sin_port", and in_port_t is an alias for uint16_t.
  */
-static int g_network_port = CWDAEMON_NETWORK_PORT_DEFAULT;
+static uint16_t g_network_port = CWDAEMON_NETWORK_PORT_DEFAULT;
 
 
 static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
@@ -378,7 +381,7 @@ static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
 static bool cwdaemon_params_cwdevice(const char * opt_arg);
-static bool cwdaemon_params_network_port(const char * opt_arg, int * port);
+static bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port);
 static bool cwdaemon_params_priority(int *priority, const char * opt_arg);
 static bool cwdaemon_params_wpm(int *wpm, const char * opt_arg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg);
@@ -513,15 +516,18 @@ const char *cwdaemon_debug_ptt_flags(void)
    Function can detect an interrupt from a signal, and continue sleeping,
    but only once.
 
-   \param us - microseconds to sleep
+   \param[in] usecs microseconds to sleep
 */
-void cwdaemon_udelay(unsigned long us)
+void cwdaemon_udelay(unsigned long usecs)
 {
 	struct timespec time_remainder = { 0 };
 
+	const unsigned long seconds = usecs / CWDAEMON_USECS_PER_SEC;
+	const unsigned long micros  = usecs % CWDAEMON_USECS_PER_SEC;
+
 	struct timespec sleeptime = {
-		.tv_sec  = 0,
-		.tv_nsec = us * 1000
+		.tv_sec  = (long) seconds,
+		.tv_nsec = (long) (micros * 1000)
 	};
 
 	/* TODO 2022.03.11: put the nanosleep in a loop. */
@@ -844,7 +850,7 @@ void cwdaemon_reset_libcw_output(void)
 	cw_set_send_speed(default_morse_speed);
 	cw_set_volume(default_morse_volume);
 	cw_set_gap(0);
-	cw_set_weighting(default_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
+	cw_set_weighting((int) (default_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
 
 	return;
 }
@@ -1123,7 +1129,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		   20/80. This is why you have the calculation
 		   when calling cw_set_weighting(). */
 		if (cwdaemon_params_weighting(&current_weighting, request + 2)) {
-			cw_set_weighting(current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
+			cw_set_weighting((int) (current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
 		}
 		break;
 	case '8': {
@@ -1290,7 +1296,7 @@ void cwdaemon_handle_escaped_request(char *request)
 				   the gap is always zero. */
 				cw_set_gap(0);
 
-				cw_set_weighting(current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX);
+				cw_set_weighting((int) (current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
 			}
 		}
 		break;
@@ -1833,7 +1839,7 @@ void cwdaemon_params_nofork(void)
 }
 
 
-bool cwdaemon_params_network_port(const char * opt_arg, int * port)
+bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(opt_arg, &lv) || lv < 1024 || lv > 65536) {
@@ -1841,7 +1847,7 @@ bool cwdaemon_params_network_port(const char * opt_arg, int * port)
 			       "invalid requested port number: \"%s\"", opt_arg);
 		return false;
 	} else {
-		*port = lv;
+		*port = (uint16_t) lv;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 			       "requested port number: \"%d\"", *port);
 		return true;

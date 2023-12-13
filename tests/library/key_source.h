@@ -83,7 +83,7 @@ typedef struct cw_key_source_t {
 	/* Reference to low-level resource related to key source. It may be
 	   e.g. a polled file descriptor. To be used by source-type-specific
 	   open/close/poll_once functions. */
-	intptr_t source_reference;
+	uintptr_t source_reference;
 
 	/* String representation of key source. For regular devices it will
 	   be a path (e.g. "/dev/ttyS0"). */

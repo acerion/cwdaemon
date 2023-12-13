@@ -22,7 +22,6 @@ Checks: >
   -google-readability-casting,
   -bugprone-reserved-identifier,
   -bugprone-branch-clone,
-  -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
   -bugprone-implicit-widening-of-multiplication-result,
   -android-cloexec-fopen,

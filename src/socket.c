@@ -50,7 +50,7 @@
    \return false on failure
    \return true on success
 */
-bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon, int network_port)
+bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon, uint16_t network_port)
 {
 	memset(&cwdaemon->request_addr, '\0', sizeof (cwdaemon->request_addr));
 	cwdaemon->request_addr.sin_family = AF_INET;
@@ -154,7 +154,7 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
    \return  0 if no request has been received
    \return length of received request otherwise
  */
-int cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
+ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
 {
 	ssize_t recv_rc = recvfrom(cwdaemon->socket_descriptor,
 				   request,

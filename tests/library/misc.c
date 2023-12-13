@@ -285,7 +285,7 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 		   will be no more key events to receive (cwdaemon has
 		   completed toggling tty pin). */
 		char recv_buf[32] = { 0 };
-		const int r = recv(fd, recv_buf, sizeof (recv_buf), MSG_DONTWAIT);
+		const ssize_t r = recv(fd, recv_buf, sizeof (recv_buf), MSG_DONTWAIT);
 		if (-1 != r && 0 == strcmp(recv_buf, expected_reply)) {
 			loop_iters = 0;
 		}
@@ -379,7 +379,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 	   is a process on the other side of socket that behaves like
 	   cwdaemon. */
 	char recv_buf[32] = { 0 };
-	int r = recv(fd, recv_buf, sizeof (recv_buf), 0);
+	const ssize_t r = recv(fd, recv_buf, sizeof (recv_buf), 0);
 	close(fd);
 
 	// TODO (acerion): we should compare recv_buf with requested_reply_value.
