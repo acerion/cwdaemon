@@ -25,6 +25,7 @@ New release. Changes since previous release:
 
       - clang-diagnostic-deprecated-declarations
       - clang-analyzer-core.NonNullParamChecker
+      - readability-duplicate-include
 
  * Debugging of libcw
 
