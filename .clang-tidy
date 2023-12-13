@@ -18,7 +18,6 @@ Checks: >
   -cert-msc30-c,
   -cert-msc50-cpp,
   -cert-env33-c,
-  -google-readability-todo,
   -bugprone-reserved-identifier,
   -bugprone-branch-clone,
   -bugprone-easily-swappable-parameters,

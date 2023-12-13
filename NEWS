@@ -28,6 +28,7 @@ New release. Changes since previous release:
       - readability-duplicate-include
       - bugprone-narrowing-conversions
       - google-readability-casting
+      - google-readability-todo
 
  * Debugging of libcw
 
