@@ -17,6 +17,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
+SUBDIRS = lib
+
 # program(s) to be built in current dir
 sbin_PROGRAMS = cwdaemon
 
