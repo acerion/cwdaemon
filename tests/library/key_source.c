@@ -34,6 +34,7 @@
 
 
 #include "key_source.h"
+#include "src/lib/sleep.h"
 #include "misc.h"
 
 
@@ -91,10 +92,9 @@ static void * key_source_poll_thread(void * arg_key_source)
 			source->new_key_state_cb(source->new_key_state_sink, key_is_down);
 		}
 
-		/* TODO 2022.01.26: use libcw.h/cw_usleep_internal() */
-		int s = usleep_nonintr(source->poll_interval_us);
-		if (s) {
-			fprintf(stderr, "[WW] usleep in key poll was interrupted\n");
+		const int sleep_retv = microsleep_nonintr(source->poll_interval_us);
+		if (sleep_retv) {
+			fprintf(stderr, "[ERROR] error in sleep in key poll\n");
 		}
 	}
 

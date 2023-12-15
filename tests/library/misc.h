@@ -71,21 +71,6 @@ void test_helpers_cleanup(void);
 
 
 
-#define USECS_IN_SECOND (1000 * 1000)
-/**
-   @brief Non-interruptible version of sleep
-
-   Sleep for given value of @p usecs. Notify caller through return value if any
-   signal tried to interrupt the sleep (but function continues to sleep for
-   entire duration of usleep).
-
-   @param[in] usecs Microseconds to sleep
-
-   @return 0 if no interruptions happened during sleeping for @p usecs microseconds
-   @return 1 if one or more interruptions happened during sleeping for @p microseconds
-*/
-int usleep_nonintr(unsigned int usecs);
-
 
 #endif /* #ifndef CWDAEMON_TEST_LIB_MISC_H */
 

@@ -107,6 +107,7 @@
 #include "help.h"
 #include "log.h"
 #include "socket.h"
+#include "lib/sleep.h"
 
 
 
@@ -179,8 +180,6 @@
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 #define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
 
-#define CWDAEMON_USECS_PER_MSEC         1000 /* Just to avoid magic numbers. */
-#define CWDAEMON_USECS_PER_SEC       1000000 /* Just to avoid magic numbers. */
 #define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
@@ -362,7 +361,6 @@ void cwdaemon_reset_libcw_output(void);
 
 /* Utility functions. */
 bool cwdaemon_get_long(const char *buf, long *lvp);
-void cwdaemon_udelay(unsigned long us);
 
 
 
@@ -509,43 +507,6 @@ const char *cwdaemon_debug_ptt_flags(void)
 
 
 
-
-/**
-   \brief Sleep for specified amount of microseconds
-
-   Function can detect an interrupt from a signal, and continue sleeping,
-   but only once.
-
-   \param[in] usecs microseconds to sleep
-*/
-void cwdaemon_udelay(unsigned long usecs)
-{
-	struct timespec time_remainder = { 0 };
-
-	const unsigned long seconds = usecs / CWDAEMON_USECS_PER_SEC;
-	const unsigned long micros  = usecs % CWDAEMON_USECS_PER_SEC;
-
-	struct timespec sleeptime = {
-		.tv_sec  = (long) seconds,
-		.tv_nsec = (long) (micros * 1000)
-	};
-
-	/* TODO 2022.03.11: put the nanosleep in a loop. */
-	if (nanosleep(&sleeptime, &time_remainder) == -1) {
-		if (errno == EINTR) {
-			nanosleep(&time_remainder, NULL);
-		} else {
-			cwdaemon_errmsg("Nanosleep");
-		}
-	}
-
-	return;
-}
-
-
-
-
-
 /**
    \brief Band switch function using LPT port
 
@@ -627,17 +588,17 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 
 
 #if 0
-		int rv = cw_queue_tone(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC, 0);	/* try to 'enqueue' delay */
+		int rv = cw_queue_tone(g_current_ptt_delay_ms * CWDAEMON_MICROSECS_PER_MILLISEC, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {	/* Old libcw may reject freq=0. */
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 				       "cw_queue_tone() failed: rv=%d errno=\"%s\", using udelay() instead",
 				       rv, strerror(errno));
 			/* TODO: wouldn't it be simpler to not to call
-			   cw_queue_tone() and use only cwdaemon_udelay()? */
-			cwdaemon_udelay((unsigned int) (unsigned long) (g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC));
+			   cw_queue_tone() and use only millisleep_nonintr()? */
+			millisleep_nonintr(g_current_ptt_delay_ms);
 		}
 #else
-		cwdaemon_udelay((unsigned int) (unsigned long) (g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC));
+		millisleep_nonintr(g_current_ptt_delay_ms);
 #endif
 
 		ptt_flag |= PTT_ACTIVE_AUTO;
@@ -692,7 +653,7 @@ void cwdaemon_tune(uint32_t seconds)
 
 		/* make it similar to normal CW, allowing interrupt */
 		for (uint32_t i = 0; i < seconds; i++) {
-			cw_queue_tone(CWDAEMON_USECS_PER_SEC, current_morse_tone);
+			cw_queue_tone(CWDAEMON_MICROSECS_PER_SEC, current_morse_tone);
 		}
 
 		cw_send_character('e');	/* append minimal tone to return to normal flow */

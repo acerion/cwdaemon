@@ -53,6 +53,7 @@
 #include "../library/process.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
+#include "src/lib/sleep.h"
 
 
 
@@ -119,9 +120,9 @@ int main(void)
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
-		int s = usleep_nonintr(2 * USECS_IN_SECOND);
-		if (s) {
-			fprintf(stderr, "[WW] usleep in cleanup was interrupted\n");
+		const int sleep_retv = sleep_nonintr(2);
+		if (sleep_retv) {
+			fprintf(stderr, "[ERROR] error during sleep in cleanup\n");
 		}
 
 		/* Now check if test instance of cwdaemon has disappeared as expected. */

@@ -26,5 +26,10 @@ sbin_PROGRAMS = cwdaemon
 cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h utils.c utils.h
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
-# target-specific linker flags (objects to link)
-cwdaemon_LDADD = ${LIBCW_LIBS}
+
+
+# Target-specific linker flags (objects to link). Order is important: first
+# static libraries then dynamic. Otherwise linker may not find symbols from
+# the dynamic library.
+cwdaemon_LDADD = $(top_builddir)/src/lib/libcwdaemon.a ${LIBCW_LIBS}
+

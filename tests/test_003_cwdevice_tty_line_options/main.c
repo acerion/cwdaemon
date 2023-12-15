@@ -49,6 +49,7 @@
 #include "../library/key_source.h"
 #include "../library/key_source_serial.h"
 #include "../library/test_env.h"
+#include "src/lib/sleep.h"
 
 
 
@@ -191,9 +192,9 @@ int main(void)
 		test_helpers_cleanup();
 		/* Terminate this instance of cwdaemon. */
 		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
-		int s = usleep_nonintr(2 * USECS_IN_SECOND);
-		if (s) {
-			fprintf(stderr, "[WW] usleep in cleanup was interrupted\n");
+		const int sleep_retv = sleep_nonintr(2);
+		if (sleep_retv) {
+			fprintf(stderr, "[ERROR] error during sleep in cleanup\n");
 		}
 
 		/* Close socket to test instance of cwdaemon. cwdaemon may be

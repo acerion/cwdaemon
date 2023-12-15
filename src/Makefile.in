@@ -127,7 +127,8 @@ am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 	cwdaemon-utils.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
-cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
+cwdaemon_DEPENDENCIES = $(top_builddir)/src/lib/libcwdaemon.a \
+	$(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -352,8 +353,11 @@ SUBDIRS = lib
 cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h utils.c utils.h
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
-# target-specific linker flags (objects to link)
-cwdaemon_LDADD = ${LIBCW_LIBS}
+
+# Target-specific linker flags (objects to link). Order is important: first
+# static libraries then dynamic. Otherwise linker may not find symbols from
+# the dynamic library.
+cwdaemon_LDADD = $(top_builddir)/src/lib/libcwdaemon.a ${LIBCW_LIBS}
 all: all-recursive
 
 .SUFFIXES:
