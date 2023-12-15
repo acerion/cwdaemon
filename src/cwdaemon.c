@@ -200,7 +200,7 @@ extern cw_debug_t cw_debug_object;
 static int default_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int default_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
-static int default_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
+static int g_default_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
@@ -212,7 +212,7 @@ static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
 static int current_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int current_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
-static int current_ptt_delay    = CWDAEMON_PTT_DELAY_DEFAULT;
+static int g_current_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
@@ -385,7 +385,7 @@ static bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port);
 static bool cwdaemon_params_priority(int *priority, const char * opt_arg);
 static bool cwdaemon_params_wpm(int *wpm, const char * opt_arg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg);
-static int  cwdaemon_params_pttdelay(int *delay, const char * opt_arg);
+static int  cwdaemon_params_pttdelay(int * delay_ms, const char * opt_arg);
 static bool cwdaemon_params_volume(int *volume, const char * opt_arg);
 static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
@@ -621,23 +621,23 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 	/* For backward compatibility it is assumed that ptt_delay=0
 	   means "cwdaemon shouldn't turn PTT on, at all". */
 
-	if (current_ptt_delay && !(ptt_flag & PTT_ACTIVE_AUTO)) {
+	if (g_current_ptt_delay_ms && !(ptt_flag & PTT_ACTIVE_AUTO)) {
 		dev->ptt(dev, ON);
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "%s", info);
 
 
 #if 0
-		int rv = cw_queue_tone(current_ptt_delay * CWDAEMON_USECS_PER_MSEC, 0);	/* try to 'enqueue' delay */
+		int rv = cw_queue_tone(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC, 0);	/* try to 'enqueue' delay */
 		if (rv == CW_FAILURE) {	/* Old libcw may reject freq=0. */
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 				       "cw_queue_tone() failed: rv=%d errno=\"%s\", using udelay() instead",
 				       rv, strerror(errno));
 			/* TODO: wouldn't it be simpler to not to call
 			   cw_queue_tone() and use only cwdaemon_udelay()? */
-			cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
+			cwdaemon_udelay(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC);
 		}
 #else
-		cwdaemon_udelay(current_ptt_delay * CWDAEMON_USECS_PER_MSEC);
+		cwdaemon_udelay(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC);
 #endif
 
 		ptt_flag |= PTT_ACTIVE_AUTO;
@@ -722,7 +722,7 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 	current_morse_tone   = default_morse_tone;
 	current_morse_volume = default_morse_volume;
 	current_audio_system = default_audio_system;
-	current_ptt_delay    = default_ptt_delay;
+	g_current_ptt_delay_ms    = g_default_ptt_delay_ms;
 	current_weighting    = default_weighting;
 
 	/* Right now there is no way to alter current_verbosity after
@@ -1190,7 +1190,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			/* Set PTT delay (TOD, Turn On Delay).
 			   The value is milliseconds. */
 
-			int rv = cwdaemon_params_pttdelay(&current_ptt_delay, request + 2);
+			int rv = cwdaemon_params_pttdelay(&g_current_ptt_delay_ms, request + 2);
 
 			if (rv == 0) {
 				/* Value totally invalid. */
@@ -1218,7 +1218,7 @@ void cwdaemon_handle_escaped_request(char *request)
 					       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 			}
 
-			if (rv && current_ptt_delay == 0) {
+			if (rv && g_current_ptt_delay_ms == 0) {
 				cwdaemon_set_ptt_off(global_cwdevice, "ensure PTT off");
 			}
 		}
@@ -1589,7 +1589,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "priority",    required_argument,       0, 0},  /* Process priority. */
 #endif
 	{ "wpm",         required_argument,       0, 0},  /* Sending speed. */
-	{ "pttdelay",    required_argument,       0, 0},  /* PTT delay. */
+	{ "pttdelay",    required_argument,       0, 0},  /* PTT delay [milliseconds]. */
 	{ "volume",      required_argument,       0, 0},  /* Sound volume. */
 	{ "version",     no_argument,             0, 0},  /* Program's version. */
 	{ "weighting",   required_argument,       0, 0},  /* CW weight. */
@@ -1647,7 +1647,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else if (!strcmp(optname, "pttdelay")) {
-				if (cwdaemon_params_pttdelay(&default_ptt_delay, optarg) != 1) {
+				if (cwdaemon_params_pttdelay(&g_default_ptt_delay_ms, optarg) != 1) {
 					/* When processing command
 					   line arguments we are very
 					   strict, and accept only
@@ -1750,7 +1750,7 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 't':
-		if (cwdaemon_params_pttdelay(&default_ptt_delay, opt_arg) != 1) {
+		if (cwdaemon_params_pttdelay(&g_default_ptt_delay_ms, opt_arg) != 1) {
 			/* When processing command line arguments we
 			   are very strict, and accept only fully
 			   valid opt_arg. */
@@ -1930,21 +1930,21 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg)
 
    When the non-negative value is out of range (larger than limit
    accepted by cwdaemon), the value is clipped to the limit, and put
-   into \p delay. Return value is then 2. Caller of the function may
+   into \p delay_ms. Return value is then 2. Caller of the function may
    then decide to accept or reject the value.
 
    When the non-negative value is in range, the value is put into \p
-   delay, and return value is 1. Caller of the function must accept
+   delay_ms, and return value is 1. Caller of the function must accept
    the value.
 
-   Value passed in \p opt_arg is copied to \p delay only when function
+   Value passed in \p opt_arg is copied to \p delay_ms only when function
    returns 1 or 2.
 
    \return 1 if value of \p opt_arg is acceptable when it was provided as request and as command line argument (i.e. non-negative value in range);
    \return 2 if value of \p opt_arg is acceptable when it was provided as request, but not acceptable when it was provided as command line argument (i.e. non-negative value out of range);
    \return 0 if value of \p opt_arg is not acceptable, regardless how it was provided (i.e. a negative value or invalid value);
 */
-int cwdaemon_params_pttdelay(int *delay, const char * opt_arg)
+int cwdaemon_params_pttdelay(int * delay_ms, const char * opt_arg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(opt_arg, &lv)) {
@@ -1963,7 +1963,7 @@ int cwdaemon_params_pttdelay(int *delay, const char * opt_arg)
 		   some reason in some contexts we aren't very strict
 		   about it. So be it. Just don't allow the value to
 		   be larger than *_MAX limit. */
-		*delay = CWDAEMON_PTT_DELAY_MAX;
+		*delay_ms = CWDAEMON_PTT_DELAY_MAX;
 
 		/* 2 means "Value in general invalid (non-negative,
 		   but out of range), but in some contexts we may be
@@ -1982,10 +1982,10 @@ int cwdaemon_params_pttdelay(int *delay, const char * opt_arg)
 		return 0;
 
 	} else { /* Non-negative, in range. */
-		*delay = (int) lv;
+		*delay_ms = (int) lv;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT delay [ms]: \"%d\"", *delay);
+			       "requested PTT delay [ms]: \"%d\"", *delay_ms);
 
 		/* 1 means "Value valid in all contexts." */
 		return 1;
@@ -2193,7 +2193,7 @@ bool cwdaemon_params_ptt_on_off(const char * opt_arg)
 
 	if (lv) {
 		//global_cwdevice->ptt(global_cwdevice, ON);
-		if (current_ptt_delay) {
+		if (g_current_ptt_delay_ms) {
 			cwdaemon_set_ptt_on(global_cwdevice, "PTT (manual, delay) on");
 		} else {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "PTT (manual, immediate) on");
