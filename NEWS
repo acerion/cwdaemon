@@ -29,6 +29,7 @@ New release. Changes since previous release:
       - bugprone-narrowing-conversions
       - google-readability-casting
       - google-readability-todo
+      - bugprone-implicit-widening-of-multiplication-result
 
  * Debugging of libcw
 

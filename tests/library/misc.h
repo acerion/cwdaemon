@@ -84,7 +84,7 @@ void test_helpers_cleanup(void);
    @return 0 if no interruptions happened during sleeping for @p usecs microseconds
    @return 1 if one or more interruptions happened during sleeping for @p microseconds
 */
-int usleep_nonintr(int usecs);
+int usleep_nonintr(unsigned int usecs);
 
 
 #endif /* #ifndef CWDAEMON_TEST_LIB_MISC_H */

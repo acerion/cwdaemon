@@ -21,7 +21,6 @@ Checks: >
   -bugprone-reserved-identifier,
   -bugprone-branch-clone,
   -bugprone-easily-swappable-parameters,
-  -bugprone-implicit-widening-of-multiplication-result,
   -android-cloexec-fopen,
   -android-cloexec-open,
   -readability-magic-numbers,

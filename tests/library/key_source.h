@@ -72,7 +72,7 @@ typedef struct cw_key_source_t {
 	/* At what intervals to poll key source? [microseconds]. User should
 	   assign KEY_SOURCE_DEFAULT_INTERVAL_US as default value (unless
 	   user wants to poll at different interval. */
-	int poll_interval_us;
+	unsigned int poll_interval_us;
 
 	/* User-provided function function that checks once, at given moment,
 	   if key is down or up, and if ptt is on or off. State of key is
@@ -149,7 +149,7 @@ void cw_key_source_stop(cw_key_source_t * source);
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
-void cw_key_source_configure_polling(cw_key_source_t * source, int poll_interval_us, poll_once_fn_t poll_once_fn);
+void cw_key_source_configure_polling(cw_key_source_t * source, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
 
 
 

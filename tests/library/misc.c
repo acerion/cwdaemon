@@ -409,14 +409,14 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 
 
-int usleep_nonintr(int usecs)
+int usleep_nonintr(unsigned int usecs)
 {
 	bool was_interrupted = false;
 	struct timespec remaining = { 0 };
-	const int sec = usecs / USECS_IN_SECOND;
-	const int usec = usecs % USECS_IN_SECOND;
-	remaining.tv_sec = sec;
-	remaining.tv_nsec = usec * 1000;
+	const unsigned long seconds = usecs / USECS_IN_SECOND;
+	const unsigned long micros  = usecs % USECS_IN_SECOND;
+	remaining.tv_sec  = (long) seconds;
+	remaining.tv_nsec = (long) (micros * 1000);
 
 	int rv = 0;
 	do {

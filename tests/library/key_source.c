@@ -104,7 +104,7 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
-void cw_key_source_configure_polling(cw_key_source_t * source, int interval_us, poll_once_fn_t poll_once_fn)
+void cw_key_source_configure_polling(cw_key_source_t * source, unsigned int interval_us, poll_once_fn_t poll_once_fn)
 {
 	if (0 == interval_us) {
 		source->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;

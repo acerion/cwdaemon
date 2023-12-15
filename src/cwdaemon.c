@@ -200,7 +200,7 @@ extern cw_debug_t cw_debug_object;
 static int default_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int default_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
-static int g_default_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
+static unsigned int g_default_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
@@ -212,7 +212,7 @@ static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
 static int current_morse_speed  = CWDAEMON_MORSE_SPEED_DEFAULT;
 static int current_morse_tone   = CWDAEMON_MORSE_TONE_DEFAULT;
 static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
-static int g_current_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
+static unsigned int g_current_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
 int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
@@ -385,7 +385,7 @@ static bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port);
 static bool cwdaemon_params_priority(int *priority, const char * opt_arg);
 static bool cwdaemon_params_wpm(int *wpm, const char * opt_arg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg);
-static int  cwdaemon_params_pttdelay(int * delay_ms, const char * opt_arg);
+static int  cwdaemon_params_pttdelay(unsigned int * delay_ms, const char * opt_arg);
 static bool cwdaemon_params_volume(int *volume, const char * opt_arg);
 static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
@@ -634,10 +634,10 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 				       rv, strerror(errno));
 			/* TODO: wouldn't it be simpler to not to call
 			   cw_queue_tone() and use only cwdaemon_udelay()? */
-			cwdaemon_udelay(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC);
+			cwdaemon_udelay((unsigned int) (unsigned long) (g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC));
 		}
 #else
-		cwdaemon_udelay(g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC);
+		cwdaemon_udelay((unsigned int) (unsigned long) (g_current_ptt_delay_ms * CWDAEMON_USECS_PER_MSEC));
 #endif
 
 		ptt_flag |= PTT_ACTIVE_AUTO;
@@ -1944,7 +1944,7 @@ bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg)
    \return 2 if value of \p opt_arg is acceptable when it was provided as request, but not acceptable when it was provided as command line argument (i.e. non-negative value out of range);
    \return 0 if value of \p opt_arg is not acceptable, regardless how it was provided (i.e. a negative value or invalid value);
 */
-int cwdaemon_params_pttdelay(int * delay_ms, const char * opt_arg)
+int cwdaemon_params_pttdelay(unsigned int * delay_ms, const char * opt_arg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(opt_arg, &lv)) {
@@ -1982,10 +1982,10 @@ int cwdaemon_params_pttdelay(int * delay_ms, const char * opt_arg)
 		return 0;
 
 	} else { /* Non-negative, in range. */
-		*delay_ms = (int) lv;
+		*delay_ms = (unsigned int) lv;
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested PTT delay [ms]: \"%d\"", *delay_ms);
+			       "requested PTT delay [ms]: \"%u\"", *delay_ms);
 
 		/* 1 means "Value valid in all contexts." */
 		return 1;
