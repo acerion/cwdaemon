@@ -8,10 +8,9 @@
 #include <stdbool.h>
 #include <sys/types.h> /* pid_t */
 
-
-
-
 #include <libcw.h>
+
+#include "client.h"
 
 
 
@@ -25,14 +24,9 @@ typedef struct cwdaemon_process_t {
 
 
 
-/*
-  Structure describing pins of tty cwdevice.
-
-  You can assign TIOCM_RTS and TIOCM_DTR values to these pins.
-*/
 typedef struct {
-	unsigned int pin_keying;  /**< Pin of tty port that is used for keying (sending dots and dashes). */
-	unsigned int pin_ptt;     /**< Pin of tty port that is used for PTT. */
+	unsigned int pin_keying;  /**< tty port pin used for keying. */
+	unsigned int pin_ptt;     /**< tty port pin used for PTT. */
 } tty_pins_t;
 
 
@@ -72,7 +66,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client);
 
 
 
@@ -100,6 +94,20 @@ void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int 
    @return -1 if process didn't exit cleanly and was killed by cwdaemon_process_do_delayed_termination().
 */
 int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon);
+
+
+
+
+/**
+   @brief Stop the local test instance of cwdaemon
+
+   @param cwdaemon Local server to be stopped
+   @param client Client instance to use to communicate with the server
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int local_server_stop(cwdaemon_process_t * cwdaemon, client_t * client);
 
 
 

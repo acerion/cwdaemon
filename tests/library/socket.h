@@ -27,7 +27,6 @@
 
 
 int cwdaemon_socket_connect(const char * address, const char * port);
-int cwdaemon_socket_disconnect(int fd);
 int cwdaemon_socket_send_request(int fd, int request, const char * value);
 
 

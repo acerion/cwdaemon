@@ -95,21 +95,6 @@ int cwdaemon_socket_connect(const char * address, const char * port)
 
 
 
-int cwdaemon_socket_disconnect(int fd)
-{
-	if (fd < 0) {
-		return 0;
-	}
-	if (close(fd) == -1) {
-		perror("close call failed");
-		return -1;
-	}
-	return 0;
-}
-
-
-
-
 int cwdaemon_socket_send_request(int fd, int request, const char * value)
 {
 	char buf[80] = { 0 };

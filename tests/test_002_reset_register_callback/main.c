@@ -79,7 +79,8 @@ int main(void)
 		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 	};
 	cwdaemon_process_t cwdaemon = { 0 };
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
+	client_t client = { 0 };
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		failure = true;
 		goto cleanup;
@@ -119,19 +120,24 @@ int main(void)
 
 
  cleanup:
-	/* This should stop the cwdaemon that runs in background. */
-	cwdaemon_process_do_delayed_termination(&cwdaemon, 100);
-	cwdaemon_process_wait_for_exit(&cwdaemon);
-
-	/* Close socket to the cwdaemon. cwdaemon is stopped, but let's still
-	   try to close socket on our end. */
-	if (cwdaemon.fd >= 0) {
-		cwdaemon_socket_disconnect(cwdaemon.fd);
-		cwdaemon.fd = -1;
+	/* Terminate local test instance of cwdaemon. */
+	if (0 != local_server_stop(&cwdaemon, &client)) {
+		/*
+		  Stopping a server is not a main part of a test, but if a
+		  server can't be closed then it means that the main part of the
+		  code has left server in bad condition. The bad condition is an
+		  indication of an error in tested functionality. Therefore set
+		  failure to true.
+		*/
+		fprintf(stderr, "[ERROR] Failed to correctly stop local test instance of cwdaemon.\n");
+		failure = true;
 	}
 
-
-
+	/*
+	  Close our socket to cwdaemon server. cwdaemon may be stopped, but let's
+	  still try to close socket on our end.
+	*/
+	client_disconnect(&client);
 
 	if (failure) {
 		exit(EXIT_FAILURE);

@@ -112,7 +112,8 @@ am__v_AR_0 = @echo "  AR      " $@;
 am__v_AR_1 = 
 lib_tests_a_AR = $(AR) $(ARFLAGS)
 lib_tests_a_LIBADD =
-am_lib_tests_a_OBJECTS = lib_tests_a-cw_rec_utils.$(OBJEXT) \
+am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
+	lib_tests_a-cw_rec_utils.$(OBJEXT) \
 	lib_tests_a-key_source.$(OBJEXT) \
 	lib_tests_a-key_source_serial.$(OBJEXT) \
 	lib_tests_a-misc.$(OBJEXT) lib_tests_a-process.$(OBJEXT) \
@@ -133,7 +134,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po \
+am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
+	./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po \
 	./$(DEPDIR)/lib_tests_a-key_source.Po \
 	./$(DEPDIR)/lib_tests_a-key_source_serial.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
@@ -298,7 +300,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # no header from this dir should be installed
-check_HEADERS = cw_rec_utils.h       \
+check_HEADERS = client.h             \
+                cw_rec_utils.h       \
                 key_source.h         \
                 key_source_serial.h  \
                 misc.h               \
@@ -309,7 +312,8 @@ check_HEADERS = cw_rec_utils.h       \
 
 # convenience library
 check_LIBRARIES = lib_tests.a
-lib_tests_a_SOURCES = cw_rec_utils.c       \
+lib_tests_a_SOURCES = client.c             \
+                      cw_rec_utils.c       \
                       key_source.c         \
                       key_source_serial.c  \
                       misc.c               \
@@ -366,6 +370,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-client.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-key_source.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-key_source_serial.Po@am__quote@ # am--include-marker
@@ -395,6 +400,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+lib_tests_a-client.o: client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-client.o -MD -MP -MF $(DEPDIR)/lib_tests_a-client.Tpo -c -o lib_tests_a-client.o `test -f 'client.c' || echo '$(srcdir)/'`client.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-client.Tpo $(DEPDIR)/lib_tests_a-client.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='client.c' object='lib_tests_a-client.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-client.o `test -f 'client.c' || echo '$(srcdir)/'`client.c
+
+lib_tests_a-client.obj: client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-client.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-client.Tpo -c -o lib_tests_a-client.obj `if test -f 'client.c'; then $(CYGPATH_W) 'client.c'; else $(CYGPATH_W) '$(srcdir)/client.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-client.Tpo $(DEPDIR)/lib_tests_a-client.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='client.c' object='lib_tests_a-client.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-client.obj `if test -f 'client.c'; then $(CYGPATH_W) 'client.c'; else $(CYGPATH_W) '$(srcdir)/client.c'; fi`
 
 lib_tests_a-cw_rec_utils.o: cw_rec_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cw_rec_utils.o -MD -MP -MF $(DEPDIR)/lib_tests_a-cw_rec_utils.Tpo -c -o lib_tests_a-cw_rec_utils.o `test -f 'cw_rec_utils.c' || echo '$(srcdir)/'`cw_rec_utils.c
@@ -618,7 +637,8 @@ clean: clean-am
 clean-am: clean-checkLIBRARIES clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
+		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-key_source.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
@@ -670,7 +690,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
+		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-key_source.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-key_source_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po

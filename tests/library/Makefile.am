@@ -7,7 +7,8 @@
 .PHONY: check
 
 # no header from this dir should be installed
-check_HEADERS = cw_rec_utils.h       \
+check_HEADERS = client.h             \
+                cw_rec_utils.h       \
                 key_source.h         \
                 key_source_serial.h  \
                 misc.h               \
@@ -18,7 +19,8 @@ check_HEADERS = cw_rec_utils.h       \
 # convenience library
 check_LIBRARIES = lib_tests.a
 
-lib_tests_a_SOURCES = cw_rec_utils.c       \
+lib_tests_a_SOURCES = client.c             \
+                      cw_rec_utils.c       \
                       key_source.c         \
                       key_source_serial.c  \
                       misc.c               \

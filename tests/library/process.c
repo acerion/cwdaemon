@@ -262,7 +262,7 @@ int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon)
 
 
 
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client)
 {
 	const char * path = ROOT_DIR "/src/cwdaemon";
 	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
@@ -284,6 +284,7 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t 
 		fprintf(stderr, "[EE] Failed to connect to cwdaemon socket\n");
 		return -1;
 	}
+	client->sock = cwdaemon->fd;
 
 	return 0;
 }
@@ -355,5 +356,42 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 	env[env_i] = NULL;
 	return 0;
 #undef BUF_SIZE
+}
+
+
+
+
+int local_server_stop(cwdaemon_process_t * server, client_t * client)
+{
+	int retval = 0;
+
+	/*
+	  TODO acerion 2023.12.17: first check if the process with given pid and
+	  process name exists. It's possible that a test has crashed a process.
+	  If it happened, we have to know about it and react to it.
+	*/
+
+	/* First ask nicely for a clean exit. */
+	cwdaemon_socket_send_request(client->sock, CWDAEMON_REQUEST_EXIT, "");
+
+	/* Give the server some time to exit. */
+	const int sleep_retv = sleep_nonintr(2);
+	if (sleep_retv) {
+		fprintf(stderr, "[NOTIC] error during sleep while waiting for local server to exit\n");
+	}
+
+	/* Now check if test instance of cwdaemon has disappeared as expected. */
+	int wstatus = 0;
+	if (0 == waitpid(server->pid, &wstatus, WNOHANG)) {
+		/* Process still exists, kill it. */
+		fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
+		/* The fact that we need to kill cwdaemon with a
+		   signal is a bug. */
+		kill(server->pid, SIGKILL);
+		fprintf(stderr, "[NOTIC] Local test instance of cwdaemon was forcibly killed\n");
+		retval = -1;
+	}
+
+	return retval;
 }
 

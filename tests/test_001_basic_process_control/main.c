@@ -74,6 +74,7 @@ int main(void)
 	const int wpm = 10;
 	bool failure = false;
 	cwdaemon_process_t cwdaemon = { 0 };
+	client_t client = { 0 };
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = "1000",
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -87,7 +88,7 @@ int main(void)
 		.param_ptt    = TIOCM_RTS, /* The default tty line on which ptt is being done. */
 		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 	};
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon)) {
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		failure = true;
 		goto cleanup;
@@ -102,8 +103,9 @@ int main(void)
 
 
 
-	/* Test that a cwdaemon is really started by asking cwdaemon to play
-	   a text and observing the text keyed on serial line port. */
+	/* First part of a test: test that a cwdaemon is really started by asking
+	   cwdaemon to play a text and observing the text keyed on serial line
+	   port. */
 	{
 		if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "paris", false)) {
 			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
@@ -115,7 +117,14 @@ int main(void)
 
 
 
-	/* Test that EXIT request works. */
+	/*
+	  Second part of a test: test that EXIT request works.
+
+	  Notice that the body of next block looks the same as implementation of
+	  local_server_stop(). In this function we use the code explicitly
+	  because we want to test EXIT request and we want to have it plainly
+	  visible in the test code.
+	*/
  cleanup:
 	{
 		/* First ask nicely for a clean exit. */
@@ -131,23 +140,19 @@ int main(void)
 		int wstatus = 0;
 		if (0 == waitpid(cwdaemon.pid, &wstatus, WNOHANG)) {
 			/* Process still exists, kill it. */
-			fprintf(stderr, "[EE] Child cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
+			fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
 			/* The fact that we need to kill cwdaemon with a
 			   signal is a bug. */
 			kill(cwdaemon.pid, SIGKILL);
-			fprintf(stderr, "[EE] cwdaemon was forcibly killed, exiting\n");
+			fprintf(stderr, "[ERROR] Local test instance of cwdaemon was forcibly killed\n");
 			failure = true;
 		}
-
-		/*
-		  Close socket to test instance of cwdaemon. cwdaemon may be
-		  stopped, but let's still try to close socket on our end.
-		*/
-		if (cwdaemon.fd >= 0) {
-			cwdaemon_socket_disconnect(cwdaemon.fd);
-			cwdaemon.fd = -1;
-		}
 	}
+	/*
+	  Close our socket to cwdaemon server. cwdaemon may be stopped, but let's
+	  still try to close socket on our end.
+	*/
+	client_disconnect(&client);
 
 
 
