@@ -56,8 +56,7 @@
 
 typedef struct {
 	const char * description;
-	unsigned int cwdaemon_param_keying;
-	unsigned int cwdaemon_param_ptt;
+	tty_pins_t server_tty_pins;              /**< Configuration of tty pins on cwdevice used by cwdaemon server. */
 	const char * string_to_play;
 	bool expected_failed_receive;
 	unsigned int key_source_param_keying;
@@ -83,8 +82,7 @@ static datum_t g_test_data[] = {
 	   cwdaemon to use default tty lines. Key source is configured to
 	   look at the default line(s) for keying events. */
 	{ .description             = "success case, standard setup with default tty lines options passed to cwdaemon",
-	  .cwdaemon_param_keying   = TIOCM_DTR,
-	  .cwdaemon_param_ptt      = TIOCM_RTS,
+	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
 	  .key_source_param_keying = TIOCM_DTR,
 	  .key_source_param_ptt    = TIOCM_RTS,
@@ -93,9 +91,8 @@ static datum_t g_test_data[] = {
 	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
 	   keying, but a key source (and thus a receiver) is told to look at
 	   RTS for keying events. */
-	{ .description             = "failure case, cwdaemon keying DTR, key source monitoring RTS",
-	  .cwdaemon_param_keying   = TIOCM_DTR,
-	  .cwdaemon_param_ptt      = TIOCM_RTS,
+	{ .description             = "failure case, cwdaemon is keying DTR, key source is monitoring RTS",
+	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
 	  .expected_failed_receive = true,
 	  .key_source_param_keying = TIOCM_RTS,
@@ -105,9 +102,8 @@ static datum_t g_test_data[] = {
 	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
 	   keying, and a key source (and thus a receiver) is told to look
 	   also at RTS for keying events. */
-	{ .description             = "success case, cwdaemon keying RTS, key source monitoring RTS",
-	  .cwdaemon_param_keying   = TIOCM_RTS,
-	  .cwdaemon_param_ptt      = TIOCM_DTR,
+	{ .description             = "success case, cwdaemon is keying RTS, key source is monitoring RTS",
+	  .server_tty_pins         = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .string_to_play          = "paris",
 	  .key_source_param_keying = TIOCM_RTS,
 	  .key_source_param_ptt    = TIOCM_DTR,
@@ -145,8 +141,7 @@ int main(void)
 
 		bool failure = false;
 
-		cwdaemon_opts.param_keying   = datum->cwdaemon_param_keying;
-		cwdaemon_opts.param_ptt      = datum->cwdaemon_param_ptt;
+		cwdaemon_opts.tty_pins = datum->server_tty_pins;
 
 		const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 		const cw_key_source_params_t key_source_params = {

@@ -25,14 +25,26 @@ typedef struct cwdaemon_process_t {
 
 
 
+/*
+  Structure describing pins of tty cwdevice.
+
+  You can assign TIOCM_RTS and TIOCM_DTR values to these pins.
+*/
+typedef struct {
+	unsigned int pin_keying;  /**< Pin of tty port that is used for keying (sending dots and dashes). */
+	unsigned int pin_ptt;     /**< Pin of tty port that is used for PTT. */
+} tty_pins_t;
+
+
+
+
 typedef struct {
 	char tone[10];
 	enum cw_audio_systems sound_system;
 	bool nofork;             /* -n, --nofork; don't fork. */
 	char cwdevice_name[16];  /* Name of a device in /dev/. The name does not include "/dev/" */
 	int wpm;
-	unsigned int param_keying;
-	unsigned int param_ptt;
+	tty_pins_t tty_pins; /**< Configuration of pins of tty port to be used as cwdevice by cwdaemon. */
 
 	/* IP address of machine where cwdaemon is available, If empty, local
 	   IP will be used. */

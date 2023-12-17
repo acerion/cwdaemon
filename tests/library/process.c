@@ -127,7 +127,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			argv[a++] = "-s";
 			argv[a++] = wpm_buf;
 		}
-		switch (opts->param_keying) {
+		switch (opts->tty_pins.pin_keying) {
 		case TIOCM_DTR:
 			argv[a++] = "-o";
 			argv[a++] = "key=dtr";
@@ -139,7 +139,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		default:
 			break;
 		}
-		switch (opts->param_ptt) {
+		switch (opts->tty_pins.pin_ptt) {
 			case TIOCM_DTR:
 			argv[a++] = "-o";
 			argv[a++] = "ptt=dtr";
