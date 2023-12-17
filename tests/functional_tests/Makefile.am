@@ -1,0 +1,4 @@
+.PHONY: check
+
+SUBDIRS = automatic
+

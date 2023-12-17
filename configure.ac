@@ -162,6 +162,7 @@ AC_SUBST(GZIP_ENV, $my_gzip_env)
 
 
 
+
 AC_CONFIG_FILES([Makefile
 	src/Makefile
 	src/lib/Makefile
@@ -171,17 +172,27 @@ AC_CONFIG_FILES([Makefile
 	cwdaemon.spec
 	tests/Makefile
 	tests/unit_tests/Makefile
-	tests/library/Makefile
-	tests/test_001_basic_process_control/Makefile
-	tests/test_002_reset_register_callback/Makefile
-	tests/test_003_cwdevice_tty_line_options/Makefile
 	])
+
+if test "x$enable_functional_tests" = xyes ; then
+   AC_CONFIG_FILES([
+   tests/library/Makefile
+   tests/functional_tests//Makefile
+   tests/functional_tests/automatic/Makefile
+   tests/functional_tests/automatic/request_esc_h/Makefile
+   tests/test_001_basic_process_control/Makefile
+   tests/test_002_reset_register_callback/Makefile
+   tests/test_003_cwdevice_tty_line_options/Makefile
+   ])
+fi
+
 AC_OUTPUT
 
 
 
-# Put this at the very end, so that these are the last lines seen by
-# user on console with low number of rows.
+
+# Put this at the very end, so that these are the last lines seen by user on
+# console.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
 AC_MSG_NOTICE([  operating system:  ........  $host_os])
@@ -190,8 +201,9 @@ AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
 AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
 AC_MSG_NOTICE([  LIBCW_CFLAGS: .............  $LIBCW_CFLAGS])
 AC_MSG_NOTICE([  CFLAGS:  ..................  $CFLAGS])
+AC_MSG_NOTICE([  enable unit tests: ........  yes])
+AC_MSG_NOTICE([  enable functional tests: ..  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
-    AC_MSG_NOTICE([  enable functional tests: ..  yes])
-    AC_MSG_NOTICE([  test cwdevice name: .......  $TEST_CWDEVICE_NAME])
+    AC_MSG_NOTICE([      test cwdevice name: ...  $TEST_CWDEVICE_NAME])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

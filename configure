@@ -6736,7 +6736,14 @@ GZIP_ENV=$my_gzip_env
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/lib/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec tests/Makefile tests/unit_tests/Makefile tests/library/Makefile tests/test_001_basic_process_control/Makefile tests/test_002_reset_register_callback/Makefile tests/test_003_cwdevice_tty_line_options/Makefile"
+
+ac_config_files="$ac_config_files Makefile src/Makefile src/lib/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec tests/Makefile tests/unit_tests/Makefile"
+
+
+if test "x$enable_functional_tests" = xyes ; then
+   ac_config_files="$ac_config_files tests/library/Makefile tests/functional_tests//Makefile tests/functional_tests/automatic/Makefile tests/functional_tests/automatic/request_esc_h/Makefile tests/test_001_basic_process_control/Makefile tests/test_002_reset_register_callback/Makefile tests/test_003_cwdevice_tty_line_options/Makefile"
+
+fi
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7482,6 +7489,9 @@ do
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "tests/unit_tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/unit_tests/Makefile" ;;
     "tests/library/Makefile") CONFIG_FILES="$CONFIG_FILES tests/library/Makefile" ;;
+    "tests/functional_tests//Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests//Makefile" ;;
+    "tests/functional_tests/automatic/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/Makefile" ;;
+    "tests/functional_tests/automatic/request_esc_h/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_esc_h/Makefile" ;;
     "tests/test_001_basic_process_control/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_001_basic_process_control/Makefile" ;;
     "tests/test_002_reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_002_reset_register_callback/Makefile" ;;
     "tests/test_003_cwdevice_tty_line_options/Makefile") CONFIG_FILES="$CONFIG_FILES tests/test_003_cwdevice_tty_line_options/Makefile" ;;
@@ -8217,8 +8227,9 @@ fi
 
 
 
-# Put this at the very end, so that these are the last lines seen by
-# user on console with low number of rows.
+
+# Put this at the very end, so that these are the last lines seen by user on
+# console.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
@@ -8235,11 +8246,13 @@ printf "%s\n" "$as_me:   LIBCW_LIBS:  ..............  $LIBCW_LIBS" >&6;}
 printf "%s\n" "$as_me:   LIBCW_CFLAGS: .............  $LIBCW_CFLAGS" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS:  ..................  $CFLAGS" >&5
 printf "%s\n" "$as_me:   CFLAGS:  ..................  $CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ........  yes" >&5
+printf "%s\n" "$as_me:   enable unit tests: ........  yes" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ..  $enable_functional_tests" >&5
+printf "%s\n" "$as_me:   enable functional tests: ..  $enable_functional_tests" >&6;}
 if test x$enable_functional_tests = xyes ; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ..  yes" >&5
-printf "%s\n" "$as_me:   enable functional tests: ..  yes" >&6;}
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   test cwdevice name: .......  $TEST_CWDEVICE_NAME" >&5
-printf "%s\n" "$as_me:   test cwdevice name: .......  $TEST_CWDEVICE_NAME" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test cwdevice name: ...  $TEST_CWDEVICE_NAME" >&5
+printf "%s\n" "$as_me:       test cwdevice name: ...  $TEST_CWDEVICE_NAME" >&6;}
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
