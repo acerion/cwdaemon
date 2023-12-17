@@ -314,13 +314,16 @@ static unsigned char ptt_flag = 0;
    Perhaps "PTT_ON_REQUEST" would be a better name of the constant. */
 #define PTT_ACTIVE_MANUAL	0x02u
 
-/* Don't turn PTT off until cwdaemon sends back an echo to client.
-   client may request echoing back to it a reply when cwdaemon finishes
-   playing given request. PTT shouldn't be turned off when sending the
-   reply (TODO: why it shouldn't?).
+/* Don't turn PTT off until cwdaemon sends back an echo (reply) to client.
 
-   This flag is set whenever client sends request for sending back a
-   reply (i.e. either <ESC>h request, or caret request).
+   client may request echoing back to it a reply when cwdaemon finishes
+   playing given request. PTT shouldn't be turned off when sending the reply
+   (TODO: why it shouldn't?).
+
+   This flag is set whenever client sends request for sending back a reply
+   through one of the two mechanisms:
+   - using "<ESC>h",
+   - using caret ('^') request.
 
    This flag is re-set whenever such reply is sent (to be more
    precise: after playing a requested text, but just before sending to
