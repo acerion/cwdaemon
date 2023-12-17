@@ -30,7 +30,6 @@
 
 
 static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
-static void * terminate_cwdaemon_fn(void * cwdaemon_arg);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 
@@ -197,71 +196,6 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 
 
-void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms)
-{
-	const int sleep_retv = millisleep_nonintr(delay_ms);
-	if (sleep_retv) {
-		fprintf(stderr, "[ERROR] error in sleep in delayed termination\n");
-	}
-	static pthread_t thread_id;
-	pthread_create(&thread_id, NULL, terminate_cwdaemon_fn, cwdaemon);
-}
-
-
-
-
-static void * terminate_cwdaemon_fn(void * cwdaemon_arg)
-{
-	cwdaemon_process_t * cwdaemon = (cwdaemon_process_t *) cwdaemon_arg;
-
-	/* First ask nicely for a clean exit. */
-	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_EXIT, "");
-
-	/* Give cwdaemon some time to exit cleanly. */
-	const int sleep_retv = sleep_nonintr(2);
-	if (sleep_retv) {
-		fprintf(stderr, "[ERROR] error in sleep in termination\n");
-	}
-
-	int wstatus = 0;
-	if (0 == waitpid(cwdaemon->pid, &wstatus, WNOHANG)) {
-		/* Process still exists, kill it. */
-		fprintf(stderr, "[WW] Child cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
-		/* The fact that we need to kill cwdaemon with a signal is a
-		   bug. It will be detected by a test executable when the
-		   executable calls wait() on child pid. */
-		kill(cwdaemon->pid, SIGKILL);
-	}
-	return NULL;
-}
-
-
-
-
-int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon)
-{
-	int wstatus = 0;
-	pid_t waited_pid = waitpid(cwdaemon->pid, &wstatus, 0);
-	if (waited_pid != cwdaemon->pid) {
-		fprintf(stderr, "[EE] waitpid() returns %d after waiting for child %d\n", waited_pid, cwdaemon->pid);
-		return -1;
-	}
-	if (!! WIFEXITED(wstatus)) {
-		fprintf(stderr, "[II] Child cwdaemon process exited cleanly\n");
-		return 0;
-	} else {
-		const int signaled = WIFSIGNALED(wstatus);
-		fprintf(stderr, "[EE] Child cwdaemon process didn't exit cleanly: WIFSIGNALED = %d\n", signaled);
-		if (signaled) {
-			fprintf(stderr, "[EE] Child cwdaemon process received signal %d\n", WTERMSIG(wstatus));
-		}
-		return -1;
-	}
-}
-
-
-
-
 int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client)
 {
 	const char * path = ROOT_DIR "/src/cwdaemon";
@@ -380,7 +314,7 @@ int local_server_stop(cwdaemon_process_t * server, client_t * client)
 		fprintf(stderr, "[NOTIC] error during sleep while waiting for local server to exit\n");
 	}
 
-	/* Now check if test instance of cwdaemon has disappeared as expected. */
+	/* Now check if test instance of cwdaemon is no longer present, as expected. */
 	int wstatus = 0;
 	if (0 == waitpid(server->pid, &wstatus, WNOHANG)) {
 		/* Process still exists, kill it. */

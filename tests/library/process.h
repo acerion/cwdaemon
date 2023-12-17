@@ -72,42 +72,15 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t 
 
 
 /**
-   @brief Terminate a process after 'delay_ms' milliseconds
-
-   First try to terminate a process by sending to it EXIT request, and if
-   this doesn't work, send a KILL signal.
-
-   The EXIT request is sent after @p delay_ms milliseconds.
-
-   This function is non-blocking.
-*/
-void cwdaemon_process_do_delayed_termination(cwdaemon_process_t * cwdaemon, int delay_ms);
-
-
-
-
-/**
-   Wait for end of cwdaemon to exit. The exit should have been requested by
-   cwdaemon_process_do_delayed_termination().
-
-   @return 0 if process exited cleanly as asked
-   @return -1 if process didn't exit cleanly and was killed by cwdaemon_process_do_delayed_termination().
-*/
-int cwdaemon_process_wait_for_exit(cwdaemon_process_t * cwdaemon);
-
-
-
-
-/**
    @brief Stop the local test instance of cwdaemon
 
-   @param cwdaemon Local server to be stopped
+   @param server Local server to be stopped
    @param client Client instance to use to communicate with the server
 
    @return 0 on success
    @return -1 on failure
 */
-int local_server_stop(cwdaemon_process_t * cwdaemon, client_t * client);
+int local_server_stop(cwdaemon_process_t * server, client_t * client);
 
 
 
