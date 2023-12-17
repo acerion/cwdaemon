@@ -54,19 +54,19 @@
 
 
 
-typedef struct {
-	const char * description;
+typedef struct test_case_t {
+	const char * description;                /**< Tester-friendly description of test case. */
 	tty_pins_t server_tty_pins;              /**< Configuration of tty pins on cwdevice used by cwdaemon server. */
 	const char * string_to_play;
 	bool expected_failed_receive;
 	unsigned int key_source_param_keying;
 	unsigned int key_source_param_ptt;
-} datum_t;
+} test_case_t;
 
 
 
 
-static datum_t g_test_data[] = {
+static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. This is a basic case where cwdaemon is
 	   executed without -o options, so it uses default tty lines. Key
 	   source is configured to look at the default line(s) for keying
@@ -134,19 +134,19 @@ int main(void)
 		.wpm            = wpm,
 	};
 
-	const size_t n = sizeof (g_test_data) / sizeof (g_test_data[0]);
+	const size_t n = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
 	for (size_t i = 0; i < n; i++) {
-		const datum_t * datum = &g_test_data[i];
-		fprintf(stderr, "\n[II] Starting test #%zd: %s\n", i, datum->description);
+		const test_case_t * test_case = &g_test_cases[i];
+		fprintf(stderr, "\n[II] Starting test case #%zd: %s\n", i, test_case->description);
 
 		bool failure = false;
 
-		cwdaemon_opts.tty_pins = datum->server_tty_pins;
+		cwdaemon_opts.tty_pins = test_case->server_tty_pins;
 
 		const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 		const cw_key_source_params_t key_source_params = {
-			.param_keying = datum->key_source_param_keying,
-			.param_ptt    = datum->key_source_param_ptt,
+			.param_keying = test_case->key_source_param_keying,
+			.param_ptt    = test_case->key_source_param_ptt,
 			.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 		};
 		cwdaemon_process_t cwdaemon = { 0 };
@@ -167,17 +167,17 @@ int main(void)
 
 		/* cwdaemon will be now playing given string and will be
 		   keying a specific line on tty
-		   (datum->cwdaemon_param_keying).
+		   (test_case->cwdaemon_param_keying).
 
 		   The key source will be observing a tty line that it was
-		   told to observe (datum->key_source_param_keying) and will
+		   told to observe (test_case->key_source_param_keying) and will
 		   be notifying a receiver about keying events.
 
 		   The receiver should receive the text that cwdaemon was
 		   playing (unless 'expected_failed_receive' is set to
 		   true). */
-		if (0 != client_send_and_receive(&client, datum->string_to_play, datum->expected_failed_receive)) {
-			fprintf(stderr, "[EE] Failed at test of datum #%zd\n", i);
+		if (0 != client_send_and_receive(&client, test_case->string_to_play, test_case->expected_failed_receive)) {
+			fprintf(stderr, "[EE] Failed at test of test_case #%zd\n", i);
 			failure = true;
 			goto cleanup;
 		}
