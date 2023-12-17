@@ -213,12 +213,11 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t 
 	char cwdaemon_port[16] = { 0 };
 	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", cwdaemon->l4_port);
 
-	cwdaemon->fd = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
-	if (cwdaemon->fd < 0) {
+	client->sock = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
+	if (client->sock < 0) {
 		fprintf(stderr, "[EE] Failed to connect to cwdaemon socket\n");
 		return -1;
 	}
-	client->sock = cwdaemon->fd;
 
 	return 0;
 }

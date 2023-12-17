@@ -15,10 +15,11 @@
 
 
 
+/* For now this structure doesn't allow for usage and tests of remote
+   cwdaemon server. */
 typedef struct cwdaemon_process_t {
-	int fd;       /* Socket, on which the process will be reachable. */
-	pid_t pid;    /* pid of cwdaemon process. */
-	int l4_port;  /* Network port, on which cwdaemon has been started and is listening. */
+	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
+	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
 } cwdaemon_process_t;
 
 
