@@ -261,7 +261,7 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 		}
 		loop_iters--;
 		if (0 == loop_iters) {
-			fprintf(stderr, "[NN] Expected reply not received, leaving %s after loop countdown completed\n", __func__);
+			fprintf(stderr, "[NOTIC] Expected reply not received. Terminating the watching CW keying device because loop countdown reached zero.\n");
 		}
 
 		cw_rec_data_t erd = { 0 };
@@ -289,6 +289,7 @@ static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char *
 		char recv_buf[32] = { 0 };
 		const ssize_t r = recv(fd, recv_buf, sizeof (recv_buf), MSG_DONTWAIT);
 		if (-1 != r && 0 == strcmp(recv_buf, expected_reply)) {
+			fprintf(stderr, "[INFO ] Received expected reply from server. Watching of CW keying device is now completed.\n");
 			loop_iters = 0;
 		}
 	} while (loop_iters > 0);
