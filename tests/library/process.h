@@ -25,9 +25,14 @@ typedef struct cwdaemon_process_t {
 
 
 
+/*
+  Structure describing pins of tty cwdevice.
+
+  You can assign TIOCM_RTS and TIOCM_DTR values to these pins.
+*/
 typedef struct {
-	unsigned int pin_keying;  /**< tty port pin used for keying. */
-	unsigned int pin_ptt;     /**< tty port pin used for PTT. */
+	unsigned int pin_keying;  /**< Pin of tty port that is used for keying (sending dots and dashes). */
+	unsigned int pin_ptt;     /**< Pin of tty port that is used for PTT. */
 } tty_pins_t;
 
 
