@@ -46,11 +46,11 @@
 #include "cw_rec_utils.h"
 #include "key_source.h"
 #include "key_source_serial.h"
-#include "src/lib/sleep.h"
-#include "src/lib/random.h"
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
+#include "src/lib/random.h"
+#include "src/lib/sleep.h"
 
 
 

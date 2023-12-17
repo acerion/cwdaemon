@@ -3,25 +3,22 @@
 #include "config.h"
 
 /* For kill() on FreeBSD 13.2 */
-#include <sys/types.h>
 #include <signal.h>
+#include <sys/types.h>
 
 #include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h> /* getenv() */
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stdlib.h> /* getenv() */
 
-
-
-
-#include "src/lib/sleep.h"
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
+#include "src/lib/sleep.h"
 
 
 

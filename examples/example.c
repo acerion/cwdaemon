@@ -31,17 +31,17 @@
 
 #define _POSIX_C_SOURCE 200112L /* getaddrinfo() and friends. */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
 #include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 
 

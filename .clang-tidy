@@ -8,7 +8,6 @@ Checks: >
   -concurrency-mt-unsafe,
   -llvm-else-after-return,
   -llvm-header-guard,
-  -llvm-include-order,
   -llvmlibc-restrict-system-libc-headers,
   -cert-dcl37-c,
   -cert-dcl51-cpp,

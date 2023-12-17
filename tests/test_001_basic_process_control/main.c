@@ -34,8 +34,8 @@
 #define _DEFAULT_SOURCE
 
 /* For kill() on FreeBSD 13.2 */
-#include <sys/types.h>
 #include <signal.h>
+#include <sys/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>
