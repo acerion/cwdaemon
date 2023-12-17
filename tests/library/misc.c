@@ -43,6 +43,7 @@
 
 #include <libcw.h>
 
+#include "client.h"
 #include "cw_rec_utils.h"
 #include "key_source.h"
 #include "key_source_serial.h"
@@ -159,7 +160,7 @@ void test_helpers_cleanup(void)
 
 
 
-int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * message_value, bool expected_failed_receive)
+int client_send_and_receive(client_t * client, const char * message_value, bool expected_failed_receive)
 {
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
 
@@ -169,8 +170,8 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * m
 	   mis-received, so that the main part of text request is received
 	   correctly and can be recognized with strcasestr(). */
 
-	/* This sends a text request to cwdaemon that works in initial state,
-	   i.e. reset command was not sent yet, so cwdaemon should not be
+	/* This sends a text request to cwdaemon server that works in initial
+	   state, i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
 
 	const char * requested_reply_value = "reply";
@@ -182,15 +183,15 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * m
 	/* Ask cwdaemon to send us this reply back after playint text, so
 	   that we don't wait in receive_from_key_source() for longer than
 	   it's necessary to play and key requested text. */
-	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_REPLY, requested_reply_value);
+	client_send_request(client, CWDAEMON_REQUEST_REPLY, requested_reply_value);
 
 	char value[64] = { 0 };
 	snprintf(value, sizeof (value), "start %s", message_value);
-	cwdaemon_socket_send_request(cwdaemon->fd, CWDAEMON_REQUEST_MESSAGE, value);
+	client_send_request(client, CWDAEMON_REQUEST_MESSAGE, value);
 
 
 	char receive_buffer[30] = { 0 };
-	if (0 != receive_from_key_source(cwdaemon->fd, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
+	if (0 != receive_from_key_source(client->sock, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
 		fprintf(stderr, "[EE] Failed to receive from key source\n");
 		return -1;
 	}
@@ -224,9 +225,9 @@ int cwdaemon_play_text_and_receive(cwdaemon_process_t * cwdaemon, const char * m
 
 
 /**
-   Our key source is DTR pin on serial line.
+   Our key source is (by default) DTR pin on serial line.
 
-   The pin is changed by cwdaemon.
+   The state of pin is changed by cwdaemon during keying.
 
    Changes of the pin are polled by key source. Key source calls
    `new_key_state_cb` callback every time it detects change of the pin, i.e.
@@ -377,8 +378,9 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 	const char * requested_message_value = "e";
 	const char * requested_reply_value   = "t";
 
-	cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_REPLY, requested_message_value);
-	cwdaemon_socket_send_request(fd, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
+	client_t client = { .sock = fd };
+	client_send_request(&client, CWDAEMON_REQUEST_REPLY, requested_message_value);
+	client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
 
 	/* Try receiving preconfigured reply. Receiving it means that there
 	   is a process on the other side of socket that behaves like

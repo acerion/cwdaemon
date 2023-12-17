@@ -176,7 +176,7 @@ int main(void)
 		   The receiver should receive the text that cwdaemon was
 		   playing (unless 'expected_failed_receive' is set to
 		   true). */
-		if (0 != cwdaemon_play_text_and_receive(&cwdaemon, datum->string_to_play, datum->expected_failed_receive)) {
+		if (0 != client_send_and_receive(&client, datum->string_to_play, datum->expected_failed_receive)) {
 			fprintf(stderr, "[EE] Failed at test of datum #%zd\n", i);
 			failure = true;
 			goto cleanup;

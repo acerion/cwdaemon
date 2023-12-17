@@ -107,7 +107,7 @@ int main(void)
 	   cwdaemon to play a text and observing the text keyed on serial line
 	   port. */
 	{
-		if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "paris", false)) {
+		if (0 != client_send_and_receive(&client, "paris", false)) {
 			fprintf(stderr, "[EE] cwdaemon is probably not running, exiting\n");
 			failure = true;
 			goto cleanup;
@@ -128,7 +128,7 @@ int main(void)
  cleanup:
 	{
 		/* First ask nicely for a clean exit. */
-		cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_EXIT, "");
+		client_send_request(&client, CWDAEMON_REQUEST_EXIT, "");
 
 		/* Give cwdaemon some time to exit cleanly. */
 		const int sleep_retv = sleep_nonintr(2);

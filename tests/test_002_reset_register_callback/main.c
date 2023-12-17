@@ -98,7 +98,7 @@ int main(void)
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "paris", false)) {
+	if (0 != client_send_and_receive(&client, "paris", false)) {
 		fprintf(stderr, "[EE] failed to send first request, exiting\n");
 		failure = true;
 		goto cleanup;
@@ -106,11 +106,11 @@ int main(void)
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	cwdaemon_socket_send_request(cwdaemon.fd, CWDAEMON_REQUEST_RESET, "");
+	client_send_request(&client, CWDAEMON_REQUEST_RESET, "");
 
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	if (0 != cwdaemon_play_text_and_receive(&cwdaemon, "texas", false)) {
+	if (0 != client_send_and_receive(&client, "texas", false)) {
 		fprintf(stderr, "[EE] Failed to send second request, exiting\n");
 		failure = true;
 		goto cleanup;

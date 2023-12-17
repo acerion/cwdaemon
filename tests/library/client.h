@@ -18,6 +18,11 @@ typedef struct client_t {
 
 
 
+int client_send_request(client_t * client, int request, const char * value);
+
+
+
+
 /**
    @brief Close client's connection to local or remote cwdaemon server
 

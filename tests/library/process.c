@@ -306,7 +306,7 @@ int local_server_stop(cwdaemon_process_t * server, client_t * client)
 	*/
 
 	/* First ask nicely for a clean exit. */
-	cwdaemon_socket_send_request(client->sock, CWDAEMON_REQUEST_EXIT, "");
+	client_send_request(client, CWDAEMON_REQUEST_EXIT, "");
 
 	/* Give the server some time to exit. */
 	const int sleep_retv = sleep_nonintr(2);
