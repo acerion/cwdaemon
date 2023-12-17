@@ -87,7 +87,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = utils$(EXEEXT)
+check_PROGRAMS = random$(EXEEXT) utils$(EXEEXT)
 subdir = tests/unit_tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -99,6 +99,10 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__dirstamp = $(am__leading_dot)dirstamp
+am_random_OBJECTS = $(top_builddir)/src/lib/random-random.$(OBJEXT) \
+	./random-random.$(OBJEXT)
+random_OBJECTS = $(am_random_OBJECTS)
+random_LDADD = $(LDADD)
 am_utils_OBJECTS = ../../src/utils-utils.$(OBJEXT) \
 	./utils-utils.$(OBJEXT)
 utils_OBJECTS = $(am_utils_OBJECTS)
@@ -118,8 +122,10 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ../../src/$(DEPDIR)/utils-utils.Po \
-	./$(DEPDIR)/utils-utils.Po
+am__depfiles_remade =  \
+	$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po \
+	../../src/$(DEPDIR)/utils-utils.Po \
+	./$(DEPDIR)/random-random.Po ./$(DEPDIR)/utils-utils.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -137,8 +143,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(utils_SOURCES)
-DIST_SOURCES = $(utils_SOURCES)
+SOURCES = $(random_SOURCES) $(utils_SOURCES)
+DIST_SOURCES = $(random_SOURCES) $(utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -279,6 +285,8 @@ top_srcdir = @top_srcdir@
 
 # Don't forget to use a relative directory path even for files in current
 # dir.
+random_SOURCES = $(top_builddir)/src/lib/random.c $(top_builddir)/src/lib/random.h ./random.c
+random_CPPFLAGS = -I$(top_srcdir)
 utils_SOURCES = ../../src/utils.c ./utils.c
 utils_CPPFLAGS = -I$(top_srcdir)
 all: all-am
@@ -317,6 +325,26 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
+$(top_builddir)/src/lib/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/lib
+	@: > $(top_builddir)/src/lib/$(am__dirstamp)
+$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/lib/$(DEPDIR)
+	@: > $(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lib/random-random.$(OBJEXT):  \
+	$(top_builddir)/src/lib/$(am__dirstamp) \
+	$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
+./$(am__dirstamp):
+	@$(MKDIR_P) .
+	@: > ./$(am__dirstamp)
+$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ./$(DEPDIR)
+	@: > $(DEPDIR)/$(am__dirstamp)
+./random-random.$(OBJEXT): ./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
+
+random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES) $(EXTRA_random_DEPENDENCIES) 
+	@rm -f random$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(random_OBJECTS) $(random_LDADD) $(LIBS)
 ../../src/$(am__dirstamp):
 	@$(MKDIR_P) ../../src
 	@: > ../../src/$(am__dirstamp)
@@ -325,12 +353,6 @@ clean-checkPROGRAMS:
 	@: > ../../src/$(DEPDIR)/$(am__dirstamp)
 ../../src/utils-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
 	../../src/$(DEPDIR)/$(am__dirstamp)
-./$(am__dirstamp):
-	@$(MKDIR_P) .
-	@: > ./$(am__dirstamp)
-$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ./$(DEPDIR)
-	@: > $(DEPDIR)/$(am__dirstamp)
 ./utils-utils.$(OBJEXT): ./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
 
 utils$(EXEEXT): $(utils_OBJECTS) $(utils_DEPENDENCIES) $(EXTRA_utils_DEPENDENCIES) 
@@ -339,13 +361,16 @@ utils$(EXEEXT): $(utils_OBJECTS) $(utils_DEPENDENCIES) $(EXTRA_utils_DEPENDENCIE
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/src/lib/*.$(OBJEXT)
 	-rm -f ../../src/*.$(OBJEXT)
 	-rm -f ./*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -369,6 +394,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+$(top_builddir)/src/lib/random-random.o: $(top_builddir)/src/lib/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lib/random-random.o -MD -MP -MF $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo -c -o $(top_builddir)/src/lib/random-random.o `test -f '$(top_builddir)/src/lib/random.c' || echo '$(srcdir)/'`$(top_builddir)/src/lib/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lib/random.c' object='$(top_builddir)/src/lib/random-random.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lib/random-random.o `test -f '$(top_builddir)/src/lib/random.c' || echo '$(srcdir)/'`$(top_builddir)/src/lib/random.c
+
+$(top_builddir)/src/lib/random-random.obj: $(top_builddir)/src/lib/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lib/random-random.obj -MD -MP -MF $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo -c -o $(top_builddir)/src/lib/random-random.obj `if test -f '$(top_builddir)/src/lib/random.c'; then $(CYGPATH_W) '$(top_builddir)/src/lib/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lib/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lib/random.c' object='$(top_builddir)/src/lib/random-random.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lib/random-random.obj `if test -f '$(top_builddir)/src/lib/random.c'; then $(CYGPATH_W) '$(top_builddir)/src/lib/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lib/random.c'; fi`
+
+./random-random.o: ./random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./random-random.o -MD -MP -MF $(DEPDIR)/random-random.Tpo -c -o ./random-random.o `test -f './random.c' || echo '$(srcdir)/'`./random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/random-random.Tpo $(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./random.c' object='./random-random.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./random-random.o `test -f './random.c' || echo '$(srcdir)/'`./random.c
+
+./random-random.obj: ./random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./random-random.obj -MD -MP -MF $(DEPDIR)/random-random.Tpo -c -o ./random-random.obj `if test -f './random.c'; then $(CYGPATH_W) './random.c'; else $(CYGPATH_W) '$(srcdir)/./random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/random-random.Tpo $(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./random.c' object='./random-random.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./random-random.obj `if test -f './random.c'; then $(CYGPATH_W) './random.c'; else $(CYGPATH_W) '$(srcdir)/./random.c'; fi`
 
 ../../src/utils-utils.o: ../../src/utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/utils-utils.o -MD -MP -MF ../../src/$(DEPDIR)/utils-utils.Tpo -c -o ../../src/utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
@@ -517,6 +570,8 @@ distclean-generic:
 	-rm -f ../../src/$(am__dirstamp)
 	-rm -f ./$(am__dirstamp)
 	-test -z "$(DEPDIR)/$(am__dirstamp)" || rm -f $(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/src/lib/$(am__dirstamp)" || rm -f $(top_builddir)/src/lib/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -526,7 +581,9 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
+	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ./$(DEPDIR)/random-random.Po
 	-rm -f ./$(DEPDIR)/utils-utils.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -573,7 +630,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
+	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ./$(DEPDIR)/random-random.Po
 	-rm -f ./$(DEPDIR)/utils-utils.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
