@@ -46,6 +46,7 @@
 #include "../library/misc.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
+#include "src/lib/random.h"
 
 
 
@@ -59,7 +60,8 @@ int main(void)
 	}
 #endif
 
-	srand(time(NULL));
+	const uint32_t seed = cwdaemon_srandom(0);
+	fprintf(stderr, "[INFO ] Random seed: %u\n", seed);
 
 	bool failure = false;
 	const int wpm = 10;

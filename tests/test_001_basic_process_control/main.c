@@ -53,6 +53,7 @@
 #include "../library/process.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
+#include "src/lib/random.h"
 #include "src/lib/sleep.h"
 
 
@@ -67,7 +68,8 @@ int main(void)
 	}
 #endif
 
-	srand(time(NULL));
+	const uint32_t seed = cwdaemon_srandom(0);
+	fprintf(stderr, "[INFO ] Random seed: %u\n", seed);
 
 	const int wpm = 10;
 	bool failure = false;

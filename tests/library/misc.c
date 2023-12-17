@@ -47,6 +47,7 @@
 #include "key_source.h"
 #include "key_source_serial.h"
 #include "src/lib/sleep.h"
+#include "src/lib/random.h"
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
@@ -337,17 +338,19 @@ static bool is_local_udp_port_used(int port)
 */
 int find_unused_random_local_udp_port(void)
 {
-	const int lower = 1024;
-	const int upper = 65535;
+	const unsigned int lower = 1024;
+	const unsigned int upper = 65535;
 
 	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
 	for (int i = 0; i < n; i++) {
-		int port = rand();
-		port %= ((upper + 1) - lower);
-		port += lower;
+		unsigned int port = 0;
+		if (0 != cwdaemon_random_uint(lower, upper, &port)) {
+			fprintf(stderr, "[ERROR] Failed to get port in range %d - %d\n", lower, upper);
+			return 0;
+		}
 
-		if (!is_local_udp_port_used(port)) {
-			return port;
+		if (!is_local_udp_port_used((int) port)) {
+			return (int) port;
 		}
 	}
 	return 0;
