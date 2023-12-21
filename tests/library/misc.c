@@ -138,8 +138,7 @@ static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cw
 	if (!observer->open_fn(observer)) {
 		return -1;
 	}
-	observer->param_keying = key_source_params->param_keying;
-	observer->param_ptt    = key_source_params->param_ptt;
+	observer->tty_pins_config = key_source_params->tty_pins_config;
 
 	observer->new_ptt_state_cb = key_source_params->new_ptt_state_cb;
 	observer->new_ptt_state_arg = key_source_params->new_ptt_state_arg;

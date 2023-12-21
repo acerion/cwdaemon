@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include "process.h"
+
 
 
 
@@ -45,8 +47,7 @@ typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * ke
    Structure used by test code to configure observer of cwdevice.
 */
 typedef struct cwdevice_observer_params_t {
-	unsigned int param_keying; /* See cwdevice_observer_t::param_keying. */
-	unsigned int param_ptt;    /* See cwdevice_observer_t::param_ptt. */
+	tty_pins_t tty_pins_config; /* See cwdevice_observer_t::tty_pins_config. */
 	char source_path[SOURCE_PATH_SIZE];      /* See cwdevice_observer_t::source_path. */
 
 	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
@@ -103,17 +104,19 @@ typedef struct cwdevice_observer_t {
 	   be a path (e.g. "/dev/ttyS0"). */
 	char source_path[SOURCE_PATH_SIZE];
 
-	/* Low-level integer parameter specifying where in a cwdevice to
-	   find information about keying. E.g. for ttyS0 it will be a
-	   pin/line from which to read key state (cwdaemon uses DTR line by
-	   default, but it can be tuned through "-o"). */
-	unsigned int param_keying;
+	/*
+	  Low-level integer parameters specifying where in a cwdevice to find
+	  information about:
 
-	/* Low-level integer parameter specifying where in a cwdevice to
-	   find information about ptt. E.g. for ttyS0 it will be a
-	   pin/line from which to read ptt state (cwdaemon uses RTS line by
-	   default, but it can be tuned through "-o"). */
-	unsigned int param_ptt;
+	   - keying. E.g. for ttyS0 it will be a pin/line from which to read key
+	     state (cwdaemon uses DTR line by default, but it can be tuned
+	     through "-o").
+
+	   - ptt. E.g. for ttyS0 it will be a pin/line from which to read ptt
+	     state (cwdaemon uses RTS line by default, but it can be tuned
+	     through "-o").
+	*/
+	tty_pins_t tty_pins_config;
 
 	/* Previous state of key pin, used to recognize when state of key pin changed
 	   and when to call "key pin state change" callback.

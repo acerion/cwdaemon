@@ -90,8 +90,7 @@ typedef struct test_case_t {
 	tty_pins_t server_tty_pins;              /**< Configuration of tty pins on cwdevice used by cwdaemon server. */
 	const char * string_to_play;
 	bool expected_failed_receive;
-	unsigned int key_source_param_keying;
-	unsigned int key_source_param_ptt;
+	tty_pins_t observer_tty_pins;
 } test_case_t;
 
 
@@ -104,19 +103,17 @@ static test_case_t g_test_cases[] = {
 	   events. */
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
 	  .string_to_play          = "paris",
-	  .key_source_param_keying = TIOCM_DTR,
-	  .key_source_param_ptt    = TIOCM_RTS,
+	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS }
 	},
 
 	/* This is a SUCCESS case. This is an almost-basic case where
 	   cwdaemon is executed with -o options but the options still tell
 	   cwdaemon to use default tty lines. Key source is configured to
 	   look at the default line(s) for keying events. */
-	{ .description             = "success case, standard setup with default tty lines options passed to cwdaemon",
+	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
-	  .key_source_param_keying = TIOCM_DTR,
-	  .key_source_param_ptt    = TIOCM_RTS,
+	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS }
 	},
 
 	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
@@ -126,8 +123,7 @@ static test_case_t g_test_cases[] = {
 	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
 	  .expected_failed_receive = true,
-	  .key_source_param_keying = TIOCM_RTS,
-	  .key_source_param_ptt    = TIOCM_DTR,
+	  .observer_tty_pins       = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR }
 	},
 
 	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
@@ -136,8 +132,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, cwdaemon is keying RTS, key source is monitoring RTS",
 	  .server_tty_pins         = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .string_to_play          = "paris",
-	  .key_source_param_keying = TIOCM_RTS,
-	  .key_source_param_ptt    = TIOCM_DTR,
+	  .observer_tty_pins       = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	},
 };
 
@@ -176,8 +171,7 @@ int main(void)
 
 		const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 		const cwdevice_observer_params_t key_source_params = {
-			.param_keying = test_case->key_source_param_keying,
-			.param_ptt    = test_case->key_source_param_ptt,
+			.tty_pins_config = test_case->observer_tty_pins,
 			.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 #if PTT_EXPERIMENT
 			.new_ptt_state_cb   = on_ptt_state_change,

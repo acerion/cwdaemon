@@ -98,8 +98,8 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 		fprintf(stderr, "[EE] ioctl(TIOCMGET): %s / %d\n", b, errno);
 		return false;
 	}
-	const unsigned int keying_pin = observer->param_keying; /* E.g. TIOCM_DTR. */
-	const unsigned int ptt_pin    = observer->param_ptt;    /* E.g. TIOCM_RTS. */
+	const unsigned int keying_pin = observer->tty_pins_config.pin_keying; /* E.g. TIOCM_DTR. */
+	const unsigned int ptt_pin    = observer->tty_pins_config.pin_ptt;    /* E.g. TIOCM_RTS. */
 	*key_is_down = !!(value & keying_pin);
 	*ptt_is_on   = !!(value & ptt_pin);
 	return true;
