@@ -58,7 +58,7 @@
 
 
 
-bool cw_key_source_serial_open(cwdevice_observer_t * observer)
+bool cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 {
 	/* Open serial port. */
 	errno = 0;
@@ -77,7 +77,7 @@ bool cw_key_source_serial_open(cwdevice_observer_t * observer)
 
 
 
-void cw_key_source_serial_close(cwdevice_observer_t * observer)
+void cwdevice_observer_serial_close(cwdevice_observer_t * observer)
 {
 	int fd = (int) observer->source_reference;
 	close(fd);
@@ -86,7 +86,7 @@ void cw_key_source_serial_close(cwdevice_observer_t * observer)
 
 
 
-bool cw_key_source_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on)
+bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on)
 {
 	int fd = (int) observer->source_reference;
 	errno = 0;

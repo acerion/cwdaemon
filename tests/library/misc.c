@@ -71,8 +71,8 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 */
 static cw_easy_receiver_t g_easy_rec = { 0 };
 static cwdevice_observer_t g_key_source = {
-	.open_fn            = cw_key_source_serial_open,
-	.close_fn           = cw_key_source_serial_close,
+	.open_fn            = cwdevice_observer_serial_open,
+	.close_fn           = cwdevice_observer_serial_close,
 	.new_key_state_cb   = on_key_state_change,
 	.new_key_state_sink = &g_easy_rec,
 };
@@ -134,7 +134,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cwdevice_observer_params_t * key_source_params)
 {
 	snprintf(observer->source_path, sizeof (observer->source_path), "%s", key_source_params->source_path);
-	cw_key_source_configure_polling(observer, 0, cw_key_source_serial_poll_once);
+	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
 	if (!observer->open_fn(observer)) {
 		return -1;
 	}
@@ -144,7 +144,7 @@ static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cw
 	observer->new_ptt_state_cb = key_source_params->new_ptt_state_cb;
 	observer->new_ptt_state_arg = key_source_params->new_ptt_state_arg;
 
-	cw_key_source_start(observer);
+	cwdevice_observer_start(observer);
 
 	return 0;
 }
@@ -156,7 +156,7 @@ void test_helpers_cleanup(void)
 {
 	/* Cleanup. */
 	cw_generator_stop();
-	cw_key_source_stop(&g_key_source);
+	cwdevice_observer_stop(&g_key_source);
 	g_key_source.close_fn(&g_key_source);
 
 	return;

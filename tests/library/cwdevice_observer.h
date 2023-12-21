@@ -47,7 +47,7 @@ typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * ke
 typedef struct cwdevice_observer_params_t {
 	unsigned int param_keying; /* See cwdevice_observer_t::param_keying. */
 	unsigned int param_ptt;    /* See cwdevice_observer_t::param_ptt. */
-	char source_path[SOURCE_PATH_SIZE];      /* See key_source_t::source_path. */
+	char source_path[SOURCE_PATH_SIZE];      /* See cwdevice_observer_t::source_path. */
 
 	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
 	void * new_ptt_state_arg;                                      /**< Argument to be passed by cwdaevice observer to new_ptt_state_cb. */
@@ -140,7 +140,7 @@ typedef struct cwdevice_observer_t {
 /**
    Start polling the cwdevice
 */
-void cw_key_source_start(cwdevice_observer_t * observer);
+void cwdevice_observer_start(cwdevice_observer_t * observer);
 
 
 
@@ -148,7 +148,7 @@ void cw_key_source_start(cwdevice_observer_t * observer);
 /**
    Stop polling the cwdevice
 */
-void cw_key_source_stop(cwdevice_observer_t * observer);
+void cwdevice_observer_stop(cwdevice_observer_t * observer);
 
 
 
@@ -163,7 +163,7 @@ void cw_key_source_stop(cwdevice_observer_t * observer);
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
-void cw_key_source_configure_polling(cwdevice_observer_t * observer, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
+void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
 
 
 
