@@ -59,7 +59,7 @@ int find_unused_random_local_udp_port(void);
    @return 0 if setup was successful,
    @return -1 otherwise
 */
-int test_helpers_setup(const helpers_opts_t * opts, const cw_key_source_params_t * key_source_params);
+int test_helpers_setup(const helpers_opts_t * opts, const cwdevice_observer_params_t * key_source_params);
 
 
 

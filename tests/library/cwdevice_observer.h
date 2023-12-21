@@ -42,16 +42,16 @@ typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_d
 
 
 /**
-   Structure used by client code to configure key source.
+   Structure used by test code to configure observer of cwdevice.
 */
-typedef struct cw_key_source_params_t {
+typedef struct cwdevice_observer_params_t {
 	unsigned int param_keying; /* See cw_key_source_t::param_keying. */
 	unsigned int param_ptt;    /* See cw_key_source_t::param_ptt. */
 	char source_path[SOURCE_PATH_SIZE];      /* See key_source_t::source_path. */
 
 	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
 	void * new_ptt_state_arg;                                      /**< Argument to be passed by cwdaevice observer to new_ptt_state_cb. */
-} cw_key_source_params_t;
+} cwdevice_observer_params_t;
 
 
 

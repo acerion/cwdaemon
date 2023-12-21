@@ -175,7 +175,7 @@ int main(void)
 		cwdaemon_opts.tty_pins = test_case->server_tty_pins;
 
 		const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
-		const cw_key_source_params_t key_source_params = {
+		const cwdevice_observer_params_t key_source_params = {
 			.param_keying = test_case->key_source_param_keying,
 			.param_ptt    = test_case->key_source_param_ptt,
 			.source_path  = "/dev/" TEST_CWDEVICE_NAME,
