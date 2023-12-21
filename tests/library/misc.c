@@ -58,7 +58,7 @@
 
 static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char * buffer, size_t size, const char * expected_reply);
 static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
-static int test_helper_key_source_setup(cwdevice_observer_t * key_source, const cwdevice_observer_params_t * key_source_params);
+static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cwdevice_observer_params_t * key_source_params);
 static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const helpers_opts_t * opts);
 
 
@@ -131,20 +131,20 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 /**
    Configure and start a key source used during tests of cwdaemon
 */
-static int test_helper_key_source_setup(cwdevice_observer_t * key_source, const cwdevice_observer_params_t * key_source_params)
+static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cwdevice_observer_params_t * key_source_params)
 {
-	snprintf(key_source->source_path, sizeof (key_source->source_path), "%s", key_source_params->source_path);
-	cw_key_source_configure_polling(key_source, 0, cw_key_source_serial_poll_once);
-	if (!key_source->open_fn(key_source)) {
+	snprintf(observer->source_path, sizeof (observer->source_path), "%s", key_source_params->source_path);
+	cw_key_source_configure_polling(observer, 0, cw_key_source_serial_poll_once);
+	if (!observer->open_fn(observer)) {
 		return -1;
 	}
-	key_source->param_keying = key_source_params->param_keying;
-	key_source->param_ptt    = key_source_params->param_ptt;
+	observer->param_keying = key_source_params->param_keying;
+	observer->param_ptt    = key_source_params->param_ptt;
 
-	key_source->new_ptt_state_cb = key_source_params->new_ptt_state_cb;
-	key_source->new_ptt_state_arg = key_source_params->new_ptt_state_arg;
+	observer->new_ptt_state_cb = key_source_params->new_ptt_state_cb;
+	observer->new_ptt_state_arg = key_source_params->new_ptt_state_arg;
 
-	cw_key_source_start(key_source);
+	cw_key_source_start(observer);
 
 	return 0;
 }

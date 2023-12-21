@@ -58,18 +58,18 @@
 
 
 
-bool cw_key_source_serial_open(cwdevice_observer_t * source)
+bool cw_key_source_serial_open(cwdevice_observer_t * observer)
 {
 	/* Open serial port. */
 	errno = 0;
-	int fd = open(source->source_path, O_RDONLY);
+	int fd = open(observer->source_path, O_RDONLY);
 	if (fd == -1) {
 		char buf[32] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
-		fprintf(stderr, "[EE] open(%s): %s / %d\n", source->source_path, b, errno);
+		fprintf(stderr, "[EE] open(%s): %s / %d\n", observer->source_path, b, errno);
 		return false;
 	}
-	source->source_reference = (uintptr_t) fd;
+	observer->source_reference = (uintptr_t) fd;
 
 	return true;
 }
@@ -77,18 +77,18 @@ bool cw_key_source_serial_open(cwdevice_observer_t * source)
 
 
 
-void cw_key_source_serial_close(cwdevice_observer_t * source)
+void cw_key_source_serial_close(cwdevice_observer_t * observer)
 {
-	int fd = (int) source->source_reference;
+	int fd = (int) observer->source_reference;
 	close(fd);
 }
 
 
 
 
-bool cw_key_source_serial_poll_once(cwdevice_observer_t * source, bool * key_is_down, bool * ptt_is_on)
+bool cw_key_source_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on)
 {
-	int fd = (int) source->source_reference;
+	int fd = (int) observer->source_reference;
 	errno = 0;
 	unsigned int value = 0;
 	int status = ioctl(fd, TIOCMGET, &value);
@@ -98,8 +98,8 @@ bool cw_key_source_serial_poll_once(cwdevice_observer_t * source, bool * key_is_
 		fprintf(stderr, "[EE] ioctl(TIOCMGET): %s / %d\n", b, errno);
 		return false;
 	}
-	const unsigned int keying_pin = source->param_keying; /* E.g. TIOCM_DTR. */
-	const unsigned int ptt_pin    = source->param_ptt;    /* E.g. TIOCM_RTS. */
+	const unsigned int keying_pin = observer->param_keying; /* E.g. TIOCM_DTR. */
+	const unsigned int ptt_pin    = observer->param_ptt;    /* E.g. TIOCM_RTS. */
 	*key_is_down = !!(value & keying_pin);
 	*ptt_is_on   = !!(value & ptt_pin);
 	return true;

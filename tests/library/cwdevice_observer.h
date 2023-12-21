@@ -31,7 +31,7 @@
 
 
 struct cwdevice_observer_t;
-typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * source, bool * key_is_down, bool * ptt_is_on);
+typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on);
 
 
 
@@ -61,18 +61,18 @@ typedef struct cwdevice_observer_params_t {
 */
 typedef struct cwdevice_observer_t {
 
-	/* User-provided function that opens a specific key source.*/
-	bool (* open_fn)(struct cwdevice_observer_t * source);
+	/* User-provided function that opens a specific cwdevice.*/
+	bool (* open_fn)(struct cwdevice_observer_t * observer);
 
-	/* User-provided function that closed a specific key source.*/
-	void (* close_fn)(struct cwdevice_observer_t * source);
+	/* User-provided function that closed a specific cwdevice.*/
+	void (* close_fn)(struct cwdevice_observer_t * observer);
 
-	/* User-provided callback function that is called by key source each
-	   time the state of key source changes between up and down. */
+	/* User-provided callback function that is called by observer each
+	   time the state of key pin of cwdevice changes between up and down. */
 	bool (* new_key_state_cb)(void * new_key_state_sink, bool key_is_down);
 
-	/* User-provided callback function that is called by key source each
-	   time the state of PTT value changes between 'on' and 'off'. */
+	/* User-provided callback function that is called by observer each
+	   time the state of PTT pin of cwdevice changes between 'on' and 'off'. */
 	bool (* new_ptt_state_cb)(void * ptt_arg, bool ptt_is_on);
 
 	/* Pointer that will be passed as first argument of new_key_state_cb
@@ -83,44 +83,44 @@ typedef struct cwdevice_observer_t {
 	   on each call to the function. */
 	void * new_ptt_state_arg;
 
-	/* At what intervals to poll key source? [microseconds]. User should
-	   assign KEY_SOURCE_DEFAULT_INTERVAL_US as default value (unless
+	/* At what intervals to poll state of cwdevice? [microseconds]. User
+	   should assign KEY_SOURCE_DEFAULT_INTERVAL_US as default value (unless
 	   user wants to poll at different interval. */
 	unsigned int poll_interval_us;
 
-	/* User-provided function function that checks once, at given moment,
-	   if key is down or up, and if ptt is on or off. State of key is
-	   returned through @p key_is_down. State of ptt is returned through
-	   @p ptt_is_on */
+	/* User-provided function function that checks once, at given moment, if
+	   keying pin is down or up, and if ptt pin is on or off. State of keying
+	   pin is returned through @p key_is_down. State of ptt pin is returned
+	   through @p ptt_is_on */
 	poll_once_fn_t poll_once_fn;
 
-	/* Reference to low-level resource related to key source. It may be
-	   e.g. a polled file descriptor. To be used by source-type-specific
+	/* Reference to low-level resource related to cwdevice. It may be
+	   e.g. a polled file descriptor. To be used by cwdevice-type-specific
 	   open/close/poll_once functions. */
 	uintptr_t source_reference;
 
-	/* String representation of key source. For regular devices it will
+	/* String representation of cwdevice. For regular devices it will
 	   be a path (e.g. "/dev/ttyS0"). */
 	char source_path[SOURCE_PATH_SIZE];
 
-	/* Low-level integer parameter specifying where in a keying source to
+	/* Low-level integer parameter specifying where in a cwdevice to
 	   find information about keying. E.g. for ttyS0 it will be a
 	   pin/line from which to read key state (cwdaemon uses DTR line by
 	   default, but it can be tuned through "-o"). */
 	unsigned int param_keying;
 
-	/* Low-level integer parameter specifying where in a keying source to
+	/* Low-level integer parameter specifying where in a cwdevice to
 	   find information about ptt. E.g. for ttyS0 it will be a
 	   pin/line from which to read ptt state (cwdaemon uses RTS line by
 	   default, but it can be tuned through "-o"). */
 	unsigned int param_ptt;
 
-	/* Previous state of key, used to recognize when state of key changed
-	   and when to call "key state change" callback.
+	/* Previous state of key pin, used to recognize when state of key pin changed
+	   and when to call "key pin state change" callback.
 	   For internal usage only. */
 	bool previous_key_is_down;
-	/* Previous state of ptt, used to recognize when state of ptt changed
-	   and when to call "ptt state change" callback.
+	/* Previous state of ptt pin, used to recognize when state of ptt pin changed
+	   and when to call "ptt pin state change" callback.
 	   For internal usage only. */
 	bool previous_ptt_is_on;
 
@@ -138,32 +138,32 @@ typedef struct cwdevice_observer_t {
 
 
 /**
-   Start polling the source
+   Start polling the cwdevice
 */
-void cw_key_source_start(cwdevice_observer_t * source);
+void cw_key_source_start(cwdevice_observer_t * observer);
 
 
 
 
 /**
-   Stop polling the source
+   Stop polling the cwdevice
 */
-void cw_key_source_stop(cwdevice_observer_t * source);
+void cw_key_source_stop(cwdevice_observer_t * observer);
 
 
 
 
 /**
-   @brief Configure key source to do periodical polls of the source
+   @brief Configure cwdevice observer to do periodical polls of the cwdevice
 
-   In theory we can have a source that learns about key state changes by
+   In theory we can have an observer that learns about key/ptt state changes by
    means other than polling.
 
-   @param source key source to configure
+   @param observer cwdevice observer to configure
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
-void cw_key_source_configure_polling(cwdevice_observer_t * source, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
+void cw_key_source_configure_polling(cwdevice_observer_t * observer, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
 
 
 

@@ -54,51 +54,51 @@ static void * key_source_poll_thread(void * arg_key_source);
 
 
 
-void cw_key_source_start(cwdevice_observer_t * source)
+void cw_key_source_start(cwdevice_observer_t * observer)
 {
-	source->do_polling = true;
-	pthread_create(&source->thread_id, NULL, key_source_poll_thread, source);
+	observer->do_polling = true;
+	pthread_create(&observer->thread_id, NULL, key_source_poll_thread, observer);
 }
 
 
 
 
-void cw_key_source_stop(cwdevice_observer_t * source)
+void cw_key_source_stop(cwdevice_observer_t * observer)
 {
-	source->do_polling = false;
-	pthread_cancel(source->thread_id);
+	observer->do_polling = false;
+	pthread_cancel(observer->thread_id);
 }
 
 
 
 
-static void * key_source_poll_thread(void * arg_key_source)
+static void * key_source_poll_thread(void * arg_observer)
 {
-	cwdevice_observer_t * source = (cwdevice_observer_t *) arg_key_source;
-	while (source->do_polling) {
+	cwdevice_observer_t * observer = (cwdevice_observer_t *) arg_observer;
+	while (observer->do_polling) {
 		bool key_is_down = false;
 		bool ptt_is_on = false;
 
-		if (!source->poll_once_fn(source, &key_is_down, &ptt_is_on)) {
+		if (!observer->poll_once_fn(observer, &key_is_down, &ptt_is_on)) {
 			fprintf(stderr, "[EE] Failed to poll once\n");
 			return NULL;
 		}
 
 		/* Recognize new state, save it and react to it. */
-		if (key_is_down != source->previous_key_is_down) {
-			source->previous_key_is_down = key_is_down;
-			if (source->new_key_state_cb) {
-				source->new_key_state_cb(source->new_key_state_sink, key_is_down);
+		if (key_is_down != observer->previous_key_is_down) {
+			observer->previous_key_is_down = key_is_down;
+			if (observer->new_key_state_cb) {
+				observer->new_key_state_cb(observer->new_key_state_sink, key_is_down);
 			}
 		}
-		if (ptt_is_on != source->previous_ptt_is_on) {
-			source->previous_ptt_is_on = ptt_is_on;
-			if (source->new_ptt_state_cb) {
-				source->new_ptt_state_cb(source->new_ptt_state_arg, ptt_is_on);
+		if (ptt_is_on != observer->previous_ptt_is_on) {
+			observer->previous_ptt_is_on = ptt_is_on;
+			if (observer->new_ptt_state_cb) {
+				observer->new_ptt_state_cb(observer->new_ptt_state_arg, ptt_is_on);
 			}
 		}
 
-		const int sleep_retv = microsleep_nonintr(source->poll_interval_us);
+		const int sleep_retv = microsleep_nonintr(observer->poll_interval_us);
 		if (sleep_retv) {
 			fprintf(stderr, "[ERROR] error in sleep in key poll\n");
 		}
@@ -110,15 +110,15 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
-void cw_key_source_configure_polling(cwdevice_observer_t * source, unsigned int interval_us, poll_once_fn_t poll_once_fn)
+void cw_key_source_configure_polling(cwdevice_observer_t * observer, unsigned int interval_us, poll_once_fn_t poll_once_fn)
 {
 	if (0 == interval_us) {
-		source->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;
+		observer->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;
 	} else {
-		source->poll_interval_us = interval_us;
+		observer->poll_interval_us = interval_us;
 	}
 
-	source->poll_once_fn = poll_once_fn;
+	observer->poll_once_fn = poll_once_fn;
 }
 
 
