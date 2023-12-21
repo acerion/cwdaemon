@@ -51,10 +51,10 @@ int find_unused_random_local_udp_port(void);
 /**
    Configure some objects needed to run a test:
     - libcw receiver (+ libcw generator needed by receiver),
-    - key source (to monitor serial line)
+    - cwdevice observer (to monitor serial line)
 
    @param[in] opts options for test helpers
-   @param[in] key_source_params parameters for key source
+   @param[in] key_source_params parameters for cwdevice observer
 
    @return 0 if setup was successful,
    @return -1 otherwise

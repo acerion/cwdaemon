@@ -1,11 +1,11 @@
-#ifndef CW_KEY_SOURCE_SERIAL_H
-#define CW_KEY_SOURCE_SERIAL_H
+#ifndef CW_CWDEVICE_OBSERVER_SERIAL_H
+#define CW_CWDEVICE_OBSERVER_SERIAL_H
 
 
 
 
 #include <stdbool.h>
-#include <sys/ioctl.h> /* For those users of the key source that need to specify TIOCM_XXX tty pin. */
+#include <sys/ioctl.h> /* For those users of the cwdevice that need to specify TIOCM_XXX tty pin. */
 
 
 
@@ -39,5 +39,5 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 
 
 
-#endif /* #ifndef CW_KEY_SOURCE_SERIAL_H */
+#endif /* #ifndef CW_CWDEVICE_OBSERVER_SERIAL_H */
 

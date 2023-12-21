@@ -6,7 +6,7 @@ esc 0 (reset) is issued") doesn't occur anymore.
 1. Manually start cwdaemon in the background.
 2. In test program send request to cwdaemon to sound a short text.
 3. Let cwdaemon sound the text and manipulate DTR pin of serial line port (ttyS0).
-4. In test program observe (through "key source serial") the DTR pin, inform
+4. In test program observe (through "cwdevice serial") the DTR pin, inform
    a receiver about changes to the pin.
 5. In test program let the receiver interpret changes of the pin, confirm
    that a received text is the same as requested text.
@@ -19,5 +19,5 @@ correctly manipulate DTR pin, and receiver won't receive anything.
 
 If a reset request was correctly handled in cwdaemon, and cwdaemon correctly
 re-registered a callback, then cwdaemon will be able to correctly manipulate
-DTR pin, which will be observed by key source and then forwarded to receiver.
+DTR pin, which will be observed by cwdevice observer and then forwarded to receiver.
 

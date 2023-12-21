@@ -67,7 +67,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 /*
   These are global in this file because it's easier for me that way, and I
   don't plan to have tests that will require multiple parallel instances of
-  easy receiver or key source.
+  easy receiver or cwdevice observer.
 */
 static cw_easy_receiver_t g_easy_rec = { 0 };
 static cwdevice_observer_t g_key_source = {
@@ -90,7 +90,7 @@ int test_helpers_setup(const helpers_opts_t * opts, const cwdevice_observer_para
 		return -1;
 	}
 	if (0 != test_helper_key_source_setup(&g_key_source, key_source_params)) {
-		fprintf(stderr, "[EE] Failed to set up key source\n");
+		fprintf(stderr, "[EE] Failed to set up cwdevice observer\n");
 		return -1;
 	}
 	return 0;
@@ -129,7 +129,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 
 
 /**
-   Configure and start a key source used during tests of cwdaemon
+   Configure and start a cwdevice observer used during tests of cwdaemon
 */
 static int test_helper_key_source_setup(cwdevice_observer_t * observer, const cwdevice_observer_params_t * key_source_params)
 {
@@ -196,7 +196,7 @@ int client_send_and_receive(client_t * client, const char * message_value, bool 
 
 	char receive_buffer[30] = { 0 };
 	if (0 != receive_from_key_source(client->sock, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
-		fprintf(stderr, "[EE] Failed to receive from key source\n");
+		fprintf(stderr, "[EE] Failed to receive from cwdevice observer\n");
 		return -1;
 	}
 
@@ -229,11 +229,11 @@ int client_send_and_receive(client_t * client, const char * message_value, bool 
 
 
 /**
-   Our key source is (by default) DTR pin on serial line.
+   Our source of keying data is (by default) DTR pin on serial line.
 
    The state of pin is changed by cwdaemon during keying.
 
-   Changes of the pin are polled by key source. Key source calls
+   Changes of the pin are polled by cwdevice observer. The observer calls
    `new_key_state_cb` callback every time it detects change of the pin, i.e.
    change of key state.
 

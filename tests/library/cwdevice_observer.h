@@ -1,5 +1,5 @@
-#ifndef CW_KEY_SOURCE_H
-#define CW_KEY_SOURCE_H
+#ifndef CWDEVICE_OBSERVER_H
+#define CWDEVICE_OBSERVER_H
 
 
 
@@ -19,7 +19,7 @@
 
    Structure holding the state of key.
 
-   Structure holding functions that poll the source, waiting for state of the
+   Structure holding functions that poll the cwdevice, waiting for state of the
    key to change.
 
    Structure holding a callback that will be called when change to state of
@@ -171,5 +171,5 @@ void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigne
 
 
 
-#endif /* #ifndef CW_KEY_SOURCE_H */
+#endif /* #ifndef CWDEVICE_OBSERVER_H */
 

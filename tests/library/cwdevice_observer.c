@@ -43,7 +43,7 @@
 
 
 
-/* Default interval for polling a key source [microseconds]. */
+/* Default interval for polling a cwdevice [microseconds]. */
 #define KEY_SOURCE_DEFAULT_INTERVAL_US 100
 
 

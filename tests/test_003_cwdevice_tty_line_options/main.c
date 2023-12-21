@@ -98,8 +98,8 @@ typedef struct test_case_t {
 
 static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. This is a basic case where cwdaemon is
-	   executed without -o options, so it uses default tty lines. Key
-	   source is configured to look at the default line(s) for keying
+	   executed without -o options, so it uses default tty lines. cwdevice
+	   observer is configured to look at the default line(s) for keying
 	   events. */
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
 	  .string_to_play          = "paris",
@@ -108,7 +108,7 @@ static test_case_t g_test_cases[] = {
 
 	/* This is a SUCCESS case. This is an almost-basic case where
 	   cwdaemon is executed with -o options but the options still tell
-	   cwdaemon to use default tty lines. Key source is configured to
+	   cwdaemon to use default tty lines. cwdevice observer is configured to
 	   look at the default line(s) for keying events. */
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
@@ -117,9 +117,9 @@ static test_case_t g_test_cases[] = {
 	},
 
 	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
-	   keying, but a key source (and thus a receiver) is told to look at
+	   keying, but a cwdevice observer (and thus a receiver) is told to look at
 	   RTS for keying events. */
-	{ .description             = "failure case, cwdaemon is keying DTR, key source is monitoring RTS",
+	{ .description             = "failure case, cwdaemon is keying DTR, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
 	  .expected_failed_receive = true,
@@ -127,9 +127,9 @@ static test_case_t g_test_cases[] = {
 	},
 
 	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
-	   keying, and a key source (and thus a receiver) is told to look
+	   keying, and a cwdevice observer (and thus a receiver) is told to look
 	   also at RTS for keying events. */
-	{ .description             = "success case, cwdaemon is keying RTS, key source is monitoring RTS",
+	{ .description             = "success case, cwdaemon is keying RTS, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .string_to_play          = "paris",
 	  .observer_tty_pins       = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
@@ -198,7 +198,7 @@ int main(void)
 		   keying a specific line on tty
 		   (test_case->cwdaemon_param_keying).
 
-		   The key source will be observing a tty line that it was
+		   The cwdevice observer will be observing a tty line that it was
 		   told to observe (test_case->key_source_param_keying) and will
 		   be notifying a receiver about keying events.
 
