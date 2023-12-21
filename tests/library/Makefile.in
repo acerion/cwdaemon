@@ -114,8 +114,8 @@ lib_tests_a_AR = $(AR) $(ARFLAGS)
 lib_tests_a_LIBADD =
 am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cw_rec_utils.$(OBJEXT) \
-	lib_tests_a-key_source.$(OBJEXT) \
-	lib_tests_a-key_source_serial.$(OBJEXT) \
+	lib_tests_a-cwdevice_observer.$(OBJEXT) \
+	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
 	lib_tests_a-misc.$(OBJEXT) lib_tests_a-process.$(OBJEXT) \
 	lib_tests_a-socket.$(OBJEXT) lib_tests_a-test_env.$(OBJEXT)
 lib_tests_a_OBJECTS = $(am_lib_tests_a_OBJECTS)
@@ -136,8 +136,8 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po \
-	./$(DEPDIR)/lib_tests_a-key_source.Po \
-	./$(DEPDIR)/lib_tests_a-key_source_serial.Po \
+	./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po \
+	./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
 	./$(DEPDIR)/lib_tests_a-process.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
@@ -302,8 +302,8 @@ top_srcdir = @top_srcdir@
 # no header from this dir should be installed
 check_HEADERS = client.h             \
                 cw_rec_utils.h       \
-                key_source.h         \
-                key_source_serial.h  \
+                cwdevice_observer.h  \
+                cwdevice_observer_serial.h  \
                 misc.h               \
                 process.h            \
                 socket.h             \
@@ -314,8 +314,8 @@ check_HEADERS = client.h             \
 check_LIBRARIES = lib_tests.a
 lib_tests_a_SOURCES = client.c             \
                       cw_rec_utils.c       \
-                      key_source.c         \
-                      key_source_serial.c  \
+                      cwdevice_observer.c  \
+                      cwdevice_observer_serial.c  \
                       misc.c               \
                       process.c            \
                       socket.c             \
@@ -372,8 +372,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-client.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-key_source.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-key_source_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-process.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
@@ -429,33 +429,33 @@ lib_tests_a-cw_rec_utils.obj: cw_rec_utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cw_rec_utils.obj `if test -f 'cw_rec_utils.c'; then $(CYGPATH_W) 'cw_rec_utils.c'; else $(CYGPATH_W) '$(srcdir)/cw_rec_utils.c'; fi`
 
-lib_tests_a-key_source.o: key_source.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-key_source.o -MD -MP -MF $(DEPDIR)/lib_tests_a-key_source.Tpo -c -o lib_tests_a-key_source.o `test -f 'key_source.c' || echo '$(srcdir)/'`key_source.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-key_source.Tpo $(DEPDIR)/lib_tests_a-key_source.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='key_source.c' object='lib_tests_a-key_source.o' libtool=no @AMDEPBACKSLASH@
+lib_tests_a-cwdevice_observer.o: cwdevice_observer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice_observer.o -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice_observer.Tpo -c -o lib_tests_a-cwdevice_observer.o `test -f 'cwdevice_observer.c' || echo '$(srcdir)/'`cwdevice_observer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice_observer.Tpo $(DEPDIR)/lib_tests_a-cwdevice_observer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice_observer.c' object='lib_tests_a-cwdevice_observer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-key_source.o `test -f 'key_source.c' || echo '$(srcdir)/'`key_source.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice_observer.o `test -f 'cwdevice_observer.c' || echo '$(srcdir)/'`cwdevice_observer.c
 
-lib_tests_a-key_source.obj: key_source.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-key_source.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-key_source.Tpo -c -o lib_tests_a-key_source.obj `if test -f 'key_source.c'; then $(CYGPATH_W) 'key_source.c'; else $(CYGPATH_W) '$(srcdir)/key_source.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-key_source.Tpo $(DEPDIR)/lib_tests_a-key_source.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='key_source.c' object='lib_tests_a-key_source.obj' libtool=no @AMDEPBACKSLASH@
+lib_tests_a-cwdevice_observer.obj: cwdevice_observer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice_observer.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice_observer.Tpo -c -o lib_tests_a-cwdevice_observer.obj `if test -f 'cwdevice_observer.c'; then $(CYGPATH_W) 'cwdevice_observer.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice_observer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice_observer.Tpo $(DEPDIR)/lib_tests_a-cwdevice_observer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice_observer.c' object='lib_tests_a-cwdevice_observer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-key_source.obj `if test -f 'key_source.c'; then $(CYGPATH_W) 'key_source.c'; else $(CYGPATH_W) '$(srcdir)/key_source.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice_observer.obj `if test -f 'cwdevice_observer.c'; then $(CYGPATH_W) 'cwdevice_observer.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice_observer.c'; fi`
 
-lib_tests_a-key_source_serial.o: key_source_serial.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-key_source_serial.o -MD -MP -MF $(DEPDIR)/lib_tests_a-key_source_serial.Tpo -c -o lib_tests_a-key_source_serial.o `test -f 'key_source_serial.c' || echo '$(srcdir)/'`key_source_serial.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-key_source_serial.Tpo $(DEPDIR)/lib_tests_a-key_source_serial.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='key_source_serial.c' object='lib_tests_a-key_source_serial.o' libtool=no @AMDEPBACKSLASH@
+lib_tests_a-cwdevice_observer_serial.o: cwdevice_observer_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice_observer_serial.o -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Tpo -c -o lib_tests_a-cwdevice_observer_serial.o `test -f 'cwdevice_observer_serial.c' || echo '$(srcdir)/'`cwdevice_observer_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Tpo $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice_observer_serial.c' object='lib_tests_a-cwdevice_observer_serial.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-key_source_serial.o `test -f 'key_source_serial.c' || echo '$(srcdir)/'`key_source_serial.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice_observer_serial.o `test -f 'cwdevice_observer_serial.c' || echo '$(srcdir)/'`cwdevice_observer_serial.c
 
-lib_tests_a-key_source_serial.obj: key_source_serial.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-key_source_serial.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-key_source_serial.Tpo -c -o lib_tests_a-key_source_serial.obj `if test -f 'key_source_serial.c'; then $(CYGPATH_W) 'key_source_serial.c'; else $(CYGPATH_W) '$(srcdir)/key_source_serial.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-key_source_serial.Tpo $(DEPDIR)/lib_tests_a-key_source_serial.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='key_source_serial.c' object='lib_tests_a-key_source_serial.obj' libtool=no @AMDEPBACKSLASH@
+lib_tests_a-cwdevice_observer_serial.obj: cwdevice_observer_serial.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice_observer_serial.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Tpo -c -o lib_tests_a-cwdevice_observer_serial.obj `if test -f 'cwdevice_observer_serial.c'; then $(CYGPATH_W) 'cwdevice_observer_serial.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice_observer_serial.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Tpo $(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice_observer_serial.c' object='lib_tests_a-cwdevice_observer_serial.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-key_source_serial.obj `if test -f 'key_source_serial.c'; then $(CYGPATH_W) 'key_source_serial.c'; else $(CYGPATH_W) '$(srcdir)/key_source_serial.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice_observer_serial.obj `if test -f 'cwdevice_observer_serial.c'; then $(CYGPATH_W) 'cwdevice_observer_serial.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice_observer_serial.c'; fi`
 
 lib_tests_a-misc.o: misc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-misc.o -MD -MP -MF $(DEPDIR)/lib_tests_a-misc.Tpo -c -o lib_tests_a-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
@@ -639,8 +639,8 @@ clean-am: clean-checkLIBRARIES clean-generic mostlyclean-am
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
-	-rm -f ./$(DEPDIR)/lib_tests_a-key_source.Po
-	-rm -f ./$(DEPDIR)/lib_tests_a-key_source_serial.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
@@ -692,8 +692,8 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cw_rec_utils.Po
-	-rm -f ./$(DEPDIR)/lib_tests_a-key_source.Po
-	-rm -f ./$(DEPDIR)/lib_tests_a-key_source_serial.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po

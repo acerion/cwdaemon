@@ -47,8 +47,8 @@
 
 
 
-#include "../library/key_source.h"
-#include "../library/key_source_serial.h"
+#include "../library/cwdevice_observer.h"
+#include "../library/cwdevice_observer_serial.h"
 #include "../library/misc.h"
 #include "../library/process.h"
 #include "../library/socket.h"

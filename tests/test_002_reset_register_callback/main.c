@@ -42,7 +42,7 @@
 
 
 
-#include "../library/key_source_serial.h"
+#include "../library/cwdevice_observer_serial.h"
 #include "../library/misc.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"

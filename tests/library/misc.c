@@ -45,8 +45,8 @@
 
 #include "client.h"
 #include "cw_rec_utils.h"
-#include "key_source.h"
-#include "key_source_serial.h"
+#include "cwdevice_observer.h"
+#include "cwdevice_observer_serial.h"
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
