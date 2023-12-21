@@ -58,7 +58,7 @@
 
 static int receive_from_key_source(int fd, cw_easy_receiver_t * easy_rec, char * buffer, size_t size, const char * expected_reply);
 static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
-static int test_helper_key_source_setup(cw_key_source_t * key_source, const cwdevice_observer_params_t * key_source_params);
+static int test_helper_key_source_setup(cwdevice_observer_t * key_source, const cwdevice_observer_params_t * key_source_params);
 static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const helpers_opts_t * opts);
 
 
@@ -70,7 +70,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
   easy receiver or key source.
 */
 static cw_easy_receiver_t g_easy_rec = { 0 };
-static cw_key_source_t g_key_source = {
+static cwdevice_observer_t g_key_source = {
 	.open_fn            = cw_key_source_serial_open,
 	.close_fn           = cw_key_source_serial_close,
 	.new_key_state_cb   = on_key_state_change,
@@ -131,7 +131,7 @@ static int test_helper_easy_receiver_setup(cw_easy_receiver_t * easy_rec, const 
 /**
    Configure and start a key source used during tests of cwdaemon
 */
-static int test_helper_key_source_setup(cw_key_source_t * key_source, const cwdevice_observer_params_t * key_source_params)
+static int test_helper_key_source_setup(cwdevice_observer_t * key_source, const cwdevice_observer_params_t * key_source_params)
 {
 	snprintf(key_source->source_path, sizeof (key_source->source_path), "%s", key_source_params->source_path);
 	cw_key_source_configure_polling(key_source, 0, cw_key_source_serial_poll_once);

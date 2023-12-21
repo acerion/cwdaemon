@@ -30,8 +30,8 @@
 
 
 
-struct cw_key_source_t;
-typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_down, bool * ptt_is_on);
+struct cwdevice_observer_t;
+typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * source, bool * key_is_down, bool * ptt_is_on);
 
 
 
@@ -45,8 +45,8 @@ typedef bool (* poll_once_fn_t)(struct cw_key_source_t * source, bool * key_is_d
    Structure used by test code to configure observer of cwdevice.
 */
 typedef struct cwdevice_observer_params_t {
-	unsigned int param_keying; /* See cw_key_source_t::param_keying. */
-	unsigned int param_ptt;    /* See cw_key_source_t::param_ptt. */
+	unsigned int param_keying; /* See cwdevice_observer_t::param_keying. */
+	unsigned int param_ptt;    /* See cwdevice_observer_t::param_ptt. */
 	char source_path[SOURCE_PATH_SIZE];      /* See key_source_t::source_path. */
 
 	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
@@ -56,13 +56,16 @@ typedef struct cwdevice_observer_params_t {
 
 
 
-typedef struct cw_key_source_t {
+/**
+   Methods and data of object that observes cwdaemon's cwdevice
+*/
+typedef struct cwdevice_observer_t {
 
 	/* User-provided function that opens a specific key source.*/
-	bool (* open_fn)(struct cw_key_source_t * source);
+	bool (* open_fn)(struct cwdevice_observer_t * source);
 
 	/* User-provided function that closed a specific key source.*/
-	void (* close_fn)(struct cw_key_source_t * source);
+	void (* close_fn)(struct cwdevice_observer_t * source);
 
 	/* User-provided callback function that is called by key source each
 	   time the state of key source changes between up and down. */
@@ -129,7 +132,7 @@ typedef struct cw_key_source_t {
 	   For internal usage only. */
 	pthread_t thread_id;
 
-} cw_key_source_t;
+} cwdevice_observer_t;
 
 
 
@@ -137,7 +140,7 @@ typedef struct cw_key_source_t {
 /**
    Start polling the source
 */
-void cw_key_source_start(cw_key_source_t * source);
+void cw_key_source_start(cwdevice_observer_t * source);
 
 
 
@@ -145,7 +148,7 @@ void cw_key_source_start(cw_key_source_t * source);
 /**
    Stop polling the source
 */
-void cw_key_source_stop(cw_key_source_t * source);
+void cw_key_source_stop(cwdevice_observer_t * source);
 
 
 
@@ -160,7 +163,7 @@ void cw_key_source_stop(cw_key_source_t * source);
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
-void cw_key_source_configure_polling(cw_key_source_t * source, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
+void cw_key_source_configure_polling(cwdevice_observer_t * source, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
 
 
 

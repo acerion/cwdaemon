@@ -54,7 +54,7 @@ static void * key_source_poll_thread(void * arg_key_source);
 
 
 
-void cw_key_source_start(cw_key_source_t * source)
+void cw_key_source_start(cwdevice_observer_t * source)
 {
 	source->do_polling = true;
 	pthread_create(&source->thread_id, NULL, key_source_poll_thread, source);
@@ -63,7 +63,7 @@ void cw_key_source_start(cw_key_source_t * source)
 
 
 
-void cw_key_source_stop(cw_key_source_t * source)
+void cw_key_source_stop(cwdevice_observer_t * source)
 {
 	source->do_polling = false;
 	pthread_cancel(source->thread_id);
@@ -74,7 +74,7 @@ void cw_key_source_stop(cw_key_source_t * source)
 
 static void * key_source_poll_thread(void * arg_key_source)
 {
-	cw_key_source_t * source = (cw_key_source_t *) arg_key_source;
+	cwdevice_observer_t * source = (cwdevice_observer_t *) arg_key_source;
 	while (source->do_polling) {
 		bool key_is_down = false;
 		bool ptt_is_on = false;
@@ -110,7 +110,7 @@ static void * key_source_poll_thread(void * arg_key_source)
 
 
 
-void cw_key_source_configure_polling(cw_key_source_t * source, unsigned int interval_us, poll_once_fn_t poll_once_fn)
+void cw_key_source_configure_polling(cwdevice_observer_t * source, unsigned int interval_us, poll_once_fn_t poll_once_fn)
 {
 	if (0 == interval_us) {
 		source->poll_interval_us = KEY_SOURCE_DEFAULT_INTERVAL_US;
