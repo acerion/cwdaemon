@@ -1,10 +1,6 @@
 /*
  * Copyright (C) 2022 - 2023 Kamil Ignacak <acerion@wp.pl>
  *
- * Code for polling of serial port is based on "statserial - Serial Port
- * Status Utility" (GPL2+).
- * Copyright (C) 1994 Jeff Tranter (Jeff_Tranter@Mitel.COM)
- *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -20,6 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+
+
+
+/**
+   @file Top-level code for observing cwdaemon's cwdevice
+*/
 
 
 

@@ -24,6 +24,16 @@
 
 
 
+/**
+   @file Code that observes cwdaemon's tty cwdevice
+
+   Code for polling of serial port is based on "statserial" program (see
+   copyright notice above).
+*/
+
+
+
+
 // TODO (acerion) 2022.12.17: GNU's strerror_r() may not fill provided buffer :(
 // Write own replacement of strerror_r() that bevaves as expected.
 //
