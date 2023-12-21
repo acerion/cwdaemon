@@ -48,6 +48,9 @@ typedef struct cw_key_source_params_t {
 	unsigned int param_keying; /* See cw_key_source_t::param_keying. */
 	unsigned int param_ptt;    /* See cw_key_source_t::param_ptt. */
 	char source_path[SOURCE_PATH_SIZE];      /* See key_source_t::source_path. */
+
+	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
+	void * new_ptt_state_arg;                                      /**< Argument to be passed by cwdaevice observer to new_ptt_state_cb. */
 } cw_key_source_params_t;
 
 
@@ -65,9 +68,17 @@ typedef struct cw_key_source_t {
 	   time the state of key source changes between up and down. */
 	bool (* new_key_state_cb)(void * new_key_state_sink, bool key_is_down);
 
+	/* User-provided callback function that is called by key source each
+	   time the state of PTT value changes between 'on' and 'off'. */
+	bool (* new_ptt_state_cb)(void * ptt_arg, bool ptt_is_on);
+
 	/* Pointer that will be passed as first argument of new_key_state_cb
 	   on each call to the function. */
 	void * new_key_state_sink;
+
+	/* Pointer that will be passed as first argument of new_ptt_state_cb
+	   on each call to the function. */
+	void * new_ptt_state_arg;
 
 	/* At what intervals to poll key source? [microseconds]. User should
 	   assign KEY_SOURCE_DEFAULT_INTERVAL_US as default value (unless

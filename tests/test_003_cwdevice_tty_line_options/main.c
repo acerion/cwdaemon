@@ -53,6 +53,37 @@
 
 
 
+#define PTT_EXPERIMENT 1
+
+#if PTT_EXPERIMENT
+typedef struct ptt_sink_t {
+	int dummy;
+} ptt_sink_t;
+
+
+
+
+static ptt_sink_t g_ptt_sink = { 0 };
+
+
+
+
+/**
+   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
+
+   A simple wrapper that seems to be convenient.
+*/
+static bool on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
+{
+	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
+	fprintf(stderr, "[DEBUG] ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
+
+	return true;
+}
+#endif /* #if PTT_EXPERIMENT */
+
+
+
 
 typedef struct test_case_t {
 	const char * description;                /**< Tester-friendly description of test case. */
@@ -148,6 +179,10 @@ int main(void)
 			.param_keying = test_case->key_source_param_keying,
 			.param_ptt    = test_case->key_source_param_ptt,
 			.source_path  = "/dev/" TEST_CWDEVICE_NAME,
+#if PTT_EXPERIMENT
+			.new_ptt_state_cb   = on_ptt_state_change,
+			.new_ptt_state_arg = &g_ptt_sink,
+#endif
 		};
 		cwdaemon_process_t cwdaemon = { 0 };
 		client_t client = { 0 };

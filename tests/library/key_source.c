@@ -81,15 +81,18 @@ static void * key_source_poll_thread(void * arg_key_source)
 			return NULL;
 		}
 
-		/* TODO: ptt state is not being passed anywhere and is not
-		   taken into consideration when testing cwdaemon. Use the
-		   value somewhere. */
-		if (key_is_down == source->previous_key_is_down && ptt_is_on == source->previous_ptt_is_on) {
-			/* Key state and ptt state not changed, do nothing. */
-		} else {
+		/* Recognize new state, save it and react to it. */
+		if (key_is_down != source->previous_key_is_down) {
 			source->previous_key_is_down = key_is_down;
+			if (source->new_key_state_cb) {
+				source->new_key_state_cb(source->new_key_state_sink, key_is_down);
+			}
+		}
+		if (ptt_is_on != source->previous_ptt_is_on) {
 			source->previous_ptt_is_on = ptt_is_on;
-			source->new_key_state_cb(source->new_key_state_sink, key_is_down);
+			if (source->new_ptt_state_cb) {
+				source->new_ptt_state_cb(source->new_ptt_state_arg, ptt_is_on);
+			}
 		}
 
 		const int sleep_retv = microsleep_nonintr(source->poll_interval_us);

@@ -140,7 +140,12 @@ static int test_helper_key_source_setup(cw_key_source_t * key_source, const cw_k
 	}
 	key_source->param_keying = key_source_params->param_keying;
 	key_source->param_ptt    = key_source_params->param_ptt;
+
+	key_source->new_ptt_state_cb = key_source_params->new_ptt_state_cb;
+	key_source->new_ptt_state_arg = key_source_params->new_ptt_state_arg;
+
 	cw_key_source_start(key_source);
+
 	return 0;
 }
 
