@@ -142,8 +142,11 @@ typedef struct cwdevice_observer_t {
 
 /**
    Start polling the cwdevice
+
+   @return 0 on success
+   @return -1 on failure
 */
-void cwdevice_observer_start(cwdevice_observer_t * observer);
+int cwdevice_observer_start(cwdevice_observer_t * observer);
 
 
 

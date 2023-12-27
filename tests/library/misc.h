@@ -30,6 +30,7 @@ typedef struct {
    @return -1 otherwise
 */
 int client_send_and_receive(client_t * client, const char * message_value, bool expected_failed_receive);
+int client_send_and_receive_2(client_t * client, cw_easy_receiver_t * morse_receiver, const char * message_value, bool expected_failed_receive);
 
 
 

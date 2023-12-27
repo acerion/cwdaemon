@@ -49,15 +49,17 @@
 
 
 
-static void * cwdevice_observer_poll_thread(void * arg_cwdevice);
+static void * cwdevice_observer_poll_thread(void * arg_observer);
 
 
 
 
-void cwdevice_observer_start(cwdevice_observer_t * observer)
+int cwdevice_observer_start(cwdevice_observer_t * observer)
 {
 	observer->do_polling = true;
 	pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
+
+	return 0;
 }
 
 

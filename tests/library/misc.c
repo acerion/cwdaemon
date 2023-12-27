@@ -167,7 +167,14 @@ void test_helpers_cleanup(void)
 int client_send_and_receive(client_t * client, const char * message_value, bool expected_failed_receive)
 {
 	cw_easy_receiver_t * easy_rec = &g_easy_rec;
+	return client_send_and_receive_2(client, easy_rec, message_value, expected_failed_receive);
+}
 
+
+
+
+int client_send_and_receive_2(client_t * client, cw_easy_receiver_t * morse_receiver, const char * message_value, bool expected_failed_receive)
+{
 	/* When comparing strings, remember that a receiver may have received
 	   first characters incorrectly. receive_from_key_source() prefixes a
 	   text request with some startup text that is allowed to be
@@ -195,7 +202,7 @@ int client_send_and_receive(client_t * client, const char * message_value, bool 
 
 
 	char receive_buffer[30] = { 0 };
-	if (0 != receive_from_key_source(client->sock, easy_rec, receive_buffer, sizeof (receive_buffer), expected_reply)) {
+	if (0 != receive_from_key_source(client->sock, morse_receiver, receive_buffer, sizeof (receive_buffer), expected_reply)) {
 		fprintf(stderr, "[EE] Failed to receive from cwdevice observer\n");
 		return -1;
 	}
