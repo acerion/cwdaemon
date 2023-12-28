@@ -12,7 +12,8 @@
 
 
 typedef struct client_t {
-	int sock;   /**< Network socket used by client to communicate with server. */
+	int sock;                 /**< Network socket used by client to communicate with server. */
+	char reply_buffer[64];    /**< Buffer for receiving replies from server. */
 } client_t;
 
 
