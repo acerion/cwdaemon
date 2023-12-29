@@ -28,6 +28,7 @@
 
 
 #include <errno.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -57,9 +58,15 @@ static void * cwdevice_observer_poll_thread(void * arg_observer);
 int cwdevice_observer_start(cwdevice_observer_t * observer)
 {
 	observer->do_polling = true;
-	pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
-
-	return 0;
+	const int retv = pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
+	if (0 != retv) {
+		fprintf(stderr, "[EE] Failed to create an observer thread: %d\n", retv);
+		observer->do_polling = false;
+		return -1;
+	} else {
+		observer->thread_created = true;
+		return 0;
+	}
 }
 
 
@@ -67,8 +74,11 @@ int cwdevice_observer_start(cwdevice_observer_t * observer)
 
 void cwdevice_observer_stop(cwdevice_observer_t * observer)
 {
-	observer->do_polling = false;
-	pthread_cancel(observer->thread_id);
+	if (observer->thread_created) {
+		observer->do_polling = false;
+		pthread_cancel(observer->thread_id);
+		observer->thread_created = false;
+	}
 }
 
 

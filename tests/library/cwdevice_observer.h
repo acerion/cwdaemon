@@ -135,6 +135,7 @@ typedef struct cwdevice_observer_t {
 	   For internal usage only. */
 	pthread_t thread_id;
 
+	bool thread_created; /**< Whether a thread was created correctly. */
 } cwdevice_observer_t;
 
 
