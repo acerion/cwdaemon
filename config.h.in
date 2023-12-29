@@ -128,6 +128,9 @@
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
+/* Path to cwdaemon binary used in functional tests. */
+#undef TEST_CWDAEMON_PATH
+
 /* Version number of package */
 #undef VERSION
 

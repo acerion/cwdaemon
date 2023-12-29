@@ -775,6 +775,7 @@ enable_silent_rules
 enable_maintainer_mode
 enable_dependency_tracking
 enable_functional_tests
+with_test_cwdaemon_path
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1425,7 +1426,14 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --enable-functional-tests
-                          enable functional tests
+                          enable functional tests of cwdaemon
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-test-cwdaemon-path=STRING
+                          specify a path to cwdaemon binary used in functional
+                          tests
 
 Some influential environment variables:
   CC          C compiler command
@@ -6680,8 +6688,8 @@ else $as_nop
 fi
 
 
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to build cwdaemon tests" >&5
-printf %s "checking whether to build cwdaemon tests... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to build cwdaemon's functional tests" >&5
+printf %s "checking whether to build cwdaemon's functional tests... " >&6; }
 if test x$enable_functional_tests = xyes ; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
@@ -6697,6 +6705,22 @@ else
   FUNCTIONAL_TESTS_FALSE=
 fi
 
+
+
+
+
+# Path to cwdaemon binary that will be used as local test instance of cwdaemon server.
+test_cwdaemon_path=$ac_pwd/src/cwdaemon
+
+# Check whether --with-test_cwdaemon_path was given.
+if test ${with_test_cwdaemon_path+y}
+then :
+  withval=$with_test_cwdaemon_path; test_cwdaemon_path="$withval"
+fi
+
+# The next line will write a #define into ROOT/config.h.
+
+printf "%s\n" "#define TEST_CWDAEMON_PATH \"${test_cwdaemon_path}\"" >>confdefs.h
 
 
 
@@ -8234,25 +8258,27 @@ fi
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
 printf "%s\n" "$as_me: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system:  ........  $host_os" >&5
-printf "%s\n" "$as_me:   operating system:  ........  $host_os" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path:  ......  $LIBCW_LIBDIR" >&5
-printf "%s\n" "$as_me:   libcw library path:  ......  $LIBCW_LIBDIR" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ....  $(pkg-config --modversion libcw)" >&5
-printf "%s\n" "$as_me:   libcw library version: ....  $(pkg-config --modversion libcw)" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS:  ..............  $LIBCW_LIBS" >&5
-printf "%s\n" "$as_me:   LIBCW_LIBS:  ..............  $LIBCW_LIBS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_CFLAGS: .............  $LIBCW_CFLAGS" >&5
-printf "%s\n" "$as_me:   LIBCW_CFLAGS: .............  $LIBCW_CFLAGS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS:  ..................  $CFLAGS" >&5
-printf "%s\n" "$as_me:   CFLAGS:  ..................  $CFLAGS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ........  yes" >&5
-printf "%s\n" "$as_me:   enable unit tests: ........  yes" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ..  $enable_functional_tests" >&5
-printf "%s\n" "$as_me:   enable functional tests: ..  $enable_functional_tests" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system:  ..............  $host_os" >&5
+printf "%s\n" "$as_me:   operating system:  ..............  $host_os" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path:  ............  $LIBCW_LIBDIR" >&5
+printf "%s\n" "$as_me:   libcw library path:  ............  $LIBCW_LIBDIR" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&5
+printf "%s\n" "$as_me:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS:  ....................  $LIBCW_LIBS" >&5
+printf "%s\n" "$as_me:   LIBCW_LIBS:  ....................  $LIBCW_LIBS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&5
+printf "%s\n" "$as_me:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS:  ........................  $CFLAGS" >&5
+printf "%s\n" "$as_me:   CFLAGS:  ........................  $CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ..............  yes" >&5
+printf "%s\n" "$as_me:   enable unit tests: ..............  yes" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ........  $enable_functional_tests" >&5
+printf "%s\n" "$as_me:   enable functional tests: ........  $enable_functional_tests" >&6;}
 if test x$enable_functional_tests = xyes ; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test cwdevice name: ...  $TEST_CWDEVICE_NAME" >&5
-printf "%s\n" "$as_me:       test cwdevice name: ...  $TEST_CWDEVICE_NAME" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test cwdevice name: .........  $TEST_CWDEVICE_NAME" >&5
+printf "%s\n" "$as_me:       test cwdevice name: .........  $TEST_CWDEVICE_NAME" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&5
+printf "%s\n" "$as_me:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&6;}
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}

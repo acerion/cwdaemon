@@ -198,7 +198,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client)
 {
-	const char * path = ROOT_DIR "/src/cwdaemon";
+	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon\n");
 		return -1;

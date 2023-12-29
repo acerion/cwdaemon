@@ -113,11 +113,11 @@ CFLAGS="${CFLAGS} -std=c99"
 
 # Build functional tests? No by default.
 AC_ARG_ENABLE(functional_tests,
-    AS_HELP_STRING([--enable-functional-tests], [enable functional tests]),
+    AS_HELP_STRING([--enable-functional-tests], [enable functional tests of cwdaemon]),
     [],
     [enable_functional_tests=no])
 
-AC_MSG_CHECKING([whether to build cwdaemon tests])
+AC_MSG_CHECKING([whether to build cwdaemon's functional tests])
 if test x$enable_functional_tests = xyes ; then
     AC_MSG_RESULT(yes)
 else
@@ -125,6 +125,17 @@ else
 fi
 AM_CONDITIONAL([FUNCTIONAL_TESTS], [test x$enable_functional_tests = xyes])
 AC_SUBST(FUNCTIONAL_TESTS)
+
+
+
+# Path to cwdaemon binary that will be used as local test instance of cwdaemon server.
+test_cwdaemon_path=$ac_pwd/src/cwdaemon
+AC_ARG_WITH([test_cwdaemon_path],
+            [AS_HELP_STRING([--with-test-cwdaemon-path=STRING],
+                            [specify a path to cwdaemon binary used in functional tests])],
+            [test_cwdaemon_path="$withval"], [])
+# The next line will write a #define into ROOT/config.h.
+AC_DEFINE_UNQUOTED([TEST_CWDAEMON_PATH],["${test_cwdaemon_path}"],[Path to cwdaemon binary used in functional tests.])
 
 
 
@@ -195,15 +206,16 @@ AC_OUTPUT
 # console.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
-AC_MSG_NOTICE([  operating system:  ........  $host_os])
-AC_MSG_NOTICE([  libcw library path:  ......  $LIBCW_LIBDIR])
-AC_MSG_NOTICE([  libcw library version: ....  $(pkg-config --modversion libcw)])
-AC_MSG_NOTICE([  LIBCW_LIBS:  ..............  $LIBCW_LIBS])
-AC_MSG_NOTICE([  LIBCW_CFLAGS: .............  $LIBCW_CFLAGS])
-AC_MSG_NOTICE([  CFLAGS:  ..................  $CFLAGS])
-AC_MSG_NOTICE([  enable unit tests: ........  yes])
-AC_MSG_NOTICE([  enable functional tests: ..  $enable_functional_tests])
+AC_MSG_NOTICE([  operating system:  ..............  $host_os])
+AC_MSG_NOTICE([  libcw library path:  ............  $LIBCW_LIBDIR])
+AC_MSG_NOTICE([  libcw library version: ..........  $(pkg-config --modversion libcw)])
+AC_MSG_NOTICE([  LIBCW_LIBS:  ....................  $LIBCW_LIBS])
+AC_MSG_NOTICE([  LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS])
+AC_MSG_NOTICE([  CFLAGS:  ........................  $CFLAGS])
+AC_MSG_NOTICE([  enable unit tests: ..............  yes])
+AC_MSG_NOTICE([  enable functional tests: ........  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
-    AC_MSG_NOTICE([      test cwdevice name: ...  $TEST_CWDEVICE_NAME])
+    AC_MSG_NOTICE([      test cwdevice name: .........  $TEST_CWDEVICE_NAME])
+    AC_MSG_NOTICE([      path to cwdaemon binary: ..... $test_cwdaemon_path])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

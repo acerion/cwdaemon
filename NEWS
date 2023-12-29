@@ -3,7 +3,7 @@ cwdaemon 0.13.0 / 20ab.cd.ef
 New release. Changes since previous release:
 
 
- * QA
+ * Quality Assurance
 
    * Fixing issues found in C code by current version of clangd LSP server.
 
@@ -33,6 +33,16 @@ New release. Changes since previous release:
       - cert-msc32-c (cert-msc51-cpp)
       - cert-msc30-c (cert-msc50-cpp)
       - llvm-include-order
+
+   * Path to cwdaemon binary used during functional tests can be specified as
+     an argument to ./configure script:
+
+        ./configure --enable-functional-tests --with-test-cwdaemon-path=/home/user/sbin/cwdaemon
+
+     This allows running a set of functional tests against any version of
+     cwdaemon. It's e.g. possible to run the latest set of tests against some
+     older release of cwdaemon to see how that release behaved.
+
 
  * Debugging of libcw
 

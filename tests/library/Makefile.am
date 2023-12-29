@@ -28,5 +28,5 @@ lib_tests_a_SOURCES = client.c             \
                       socket.c             \
                       test_env.c
 
-lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DROOT_DIR=\"$(abs_top_builddir)\" -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
+lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 
