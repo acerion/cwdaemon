@@ -2565,8 +2565,7 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	else if ((fd = dev_get_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "no valid device found, setting cwdevice to null device");
+		log_message(LOG_NOTICE, "no valid device found, setting cwdevice to null device");
 		/* It's better to have null device than NULL
 		   pointer. */
 		*device = &cwdevice_null;

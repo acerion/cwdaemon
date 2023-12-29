@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/syslog.h>
 #include <syslog.h>
 
 #include "log.h"
@@ -101,14 +102,33 @@ void cwdaemon_errmsg(const char *format, ...)
 
 
 
-/**
-   @brief Log error message to current log output (possibly to syslog)
-*/
-void log_message(__attribute__((unused)) int priority, const char * format, ...)
+void log_message(int priority, const char * format, ...)
 {
 	if (!g_forking && !cwdaemon_debug_f) {
 		/* No output file defined. */
 		return;
+	}
+
+	const char * prio_str = NULL;
+	switch (priority) {
+	case LOG_ERR:
+		prio_str = "EE";
+		break;
+	case LOG_WARNING:
+		prio_str = "WW";
+		break;
+	case LOG_NOTICE:
+		prio_str = "NN";
+		break;
+	case LOG_INFO:
+		prio_str = "II";
+		break;
+	case LOG_DEBUG:
+		prio_str = "DD";
+		break;
+	default:
+		prio_str = "??";
+		break;
 	}
 
 	va_list ap;
@@ -118,10 +138,10 @@ void log_message(__attribute__((unused)) int priority, const char * format, ...)
 	va_end(ap);
 
 	if (g_forking) {
-		syslog(LOG_ERR, "%s\n", buf);
+		syslog(priority, "%s\n", buf);
 	} else {
 		if (cwdaemon_debug_f) {
-			fprintf(cwdaemon_debug_f, "[ERROR] %s: %s\n", PACKAGE, buf);
+			fprintf(cwdaemon_debug_f, "[%s] %s: %s\n", prio_str, PACKAGE, buf);
 		}
 	}
 
