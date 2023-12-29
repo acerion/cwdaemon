@@ -250,7 +250,7 @@ int main(void)
 #endif
 
 	const uint32_t seed = cwdaemon_srandom(0);
-	fprintf(stderr, "[INFO ] Random seed: %u\n", seed);
+	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
 
 	const int wpm = 10;
 	cwdaemon_opts_t server_opts = {
