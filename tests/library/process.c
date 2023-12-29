@@ -166,30 +166,54 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 		execve(path, (char * const *) argv, env);
 		fprintf(stderr, "[EE] Returning after failed exec(): %s\n", strerror(errno));
-		return -1;
+		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
 		/*
-		  300 milliseconds. Give the process some time to start.
-		  Delay introduced after I noticed that a receiver test that
-		  was started immediately after start of cwdaemon was always
-		  receiving first letter incorrectly. With 60 milliseconds
-		  the behaviour was correct, but I'm setting it to 300 ms to
-		  be sure.
+		  Wait for start of cwdaemon for two reasons:
 
-		  Usually the tests are written in a way to expect and
-		  discard errors at the beginning of received text, but why
-		  add another factor that decreases quality of receiving?
+		  1. if execve() fails, waitpid() will be able to detect this only
+		     after some small delay (~30 ms). Calling waitpid(WNOHANG) too
+		     early will result in detecting a running child process.
+		  2. Give the cwdaemon some time to properly start.
+
+		  More info on the second reason: I noticed that a Morse-receiver
+		  test that was started immediately after start of cwdaemon was
+		  always receiving first letter incorrectly. With 60 milliseconds the
+		  behaviour was correct, but I'm setting it to 300 ms to be sure.
+
+		  Usually the tests are written in a way to expect and discard errors
+		  at the beginning of received text, but why add another factor that
+		  decreases quality of receiving?
 		*/
 		const int sleep_retv = millisleep_nonintr(300);
 		if (sleep_retv) {
-			fprintf(stderr, "[ERROR] error during sleep in parent\n");
+			fprintf(stderr, "[EE] Error during sleep in parent: %s\n", strerror(errno));
+			return -1;
 		}
 
-		fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
-
-		cwdaemon->pid = pid;
-		cwdaemon->l4_port = l4_port;
-		return 0;
+		int wstatus = 0;
+		pid_t waited_pid = waitpid(-1, &wstatus, WNOHANG);
+		if (pid == waited_pid) {
+			fprintf(stderr, "[NN] Child process %d changed state\n", pid);
+			if (WIFEXITED(wstatus)) {
+				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(wstatus));
+			} else if (WIFSIGNALED(wstatus)) {
+				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(wstatus));
+			} else if (WIFSTOPPED(wstatus)) {
+				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(wstatus));
+			} else {
+				fprintf(stderr, "[EE] Child process didn't start correctly due to unknown reason\n");
+			}
+			return -1;
+		} else if (0 == waited_pid) {
+			fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
+			cwdaemon->pid = pid;
+			cwdaemon->l4_port = l4_port;
+			return 0;
+		} else {
+			fprintf(stderr, "[EE] waitpid() returns %d\n", waited_pid);
+			return -1;
+		}
 	}
 }
 
