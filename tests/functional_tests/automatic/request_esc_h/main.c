@@ -33,7 +33,6 @@
 #define _DEFAULT_SOURCE
 
 #include <ctype.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,6 +49,7 @@
 #include "tests/library/process.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
+#include "tests/library/thread.h"
 
 
 
@@ -269,29 +269,33 @@ static char * escape_string(const char * buffer, char * escaped, size_t size)
 
 
 
-
-static void * morse_receiver_thread_fn(void * test_case_arg)
+static void * morse_receiver_thread_fn(void * thread_arg)
 {
-	test_case_t * test_case = test_case_arg;
+	thread_t * thread = (thread_t *) thread_arg;
+	test_case_t * test_case = (test_case_t *) thread->thread_fn_arg;
 	cwdevice_observer_t cwdevice_observer = { 0 };
 	cw_easy_receiver_t morse_receiver = { 0 };
 
+	thread->status = thread_running;
 
 	/* Preparation of test helpers. */
 	{
 		/* Prepare observer of cwdevice. */
 		if (0 != cwdevice_observer_setup(&cwdevice_observer, &morse_receiver)) {
-			fprintf(stderr, "[EE] Failed to set up observer of cwdevice\n");
+			fprintf(stderr, "[EE] Morse receiver thread: failed to set up observer of cwdevice\n");
+			thread->status = thread_stopped_err;
 			return NULL;
 		}
 		cwdevice_observer.tty_pins_config = test_case->observer_tty_pins; /* Observer of cwdevice should look at pins according to this config. */
 		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
-			fprintf(stderr, "[EE] Failed to start up cwdevice observer\n");
+			fprintf(stderr, "[EE] Morse receiver thread: failed to start up cwdevice observer\n");
+			thread->status = thread_stopped_err;
 			return NULL;
 		}
 		/* Prepare receiver of Morse code. */
 		if (0 != morse_receiver_setup(&morse_receiver, 10)) { /* FIXME acerion 2023.12.28: replace magic number with wpm. */
-			fprintf(stderr, "[EE] Failed to set up Morse receiver\n");
+			fprintf(stderr, "[EE] Morse receiver thread: failed to set up Morse receiver\n");
+			thread->status = thread_stopped_err;
 			return NULL;
 		}
 	}
@@ -313,7 +317,7 @@ static void * morse_receiver_thread_fn(void * test_case_arg)
 	do {
 		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
-			fprintf(stderr, "[EE] error in sleep while receiving Morse code\n");
+			fprintf(stderr, "[EE] Morse receiver thread: error in sleep while receiving Morse code\n");
 		}
 
 		cw_rec_data_t erd = { 0 };
@@ -342,20 +346,22 @@ static void * morse_receiver_thread_fn(void * test_case_arg)
 	cwdevice_observer_dtor(&cwdevice_observer);
 
 
+	thread->status = thread_stopped_ok;
 	return NULL;
 }
 
 
 
 
-static void * socket_receiver_thread_fn(void * client_arg)
+static void * socket_receiver_thread_fn(void * thread_arg)
 {
-	client_t * client = (client_t *) client_arg;
+	thread_t * thread = (thread_t *) thread_arg;
+	client_t * client = (client_t *) thread->thread_fn_arg;
+	thread->status = thread_running;
 
 	const int loop_iter_sleep_ms = 10; /* [milliseconds] Sleep duration in one iteration of a loop. TODO acerion 2023.12.28: use a constant. */
 	const int loop_total_wait_ms = RECEIVE_TOTAL_WAIT_MS;
 	int loop_iters = loop_total_wait_ms / loop_iter_sleep_ms;
-
 
 	do {
 		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
@@ -377,9 +383,9 @@ static void * socket_receiver_thread_fn(void * client_arg)
 		fprintf(stderr, "[NN] Expected reply from cwdaemon was not received within given time\n");
 	}
 
-	return 0;
+	thread->status = thread_stopped_ok;
+	return NULL;
 }
-
 
 
 
@@ -419,13 +425,8 @@ int main(void)
 		char escaped_expected[64] = { 0 };
 		char escaped_actual[64] = { 0 };
 
-
-		pthread_t socket_thread_id = { 0 };
-		pthread_t morse_receiver_thread_id = { 0 };
-		pthread_attr_t socket_thread_attr;
-		pthread_attr_t morse_receiver_thread_attr;
-		pthread_attr_init(&socket_thread_attr);
-		pthread_attr_init(&morse_receiver_thread_attr);
+		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = socket_receiver_thread_fn, .thread_fn_arg = &client };
+		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = test_case };
 
 
 
@@ -438,9 +439,16 @@ int main(void)
 
 
 
-
-		pthread_create(&socket_thread_id, &socket_thread_attr, socket_receiver_thread_fn, &client);
-		pthread_create(&morse_receiver_thread_id, &morse_receiver_thread_attr, morse_receiver_thread_fn, test_case);
+		if (0 != thread_start(&morse_receiver_thread)) {
+			fprintf(stderr, "[EE] Failed to start Morse receiver thread\n");
+			failure = true;
+			goto cleanup;
+		}
+		if (0 != thread_start(&socket_receiver_thread)) {
+			fprintf(stderr, "[EE] Failed to start socket receiver thread\n");
+			failure = true;
+			goto cleanup;
+		}
 
 
 
@@ -466,8 +474,8 @@ int main(void)
 		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
 
 
-		pthread_join(socket_thread_id, NULL);
-		pthread_join(morse_receiver_thread_id, NULL);
+		thread_join(&socket_receiver_thread);
+		thread_join(&morse_receiver_thread);
 
 
 		/* Compare the expected reply with actual reply. Notice that cwdaemon
@@ -487,6 +495,8 @@ int main(void)
 
 
 	cleanup:
+		thread_cleanup(&socket_receiver_thread);
+		thread_cleanup(&morse_receiver_thread);
 
 		/* Terminate local test instance of cwdaemon. */
 		if (0 != local_server_stop(&cwdaemon, &client)) {

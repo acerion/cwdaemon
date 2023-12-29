@@ -117,7 +117,8 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
 	lib_tests_a-misc.$(OBJEXT) lib_tests_a-process.$(OBJEXT) \
-	lib_tests_a-socket.$(OBJEXT) lib_tests_a-test_env.$(OBJEXT)
+	lib_tests_a-socket.$(OBJEXT) lib_tests_a-test_env.$(OBJEXT) \
+	lib_tests_a-thread.$(OBJEXT)
 lib_tests_a_OBJECTS = $(am_lib_tests_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -141,7 +142,8 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
 	./$(DEPDIR)/lib_tests_a-process.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
-	./$(DEPDIR)/lib_tests_a-test_env.Po
+	./$(DEPDIR)/lib_tests_a-test_env.Po \
+	./$(DEPDIR)/lib_tests_a-thread.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -307,7 +309,8 @@ check_HEADERS = client.h             \
                 misc.h               \
                 process.h            \
                 socket.h             \
-                test_env.h
+                test_env.h           \
+                thread.h
 
 
 # convenience library
@@ -319,7 +322,8 @@ lib_tests_a_SOURCES = client.c             \
                       misc.c               \
                       process.c            \
                       socket.c             \
-                      test_env.c
+                      test_env.c           \
+                      thread.c
 
 lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 all: all-am
@@ -378,6 +382,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-process.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_env.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-thread.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -513,6 +518,20 @@ lib_tests_a-test_env.obj: test_env.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-test_env.obj `if test -f 'test_env.c'; then $(CYGPATH_W) 'test_env.c'; else $(CYGPATH_W) '$(srcdir)/test_env.c'; fi`
 
+lib_tests_a-thread.o: thread.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-thread.o -MD -MP -MF $(DEPDIR)/lib_tests_a-thread.Tpo -c -o lib_tests_a-thread.o `test -f 'thread.c' || echo '$(srcdir)/'`thread.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-thread.Tpo $(DEPDIR)/lib_tests_a-thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='thread.c' object='lib_tests_a-thread.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-thread.o `test -f 'thread.c' || echo '$(srcdir)/'`thread.c
+
+lib_tests_a-thread.obj: thread.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-thread.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-thread.Tpo -c -o lib_tests_a-thread.obj `if test -f 'thread.c'; then $(CYGPATH_W) 'thread.c'; else $(CYGPATH_W) '$(srcdir)/thread.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-thread.Tpo $(DEPDIR)/lib_tests_a-thread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='thread.c' object='lib_tests_a-thread.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-thread.obj `if test -f 'thread.c'; then $(CYGPATH_W) 'thread.c'; else $(CYGPATH_W) '$(srcdir)/thread.c'; fi`
+
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
 tags: tags-am
@@ -645,6 +664,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -698,6 +718,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

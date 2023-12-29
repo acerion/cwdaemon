@@ -14,7 +14,8 @@ check_HEADERS = client.h             \
                 misc.h               \
                 process.h            \
                 socket.h             \
-                test_env.h
+                test_env.h           \
+                thread.h
 
 # convenience library
 check_LIBRARIES = lib_tests.a
@@ -26,7 +27,8 @@ lib_tests_a_SOURCES = client.c             \
                       misc.c               \
                       process.c            \
                       socket.c             \
-                      test_env.c
+                      test_env.c           \
+                      thread.c
 
 lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 
