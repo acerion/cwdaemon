@@ -26,6 +26,7 @@
 
 
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
@@ -51,7 +52,17 @@ uint32_t cwdaemon_srandom(uint32_t seed)
 	if (0 == seed) {
 		/* Naive fix for cert-msc32-c. cwdaemon doesn't require anything
 		   better now. */
-		const uint32_t local_seed = time(NULL) ^ getpid();
+
+		struct timespec spec;
+		clock_gettime(CLOCK_MONOTONIC, &spec);
+		/*
+		  999_999_999 nanoseconds is represented in hex with 8 hex digits as
+		  3b9ac9ff. This means that if I apply 7-digits mask, I will have
+		  7x4=28 random-ish bits.
+		*/
+		const uint32_t nsec = (spec.tv_nsec & 0xfffffff) << (32 - 28);
+
+		const uint32_t local_seed = time(NULL) ^ getpid() ^ nsec;
 		srandom((unsigned int) local_seed);
 		return local_seed;
 	} else {
