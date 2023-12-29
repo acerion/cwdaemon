@@ -134,3 +134,22 @@ void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigne
 }
 
 
+
+
+int cwdevice_observer_dtor(cwdevice_observer_t * observer)
+{
+	if (!observer) {
+		return 0;
+	}
+
+	cwdevice_observer_stop(observer);
+	if (observer->close_fn) {
+		observer->close_fn(observer);
+	}
+
+	return 0;
+}
+
+
+
+

@@ -158,17 +158,6 @@ static int cwdevice_observer_setup(cwdevice_observer_t * observer, cw_easy_recei
 
 
 
-static int cwdevice_observer_desetup(cwdevice_observer_t * observer)
-{
-	cwdevice_observer_stop(observer);
-	observer->close_fn(observer);
-
-	return 0;
-}
-
-
-
-
 /**
    @brief Inform an easy receiver that a key has a new state (up or down)
 
@@ -332,7 +321,7 @@ int main(void)
 
 	cleanup:
 		test_helpers_morse_receiver_desetup(&morse_receiver);
-		cwdevice_observer_desetup(&cwdevice_observer);
+		cwdevice_observer_dtor(&cwdevice_observer);
 
 		/* Terminate local test instance of cwdaemon. */
 		if (0 != local_server_stop(&cwdaemon, &client)) {

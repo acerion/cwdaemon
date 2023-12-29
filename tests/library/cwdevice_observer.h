@@ -175,5 +175,22 @@ void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigne
 
 
 
+
+/**
+   @brief Destructor of observer of cwdevice
+
+   Stop any activities of observer. Release all resources used by the
+   observer.
+
+   @param [in/out] observer Observer to be destructed
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdevice_observer_dtor(cwdevice_observer_t * observer);
+
+
+
+
 #endif /* #ifndef CWDEVICE_OBSERVER_H */
 
