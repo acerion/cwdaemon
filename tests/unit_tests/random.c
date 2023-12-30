@@ -1,4 +1,6 @@
 /*
+ * This file is a part of cwdaemon project.
+ *
  * Copyright (C) 2023 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +23,7 @@
 
 
 /**
-	@file Unit tests for cwdaemon/src/lib/random.c
-
-	This file is part of cwdaemon package.
+   @file Unit tests for cwdaemon/src/lib/random.c
 */
 
 

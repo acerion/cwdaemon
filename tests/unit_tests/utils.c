@@ -1,5 +1,6 @@
 /*
- * cwdaemon - morse sounding daemon for the parallel or serial port
+ * This file is a part of cwdaemon project.
+ *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
  * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
@@ -25,7 +26,7 @@
 
 
 /**
-	@file Unit tests for cwdaemon/src/utils.c
+   @file Unit tests for cwdaemon/src/utils.c
 */
 
 

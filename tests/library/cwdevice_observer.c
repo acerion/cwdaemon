@@ -1,4 +1,6 @@
 /*
+ * This file is a part of cwdaemon project.
+ *
  * Copyright (C) 2022 - 2023 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify

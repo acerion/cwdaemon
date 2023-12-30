@@ -9,13 +9,6 @@
 
 
 
-/*
-  Wrappers around pthread functions and data structures.
-*/
-
-
-
-
 typedef enum {
 	thread_not_started,    /**< Thread has not been started yet. */
 	thread_running,        /**< Thread is still running. */

@@ -1,5 +1,6 @@
 /*
- * thread.c - thread functions for cwdaemon tests
+ * This file is a part of cwdaemon project.
+ *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
  * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
  *
@@ -18,6 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+
+
+
+/**
+  Wrappers around pthread functions and data structures.
+*/
 
 
 

@@ -1,6 +1,5 @@
 /*
- * client.c - Client connecting to local or remote cwdaemon server over
- * network socket.
+ * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
  * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
@@ -25,6 +24,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+
+
+
+/**
+   Code for cwdaemon client - an entity connecting to local or remote
+   cwdaemon server over network socket.
+
+   Most of the time the communication is from client to server, but once in a
+   while the client can expect to receive some reply from the server (e.g.
+   thanks to <ESC>h request).
+*/
 
 
 
