@@ -506,7 +506,8 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = unit_tests $(am__append_1)
-TESTS = unit_tests/random unit_tests/utils $(am__append_2)
+TESTS = unit_tests/random unit_tests/utils unit_tests/time_utils \
+	$(am__append_2)
 all: all-recursive
 
 .SUFFIXES:
@@ -791,6 +792,13 @@ unit_tests/random.log: unit_tests/random
 unit_tests/utils.log: unit_tests/utils
 	@p='unit_tests/utils'; \
 	b='unit_tests/utils'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unit_tests/time_utils.log: unit_tests/time_utils
+	@p='unit_tests/time_utils'; \
+	b='unit_tests/time_utils'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

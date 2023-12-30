@@ -87,7 +87,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = random$(EXEEXT) utils$(EXEEXT)
+check_PROGRAMS = random$(EXEEXT) utils$(EXEEXT) time_utils$(EXEEXT)
 subdir = tests/unit_tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -103,6 +103,10 @@ am_random_OBJECTS = $(top_builddir)/src/lib/random-random.$(OBJEXT) \
 	./random-random.$(OBJEXT)
 random_OBJECTS = $(am_random_OBJECTS)
 random_LDADD = $(LDADD)
+am_time_utils_OBJECTS = ../library/time_utils-time_utils.$(OBJEXT) \
+	./time_utils-time_utils.$(OBJEXT)
+time_utils_OBJECTS = $(am_time_utils_OBJECTS)
+time_utils_LDADD = $(LDADD)
 am_utils_OBJECTS = ../../src/utils-utils.$(OBJEXT) \
 	./utils-utils.$(OBJEXT)
 utils_OBJECTS = $(am_utils_OBJECTS)
@@ -125,7 +129,10 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po \
 	../../src/$(DEPDIR)/utils-utils.Po \
-	./$(DEPDIR)/random-random.Po ./$(DEPDIR)/utils-utils.Po
+	../library/$(DEPDIR)/time_utils-time_utils.Po \
+	./$(DEPDIR)/random-random.Po \
+	./$(DEPDIR)/time_utils-time_utils.Po \
+	./$(DEPDIR)/utils-utils.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -143,8 +150,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(random_SOURCES) $(utils_SOURCES)
-DIST_SOURCES = $(random_SOURCES) $(utils_SOURCES)
+SOURCES = $(random_SOURCES) $(time_utils_SOURCES) $(utils_SOURCES)
+DIST_SOURCES = $(random_SOURCES) $(time_utils_SOURCES) \
+	$(utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -289,6 +297,8 @@ random_SOURCES = $(top_builddir)/src/lib/random.c $(top_builddir)/src/lib/random
 random_CPPFLAGS = -I$(top_srcdir)
 utils_SOURCES = ../../src/utils.c ./utils.c
 utils_CPPFLAGS = -I$(top_srcdir)
+time_utils_SOURCES = ../library/time_utils.c ./time_utils.c
+time_utils_CPPFLAGS = -I$(top_srcdir)
 all: all-am
 
 .SUFFIXES:
@@ -345,6 +355,21 @@ $(DEPDIR)/$(am__dirstamp):
 random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES) $(EXTRA_random_DEPENDENCIES) 
 	@rm -f random$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(random_OBJECTS) $(random_LDADD) $(LIBS)
+../library/$(am__dirstamp):
+	@$(MKDIR_P) ../library
+	@: > ../library/$(am__dirstamp)
+../library/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../library/$(DEPDIR)
+	@: > ../library/$(DEPDIR)/$(am__dirstamp)
+../library/time_utils-time_utils.$(OBJEXT):  \
+	../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+./time_utils-time_utils.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+time_utils$(EXEEXT): $(time_utils_OBJECTS) $(time_utils_DEPENDENCIES) $(EXTRA_time_utils_DEPENDENCIES) 
+	@rm -f time_utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(time_utils_OBJECTS) $(time_utils_LDADD) $(LIBS)
 ../../src/$(am__dirstamp):
 	@$(MKDIR_P) ../../src
 	@: > ../../src/$(am__dirstamp)
@@ -363,6 +388,7 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/src/lib/*.$(OBJEXT)
 	-rm -f ../../src/*.$(OBJEXT)
+	-rm -f ../library/*.$(OBJEXT)
 	-rm -f ./*.$(OBJEXT)
 
 distclean-compile:
@@ -370,7 +396,9 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -422,6 +450,34 @@ $(top_builddir)/src/lib/random-random.obj: $(top_builddir)/src/lib/random.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./random.c' object='./random-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./random-random.obj `if test -f './random.c'; then $(CYGPATH_W) './random.c'; else $(CYGPATH_W) '$(srcdir)/./random.c'; fi`
+
+../library/time_utils-time_utils.o: ../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/time_utils-time_utils.o -MD -MP -MF ../library/$(DEPDIR)/time_utils-time_utils.Tpo -c -o ../library/time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/time_utils-time_utils.Tpo ../library/$(DEPDIR)/time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+
+../library/time_utils-time_utils.obj: ../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/time_utils-time_utils.obj -MD -MP -MF ../library/$(DEPDIR)/time_utils-time_utils.Tpo -c -o ../library/time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/time_utils-time_utils.Tpo ../library/$(DEPDIR)/time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+
+./time_utils-time_utils.o: ./time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./time_utils-time_utils.o -MD -MP -MF $(DEPDIR)/time_utils-time_utils.Tpo -c -o ./time_utils-time_utils.o `test -f './time_utils.c' || echo '$(srcdir)/'`./time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/time_utils-time_utils.Tpo $(DEPDIR)/time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./time_utils.c' object='./time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./time_utils-time_utils.o `test -f './time_utils.c' || echo '$(srcdir)/'`./time_utils.c
+
+./time_utils-time_utils.obj: ./time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./time_utils-time_utils.obj -MD -MP -MF $(DEPDIR)/time_utils-time_utils.Tpo -c -o ./time_utils-time_utils.obj `if test -f './time_utils.c'; then $(CYGPATH_W) './time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/time_utils-time_utils.Tpo $(DEPDIR)/time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./time_utils.c' object='./time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./time_utils-time_utils.obj `if test -f './time_utils.c'; then $(CYGPATH_W) './time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./time_utils.c'; fi`
 
 ../../src/utils-utils.o: ../../src/utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/utils-utils.o -MD -MP -MF ../../src/$(DEPDIR)/utils-utils.Tpo -c -o ../../src/utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
@@ -568,6 +624,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f ../../src/$(DEPDIR)/$(am__dirstamp)
 	-rm -f ../../src/$(am__dirstamp)
+	-rm -f ../library/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ../library/$(am__dirstamp)
 	-rm -f ./$(am__dirstamp)
 	-test -z "$(DEPDIR)/$(am__dirstamp)" || rm -f $(DEPDIR)/$(am__dirstamp)
 	-test -z "$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
@@ -583,7 +641,9 @@ clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 distclean: distclean-am
 		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
 	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/random-random.Po
+	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/utils-utils.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -632,7 +692,9 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
 	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/random-random.Po
+	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/utils-utils.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
