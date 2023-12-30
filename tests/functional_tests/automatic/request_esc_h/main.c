@@ -239,36 +239,6 @@ static test_case_t g_test_cases[] = {
 
 
 
-static char * escape_string(const char * buffer, char * escaped, size_t size)
-{
-	size_t e_idx = 0;
-
-	for (size_t i = 0; i < strlen(buffer); i++) {
-		switch (buffer[i]) {
-		case '\r':
-			escaped[e_idx++] = '\'';
-			escaped[e_idx++] = 'C';
-			escaped[e_idx++] = 'R';
-			escaped[e_idx++] = '\'';
-			break;
-		case '\n':
-			escaped[e_idx++] = '\'';
-			escaped[e_idx++] = 'L';
-			escaped[e_idx++] = 'F';
-			escaped[e_idx++] = '\'';
-			break;
-		default:
-			escaped[e_idx++] = buffer[i];
-			break;
-		}
-	}
-
-	escaped[size - 1] = '\0';
-	return escaped;
-}
-
-
-
 static void * morse_receiver_thread_fn(void * thread_arg)
 {
 	thread_t * thread = (thread_t *) thread_arg;

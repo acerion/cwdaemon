@@ -427,3 +427,33 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 
 
+char * escape_string(const char * buffer, char * escaped, size_t size)
+{
+	size_t e_idx = 0;
+
+	for (size_t i = 0; i < strlen(buffer); i++) {
+		switch (buffer[i]) {
+		case '\r':
+			escaped[e_idx++] = '\'';
+			escaped[e_idx++] = 'C';
+			escaped[e_idx++] = 'R';
+			escaped[e_idx++] = '\'';
+			break;
+		case '\n':
+			escaped[e_idx++] = '\'';
+			escaped[e_idx++] = 'L';
+			escaped[e_idx++] = 'F';
+			escaped[e_idx++] = '\'';
+			break;
+		default:
+			escaped[e_idx++] = buffer[i];
+			break;
+		}
+	}
+
+	escaped[size - 1] = '\0';
+	return escaped;
+}
+
+
+
