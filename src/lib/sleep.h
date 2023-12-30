@@ -12,6 +12,7 @@
 #define CWDAEMON_MICROSECS_PER_MILLISEC               1000 /* Microseconds in millisecond. */
 #define CWDAEMON_MICROSECS_PER_SEC                 1000000 /* Microseconds in second. */
 #define CWDAEMON_NANOSECS_PER_MICROSEC                1000 /* Nanoseconds in microsecond. */
+#define CWDAEMON_NANOSECS_PER_SEC               1000000000 /* Nanoseconds in second. */
 
 
 

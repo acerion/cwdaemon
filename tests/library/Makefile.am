@@ -11,10 +11,12 @@ check_HEADERS = client.h             \
                 cw_rec_utils.h       \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
+                events.h             \
                 misc.h               \
                 process.h            \
                 socket.h             \
                 test_env.h           \
+                time_utils.h         \
                 thread.h
 
 # convenience library
@@ -24,10 +26,12 @@ lib_tests_a_SOURCES = client.c             \
                       cw_rec_utils.c       \
                       cwdevice_observer.c  \
                       cwdevice_observer_serial.c  \
+                      events.c             \
                       misc.c               \
                       process.c            \
                       socket.c             \
                       test_env.c           \
+                      time_utils.c         \
                       thread.c
 
 lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"

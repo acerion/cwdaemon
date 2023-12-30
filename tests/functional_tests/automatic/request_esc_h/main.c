@@ -1,5 +1,6 @@
 /*
- * cwdaemon - morse sounding daemon for the parallel or serial port
+ * This file is a part of cwdaemon project.
+ *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
  * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
@@ -24,7 +25,7 @@
 
 
 /**
-   Tests of "<ESC>h" request feature.
+   Tests of "<ESC>h request" feature.
 */
 
 
@@ -38,23 +39,29 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "src/lib/random.h"
 #include "src/lib/sleep.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
+#include "tests/library/events.h"
 #include "tests/library/misc.h"
 #include "tests/library/process.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
 #include "tests/library/thread.h"
+#include "tests/library/time_utils.h"
 
 
 
 
 static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
+
+
+
+events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+
 
 
 
@@ -284,6 +291,7 @@ static void * morse_receiver_thread_fn(void * thread_arg)
 	  receiver how a 'keying' pin on tty device is changing state, and the
 	  receiver is translating this into text.
 	*/
+	struct timespec spec = { 0 };
 	do {
 		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
@@ -300,12 +308,30 @@ static void * morse_receiver_thread_fn(void * thread_arg)
 				fprintf(stderr, "%c", erd.character);
 				fflush(stderr);
 				buffer[buffer_i++] = erd.character;
+				clock_gettime(CLOCK_MONOTONIC, &spec);
 			} else {
 				; /* NOOP */
 			}
 		}
 
 	} while (loop_iters-- > 0);
+
+	if (spec.tv_sec != 0 && spec.tv_nsec != 0) {
+		pthread_mutex_lock(&g_events.mutex);
+		{
+			event_t * event = &g_events.events[g_events.event_idx];
+			event->event_type = event_type_morse_receive;
+			event->tstamp = spec;
+
+			event_morse_receive_t * morse = &event->u.morse_receive;
+			const size_t n = sizeof (morse->string);
+			strncpy(morse->string, buffer, n);
+			morse->string[n - 1] = '\0';
+
+			g_events.event_idx++;
+		}
+		pthread_mutex_unlock(&g_events.mutex);
+	}
 
 	fprintf(stderr, "[II] Morse receiver received string [%s]\n", buffer);
 	strncpy(test_case->actual_reply_value, buffer, sizeof (test_case->actual_reply_value));
@@ -333,6 +359,7 @@ static void * socket_receiver_thread_fn(void * thread_arg)
 	const int loop_total_wait_ms = RECEIVE_TOTAL_WAIT_MS;
 	int loop_iters = loop_total_wait_ms / loop_iter_sleep_ms;
 
+
 	do {
 		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
@@ -345,6 +372,25 @@ static void * socket_receiver_thread_fn(void * thread_arg)
 		if (-1 != r) {
 			char escaped[64] = { 0 };
 			fprintf(stderr, "[II] Received reply [%s] from cwdaemon server. Ending listening on the socket.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
+			struct timespec spec = { 0 };
+			clock_gettime(CLOCK_MONOTONIC, &spec);
+
+			pthread_mutex_lock(&g_events.mutex);
+			{
+
+				event_t * event = &g_events.events[g_events.event_idx];
+				event->event_type = event_type_client_socket_receive;
+				event->tstamp = spec;
+
+				event_client_socket_receive_t * socket = &event->u.socket_receive;
+				const size_t n = sizeof (socket->string);
+				strncpy(socket->string, client->reply_buffer, n);
+				socket->string[n - 1] = '\0';
+
+				g_events.event_idx++;
+			}
+			pthread_mutex_unlock(&g_events.mutex);
+
 			break;
 		}
 	} while (loop_iters-- > 0);
@@ -356,6 +402,71 @@ static void * socket_receiver_thread_fn(void * thread_arg)
 	thread->status = thread_stopped_ok;
 	return NULL;
 }
+
+
+
+
+/**
+   Look at contents of @p events and check if order and types of events are
+   as expected.
+
+   @return 0 if events are in proper order and of proper type
+   @return -1 otherwise
+*/
+static int events_evaluate(events_t * events)
+{
+	const event_t * event_0 = &events->events[0];
+	const event_t * event_1 = &events->events[1];
+
+	/* Maximal allowed time span between the two events. Currently (0.12.0)
+	   the time span is ~300ms. */
+	const long int thresh = (long) 500 * 1000 * 1000;
+
+	if (event_0->event_type == event_type_client_socket_receive
+	    && event_1->event_type == event_type_morse_receive) {
+
+		/*
+		  Unfortunately this is the current order of events in cwdaemon. I
+		  believe that it's wrong, but this is a current behaviour that I'm
+		  not willing to fix yet.
+
+		  TODO acerion 2023.12.30: fix the order of the two events in
+		  cwdaemon. At the very least decrease the time difference between
+		  the events from current ~300ms to few ms.
+		*/
+
+		fprintf(stderr, "[WW] Incorrect (but currently expected) order of events: server's reply first, end of Morse receive second\n");
+
+		struct timespec diff = { 0 };
+		timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
+		if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
+			return 0;
+		} else {
+			fprintf(stderr, "[EE] Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+			        diff.tv_sec, diff.tv_nsec);
+			return -1;
+		}
+
+	} else if (event_0->event_type == event_type_morse_receive
+	           && event_1->event_type == event_type_client_socket_receive) {
+		/* Expected order or events. */
+
+		struct timespec diff = { 0 };
+		timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
+		if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
+			return 0;
+		} else {
+			fprintf(stderr, "[EE] Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+			        diff.tv_sec, diff.tv_nsec);
+			return -1;
+		}
+	} else {
+		fprintf(stderr, "[EE] Unexpected order types: event 0 = %d, event 1 = %d\n",
+		        event_0->event_type, event_1->event_type);
+		return -1;
+	}
+}
+
 
 
 
@@ -464,7 +575,18 @@ int main(void)
 		}
 
 
+		events_print(&g_events);
+		if (0 != events_evaluate(&g_events)) {
+			fprintf(stderr, "[EE] Test failure: problem with collected events\n");
+			failure = true;
+			goto cleanup;
+		}
+
+
+
 	cleanup:
+		events_clear(&g_events);
+
 		thread_cleanup(&socket_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);
 
