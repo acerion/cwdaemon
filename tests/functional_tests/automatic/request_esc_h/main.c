@@ -484,7 +484,7 @@ int main(void)
 
 	const int wpm = 10;
 	cwdaemon_opts_t server_opts = {
-		.tone           = "700",
+		.tone           = 700,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_CWDEVICE_NAME,

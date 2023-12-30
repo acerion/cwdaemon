@@ -77,7 +77,7 @@ int main(void)
 	cwdaemon_process_t cwdaemon = { 0 };
 	client_t client = { 0 };
 	const cwdaemon_opts_t cwdaemon_opts = {
-		.tone           = "1000",
+		.tone           = 740,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_CWDEVICE_NAME,

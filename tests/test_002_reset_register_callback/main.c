@@ -67,7 +67,7 @@ int main(void)
 	bool failure = false;
 	const int wpm = 10;
 	const cwdaemon_opts_t cwdaemon_opts = {
-		.tone               = "1000",
+		.tone               = 800,
 		.sound_system       = CW_AUDIO_SOUNDCARD,
 		.nofork             = true,
 		.cwdevice_name      = TEST_CWDEVICE_NAME,

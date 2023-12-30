@@ -69,6 +69,7 @@
 static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
+static char g_arg_tone[10] = { 0 };
 
 
 
@@ -112,9 +113,10 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 		const char * argv[20] = { 0 };
 		int a = 0;
 		argv[a++] = path;
-		if ('\0' != opts->tone[0]) {
+		if (0 != opts->tone) {
 			argv[a++] = "-T";
-			argv[a++] = opts->tone;
+			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", opts->tone);
+			argv[a++] = g_arg_tone;
 		}
 
 		switch (opts->sound_system) {
