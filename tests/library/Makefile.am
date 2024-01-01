@@ -12,6 +12,7 @@ check_HEADERS = client.h             \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
                 events.h             \
+                log.h                \
                 misc.h               \
                 process.h            \
                 socket.h             \

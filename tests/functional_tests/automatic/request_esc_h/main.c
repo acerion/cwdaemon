@@ -32,6 +32,7 @@
 
 
 #define _DEFAULT_SOURCE
+#define _GNU_SOURCE /* strcasestr() */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -46,6 +47,7 @@
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/process.h"
 #include "tests/library/socket.h"
@@ -61,7 +63,6 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
 
 
 events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
 
 
 
@@ -193,7 +194,6 @@ typedef struct test_case_t {
 
 	const char * message;                    /**< Text to be sent to cwdaemon server by cwdaemon client in a request. */
 	const char * requested_reply_value;      /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
-	char actual_reply_value[32];             /**< What has been sent back from cwdaemon (including leading 'h' and terminating "\r\n"). */
 } test_case_t;
 
 
@@ -334,8 +334,6 @@ static void * morse_receiver_thread_fn(void * thread_arg)
 	}
 
 	fprintf(stderr, "[II] Morse receiver received string [%s]\n", buffer);
-	strncpy(test_case->actual_reply_value, buffer, sizeof (test_case->actual_reply_value));
-	test_case->actual_reply_value[sizeof (test_case->actual_reply_value) - 1] = '\0';
 
 	/* Cleanup of test helpers. */
 	test_helpers_morse_receiver_desetup(&morse_receiver);
@@ -413,58 +411,135 @@ static void * socket_receiver_thread_fn(void * thread_arg)
    @return 0 if events are in proper order and of proper type
    @return -1 otherwise
 */
-static int events_evaluate(events_t * events)
+static int events_evaluate(events_t * events, const test_case_t * test_case)
 {
 	const event_t * event_0 = &events->events[0];
 	const event_t * event_1 = &events->events[1];
+	const event_t * morse_event = NULL;
+	const event_t * socket_event = NULL;
 
+
+
+
+	/* Expectation 1: there should be only two events. */
+	{
+		if (2 != events->event_idx) {
+			test_log_err("Unexpected count of events: %d\n", events->event_idx);
+			return -1;
+		}
+	}
+
+
+
+
+	/* Expectation 2: first event should be Morse receive, second event should be reply on socket. */
+	{
+		if (event_0->event_type == event_type_morse_receive
+		    && event_1->event_type != event_type_client_socket_receive) {
+
+			/*
+			  This would be the correct order of events, but currently
+			  (cwdaemon 0.11.0, 0.12.0) this is not the case: the order of
+			  events is reverse. Right now I'm not willing to fix it yet.
+
+			  TODO acerion 2023.12.30: fix the order of the two events in
+			  cwdaemon. At the very least decrease the time difference
+			  between the events from current ~300ms to few ms.
+			*/
+			morse_event = event_0;
+			socket_event = event_1;
+			; /* Pass. */
+		} else {
+			if (event_0->event_type == event_type_client_socket_receive
+			    && event_1->event_type == event_type_morse_receive) {
+
+				// This is the current incorrect behaviour that is accepted
+				// for now.
+				test_log_warn("Incorrect (but currently expected) order of events: %d -> %d\n",
+				              event_0->event_type, event_1->event_type);
+				socket_event = event_0;
+				morse_event = event_1;
+				; /* Pass. */
+			} else {
+				test_log_err("Completely incorrect order of events: %d -> %d\n",
+				             event_0->event_type, event_1->event_type);
+				return -1;
+			}
+		}
+	}
+
+
+
+
+	/* Expectation 3: the events should be separated by close time span. */
 	/* Maximal allowed time span between the two events. Currently (0.12.0)
-	   the time span is ~300ms. */
+	   the time span is ~300ms.
+	   TODO acerion 2023.12.31: shorten the time span. */
 	const long int thresh = (long) 500 * 1000 * 1000;
 
-	if (event_0->event_type == event_type_client_socket_receive
-	    && event_1->event_type == event_type_morse_receive) {
-
-		/*
-		  Unfortunately this is the current order of events in cwdaemon. I
-		  believe that it's wrong, but this is a current behaviour that I'm
-		  not willing to fix yet.
-
-		  TODO acerion 2023.12.30: fix the order of the two events in
-		  cwdaemon. At the very least decrease the time difference between
-		  the events from current ~300ms to few ms.
-		*/
-
-		fprintf(stderr, "[WW] Incorrect (but currently expected) order of events: server's reply first, end of Morse receive second\n");
-
-		struct timespec diff = { 0 };
-		timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
-		if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
-			return 0;
-		} else {
-			fprintf(stderr, "[EE] Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
-			        diff.tv_sec, diff.tv_nsec);
-			return -1;
-		}
-
-	} else if (event_0->event_type == event_type_morse_receive
-	           && event_1->event_type == event_type_client_socket_receive) {
-		/* Expected order or events. */
-
-		struct timespec diff = { 0 };
-		timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
-		if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
-			return 0;
-		} else {
-			fprintf(stderr, "[EE] Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
-			        diff.tv_sec, diff.tv_nsec);
-			return -1;
-		}
+	struct timespec diff = { 0 };
+	timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
+	if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
+		; /* Pass. */
 	} else {
-		fprintf(stderr, "[EE] Unexpected order types: event 0 = %d, event 1 = %d\n",
-		        event_0->event_type, event_1->event_type);
+		test_log_err("Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+		             diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
+
+
+
+
+	/* Expectation 4: text received by Morse receiver must match input text from test case.
+
+	   While this is not THE feature that needs to be verified by this test,
+	   it's good to know that we received full and correct data. */
+	{
+		/* TODO acerion 2023.12.31: move comparing of received and expected
+		   string to some library function. */
+		const char * received_string = morse_event->u.morse_receive.string;
+		const char * needle = strcasestr(received_string, test_case->message);
+		if (NULL == needle) {
+			test_log_err("Received incorrect Morse message: expected [%s], received [%s]\n",
+			             test_case->message, received_string);
+			return -1;
+		} else {
+			test_log_info("Received expected Morse message: expected [%s], received [%s]\n",
+			              test_case->message, received_string);
+			; /* Pass. */
+		}
+	}
+
+
+
+
+	/* Expectation 5: text received in socket message must match text sent in <ESC>h
+	   request. */
+	{
+		const char * actual_raw = socket_event->u.socket_receive.string;
+
+		char expected_raw[64] = { 0 };
+		snprintf(expected_raw, sizeof (expected_raw), "h%s\r\n", test_case->requested_reply_value);
+
+		char escaped_expected[64] = { 0 };
+		char escaped_actual[64] = { 0 };
+		escape_string(expected_raw, escaped_expected, sizeof (escaped_expected));
+		escape_string(actual_raw, escaped_actual, sizeof (escaped_actual));
+
+		if (0 != strcmp(expected_raw, actual_raw)) {
+			test_log_err("Received incorrect message in socket reply: expected [%s], received [%s]\n",
+			             escaped_expected, escaped_actual);
+			return -1;
+		} else {
+			test_log_info("Received expected message in socket reply: expected [%s], received [%s]\n",
+			              escaped_expected, escaped_actual);
+			; /* Pass. */
+		}
+	}
+
+
+	/* Evaluation found no errors. */
+	return 0;
 }
 
 
@@ -502,9 +577,7 @@ int main(void)
 
 		char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
 
-		char expected_reply[64] = { 0 };
-		char escaped_expected[64] = { 0 };
-		char escaped_actual[64] = { 0 };
+
 
 		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = socket_receiver_thread_fn, .thread_fn_arg = &client };
 		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = test_case };
@@ -559,24 +632,12 @@ int main(void)
 		thread_join(&morse_receiver_thread);
 
 
-		/* Compare the expected reply with actual reply. Notice that cwdaemon
-		   server always prefixes the actual reply with 'h', and always
-		   appends "\r\n". */
-		snprintf(expected_reply, sizeof (expected_reply), "h%s\r\n", test_case->requested_reply_value);
-		if (0 != strcmp(expected_reply, client.reply_buffer)) {
-			fprintf(stderr, "[EE] Unexpected reply from cwdaemon server: expected [%s], got [%s]\n",
-			        escape_string(expected_reply, escaped_expected, sizeof (escaped_expected)),
-			        escape_string(client.reply_buffer, escaped_actual, sizeof (escaped_actual)));
-			failure = true;
-		} else {
-			fprintf(stderr, "[II] Correct reply from cwdaemon server: expected [%s], got [%s]\n",
-			        escape_string(expected_reply, escaped_expected, sizeof (escaped_expected)),
-			        escape_string(client.reply_buffer, escaped_actual, sizeof (escaped_actual)));
-		}
 
-
+		/* For debugging only. */
 		events_print(&g_events);
-		if (0 != events_evaluate(&g_events)) {
+
+		/* Validation of test run. */
+		if (0 != events_evaluate(&g_events, test_case)) {
 			fprintf(stderr, "[EE] Test failure: problem with collected events\n");
 			failure = true;
 			goto cleanup;
