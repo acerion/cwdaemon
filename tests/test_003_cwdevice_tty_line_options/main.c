@@ -45,7 +45,9 @@
 
 #include "../library/cwdevice_observer.h"
 #include "../library/cwdevice_observer_serial.h"
+#include "../library/events.h"
 #include "../library/misc.h"
+#include "../library/morse_receiver.h"
 #include "../library/process.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
@@ -55,123 +57,7 @@
 
 
 
-static bool on_key_state_change(void * arg_easy_rec, bool key_is_down);
-
-
-
-
-#define PTT_EXPERIMENT 1
-
-#if PTT_EXPERIMENT
-typedef struct ptt_sink_t {
-	int dummy;
-} ptt_sink_t;
-
-
-
-
-static ptt_sink_t g_ptt_sink = { 0 };
-
-
-
-
-/**
-   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
-
-   A simple wrapper that seems to be convenient.
-*/
-static bool on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
-{
-	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
-	fprintf(stderr, "[DEBUG] ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
-
-	return true;
-}
-#endif /* #if PTT_EXPERIMENT */
-
-
-
-
-/**
-   Configure and start a receiver used during tests of cwdaemon
-*/
-static int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm)
-{
-#if 0
-	cw_enable_adaptive_receive();
-#else
-	cw_set_receive_speed(wpm);
-#endif
-
-	cw_generator_new(CW_AUDIO_NULL, NULL);
-	cw_generator_start();
-
-	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, easy_rec);
-	cw_easy_receiver_start(easy_rec);
-	cw_clear_receive_buffer();
-	cw_easy_receiver_clear(easy_rec);
-
-	// TODO (acerion) 2022.02.18 this seems to be not needed because it's
-	// already done in cw_easy_receiver_start().
-	//gettimeofday(&easy_rec->main_timer, NULL);
-
-	return 0;
-}
-
-
-
-
-static int test_helpers_morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec)
-{
-	cw_generator_stop();
-	return 0;
-}
-
-
-
-
-static int cwdevice_observer_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver)
-{
-	memset(observer, 0, sizeof (cwdevice_observer_t));
-
-	observer->open_fn  = cwdevice_observer_serial_open;
-	observer->close_fn = cwdevice_observer_serial_close;
-	observer->new_key_state_cb   = on_key_state_change;
-	observer->new_key_state_sink = morse_receiver;
-
-	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_TTY_CWDEVICE_NAME);
-
-#if PTT_EXPERIMENT
-	observer->new_ptt_state_cb  = on_ptt_state_change;
-	observer->new_ptt_state_arg = &g_ptt_sink;
-#endif
-
-	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
-
-	if (!observer->open_fn(observer)) {
-		fprintf(stderr, "[EE] Failed to open cwdevice '%s' in setup of observer\n", observer->source_path);
-		return -1;
-	}
-
-	return 0;
-}
-
-
-
-
-/**
-   @brief Inform an easy receiver that a key has a new state (up or down)
-
-   A simple wrapper that seems to be convenient.
-*/
-static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
-{
-	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
-	cw_easy_receiver_sk_event(easy_rec, key_is_down);
-	// fprintf(stderr, "key is %s\n", key_is_down ? "down" : "up");
-
-	return true;
-}
+events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 
@@ -274,7 +160,7 @@ int main(void)
 
 
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_setup(&cwdevice_observer, &morse_receiver)) {
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver)) {
 			fprintf(stderr, "[EE] Failed to set up observer of cwdevice\n");
 			failure = true;
 			goto cleanup;
@@ -320,7 +206,7 @@ int main(void)
 
 
 	cleanup:
-		test_helpers_morse_receiver_desetup(&morse_receiver);
+		morse_receiver_desetup(&morse_receiver);
 		cwdevice_observer_dtor(&cwdevice_observer);
 
 		/* Terminate local test instance of cwdaemon. */

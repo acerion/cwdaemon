@@ -117,6 +117,7 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
 	lib_tests_a-events.$(OBJEXT) lib_tests_a-misc.$(OBJEXT) \
+	lib_tests_a-morse_receiver.$(OBJEXT) \
 	lib_tests_a-process.$(OBJEXT) lib_tests_a-socket.$(OBJEXT) \
 	lib_tests_a-test_env.$(OBJEXT) \
 	lib_tests_a-time_utils.$(OBJEXT) lib_tests_a-thread.$(OBJEXT)
@@ -142,6 +143,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po \
 	./$(DEPDIR)/lib_tests_a-events.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
+	./$(DEPDIR)/lib_tests_a-morse_receiver.Po \
 	./$(DEPDIR)/lib_tests_a-process.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
 	./$(DEPDIR)/lib_tests_a-test_env.Po \
@@ -311,6 +313,7 @@ check_HEADERS = client.h             \
                 events.h             \
                 log.h                \
                 misc.h               \
+                morse_receiver.h     \
                 process.h            \
                 socket.h             \
                 test_env.h           \
@@ -326,6 +329,7 @@ lib_tests_a_SOURCES = client.c             \
                       cwdevice_observer_serial.c  \
                       events.c             \
                       misc.c               \
+                      morse_receiver.c     \
                       process.c            \
                       socket.c             \
                       test_env.c           \
@@ -387,6 +391,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-events.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-misc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-process.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_env.Po@am__quote@ # am--include-marker
@@ -498,6 +503,20 @@ lib_tests_a-misc.obj: misc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='misc.c' object='lib_tests_a-misc.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-misc.obj `if test -f 'misc.c'; then $(CYGPATH_W) 'misc.c'; else $(CYGPATH_W) '$(srcdir)/misc.c'; fi`
+
+lib_tests_a-morse_receiver.o: morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-morse_receiver.o -MD -MP -MF $(DEPDIR)/lib_tests_a-morse_receiver.Tpo -c -o lib_tests_a-morse_receiver.o `test -f 'morse_receiver.c' || echo '$(srcdir)/'`morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-morse_receiver.Tpo $(DEPDIR)/lib_tests_a-morse_receiver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='morse_receiver.c' object='lib_tests_a-morse_receiver.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-morse_receiver.o `test -f 'morse_receiver.c' || echo '$(srcdir)/'`morse_receiver.c
+
+lib_tests_a-morse_receiver.obj: morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-morse_receiver.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-morse_receiver.Tpo -c -o lib_tests_a-morse_receiver.obj `if test -f 'morse_receiver.c'; then $(CYGPATH_W) 'morse_receiver.c'; else $(CYGPATH_W) '$(srcdir)/morse_receiver.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-morse_receiver.Tpo $(DEPDIR)/lib_tests_a-morse_receiver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='morse_receiver.c' object='lib_tests_a-morse_receiver.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-morse_receiver.obj `if test -f 'morse_receiver.c'; then $(CYGPATH_W) 'morse_receiver.c'; else $(CYGPATH_W) '$(srcdir)/morse_receiver.c'; fi`
 
 lib_tests_a-process.o: process.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-process.o -MD -MP -MF $(DEPDIR)/lib_tests_a-process.Tpo -c -o lib_tests_a-process.o `test -f 'process.c' || echo '$(srcdir)/'`process.c
@@ -699,6 +718,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
@@ -755,6 +775,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po

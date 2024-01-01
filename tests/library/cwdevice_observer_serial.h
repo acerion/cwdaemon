@@ -11,6 +11,7 @@
 
 
 #include "cwdevice_observer.h"
+#include "cw_rec_utils.h"
 
 
 
@@ -35,6 +36,11 @@ void cwdevice_observer_serial_close(cwdevice_observer_t * observer);
    Implementation of cwdevice_observer_t::poll_once_fn function specific to serial line file
 */
 bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on);
+
+
+
+
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver);
 
 
 

@@ -43,6 +43,8 @@
 // used at compile time: XSI variant or GNU variant.
 #define _GNU_SOURCE /* strerror_r() */
 
+#include "config.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
@@ -52,10 +54,39 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-
-
-
 #include "cwdevice_observer_serial.h"
+
+
+
+
+#define PTT_EXPERIMENT 1
+
+#if PTT_EXPERIMENT
+typedef struct ptt_sink_t {
+	int dummy;
+} ptt_sink_t;
+
+
+
+
+static ptt_sink_t g_ptt_sink = { 0 };
+
+
+
+
+/**
+   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
+
+   A simple wrapper that seems to be convenient.
+*/
+static bool on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
+{
+	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
+	fprintf(stderr, "[DEBUG] ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
+
+	return true;
+}
+#endif /* #if PTT_EXPERIMENT */
 
 
 
@@ -112,5 +143,53 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 	*ptt_is_on   = !!(value & ptt_pin);
 	return true;
 }
+
+
+
+
+/**
+   @brief Inform an easy receiver that a key has a new state (up or down)
+
+   A simple wrapper that seems to be convenient.
+*/
+static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
+{
+	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
+	cw_easy_receiver_sk_event(easy_rec, key_is_down);
+	// fprintf(stderr, "key is %s\n", key_is_down ? "down" : "up");
+
+	return true;
+}
+
+
+
+
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver)
+{
+	memset(observer, 0, sizeof (cwdevice_observer_t));
+
+	observer->open_fn  = cwdevice_observer_serial_open;
+	observer->close_fn = cwdevice_observer_serial_close;
+	observer->new_key_state_cb   = on_key_state_change;
+	observer->new_key_state_sink = morse_receiver;
+
+	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_TTY_CWDEVICE_NAME);
+
+#if PTT_EXPERIMENT
+	observer->new_ptt_state_cb  = on_ptt_state_change;
+	observer->new_ptt_state_arg = &g_ptt_sink;
+#endif
+
+	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
+
+	if (!observer->open_fn(observer)) {
+		fprintf(stderr, "[EE] Failed to open cwdevice '%s' in setup of observer\n", observer->source_path);
+		return -1;
+	}
+
+	return 0;
+}
+
+
 
 

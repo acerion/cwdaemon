@@ -52,12 +52,18 @@
 
 #include "../library/cwdevice_observer.h"
 #include "../library/cwdevice_observer_serial.h"
+#include "../library/events.h"
 #include "../library/misc.h"
 #include "../library/process.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
 #include "src/lib/random.h"
 #include "src/lib/sleep.h"
+
+
+
+
+events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 

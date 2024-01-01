@@ -37,5 +37,10 @@ int client_disconnect(client_t * client);
 
 
 
+void * client_socket_receiver_thread_fn(void * thread_arg);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_CLIENT_H */
 

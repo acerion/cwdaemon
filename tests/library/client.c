@@ -47,7 +47,24 @@
 #include <unistd.h>
 
 #include "client.h"
+#include "events.h"
+#include "misc.h"
 #include "socket.h"
+#include "thread.h"
+
+#include "src/lib/sleep.h"
+
+
+
+
+/* [milliseconds]. Total time for receiving a message (either receiving a
+   Morse code message, or receiving a reply from cwdaemon server). */
+#define RECEIVE_TOTAL_WAIT_MS (15 * 1000)
+
+
+
+
+extern events_t g_events;
 
 
 
@@ -167,4 +184,64 @@ int client_disconnect(client_t * client)
 	client->sock = -1;
 	return 0;
 }
+
+
+
+
+void * client_socket_receiver_thread_fn(void * thread_arg)
+{
+	thread_t * thread = (thread_t *) thread_arg;
+	client_t * client = (client_t *) thread->thread_fn_arg;
+	thread->status = thread_running;
+
+	const int loop_iter_sleep_ms = 10; /* [milliseconds] Sleep duration in one iteration of a loop. TODO acerion 2023.12.28: use a constant. */
+	const int loop_total_wait_ms = RECEIVE_TOTAL_WAIT_MS;
+	int loop_iters = loop_total_wait_ms / loop_iter_sleep_ms;
+
+
+	do {
+		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
+		if (sleep_retv) {
+			fprintf(stderr, "[EE] error in sleep while waiting for data on socket\n");
+		}
+
+
+		/* Try receiving preconfigured reply. */
+		const ssize_t r = recv(client->sock, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
+		if (-1 != r) {
+			char escaped[64] = { 0 };
+			fprintf(stderr, "[II] Received reply [%s] from cwdaemon server. Ending listening on the socket.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
+			struct timespec spec = { 0 };
+			clock_gettime(CLOCK_MONOTONIC, &spec);
+
+			pthread_mutex_lock(&g_events.mutex);
+			{
+
+				event_t * event = &g_events.events[g_events.event_idx];
+				event->event_type = event_type_client_socket_receive;
+				event->tstamp = spec;
+
+				event_client_socket_receive_t * socket = &event->u.socket_receive;
+				const size_t n = sizeof (socket->string);
+				strncpy(socket->string, client->reply_buffer, n);
+				socket->string[n - 1] = '\0';
+
+				g_events.event_idx++;
+			}
+			pthread_mutex_unlock(&g_events.mutex);
+
+			break;
+		}
+	} while (loop_iters-- > 0);
+
+	if (loop_iters <= 0) {
+		fprintf(stderr, "[NN] Expected reply from cwdaemon was not received within given time\n");
+	}
+
+	thread->status = thread_stopped_ok;
+	return NULL;
+}
+
+
+
 
