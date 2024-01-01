@@ -3,25 +3,25 @@ cwdaemon 0.13.0 / 20ab.cd.ef
 New release. Changes since previous release:
 
 
- * Quality Assurance
+* Quality Assurance
 
-   * Fixing issues found in C code by current version of clangd LSP server.
+    * Fixing issues found in C code by current version of clangd LSP server.
 
-   * Improving procedures/tools/scripting for using clang-tidy. It's now
-     easier to invoke clang-tidy on the code base: clang-tidy is invoked
-     through a script that runs run-clang-tidy. run-clang-tidy requires the
-     presence of compile_commands.json, which needs to be created by manually
-     invoking `bear` command.
+    * Improving procedures/tools/scripting for using clang-tidy. It's now
+      easier to invoke clang-tidy on the code base: clang-tidy is invoked
+      through a script that runs run-clang-tidy. run-clang-tidy requires the
+      presence of compile_commands.json, which needs to be created by
+      manually invoking `bear` command.
 
-   * .clang-tidy config file is now added to root dir of project. There are a
-     lot of excluded checks in the config file, but the list of exclusions
-     will be decreased in future releases.
+    * .clang-tidy config file is now added to root dir of project. There are
+      a lot of excluded checks in the config file, but the list of exclusions
+      will be decreased in future releases.
 
-     The list of exclusions will never become empty because some of checks
-     won't apply to this project.
+      The list of exclusions will never become empty because some of checks
+      won't apply to this project.
 
-   * Fixing issues found by clang-tidy (in cwdaemon code and in code
-     implementing unit and functional tests):
+    * Fixing issues found by clang-tidy (in cwdaemon code and in code
+      implementing unit and functional tests):
 
       - clang-diagnostic-deprecated-declarations
       - clang-analyzer-core.NonNullParamChecker
@@ -34,36 +34,36 @@ New release. Changes since previous release:
       - cert-msc30-c (cert-msc50-cpp)
       - llvm-include-order
 
-   * Path to cwdaemon binary used during functional tests can be specified
-     through an argument to ./configure script:
+    * Path to cwdaemon binary used during functional tests can be specified
+      through an argument to ./configure script:
 
-        ./configure --enable-functional-tests --with-test-cwdaemon-path=/home/user/sbin/cwdaemon
+          ./configure --enable-functional-tests --with-test-cwdaemon-path=/home/user/sbin/cwdaemon
 
-     This allows running a set of functional tests against any version of
-     cwdaemon. It's e.g. possible to run the latest set of tests against some
-     older release of cwdaemon to see how that release behaved.
+      This allows running a set of functional tests against any version of
+      cwdaemon. It's e.g. possible to run the latest set of tests against
+      some older release of cwdaemon to see how that release behaved.
 
-     The ./configure script defines a default path to cwdaemon binary. The
-     default path is overwritten with the value passed to the script.
+      The ./configure script defines a default path to cwdaemon binary. The
+      default path is overwritten with the value passed to the script.
 
-   * Name of tty cwdevice to be used during functional tests can be specified
-     through an argument to ./configure script:
+    * Name of tty cwdevice to be used during functional tests can be
+      specified through an argument to ./configure script:
 
-        ./configure --enable-functional-tests --with-test-tty-cwdevice-name=/dev/ttyUSB1
+          ./configure --enable-functional-tests --with-test-tty-cwdevice-name=/dev/ttyUSB1
 
-     The ./configure script defines some (platform-specific) default name of
-     the name. The default name is overwritten with the value passed to the
-     script.
+      The ./configure script defines some (platform-specific) default name of
+      the name. The default name is overwritten with the value passed to the
+      script.
 
- * Debugging of libcw
+* Debugging of libcw
 
-   When `-I`/`--libcwflags` option is passed to cwdaemon to enable debugging
-   of specific functionalities in libcw, the threshold of libcw debug
-   messages is set to the threshold currently used by cwdaemon.
+    When `-I`/`--libcwflags` option is passed to cwdaemon to enable debugging
+    of specific functionalities in libcw, the threshold of libcw debug
+    messages is set to the threshold currently used by cwdaemon.
 
-   Until now the threshold set for libcw debug messages may have been
-   hardcoded to constant value "NONE", which made debugging of libcw
-   impossible.
+    Until now the threshold set for libcw debug messages may have been
+    hardcoded to constant value "NONE", which made debugging of libcw
+    impossible.
 
 ----
 
