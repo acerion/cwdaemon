@@ -82,6 +82,17 @@ void events_print(const events_t * events)
 			        sec, ts.tv_nsec,
 			        escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
 			break;
+		case event_type_sigchld:
+			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = %2x\n",
+			        e,
+			        sec, ts.tv_nsec,
+			        event->u.sigchld.wstatus);
+			break;
+		case event_type_request_exit:
+			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: EXIT request\n",
+			        e,
+			        sec, ts.tv_nsec);
+			break;
 		case event_type_none:
 		default:
 			break;

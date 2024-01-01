@@ -20,6 +20,7 @@
 typedef struct cwdaemon_process_t {
 	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
 	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
+	int wstatus;  /**< Second argument to waitpid(). */
 } cwdaemon_process_t;
 
 

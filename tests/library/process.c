@@ -237,16 +237,15 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			return -1;
 		}
 
-		int wstatus = 0;
-		pid_t waited_pid = waitpid(-1, &wstatus, WNOHANG);
+		pid_t waited_pid = waitpid(pid, &cwdaemon->wstatus, WNOHANG);
 		if (pid == waited_pid) {
 			fprintf(stderr, "[NN] Child process %d changed state\n", pid);
-			if (WIFEXITED(wstatus)) {
-				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(wstatus));
-			} else if (WIFSIGNALED(wstatus)) {
-				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(wstatus));
-			} else if (WIFSTOPPED(wstatus)) {
-				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(wstatus));
+			if (WIFEXITED(cwdaemon->wstatus)) {
+				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(cwdaemon->wstatus));
+			} else if (WIFSIGNALED(cwdaemon->wstatus)) {
+				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(cwdaemon->wstatus));
+			} else if (WIFSTOPPED(cwdaemon->wstatus)) {
+				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(cwdaemon->wstatus));
 			} else {
 				fprintf(stderr, "[EE] Child process didn't start correctly due to unknown reason\n");
 			}
@@ -384,8 +383,7 @@ int local_server_stop(cwdaemon_process_t * server, client_t * client)
 	}
 
 	/* Now check if test instance of cwdaemon is no longer present, as expected. */
-	int wstatus = 0;
-	if (0 == waitpid(server->pid, &wstatus, WNOHANG)) {
+	if (0 == waitpid(server->pid, &server->wstatus, WNOHANG)) {
 		/* Process still exists, kill it. */
 		fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
 		/* The fact that we need to kill cwdaemon with a
