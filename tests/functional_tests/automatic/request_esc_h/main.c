@@ -34,6 +34,8 @@
 #define _DEFAULT_SOURCE
 #define _GNU_SOURCE /* strcasestr() */
 
+#include "config.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -151,7 +153,7 @@ static int cwdevice_observer_setup(cwdevice_observer_t * observer, cw_easy_recei
 	observer->new_key_state_cb   = on_key_state_change;
 	observer->new_key_state_sink = morse_receiver;
 
-	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_CWDEVICE_NAME);
+	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_TTY_CWDEVICE_NAME);
 
 #if PTT_EXPERIMENT
 	observer->new_ptt_state_cb  = on_ptt_state_change;
@@ -544,7 +546,7 @@ int main(void)
 		.tone           = 700,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
-		.cwdevice_name  = TEST_CWDEVICE_NAME,
+		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 	};
 

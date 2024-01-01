@@ -34,8 +34,8 @@ New release. Changes since previous release:
       - cert-msc30-c (cert-msc50-cpp)
       - llvm-include-order
 
-   * Path to cwdaemon binary used during functional tests can be specified as
-     an argument to ./configure script:
+   * Path to cwdaemon binary used during functional tests can be specified
+     through an argument to ./configure script:
 
         ./configure --enable-functional-tests --with-test-cwdaemon-path=/home/user/sbin/cwdaemon
 
@@ -43,6 +43,17 @@ New release. Changes since previous release:
      cwdaemon. It's e.g. possible to run the latest set of tests against some
      older release of cwdaemon to see how that release behaved.
 
+     The ./configure script defines a default path to cwdaemon binary. The
+     default path is overwritten with the value passed to the script.
+
+   * Name of tty cwdevice to be used during functional tests can be specified
+     through an argument to ./configure script:
+
+        ./configure --enable-functional-tests --with-test-tty-cwdevice-name=/dev/ttyUSB1
+
+     The ./configure script defines some (platform-specific) default name of
+     the name. The default name is overwritten with the value passed to the
+     script.
 
  * Debugging of libcw
 

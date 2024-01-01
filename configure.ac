@@ -46,7 +46,7 @@ AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
 
 
 # This is just a default value that can be overriden later.
-default_test_cwdevice_name="ttyUSB0"
+test_tty_cwdevice_name="ttyUSB0"
 
 
 
@@ -58,7 +58,7 @@ case $host_os in
 	#
 	# Name of first tty device (USB-to-serial converter) on Linux. User
 	# group: dialout.
-	default_test_cwdevice_name="ttyUSB0"
+	test_tty_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
@@ -67,7 +67,7 @@ case $host_os in
 	#
 	# Name of first tty device (USB-to-serial converter) on FreeBSD 13.2.
 	# User group: dialer.
-	default_test_cwdevice_name="cuau0"
+	test_tty_cwdevice_name="cuau0"
 	;;
 
 	*openbsd*|*OpenBSD*)
@@ -85,9 +85,6 @@ case $host_os in
 	;;
 esac
 
-
-# AC_SUBST puts the TEST_CWDEVICE_NAME symbol into Makefiles
-AC_SUBST([TEST_CWDEVICE_NAME], ${default_test_cwdevice_name})
 
 
 
@@ -136,6 +133,20 @@ AC_ARG_WITH([test_cwdaemon_path],
             [test_cwdaemon_path="$withval"], [])
 # The next line will write a #define into ROOT/config.h.
 AC_DEFINE_UNQUOTED([TEST_CWDAEMON_PATH],["${test_cwdaemon_path}"],[Path to cwdaemon binary used in functional tests.])
+
+
+
+
+# Name of tty cwdevice that will be used by local test instance of cwdaemon
+# server.
+test_tty_cwdevice_name=ttyUSB0
+AC_ARG_WITH([test_tty_cwdevice_name],
+            [AS_HELP_STRING([--with-test-tty-cwdevice-name=STRING],
+                            [specify a mame of tty cwdevice used in functional tests])],
+            [test_tty_cwdevice_name="$withval"], [])
+# The next line will write a #define into ROOT/config.h.
+AC_DEFINE_UNQUOTED([TEST_TTY_CWDEVICE_NAME],["${test_tty_cwdevice_name}"],[Name of tty cwdevice used in functional tests.])
+
 
 
 
@@ -215,7 +226,7 @@ AC_MSG_NOTICE([  CFLAGS:  ........................  $CFLAGS])
 AC_MSG_NOTICE([  enable unit tests: ..............  yes])
 AC_MSG_NOTICE([  enable functional tests: ........  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
-    AC_MSG_NOTICE([      test cwdevice name: .........  $TEST_CWDEVICE_NAME])
+    AC_MSG_NOTICE([      test tty cwdevice name: ...... $test_tty_cwdevice_name])
     AC_MSG_NOTICE([      path to cwdaemon binary: ..... $test_cwdaemon_path])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

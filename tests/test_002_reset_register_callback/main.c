@@ -34,14 +34,13 @@
 
 #define _DEFAULT_SOURCE
 
+#include "config.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-
-
 
 #include "../library/cwdevice_observer_serial.h"
 #include "../library/misc.h"
@@ -70,12 +69,12 @@ int main(void)
 		.tone               = 800,
 		.sound_system       = CW_AUDIO_SOUNDCARD,
 		.nofork             = true,
-		.cwdevice_name      = TEST_CWDEVICE_NAME,
+		.cwdevice_name      = TEST_TTY_CWDEVICE_NAME,
 		.wpm                = wpm,
 	};
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	const cwdevice_observer_params_t key_source_params = {
-		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
+		.source_path  = "/dev/" TEST_TTY_CWDEVICE_NAME,
 	};
 	cwdaemon_process_t cwdaemon = { 0 };
 	client_t client = { 0 };

@@ -131,6 +131,9 @@
 /* Path to cwdaemon binary used in functional tests. */
 #undef TEST_CWDAEMON_PATH
 
+/* Name of tty cwdevice used in functional tests. */
+#undef TEST_TTY_CWDEVICE_NAME
+
 /* Version number of package */
 #undef VERSION
 

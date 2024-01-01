@@ -34,6 +34,8 @@
 
 #define _DEFAULT_SOURCE
 
+#include "config.h"
+
 /* For kill() on FreeBSD 13.2 */
 #include <signal.h>
 #include <sys/types.h>
@@ -80,12 +82,12 @@ int main(void)
 		.tone           = 740,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
-		.cwdevice_name  = TEST_CWDEVICE_NAME,
+		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 	};
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	cwdevice_observer_params_t key_source_params = {
-		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
+		.source_path  = "/dev/" TEST_TTY_CWDEVICE_NAME,
 	};
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");

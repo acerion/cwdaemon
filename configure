@@ -661,7 +661,6 @@ LIBCW_LIBS
 FUNCTIONAL_TESTS
 FUNCTIONAL_TESTS_FALSE
 FUNCTIONAL_TESTS_TRUE
-TEST_CWDEVICE_NAME
 host_os
 host_vendor
 host_cpu
@@ -776,6 +775,7 @@ enable_maintainer_mode
 enable_dependency_tracking
 enable_functional_tests
 with_test_cwdaemon_path
+with_test_tty_cwdevice_name
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1433,6 +1433,9 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-test-cwdaemon-path=STRING
                           specify a path to cwdaemon binary used in functional
+                          tests
+  --with-test-tty-cwdevice-name=STRING
+                          specify a mame of tty cwdevice used in functional
                           tests
 
 Some influential environment variables:
@@ -6533,7 +6536,7 @@ ABS_TOP_BUILDDIR=abs_top_builddir
 
 
 # This is just a default value that can be overriden later.
-default_test_cwdevice_name="ttyUSB0"
+test_tty_cwdevice_name="ttyUSB0"
 
 
 
@@ -6620,7 +6623,7 @@ printf "%s\n" "$as_me: Detected Linux: $host_os" >&6;}
 	#
 	# Name of first tty device (USB-to-serial converter) on Linux. User
 	# group: dialout.
-	default_test_cwdevice_name="ttyUSB0"
+	test_tty_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
@@ -6630,7 +6633,7 @@ printf "%s\n" "$as_me: Detected FreeBSD: $host_os" >&6;}
 	#
 	# Name of first tty device (USB-to-serial converter) on FreeBSD 13.2.
 	# User group: dialer.
-	default_test_cwdevice_name="cuau0"
+	test_tty_cwdevice_name="cuau0"
 	;;
 
 	*openbsd*|*OpenBSD*)
@@ -6650,10 +6653,6 @@ printf "%s\n" "$as_me: Detected NetBSD: $host_os" >&6;}
 printf "%s\n" "$as_me: Detected other OS: $host_os" >&6;}
 	;;
 esac
-
-
-# AC_SUBST puts the TEST_CWDEVICE_NAME symbol into Makefiles
-TEST_CWDEVICE_NAME=${default_test_cwdevice_name}
 
 
 
@@ -6721,6 +6720,25 @@ fi
 # The next line will write a #define into ROOT/config.h.
 
 printf "%s\n" "#define TEST_CWDAEMON_PATH \"${test_cwdaemon_path}\"" >>confdefs.h
+
+
+
+
+
+# Name of tty cwdevice that will be used by local test instance of cwdaemon
+# server.
+test_tty_cwdevice_name=ttyUSB0
+
+# Check whether --with-test_tty_cwdevice_name was given.
+if test ${with_test_tty_cwdevice_name+y}
+then :
+  withval=$with_test_tty_cwdevice_name; test_tty_cwdevice_name="$withval"
+fi
+
+# The next line will write a #define into ROOT/config.h.
+
+printf "%s\n" "#define TEST_TTY_CWDEVICE_NAME \"${test_tty_cwdevice_name}\"" >>confdefs.h
+
 
 
 
@@ -8275,8 +8293,8 @@ printf "%s\n" "$as_me:   enable unit tests: ..............  yes" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ........  $enable_functional_tests" >&5
 printf "%s\n" "$as_me:   enable functional tests: ........  $enable_functional_tests" >&6;}
 if test x$enable_functional_tests = xyes ; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test cwdevice name: .........  $TEST_CWDEVICE_NAME" >&5
-printf "%s\n" "$as_me:       test cwdevice name: .........  $TEST_CWDEVICE_NAME" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test tty cwdevice name: ...... $test_tty_cwdevice_name" >&5
+printf "%s\n" "$as_me:       test tty cwdevice name: ...... $test_tty_cwdevice_name" >&6;}
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&5
 printf "%s\n" "$as_me:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&6;}
 fi
