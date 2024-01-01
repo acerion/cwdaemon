@@ -31,6 +31,17 @@ typedef struct cwdaemon_process_t {
   You can assign TIOCM_RTS and TIOCM_DTR values to these pins.
 */
 typedef struct {
+
+	/**< Whether to use explicit pin configuration that is specified below,
+	   or to allow usage of default values.
+
+	   E.g. code starting cdaemon server process can explicitly specify
+	   command-line options for tty lines using values from this struct, or
+	   can not specify the options and thus let cwdaemon use implicit,
+	   default assignment of the pins.
+	 */
+	bool explicit;
+
 	unsigned int pin_keying;  /**< Pin of tty port that is used for keying (sending dots and dashes). */
 	unsigned int pin_ptt;     /**< Pin of tty port that is used for PTT. */
 } tty_pins_t;

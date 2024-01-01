@@ -165,29 +165,36 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 			argv[a++] = "-s";
 			argv[a++] = wpm_buf;
 		}
-		switch (opts->tty_pins.pin_keying) {
-		case TIOCM_DTR:
-			argv[a++] = "-o";
-			argv[a++] = "key=dtr";
-			break;
-		case TIOCM_RTS:
-			argv[a++] = "-o";
-			argv[a++] = "key=rts";
-			break;
-		default:
-			break;
-		}
-		switch (opts->tty_pins.pin_ptt) {
+		if (opts->tty_pins.explicit) {
+			/* tty options for cwdaemon server have been explicitly defined.
+			   Use them here. */
+			switch (opts->tty_pins.pin_keying) {
 			case TIOCM_DTR:
-			argv[a++] = "-o";
-			argv[a++] = "ptt=dtr";
-			break;
-		case TIOCM_RTS:
-			argv[a++] = "-o";
-			argv[a++] = "ptt=rts";
-			break;
-		default:
-			break;
+				argv[a++] = "-o";
+				argv[a++] = "key=dtr";
+				break;
+			case TIOCM_RTS:
+				argv[a++] = "-o";
+				argv[a++] = "key=rts";
+				break;
+			default:
+				break;
+			}
+
+			switch (opts->tty_pins.pin_ptt) {
+			case TIOCM_DTR:
+				argv[a++] = "-o";
+				argv[a++] = "ptt=dtr";
+				break;
+			case TIOCM_RTS:
+				argv[a++] = "-o";
+				argv[a++] = "ptt=rts";
+				break;
+			default:
+				break;
+			}
+		} else {
+			; /* Allow cwdaemon server to use default assignment of tty pins. */
 		}
 
 

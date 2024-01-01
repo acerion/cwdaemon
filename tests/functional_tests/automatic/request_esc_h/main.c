@@ -190,8 +190,6 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 typedef struct test_case_t {
 	const char * description;                /**< Tester-friendly description of test case. */
-	tty_pins_t observer_tty_pins;            /**< Which tty pins on cwdevice should be treated by cwdevice as keying or ptt pins. */
-
 	const char * message;                    /**< Text to be sent to cwdaemon server by cwdaemon client in a request. */
 	const char * requested_reply_value;      /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
 } test_case_t;
@@ -200,44 +198,30 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	/* This is a SUCCESS case. This is a basic case where cwdaemon is
-	   executed without -o options, so it uses default tty lines. cwdevice
-	   observer is configured to look at the default line(s) for keying
-	   events. */
+	/* This is a SUCCESS case. We request cwdaemon server to send us empty
+	   string in reply. */
 	{ .description             = "success case, empty reply value",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-
 	  .message                 = "paris",
 	  .requested_reply_value   = "",
 	},
 
-	/* This is a SUCCESS case. This is an almost-basic case where
-	   cwdaemon is executed with -o options but the options still tell
-	   cwdaemon to use default tty lines. cwdevice observer is configured to
-	   look at the default line(s) for keying events. */
+	/* This is a SUCCESS case. We request cwdaemon server to send us
+	   single-letter string in reply. */
 	{ .description             = "success case, single-letter as a value of reply",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-
 	  .message                 = "paris",
 	  .requested_reply_value   = "r",
 	},
 
-	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
-	   keying, but a cwdevice observer (and thus a receiver) is told to look at
-	   RTS for keying events. */
+	/* This is a SUCCESS case. We request cwdaemon server to send us
+	   single-word string in reply. */
 	{ .description             = "success case, a word as value of reply",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-
 	  .message                 = "paris",
 	  .requested_reply_value   = "reply",
 	},
 
-	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
-	   keying, and a cwdevice observer (and thus a receiver) is told to look
-	   also at RTS for keying events. */
+	/* This is a SUCCESS case. We request cwdaemon server to send us
+	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-
 	  .message                 = "paris",
 	  .requested_reply_value   = "I am a reply to your 27th request.",
 	},
@@ -249,7 +233,6 @@ static test_case_t g_test_cases[] = {
 static void * morse_receiver_thread_fn(void * thread_arg)
 {
 	thread_t * thread = (thread_t *) thread_arg;
-	test_case_t * test_case = (test_case_t *) thread->thread_fn_arg;
 	cwdevice_observer_t cwdevice_observer = { 0 };
 	cw_easy_receiver_t morse_receiver = { 0 };
 
@@ -263,7 +246,6 @@ static void * morse_receiver_thread_fn(void * thread_arg)
 			thread->status = thread_stopped_err;
 			return NULL;
 		}
-		cwdevice_observer.tty_pins_config = test_case->observer_tty_pins; /* Observer of cwdevice should look at pins according to this config. */
 		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to start up cwdevice observer\n");
 			thread->status = thread_stopped_err;
@@ -580,7 +562,7 @@ int main(void)
 
 
 		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = socket_receiver_thread_fn, .thread_fn_arg = &client };
-		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = test_case };
+		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
 
 
 

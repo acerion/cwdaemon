@@ -85,8 +85,6 @@ int main(void)
 	};
 	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
 	cwdevice_observer_params_t key_source_params = {
-		.tty_pins_config = { .pin_keying = TIOCM_DTR,   /* The default tty line on which keying is being done. */
-		                     .pin_ptt    = TIOCM_RTS }, /* The default tty line on which ptt is being done. */
 		.source_path  = "/dev/" TEST_CWDEVICE_NAME,
 	};
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {

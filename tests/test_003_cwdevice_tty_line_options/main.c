@@ -189,41 +189,40 @@ typedef struct test_case_t {
 
 static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. This is a basic case where cwdaemon is
-	   executed without -o options, so it uses default tty lines. cwdevice
-	   observer is configured to look at the default line(s) for keying
-	   events. */
+	   executed without -o options, so it uses default tty lines.
+
+	   Configuration of pins for cwdevice observer is implicitly default. */
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
 	  .string_to_play          = "paris",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS }
 	},
 
 	/* This is a SUCCESS case. This is an almost-basic case where
 	   cwdaemon is executed with -o options but the options still tell
-	   cwdaemon to use default tty lines. cwdevice observer is configured to
-	   look at the default line(s) for keying events. */
+	   cwdaemon to use default tty lines.
+
+	   Configuration of pins for cwdevice observer is implicitly default. */
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
-	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
+	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS }
 	},
 
 	/* This is a FAIL case. cwdaemon is told to toggle a DTR while
-	   keying, but a cwdevice observer (and thus a receiver) is told to look at
+	   keying, but a cwdevice observer (and thus a Morse receiver) is told to look at
 	   RTS for keying events. */
 	{ .description             = "failure case, cwdaemon is keying DTR, cwdevice observer is monitoring RTS",
-	  .server_tty_pins         = { .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
+	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .string_to_play          = "paris",
 	  .expected_failed_receive = true,
-	  .observer_tty_pins       = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR }
+	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR }
 	},
 
 	/* This is a SUCCESS case. cwdaemon is told to toggle a RTS while
 	   keying, and a cwdevice observer (and thus a receiver) is told to look
 	   also at RTS for keying events. */
 	{ .description             = "success case, cwdaemon is keying RTS, cwdevice observer is monitoring RTS",
-	  .server_tty_pins         = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
+	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .string_to_play          = "paris",
-	  .observer_tty_pins       = { .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
+	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	},
 };
 
