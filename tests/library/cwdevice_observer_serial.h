@@ -40,7 +40,7 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 
 
 
-int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver);
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver, const tty_pins_t * observer_pins_config);
 
 
 

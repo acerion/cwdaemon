@@ -23,6 +23,7 @@
 
 
 
+#include "process.h"
 #define _GNU_SOURCE /* strcasestr() */
 
 
@@ -102,13 +103,14 @@ void * morse_receiver_thread_fn(void * thread_arg)
 	thread_t * thread = (thread_t *) thread_arg;
 	cwdevice_observer_t cwdevice_observer = { 0 };
 	cw_easy_receiver_t morse_receiver = { 0 };
+	const morse_receiver_config_t * morse_config = (const morse_receiver_config_t * ) thread->thread_fn_arg;
 
 	thread->status = thread_running;
 
 	/* Preparation of test helpers. */
 	{
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver)) {
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, morse_config ? &morse_config->observer_tty_pins_config : NULL)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to set up observer of cwdevice\n");
 			thread->status = thread_stopped_err;
 			return NULL;

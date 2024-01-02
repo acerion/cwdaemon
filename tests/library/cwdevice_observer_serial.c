@@ -164,7 +164,7 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 
 
-int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver)
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver, const tty_pins_t * observer_pins_config)
 {
 	memset(observer, 0, sizeof (cwdevice_observer_t));
 
@@ -172,6 +172,9 @@ int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver
 	observer->close_fn = cwdevice_observer_serial_close;
 	observer->new_key_state_cb   = on_key_state_change;
 	observer->new_key_state_sink = morse_receiver;
+	if (observer_pins_config) {
+		observer->tty_pins_config = *observer_pins_config;
+	}
 
 	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_TTY_CWDEVICE_NAME);
 

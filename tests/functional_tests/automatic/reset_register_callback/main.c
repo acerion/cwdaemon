@@ -82,7 +82,7 @@ int main(void)
 	const uint32_t seed = cwdaemon_srandom(0);
 	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
 
-	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
+	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
 	char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
 	const char * message1 = "paris";
 	const char * message2 = "texas";

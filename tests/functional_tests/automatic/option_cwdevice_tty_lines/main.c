@@ -160,12 +160,11 @@ int main(void)
 
 
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver)) {
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, &test_case->observer_tty_pins)) {
 			fprintf(stderr, "[EE] Failed to set up observer of cwdevice\n");
 			failure = true;
 			goto cleanup;
 		}
-		cwdevice_observer.tty_pins_config = test_case->observer_tty_pins; /* Observer of cwdevice should look at pins according to this config. */
 		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
 			fprintf(stderr, "[EE] Failed to start up cwdevice observer\n");
 			failure = true;

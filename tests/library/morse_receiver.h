@@ -5,6 +5,14 @@
 
 
 #include "cw_rec_utils.h"
+#include "misc.h"
+
+
+
+
+typedef struct morse_receiver_config_t {
+	tty_pins_t observer_tty_pins_config;
+} morse_receiver_config_t;
 
 
 
