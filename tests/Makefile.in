@@ -89,10 +89,9 @@ build_triplet = @build@
 host_triplet = @host@
 @FUNCTIONAL_TESTS_TRUE@am__append_1 = library functional_tests \
 @FUNCTIONAL_TESTS_TRUE@	test_001_basic_process_control \
-@FUNCTIONAL_TESTS_TRUE@	test_002_reset_register_callback \
 @FUNCTIONAL_TESTS_TRUE@	test_003_cwdevice_tty_line_options
 @FUNCTIONAL_TESTS_TRUE@am__append_2 = test_001_basic_process_control/test_program \
-@FUNCTIONAL_TESTS_TRUE@	test_002_reset_register_callback/test_program \
+@FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/reset_register_callback/test_program \
 @FUNCTIONAL_TESTS_TRUE@	test_003_cwdevice_tty_line_options/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_h/test_program
 subdir = tests
@@ -363,7 +362,6 @@ TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 DIST_SUBDIRS = unit_tests library functional_tests \
 	test_001_basic_process_control \
-	test_002_reset_register_callback \
 	test_003_cwdevice_tty_line_options
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/mkinstalldirs \
 	$(top_srcdir)/test-driver
@@ -809,9 +807,9 @@ test_001_basic_process_control/test_program.log: test_001_basic_process_control/
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_002_reset_register_callback/test_program.log: test_002_reset_register_callback/test_program
-	@p='test_002_reset_register_callback/test_program'; \
-	b='test_002_reset_register_callback/test_program'; \
+functional_tests/automatic/reset_register_callback/test_program.log: functional_tests/automatic/reset_register_callback/test_program
+	@p='functional_tests/automatic/reset_register_callback/test_program'; \
+	b='functional_tests/automatic/reset_register_callback/test_program'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

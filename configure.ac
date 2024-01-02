@@ -203,7 +203,7 @@ if test "x$enable_functional_tests" = xyes ; then
    tests/functional_tests/automatic/Makefile
    tests/functional_tests/automatic/request_esc_h/Makefile
    tests/test_001_basic_process_control/Makefile
-   tests/test_002_reset_register_callback/Makefile
+   tests/functional_tests/automatic/reset_register_callback/Makefile
    tests/test_003_cwdevice_tty_line_options/Makefile
    ])
 fi

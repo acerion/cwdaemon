@@ -1,3 +1,6 @@
 .PHONY: check
 
-SUBDIRS = request_esc_h
+SUBDIRS  = reset_register_callback
+SUBDIRS += request_esc_h
+
+
