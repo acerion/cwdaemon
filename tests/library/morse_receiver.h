@@ -12,7 +12,7 @@
 int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm);
 int morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec);
 void * morse_receiver_thread_fn(void * thread_arg);
-
+bool correct_morse_receive_text(const char * received_text, const char * expected_message);
 
 
 

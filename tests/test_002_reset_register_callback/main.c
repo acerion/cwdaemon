@@ -27,12 +27,17 @@
 /**
    Test for proper re-registration of libcw keying callback when handling RESET
    request. https://github.com/acerion/cwdaemon/issues/6
+
+   See also "#define CWDAEMON_GITHUB_ISSUE_6_FIXED" in src/cwdaemon.c.
 */
 
 
 
 
 #define _DEFAULT_SOURCE
+
+
+
 
 #include "config.h"
 
@@ -44,9 +49,12 @@
 
 #include "../library/cwdevice_observer_serial.h"
 #include "../library/events.h"
+#include "../library/log.h"
 #include "../library/misc.h"
+#include "../library/morse_receiver.h"
 #include "../library/socket.h"
 #include "../library/test_env.h"
+#include "../library/thread.h"
 #include "src/lib/random.h"
 
 
@@ -57,41 +65,43 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 
+static int evaluate_events(events_t * events, const char * message1, const char * message2);
+
+
+
+
 int main(void)
 {
 #if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
+		test_log_err("Preconditions for test env are not met, exiting %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 #endif
 
 	const uint32_t seed = cwdaemon_srandom(0);
-	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
+
+	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
+	char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
+	const char * message1 = "paris";
+	const char * message2 = "texas";
+
 
 	bool failure = false;
 	const int wpm = 10;
 	const cwdaemon_opts_t cwdaemon_opts = {
-		.tone               = 800,
+		.tone               = 630,
 		.sound_system       = CW_AUDIO_SOUNDCARD,
 		.nofork             = true,
 		.cwdevice_name      = TEST_TTY_CWDEVICE_NAME,
 		.wpm                = wpm,
 	};
-	const helpers_opts_t helpers_opts = { .wpm = cwdaemon_opts.wpm };
-	const cwdevice_observer_params_t key_source_params = {
-		.source_path  = "/dev/" TEST_TTY_CWDEVICE_NAME,
-	};
+
 	cwdaemon_process_t cwdaemon = { 0 };
 	client_t client = { 0 };
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
-		failure = true;
-		goto cleanup;
-	}
-	atexit(test_helpers_cleanup);
-	if (0 != test_helpers_setup(&helpers_opts, &key_source_params)) {
-		fprintf(stderr, "[EE] Failed to configure test helpers, exiting\n");
+		test_log_err("Failed to start cwdaemon, exiting %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -102,22 +112,50 @@ int main(void)
 	/* This sends a text request to cwdaemon that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
-	if (0 != client_send_and_receive(&client, "paris", false)) {
-		fprintf(stderr, "[EE] failed to send first request, exiting\n");
-		failure = true;
-		goto cleanup;
+	{
+		if (0 != thread_start(&morse_receiver_thread)) {
+			test_log_err("Failed to start Morse receiver thread (%d)\n", 1);
+			failure = true;
+			goto cleanup;
+		}
+
+		snprintf(message_buf, sizeof (message_buf), "one %s", message1);
+		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+
+		thread_join(&morse_receiver_thread);
+		thread_cleanup(&morse_receiver_thread);
 	}
+
+
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
 	client_send_request(&client, CWDAEMON_REQUEST_RESET, "");
 
+
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
-	if (0 != client_send_and_receive(&client, "texas", false)) {
-		fprintf(stderr, "[EE] Failed to send second request, exiting\n");
+	{
+		if (0 != thread_start(&morse_receiver_thread)) {
+			test_log_err("Failed to start Morse receiver thread (%d)\n", 2);
+			failure = true;
+			goto cleanup;
+		}
+
+		snprintf(message_buf, sizeof (message_buf), "one %s", message2);
+		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+
+		thread_join(&morse_receiver_thread);
+		thread_cleanup(&morse_receiver_thread);
+	}
+
+
+
+	if (0 != evaluate_events(&g_events, message1, message2)) {
+		test_log_err("Evaluation of events has failed %s\n", "");
 		failure = true;
-		goto cleanup;
+	} else {
+		test_log_info("Evaluation of events was successful %s\n", "");
 	}
 
 
@@ -133,7 +171,7 @@ int main(void)
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
 		*/
-		fprintf(stderr, "[ERROR] Failed to correctly stop local test instance of cwdaemon.\n");
+		test_log_err("Failed to correctly stop local test instance of cwdaemon %s\n", "");
 		failure = true;
 	}
 
@@ -144,12 +182,61 @@ int main(void)
 	client_disconnect(&client);
 
 	if (failure) {
+		test_log_err("Test case %d/%d failed, terminating\n", 1, 1);
 		exit(EXIT_FAILURE);
 	} else {
+		test_log_info("Test case %d/%d succeeded\n\n", 1, 1);
 		exit(EXIT_SUCCESS);
 	}
 }
 
 
 
+
+static int evaluate_events(events_t * events, const char * message1, const char * message2)
+{
+	/* Expectation 1: there are two events: Morse code was keyed (and received) on cwdevice twice. */
+	if (2  != events->event_idx) {
+		test_log_err("Incorrect count of events: %d\n", events->event_idx);
+		return -1;
+	}
+	test_log_info("Correct count of test events: %d\n", events->event_idx);
+
+
+
+
+	/* Expectation 2: both events are of type "Morse receive". */
+	event_t * morse1 = &events->events[0];
+	event_t * morse2 = &events->events[1];
+	if (morse1->event_type != event_type_morse_receive
+	    || morse2->event_type != event_type_morse_receive) {
+
+		test_log_err("Incorrect type of event(s): %d, %d\n", morse1->event_type, morse2->event_type);
+		return -1;
+	}
+	test_log_info("Correct types of test events: %d, %d\n", morse1->event_type, morse2->event_type);
+
+
+
+
+	/* Expectation 3: both Morse receive events contain correct received text. */
+	const char * received_string1 = morse1->u.morse_receive.string;
+	const char * received_string2 = morse2->u.morse_receive.string;
+	if (!correct_morse_receive_text(received_string1, message1)
+	    || !correct_morse_receive_text(received_string2, message2)) {
+
+		test_log_err("Incorrect text in Morse receive event(s): [%s], [%s]\n",
+		             received_string1, received_string2);
+		return -1;
+	}
+	test_log_info("Correct text in Morse receive events: [%s], [%s]\n",
+	              received_string1, received_string2);
+
+
+
+
+	test_log_info("Evaluation of test events was successful %s\n", "");
+
+	return 0;
+}
 

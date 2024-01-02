@@ -170,9 +170,13 @@
 */
 
 
-/* This flag is necessary until I'm done with writing a good test for the
-   ticket. It may be necessary even afterwards, just to be able to quickly
-   restore faulty behaviour and run a test against it. */
+/*
+  This flag is necessary until I'm done with writing a good test for the
+  ticket. It may be necessary even afterwards, just to be able to quickly
+  restore faulty behaviour and run a test against it.
+
+  https://github.com/acerion/cwdaemon/issues/6
+*/
 #define CWDAEMON_GITHUB_ISSUE_6_FIXED
 
 

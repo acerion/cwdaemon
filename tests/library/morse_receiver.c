@@ -23,6 +23,11 @@
 
 
 
+#define _GNU_SOURCE /* strcasestr() */
+
+
+
+
 #include "config.h"
 
 #include <stdio.h>
@@ -186,6 +191,15 @@ void * morse_receiver_thread_fn(void * thread_arg)
 
 	thread->status = thread_stopped_ok;
 	return NULL;
+}
+
+
+
+
+bool correct_morse_receive_text(const char * received_text, const char * expected_message)
+{
+	const char * needle = strcasestr(received_text, expected_message);
+	return NULL != needle;
 }
 
 
