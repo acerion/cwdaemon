@@ -54,6 +54,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "cw_rec_utils.h"
 #include "cwdevice_observer_serial.h"
 
 
@@ -164,14 +165,14 @@ static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
 
 
 
-int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, cw_easy_receiver_t * morse_receiver, const tty_pins_t * observer_pins_config)
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, void * key_state_cb_arg, const tty_pins_t * observer_pins_config)
 {
 	memset(observer, 0, sizeof (cwdevice_observer_t));
 
 	observer->open_fn  = cwdevice_observer_serial_open;
 	observer->close_fn = cwdevice_observer_serial_close;
-	observer->new_key_state_cb   = on_key_state_change;
-	observer->new_key_state_sink = morse_receiver;
+	observer->new_key_state_cb     = on_key_state_change;
+	observer->new_key_state_cb_arg = key_state_cb_arg;
 	if (observer_pins_config) {
 		observer->tty_pins_config = *observer_pins_config;
 	}

@@ -84,7 +84,7 @@ static cwdevice_observer_t g_key_source = {
 	.open_fn            = cwdevice_observer_serial_open,
 	.close_fn           = cwdevice_observer_serial_close,
 	.new_key_state_cb   = on_key_state_change,
-	.new_key_state_sink = &g_easy_rec,
+	.new_key_state_cb_arg = &g_easy_rec,
 };
 
 

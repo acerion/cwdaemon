@@ -102,7 +102,7 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 		if (key_is_down != observer->previous_key_is_down) {
 			observer->previous_key_is_down = key_is_down;
 			if (observer->new_key_state_cb) {
-				observer->new_key_state_cb(observer->new_key_state_sink, key_is_down);
+				observer->new_key_state_cb(observer->new_key_state_cb_arg, key_is_down);
 			}
 		}
 		if (ptt_is_on != observer->previous_ptt_is_on) {

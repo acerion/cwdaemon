@@ -68,21 +68,36 @@ typedef struct cwdevice_observer_t {
 	/* User-provided function that closed a specific cwdevice.*/
 	void (* close_fn)(struct cwdevice_observer_t * observer);
 
+
+
 	/* User-provided callback function that is called by observer each
 	   time the state of key pin of cwdevice changes between up and down. */
-	bool (* new_key_state_cb)(void * new_key_state_sink, bool key_is_down);
+	bool (* new_key_state_cb)(void * new_key_state_cb_arg, bool key_is_down);
+
+	/*
+	  Pointer that will be passed as first argument of new_key_state_cb on
+	  each call to the function.
+
+	  This field is set using value of second arg of
+	  cwdevice_observer_tty_setup().
+
+	  Since the observer of cwdevice is frequently used to feed data to Morse
+	  receiver, this pointer will be set to some cw_easy_receiver_t*
+	  variable.
+	*/
+	void * new_key_state_cb_arg;
+
+
 
 	/* User-provided callback function that is called by observer each
 	   time the state of PTT pin of cwdevice changes between 'on' and 'off'. */
 	bool (* new_ptt_state_cb)(void * ptt_arg, bool ptt_is_on);
 
-	/* Pointer that will be passed as first argument of new_key_state_cb
-	   on each call to the function. */
-	void * new_key_state_sink;
-
 	/* Pointer that will be passed as first argument of new_ptt_state_cb
 	   on each call to the function. */
 	void * new_ptt_state_arg;
+
+
 
 	/* At what intervals to poll state of cwdevice? [microseconds]. User
 	   should assign KEY_SOURCE_DEFAULT_INTERVAL_US as default value (unless
