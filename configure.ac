@@ -199,7 +199,7 @@ AC_CONFIG_FILES([Makefile
 if test "x$enable_functional_tests" = xyes ; then
    AC_CONFIG_FILES([
    tests/library/Makefile
-   tests/functional_tests//Makefile
+   tests/functional_tests/Makefile
    tests/functional_tests/automatic/Makefile
    tests/functional_tests/automatic/option_cwdevice_tty_lines/Makefile
    tests/functional_tests/automatic/request_esc_5/Makefile
