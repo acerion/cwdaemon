@@ -221,7 +221,6 @@ static int run_test_case(const test_case_t * test_case)
 	bool failure = false;
 
 	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
-	char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
 	const int wpm = 10;
 
 	cwdaemon_process_t cwdaemon = { 0 };
@@ -254,8 +253,7 @@ static int run_test_case(const test_case_t * test_case)
 		}
 
 		/* Send the message to be played. */
-		snprintf(message_buf, sizeof (message_buf), "one %s", test_case->message);
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->message);
 
 		thread_join(&morse_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);

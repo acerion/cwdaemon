@@ -20,6 +20,7 @@ typedef struct client_t {
 
 
 int client_send_request(client_t * client, int request, const char * value);
+int client_send_request_va(client_t * client, int request, const char * format, ...) __attribute__ ((format (printf, 3, 4)));
 
 
 

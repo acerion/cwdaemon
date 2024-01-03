@@ -316,8 +316,6 @@ int main(void)
 		cwdaemon_process_t cwdaemon = { 0 };
 		client_t client = { 0 };
 
-		char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
-
 
 
 		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = client_socket_receiver_thread_fn, .thread_fn_arg = &client };
@@ -365,8 +363,7 @@ int main(void)
 		client_send_request(&client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
 
 		/* Send the message to be played. */
-		snprintf(message_buf, sizeof (message_buf), "start %s", test_case->message);
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "start %s", test_case->message);
 
 
 		thread_join(&socket_receiver_thread);

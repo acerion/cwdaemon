@@ -83,7 +83,6 @@ int main(void)
 	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
 
 	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
-	char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
 	const char * message1 = "paris";
 	const char * message2 = "texas";
 
@@ -119,8 +118,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		snprintf(message_buf, sizeof (message_buf), "one %s", message1);
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message1);
 
 		thread_join(&morse_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);
@@ -142,8 +140,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		snprintf(message_buf, sizeof (message_buf), "one %s", message2);
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message2);
 
 		thread_join(&morse_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);

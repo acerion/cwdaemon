@@ -41,6 +41,7 @@
 
 
 #include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -65,6 +66,21 @@
 
 
 extern events_t g_events;
+
+
+
+
+int client_send_request_va(client_t * client, int request, const char * format, ...)
+{
+	char buffer[1024] = { 0 };
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(buffer, sizeof (buffer), format, ap);
+	va_end(ap);
+
+	return client_send_request(client, request, buffer);
+}
 
 
 

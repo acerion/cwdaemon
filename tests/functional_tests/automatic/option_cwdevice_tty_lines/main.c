@@ -153,7 +153,6 @@ int main(void)
 		client_t client = { 0 };
 
 		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
-		char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
 		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins };
 
 
@@ -195,8 +194,7 @@ int main(void)
 		  The Morse-receiver should correctly receive the text that cwdaemon
 		  was playing (unless 'expected_failed_receive' is set to true).
 		*/
-		snprintf(message_buf, sizeof (message_buf), "one %s", test_case->string_to_play);
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->string_to_play);
 
 		thread_join(&morse_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);
