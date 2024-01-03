@@ -66,7 +66,7 @@
 
 
 
-static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon);
+static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 static char g_arg_tone[10] = { 0 };
@@ -80,7 +80,7 @@ static char g_arg_tone[10] = { 0 };
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon)
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
 {
 	const int default_l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
 	int l4_port = 0;
@@ -237,23 +237,23 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			return -1;
 		}
 
-		pid_t waited_pid = waitpid(pid, &cwdaemon->wstatus, WNOHANG);
+		pid_t waited_pid = waitpid(pid, &server->wstatus, WNOHANG);
 		if (pid == waited_pid) {
 			fprintf(stderr, "[NN] Child process %d changed state\n", pid);
-			if (WIFEXITED(cwdaemon->wstatus)) {
-				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(cwdaemon->wstatus));
-			} else if (WIFSIGNALED(cwdaemon->wstatus)) {
-				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(cwdaemon->wstatus));
-			} else if (WIFSTOPPED(cwdaemon->wstatus)) {
-				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(cwdaemon->wstatus));
+			if (WIFEXITED(server->wstatus)) {
+				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(server->wstatus));
+			} else if (WIFSIGNALED(server->wstatus)) {
+				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(server->wstatus));
+			} else if (WIFSTOPPED(server->wstatus)) {
+				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(server->wstatus));
 			} else {
 				fprintf(stderr, "[EE] Child process didn't start correctly due to unknown reason\n");
 			}
 			return -1;
 		} else if (0 == waited_pid) {
-			fprintf(stderr, "[II] cwdaemon started, pid = %d, l4 port = %d\n", pid, l4_port);
-			cwdaemon->pid = pid;
-			cwdaemon->l4_port = l4_port;
+			fprintf(stderr, "[II] cwdaemon server started, pid = %d, l4 port = %d\n", pid, l4_port);
+			server->pid = pid;
+			server->l4_port = l4_port;
 			return 0;
 		} else {
 			fprintf(stderr, "[EE] waitpid() returns %d\n", waited_pid);
@@ -265,11 +265,11 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 
 
 
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon, client_t * client)
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * server, client_t * client)
 {
 	const char * path = TEST_CWDAEMON_PATH;
-	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon\n");
+	if (0 != cwdaemon_start(path, opts, server)) {
+		fprintf(stderr, "[EE] Failed to start cwdaemon server\n");
 		return -1;
 	}
 
@@ -280,7 +280,7 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t *
 		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", opts->l3_address);
 	}
 	char cwdaemon_port[16] = { 0 };
-	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", cwdaemon->l4_port);
+	snprintf(cwdaemon_port, sizeof (cwdaemon_port), "%d", server->l4_port);
 
 	client->sock = cwdaemon_socket_connect(cwdaemon_address, cwdaemon_port);
 	if (client->sock < 0) {

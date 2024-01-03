@@ -84,7 +84,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon, client_t * client);
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * server, client_t * client);
 
 
 

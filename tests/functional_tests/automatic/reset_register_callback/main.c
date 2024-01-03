@@ -103,10 +103,10 @@ int main(void)
 		.wpm                = wpm,
 	};
 
-	cwdaemon_server_t cwdaemon = { 0 };
+	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
-		test_log_err("Failed to start cwdaemon, exiting %s\n", "");
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &server, &client)) {
+		test_log_err("Failed to start cwdaemon server, exiting %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -114,7 +114,7 @@ int main(void)
 
 
 
-	/* This sends a text request to cwdaemon that works in initial state,
+	/* This sends a text request to cwdaemon server that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
 	{
@@ -166,7 +166,7 @@ int main(void)
 
  cleanup:
 	/* Terminate local test instance of cwdaemon. */
-	if (0 != local_server_stop(&cwdaemon, &client)) {
+	if (0 != local_server_stop(&server, &client)) {
 		/*
 		  Stopping a server is not a main part of a test, but if a
 		  server can't be closed then it means that the main part of the
@@ -174,7 +174,7 @@ int main(void)
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
 		*/
-		test_log_err("Failed to correctly stop local test instance of cwdaemon %s\n", "");
+		test_log_err("Failed to correctly stop local test instance of cwdaemon server %s\n", "");
 		failure = true;
 	}
 

@@ -231,7 +231,7 @@ static int run_test_case(const test_case_t * test_case)
 	morse_receiver_config_t morse_config = { .wpm = wpm };
 	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 
-	cwdaemon_server_t cwdaemon = { 0 };
+	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = 640,
@@ -241,19 +241,19 @@ static int run_test_case(const test_case_t * test_case)
 		.wpm            = wpm,
 	};
 
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
+	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &server, &client)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		failure = true;
 		goto cleanup;
 	}
-	g_child_exit_info.pid = cwdaemon.pid;
+	g_child_exit_info.pid = server.pid;
 
 
 
 
 	if (test_case->send_message_request) {
 
-		/* Send some regular message to cwdaemon to make it change its internal state. */
+		/* Send some regular message to cwdaemon server to make it change its internal state. */
 		if (0 != thread_start(&morse_receiver_thread)) {
 			fprintf(stderr, "[EE] Failed to start Morse receiver thread\n");
 			failure = true;
@@ -285,7 +285,7 @@ static int run_test_case(const test_case_t * test_case)
 	{
 		/* Enable this to get non-zero value of wstatus returned by waitpid()
 		   for testing purposes. */
-		// kill(cwdaemon.pid, SIGKILL);
+		// kill(server.pid, SIGKILL);
 
 		/* First ask nicely for a clean exit. */
 		client_send_request(&client, CWDAEMON_REQUEST_EXIT, "");
@@ -304,13 +304,13 @@ static int run_test_case(const test_case_t * test_case)
 			fprintf(stderr, "[ERROR] error during sleep in cleanup\n");
 		}
 
-		/* Now check if test instance of cwdaemon has disappeared as expected. */
-		if (0 == kill(cwdaemon.pid, 0)) {
+		/* Now check if test instance of cwdaemon server has disappeared as expected. */
+		if (0 == kill(server.pid, 0)) {
 			/* Process still exists, kill it. */
 			fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
 			/* The fact that we need to kill cwdaemon with a
 			   signal is a bug. */
-			kill(cwdaemon.pid, SIGKILL);
+			kill(server.pid, SIGKILL);
 			fprintf(stderr, "[ERROR] Local test instance of cwdaemon was forcibly killed\n");
 			failure = true;
 		}

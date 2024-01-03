@@ -317,7 +317,7 @@ int main(void)
 		fprintf(stderr, "\n[II] Starting test case %zd/%zd: %s\n", i + 1, n, test_case->description);
 
 		bool failure = false;
-		cwdaemon_server_t cwdaemon = { 0 };
+		cwdaemon_server_t server = { 0 };
 		client_t client = { 0 };
 
 
@@ -329,7 +329,7 @@ int main(void)
 
 
 		/* Prepare local test instance of cwdaemon server. */
-		if (0 != cwdaemon_start_and_connect(&server_opts, &cwdaemon, &client)) {
+		if (0 != cwdaemon_start_and_connect(&server_opts, &server, &client)) {
 			fprintf(stderr, "[EE] Failed to start cwdaemon server, terminating\n");
 			failure = true;
 			goto cleanup;
@@ -394,8 +394,8 @@ int main(void)
 		thread_cleanup(&socket_receiver_thread);
 		thread_cleanup(&morse_receiver_thread);
 
-		/* Terminate local test instance of cwdaemon. */
-		if (0 != local_server_stop(&cwdaemon, &client)) {
+		/* Terminate local test instance of cwdaemon server. */
+		if (0 != local_server_stop(&server, &client)) {
 			/*
 			  Stopping a server is not a main part of a test, but if a
 			  server can't be closed then it means that the main part of the

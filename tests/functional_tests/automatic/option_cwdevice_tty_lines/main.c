@@ -154,7 +154,7 @@ int main(void)
 		fprintf(stderr, "\n[II] Starting test case #%zd: %s\n", i, test_case->description);
 
 		bool failure = false;
-		cwdaemon_server_t cwdaemon = { 0 };
+		cwdaemon_server_t server = { 0 };
 		client_t client = { 0 };
 
 		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins, .wpm = wpm };
@@ -164,7 +164,7 @@ int main(void)
 
 		/* Prepare local test instance of cwdaemon server. */
 		server_opts.tty_pins = test_case->server_tty_pins; /* Server should toggle cwdevice pins according to this config. */
-		if (0 != cwdaemon_start_and_connect(&server_opts, &cwdaemon, &client)) {
+		if (0 != cwdaemon_start_and_connect(&server_opts, &server, &client)) {
 			fprintf(stderr, "[EE] Failed to start cwdaemon server, terminating\n");
 			failure = true;
 			goto cleanup;
@@ -218,7 +218,7 @@ int main(void)
 	cleanup:
 
 		/* Terminate local test instance of cwdaemon. */
-		if (0 != local_server_stop(&cwdaemon, &client)) {
+		if (0 != local_server_stop(&server, &client)) {
 			/*
 			  Stopping a server is not a main part of a test, but if a
 			  server can't be closed then it means that the main part of the
