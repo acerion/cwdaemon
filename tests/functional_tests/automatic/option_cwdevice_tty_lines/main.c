@@ -134,7 +134,12 @@ int main(void)
 	const uint32_t seed = cwdaemon_srandom(0);
 	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
 
-	const int wpm = 10;
+	int wpm = 10;
+	/* Remember that some receive timeouts in tests were selected when the
+	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	   overrunning the timeouts. */
+	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
+
 	cwdaemon_opts_t server_opts = {
 		.tone           = 660,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -152,8 +157,8 @@ int main(void)
 		cwdaemon_process_t cwdaemon = { 0 };
 		client_t client = { 0 };
 
-		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
-		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins };
+		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins, .wpm = wpm };
+		thread_t morse_receiver_thread = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 
 
 
@@ -170,7 +175,6 @@ int main(void)
 		/* This sends a text request to cwdaemon that works in initial state,
 		   i.e. reset command was not sent yet, so cwdaemon should not be
 		   broken yet. */
-		morse_receiver_thread.thread_fn_arg = &morse_config;
 		{
 			if (0 != thread_start(&morse_receiver_thread)) {
 				test_log_err("Failed to start Morse receiver thread (%d)\n", 1);

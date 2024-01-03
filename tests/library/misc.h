@@ -11,14 +11,6 @@
 
 
 
-typedef struct {
-	int wpm;
-} helpers_opts_t;
-
-
-
-
-
 /**
    @brief Find a UDP port that is not used on local machine
 

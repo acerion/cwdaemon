@@ -82,13 +82,19 @@ int main(void)
 	const uint32_t seed = cwdaemon_srandom(0);
 	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
 
-	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
+	int wpm = 10;
+	/* Remember that some receive timeouts in tests were selected when the
+	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	   overrunning the timeouts. */
+	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
+
+	morse_receiver_config_t morse_config = { .wpm = wpm };
+	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 	const char * message1 = "paris";
 	const char * message2 = "texas";
 
 
 	bool failure = false;
-	const int wpm = 10;
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = 630,
 		.sound_system       = CW_AUDIO_SOUNDCARD,

@@ -38,6 +38,7 @@
 #include "../library/cwdevice_observer.h"
 #include "../library/cwdevice_observer_serial.h"
 #include "../library/events.h"
+#include "../library/log.h"
 #include "../library/misc.h"
 #include "../library/thread.h"
 #include "events.h"
@@ -104,12 +105,18 @@ void * morse_receiver_thread_fn(void * thread_arg)
 	cw_easy_receiver_t morse_receiver = { 0 };
 	const morse_receiver_config_t * morse_config = (const morse_receiver_config_t * ) thread->thread_fn_arg;
 
+	if (NULL == morse_config) {
+		test_log_err("NULL Morse config passed to receiver thread function %s\n", "");
+		thread->status = thread_stopped_err;
+		return NULL;
+	}
+
 	thread->status = thread_running;
 
 	/* Preparation of test helpers. */
 	{
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, morse_config ? &morse_config->observer_tty_pins_config : NULL)) {
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, &morse_config->observer_tty_pins_config)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to set up observer of cwdevice\n");
 			thread->status = thread_stopped_err;
 			return NULL;
@@ -120,7 +127,8 @@ void * morse_receiver_thread_fn(void * thread_arg)
 			return NULL;
 		}
 		/* Prepare receiver of Morse code. */
-		if (0 != morse_receiver_setup(&morse_receiver, 10)) { /* FIXME acerion 2023.12.28: replace magic number with wpm. */
+		const int wpm = morse_config->wpm == 0 ? CW_SPEED_INITIAL : morse_config->wpm;
+		if (0 != morse_receiver_setup(&morse_receiver, wpm)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to set up Morse receiver\n");
 			thread->status = thread_stopped_err;
 			return NULL;

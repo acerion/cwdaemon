@@ -222,8 +222,14 @@ static int run_test_case(const test_case_t * test_case)
 {
 	bool failure = false;
 
-	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
-	const int wpm = 10;
+	int wpm = 10;
+	/* Remember that some receive timeouts in tests were selected when the
+	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	   overrunning the timeouts. */
+	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
+
+	morse_receiver_config_t morse_config = { .wpm = wpm };
+	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 
 	cwdaemon_process_t cwdaemon = { 0 };
 	client_t client = { 0 };

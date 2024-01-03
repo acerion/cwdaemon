@@ -12,6 +12,7 @@
 
 typedef struct morse_receiver_config_t {
 	tty_pins_t observer_tty_pins_config;
+	int wpm;                                 /**< Receiver speed (words-per-minute), for receiver working in non-adaptive mode (which is usually the case). */
 } morse_receiver_config_t;
 
 

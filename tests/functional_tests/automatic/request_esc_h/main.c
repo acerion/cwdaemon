@@ -297,7 +297,12 @@ int main(void)
 	const uint32_t seed = cwdaemon_srandom(0);
 	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
 
-	const int wpm = 10;
+	int wpm = 10;
+	/* Remember that some receive timeouts in tests were selected when the
+	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	   overrunning the timeouts. */
+	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
+
 	cwdaemon_opts_t server_opts = {
 		.tone           = 700,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -318,7 +323,8 @@ int main(void)
 
 
 		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = client_socket_receiver_thread_fn, .thread_fn_arg = &client };
-		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn };
+		morse_receiver_config_t morse_config = { .wpm = wpm };
+		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 
 
 
