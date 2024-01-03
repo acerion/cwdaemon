@@ -154,7 +154,7 @@ int main(void)
 		fprintf(stderr, "\n[II] Starting test case #%zd: %s\n", i, test_case->description);
 
 		bool failure = false;
-		cwdaemon_process_t cwdaemon = { 0 };
+		cwdaemon_server_t cwdaemon = { 0 };
 		client_t client = { 0 };
 
 		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins, .wpm = wpm };

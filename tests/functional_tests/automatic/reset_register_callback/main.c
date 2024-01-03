@@ -103,7 +103,7 @@ int main(void)
 		.wpm                = wpm,
 	};
 
-	cwdaemon_process_t cwdaemon = { 0 };
+	cwdaemon_server_t cwdaemon = { 0 };
 	client_t client = { 0 };
 	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &cwdaemon, &client)) {
 		test_log_err("Failed to start cwdaemon, exiting %s\n", "");

@@ -17,11 +17,11 @@
 
 /* For now this structure doesn't allow for usage and tests of remote
    cwdaemon server. */
-typedef struct cwdaemon_process_t {
+typedef struct cwdaemon_server_t {
 	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
 	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
 	int wstatus;  /**< Second argument to waitpid(). */
-} cwdaemon_process_t;
+} cwdaemon_server_t;
 
 
 
@@ -84,7 +84,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client);
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon, client_t * client);
 
 
 
@@ -98,7 +98,7 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t 
    @return 0 on success
    @return -1 on failure
 */
-int local_server_stop(cwdaemon_process_t * server, client_t * client);
+int local_server_stop(cwdaemon_server_t * server, client_t * client);
 
 
 

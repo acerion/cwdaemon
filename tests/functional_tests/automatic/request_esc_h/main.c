@@ -317,7 +317,7 @@ int main(void)
 		fprintf(stderr, "\n[II] Starting test case %zd/%zd: %s\n", i + 1, n, test_case->description);
 
 		bool failure = false;
-		cwdaemon_process_t cwdaemon = { 0 };
+		cwdaemon_server_t cwdaemon = { 0 };
 		client_t client = { 0 };
 
 

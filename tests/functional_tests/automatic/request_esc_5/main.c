@@ -231,7 +231,7 @@ static int run_test_case(const test_case_t * test_case)
 	morse_receiver_config_t morse_config = { .wpm = wpm };
 	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
 
-	cwdaemon_process_t cwdaemon = { 0 };
+	cwdaemon_server_t cwdaemon = { 0 };
 	client_t client = { 0 };
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = 640,

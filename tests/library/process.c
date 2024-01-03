@@ -66,7 +66,7 @@
 
 
 
-static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon);
+static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 static char g_arg_tone[10] = { 0 };
@@ -80,7 +80,7 @@ static char g_arg_tone[10] = { 0 };
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon)
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon)
 {
 	const int default_l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
 	int l4_port = 0;
@@ -265,7 +265,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_pro
 
 
 
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_process_t * cwdaemon, client_t * client)
+int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * cwdaemon, client_t * client)
 {
 	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, cwdaemon)) {
@@ -363,7 +363,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 
 
 
-int local_server_stop(cwdaemon_process_t * server, client_t * client)
+int local_server_stop(cwdaemon_server_t * server, client_t * client)
 {
 	int retval = 0;
 
