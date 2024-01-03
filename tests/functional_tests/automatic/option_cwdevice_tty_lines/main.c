@@ -48,11 +48,13 @@
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/process.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
+#include "tests/library/thread.h"
 
 
 
@@ -115,6 +117,11 @@ static test_case_t g_test_cases[] = {
 
 
 
+static int evaluate_events(const events_t * events, const test_case_t * test_case);
+
+
+
+
 int main(void)
 {
 #if 0
@@ -142,10 +149,12 @@ int main(void)
 		fprintf(stderr, "\n[II] Starting test case #%zd: %s\n", i, test_case->description);
 
 		bool failure = false;
-		cwdevice_observer_t cwdevice_observer = { 0 };
-		cw_easy_receiver_t morse_receiver = { 0 };
 		cwdaemon_process_t cwdaemon = { 0 };
 		client_t client = { 0 };
+
+		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn,  };
+		char message_buf[64] = { 0 }; /* Message to be sent to cwdaemon server. */
+		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins };
 
 
 
@@ -159,27 +168,18 @@ int main(void)
 
 
 
-		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, &test_case->observer_tty_pins)) {
-			fprintf(stderr, "[EE] Failed to set up observer of cwdevice\n");
-			failure = true;
-			goto cleanup;
+		/* This sends a text request to cwdaemon that works in initial state,
+		   i.e. reset command was not sent yet, so cwdaemon should not be
+		   broken yet. */
+		morse_receiver_thread.thread_fn_arg = &morse_config;
+		{
+			if (0 != thread_start(&morse_receiver_thread)) {
+				test_log_err("Failed to start Morse receiver thread (%d)\n", 1);
+				failure = true;
+				goto cleanup;
+			}
+
 		}
-		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
-			fprintf(stderr, "[EE] Failed to start up cwdevice observer\n");
-			failure = true;
-			goto cleanup;
-		}
-
-
-
-		/* Prepare receiver of Morse code. */
-		if (0 != morse_receiver_setup(&morse_receiver, server_opts.wpm)) {
-			fprintf(stderr, "[EE] Failed to set up Morse receiver\n");
-			failure = true;
-			goto cleanup;
-		}
-
 
 
 		/*
@@ -195,18 +195,25 @@ int main(void)
 		  The Morse-receiver should correctly receive the text that cwdaemon
 		  was playing (unless 'expected_failed_receive' is set to true).
 		*/
-		if (0 != client_send_and_receive_2(&client, &morse_receiver, test_case->string_to_play, test_case->expected_failed_receive)) {
-			fprintf(stderr, "[EE] Failed at test of test_case #%zd\n", i);
+		snprintf(message_buf, sizeof (message_buf), "one %s", test_case->string_to_play);
+		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, message_buf);
+
+		thread_join(&morse_receiver_thread);
+		thread_cleanup(&morse_receiver_thread);
+
+
+
+
+		if (0 != evaluate_events(&g_events, test_case)) {
+			test_log_err("Evaluation of events has failed for test case %zu/%zu\n", i + 1, n);
 			failure = true;
-			goto cleanup;
+		} else {
+			test_log_info("Evaluation of events was successful for test case %zu/%zu\n", i + 1, n);
 		}
 
 
 
-
 	cleanup:
-		morse_receiver_desetup(&morse_receiver);
-		cwdevice_observer_dtor(&cwdevice_observer);
 
 		/* Terminate local test instance of cwdaemon. */
 		if (0 != local_server_stop(&cwdaemon, &client)) {
@@ -217,18 +224,20 @@ int main(void)
 			  indication of an error in tested functionality. Therefore set
 			  failure to true.
 			*/
-			fprintf(stderr, "[ERROR] Failed to correctly stop local test instance of cwdaemon.\n");
+			test_log_err("Failed to correctly stop local test instance of cwdaemon at end of test case %zu/%zu\n", i + 1, n);
 			failure = true;
 		}
 
 		/* Close our socket to cwdaemon server. */
 		client_disconnect(&client);
 
+		events_clear(&g_events);
+
 		if (failure) {
-			fprintf(stderr, "[EE] Test case #%zd failed, terminating\n", i);
+			fprintf(stderr, "[EE] Test case #%zu/%zu failed, terminating\n", i + 1, n);
 			exit(EXIT_FAILURE);
 		} else {
-			fprintf(stderr, "[II] Test case #%zd succeeded\n\n", i);
+			fprintf(stderr, "[II] Test case #%zu/%zu succeeded\n\n", i + 1, n);
 		}
 	}
 
@@ -239,4 +248,62 @@ int main(void)
 }
 
 
+
+
+static int evaluate_events(const events_t * events, const test_case_t * test_case)
+{
+	/* Expectation 1: correct count of events. */
+	if (test_case->expected_failed_receive) {
+		if (0 != events->event_idx) {
+			test_log_err("Expectation 1: unexpected count of events (expected failed receive): %d\n", events->event_idx);
+			return -1;
+		}
+	} else {
+		if (1 != events->event_idx) {
+			test_log_err("Expectation 1: unexpected count of events (expected successful receive): %d\n", events->event_idx);
+			return -1;
+		}
+	}
+	test_log_err("Expectation 1: found expected count of events (expected %s receive): %d\n",
+	             test_case->expected_failed_receive ? "unsuccessful" : "successful",
+	             events->event_idx);
+
+
+
+
+	if (0 == events->event_idx) {
+		/* No more expectations to fulfill. */
+		test_log_info("Evaluation of test events was successful %s\n", "");
+		return 0;
+	}
+
+
+
+
+	/* Expectation 2: our event is a Morse receive event. */
+	const event_t * event_morse = NULL;
+	if (events->events[0].event_type != event_type_morse_receive) {
+		test_log_err("Expectation 2: unexpected type of event: %d\n", events->events[0].event_type);
+		return -1;
+	}
+	test_log_info("Expectation 2: found expected Morse event %s\n", "");
+	event_morse = &events->events[0];
+
+
+
+
+	/* Expectation 3: the Morse event contains correct received text. */
+	if (!correct_morse_receive_text(event_morse->u.morse_receive.string, test_case->string_to_play)) {
+		test_log_err("Expectation 3: unexpected received text [%s]\n", event_morse->u.morse_receive.string);
+		return -1;
+	}
+	test_log_info("Expectation 3: found expected received text [%s]\n", event_morse->u.morse_receive.string);
+
+
+
+
+	test_log_info("Evaluation of test events was successful %s\n", "");
+
+	return 0;
+}
 
