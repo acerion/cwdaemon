@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <libcw.h>
@@ -60,10 +61,72 @@ extern events_t g_events;
 
 
 
+static int cw_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec);
+static void * morse_receiver_thread_fn(void * receiver_arg);
+
+
+
+
+morse_receiver_t * morse_receiver_ctor(const morse_receiver_config_t * config)
+{
+	morse_receiver_t * receiver = (morse_receiver_t *) calloc(1, sizeof (morse_receiver_t));
+
+	thread_init(&receiver->thread);
+
+	receiver->thread.thread_fn = morse_receiver_thread_fn;
+	receiver->thread.thread_fn_arg = receiver;
+	receiver->thread.name = "Morse receiver thread";
+
+	receiver->config = *config;
+
+	return receiver;
+}
+
+
+
+
+void morse_receiver_dtor(morse_receiver_t ** receiver)
+{
+	if (NULL == receiver) {
+		return;
+	}
+	if (NULL == *receiver) {
+		return;
+	}
+	thread_cleanup(&(*receiver)->thread);
+
+	free(*receiver);
+	*receiver = NULL;
+
+	return;
+}
+
+
+
+
+int morse_receiver_start(morse_receiver_t * receiver)
+{
+	thread_start2(&receiver->thread);
+	return 0;
+}
+
+
+
+
+int morse_receiver_wait(morse_receiver_t * receiver)
+{
+	thread_join(&receiver->thread);
+	return 0;
+}
+
+
+
+
 /**
-   Configure and start a receiver used during tests of cwdaemon
+   Configure and start a cw receiver (the libcw object) that is used during
+   tests of cwdaemon
 */
-int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm)
+static int cw_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm)
 {
 #if 0
 	cw_enable_adaptive_receive();
@@ -89,7 +152,11 @@ int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm)
 
 
 
-int morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec)
+/**
+   Stop and deconfigure a cw receiver (the libcw object) that is used during
+   tests of cwdaemon.
+*/
+static int cw_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec)
 {
 	cw_generator_stop();
 	return 0;
@@ -98,25 +165,20 @@ int morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec
 
 
 
-void * morse_receiver_thread_fn(void * thread_arg)
+static void * morse_receiver_thread_fn(void * receiver_arg)
 {
-	thread_t * thread = (thread_t *) thread_arg;
-	cwdevice_observer_t cwdevice_observer = { 0 };
-	cw_easy_receiver_t morse_receiver = { 0 };
-	const morse_receiver_config_t * morse_config = (const morse_receiver_config_t * ) thread->thread_fn_arg;
+	morse_receiver_t * receiver = (morse_receiver_t *) receiver_arg;
 
-	if (NULL == morse_config) {
-		test_log_err("NULL Morse config passed to receiver thread function %s\n", "");
-		thread->status = thread_stopped_err;
-		return NULL;
-	}
+	thread_t * thread = &receiver->thread;
+	cwdevice_observer_t cwdevice_observer = { 0 };
+	cw_easy_receiver_t cw_receiver = { 0 };
 
 	thread->status = thread_running;
 
 	/* Preparation of test helpers. */
 	{
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver, &morse_config->observer_tty_pins_config)) {
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &cw_receiver, &receiver->config.observer_tty_pins_config)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to set up observer of cwdevice\n");
 			thread->status = thread_stopped_err;
 			return NULL;
@@ -127,8 +189,8 @@ void * morse_receiver_thread_fn(void * thread_arg)
 			return NULL;
 		}
 		/* Prepare receiver of Morse code. */
-		const int wpm = morse_config->wpm == 0 ? CW_SPEED_INITIAL : morse_config->wpm;
-		if (0 != morse_receiver_setup(&morse_receiver, wpm)) {
+		const int wpm = receiver->config.wpm == 0 ? CW_SPEED_INITIAL : receiver->config.wpm;
+		if (0 != cw_receiver_setup(&cw_receiver, wpm)) {
 			fprintf(stderr, "[EE] Morse receiver thread: failed to set up Morse receiver\n");
 			thread->status = thread_stopped_err;
 			return NULL;
@@ -157,7 +219,7 @@ void * morse_receiver_thread_fn(void * thread_arg)
 		}
 
 		cw_rec_data_t erd = { 0 };
-		if (cw_easy_receiver_poll_data(&morse_receiver, &erd)) {
+		if (cw_easy_receiver_poll_data(&cw_receiver, &erd)) {
 			if (erd.is_iws) {
 				fprintf(stderr, " ");
 				fflush(stderr);
@@ -194,7 +256,7 @@ void * morse_receiver_thread_fn(void * thread_arg)
 	fprintf(stderr, "[II] Morse receiver received string [%s]\n", buffer);
 
 	/* Cleanup of test helpers. */
-	morse_receiver_desetup(&morse_receiver);
+	cw_receiver_desetup(&cw_receiver);
 	cwdevice_observer_dtor(&cwdevice_observer);
 
 

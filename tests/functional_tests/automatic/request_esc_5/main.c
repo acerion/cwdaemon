@@ -228,9 +228,6 @@ static int run_test_case(const test_case_t * test_case)
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
-	morse_receiver_config_t morse_config = { .wpm = wpm };
-	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
-
 	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
 	const cwdaemon_opts_t cwdaemon_opts = {
@@ -252,10 +249,10 @@ static int run_test_case(const test_case_t * test_case)
 
 
 	if (test_case->send_message_request) {
-
-		/* Send some regular message to cwdaemon server to make it change its internal state. */
-		if (0 != thread_start(&morse_receiver_thread)) {
-			fprintf(stderr, "[EE] Failed to start Morse receiver thread\n");
+		const morse_receiver_config_t morse_config = { .wpm = wpm };
+		morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
+		if (0 != morse_receiver_start(morse_receiver)) {
+			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
 			failure = true;
 			goto cleanup;
 		}
@@ -263,8 +260,8 @@ static int run_test_case(const test_case_t * test_case)
 		/* Send the message to be played. */
 		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->message);
 
-		thread_join(&morse_receiver_thread);
-		thread_cleanup(&morse_receiver_thread);
+		morse_receiver_wait(morse_receiver);
+		morse_receiver_dtor(&morse_receiver);
 	} else {
 		/* Sending an EXIT request to a cwdaemon server that has just started
 		   and did nothing else is also a valid case. */

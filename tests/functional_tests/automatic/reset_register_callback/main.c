@@ -88,11 +88,10 @@ int main(void)
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
-	morse_receiver_config_t morse_config = { .wpm = wpm };
-	thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
+	const morse_receiver_config_t morse_config = { .wpm = wpm };
+	morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
 	const char * message1 = "paris";
 	const char * message2 = "texas";
-
 
 	bool failure = false;
 	const cwdaemon_opts_t cwdaemon_opts = {
@@ -118,16 +117,15 @@ int main(void)
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
 	{
-		if (0 != thread_start(&morse_receiver_thread)) {
-			test_log_err("Failed to start Morse receiver thread (%d)\n", 1);
+		if (0 != morse_receiver_start(morse_receiver)) {
+			test_log_err("Failed to start Morse receiver (%d)\n", 1);
 			failure = true;
 			goto cleanup;
 		}
 
 		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message1);
 
-		thread_join(&morse_receiver_thread);
-		thread_cleanup(&morse_receiver_thread);
+		morse_receiver_wait(morse_receiver);
 	}
 
 
@@ -140,16 +138,15 @@ int main(void)
 	/* This sends a text request to cwdaemon that works in "after reset"
 	   state. A fixed cwdaemon should reset itself correctly. */
 	{
-		if (0 != thread_start(&morse_receiver_thread)) {
-			test_log_err("Failed to start Morse receiver thread (%d)\n", 2);
+		if (0 != morse_receiver_start(morse_receiver)) {
+			test_log_err("Failed to start Morse receiver (%d)\n", 2);
 			failure = true;
 			goto cleanup;
 		}
 
 		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message2);
 
-		thread_join(&morse_receiver_thread);
-		thread_cleanup(&morse_receiver_thread);
+		morse_receiver_wait(morse_receiver);
 	}
 
 
@@ -165,6 +162,8 @@ int main(void)
 
 
  cleanup:
+	morse_receiver_dtor(&morse_receiver);
+
 	/* Terminate local test instance of cwdaemon. */
 	if (0 != local_server_stop(&server, &client)) {
 		/*

@@ -157,8 +157,8 @@ int main(void)
 		cwdaemon_server_t server = { 0 };
 		client_t client = { 0 };
 
-		morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins, .wpm = wpm };
-		thread_t morse_receiver_thread = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
+		const morse_receiver_config_t morse_config = { .observer_tty_pins_config = test_case->observer_tty_pins, .wpm = wpm };
+		morse_receiver_t * morse_receiver = NULL;
 
 
 
@@ -172,16 +172,11 @@ int main(void)
 
 
 
-		/* This sends a text request to cwdaemon that works in initial state,
-		   i.e. reset command was not sent yet, so cwdaemon should not be
-		   broken yet. */
-		{
-			if (0 != thread_start(&morse_receiver_thread)) {
-				test_log_err("Failed to start Morse receiver thread (%d)\n", 1);
-				failure = true;
-				goto cleanup;
-			}
-
+		morse_receiver = morse_receiver_ctor(&morse_config);
+		if (0 != morse_receiver_start(morse_receiver)) {
+			test_log_err("Failed to start Morse receiver (%d)\n", 1);
+			failure = true;
+			goto cleanup;
 		}
 
 
@@ -200,11 +195,7 @@ int main(void)
 		*/
 		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->string_to_play);
 
-		thread_join(&morse_receiver_thread);
-		thread_cleanup(&morse_receiver_thread);
-
-
-
+		morse_receiver_wait(morse_receiver);
 
 		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Evaluation of events has failed for test case %zu/%zu\n", i + 1, n);
@@ -216,6 +207,8 @@ int main(void)
 
 
 	cleanup:
+
+		morse_receiver_dtor(&morse_receiver);
 
 		/* Terminate local test instance of cwdaemon. */
 		if (0 != local_server_stop(&server, &client)) {

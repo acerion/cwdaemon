@@ -311,20 +311,23 @@ int main(void)
 		.wpm            = wpm,
 	};
 
+	const morse_receiver_config_t morse_config = { .wpm = wpm };
+	morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
+
+	bool failure = false;
+
 	const size_t n = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
 	for (size_t i = 0; i < n; i++) {
 		test_case_t * test_case = &g_test_cases[i];
 		fprintf(stderr, "\n[II] Starting test case %zd/%zd: %s\n", i + 1, n, test_case->description);
 
-		bool failure = false;
 		cwdaemon_server_t server = { 0 };
 		client_t client = { 0 };
 
 
 
 		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = client_socket_receiver_thread_fn, .thread_fn_arg = &client };
-		morse_receiver_config_t morse_config = { .wpm = wpm };
-		thread_t morse_receiver_thread  = { .name = "Morse receiver thread", .thread_fn = morse_receiver_thread_fn, .thread_fn_arg = &morse_config };
+
 
 
 
@@ -337,8 +340,8 @@ int main(void)
 
 
 
-		if (0 != thread_start(&morse_receiver_thread)) {
-			fprintf(stderr, "[EE] Failed to start Morse receiver thread\n");
+		if (0 != morse_receiver_start(morse_receiver)) {
+			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
 			failure = true;
 			goto cleanup;
 		}
@@ -372,7 +375,8 @@ int main(void)
 
 
 		thread_join(&socket_receiver_thread);
-		thread_join(&morse_receiver_thread);
+		morse_receiver_wait(morse_receiver);
+
 
 
 
@@ -392,7 +396,6 @@ int main(void)
 		events_clear(&g_events);
 
 		thread_cleanup(&socket_receiver_thread);
-		thread_cleanup(&morse_receiver_thread);
 
 		/* Terminate local test instance of cwdaemon server. */
 		if (0 != local_server_stop(&server, &client)) {
@@ -412,7 +415,7 @@ int main(void)
 
 		if (failure) {
 			fprintf(stderr, "[EE] Test case %zd/%zd failed, terminating\n", i + 1, n);
-			exit(EXIT_FAILURE);
+			break;
 		} else {
 			fprintf(stderr, "[II] Test case %zd/%zd succeeded\n\n", i + 1, n);
 		}
@@ -420,8 +423,14 @@ int main(void)
 
 
 
+	morse_receiver_dtor(&morse_receiver);
 
-	exit(EXIT_SUCCESS);
+
+	if (failure) {
+		exit(EXIT_FAILURE);
+	} else {
+		exit(EXIT_SUCCESS);
+	}
 }
 
 

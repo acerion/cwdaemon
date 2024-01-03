@@ -6,6 +6,7 @@
 
 #include "cw_rec_utils.h"
 #include "misc.h"
+#include "thread.h"
 
 
 
@@ -18,9 +19,18 @@ typedef struct morse_receiver_config_t {
 
 
 
-int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm);
-int morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec);
-void * morse_receiver_thread_fn(void * thread_arg);
+typedef struct morse_receiver_t {
+	thread_t thread;
+	morse_receiver_config_t config;
+} morse_receiver_t;
+
+
+
+
+morse_receiver_t * morse_receiver_ctor(const morse_receiver_config_t * config);
+void morse_receiver_dtor(morse_receiver_t ** receiver);
+int morse_receiver_start(morse_receiver_t * receiver);
+int morse_receiver_wait(morse_receiver_t * receiver);
 
 
 

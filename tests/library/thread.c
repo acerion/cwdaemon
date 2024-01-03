@@ -62,6 +62,39 @@ int thread_start(thread_t * thread)
 
 
 
+int thread_init(thread_t * thread)
+{
+	pthread_attr_init(&thread->thread_attr);
+	thread->status = thread_not_started;
+
+	return 0;
+}
+
+
+
+
+int thread_start2(thread_t * thread)
+{
+	int retv = pthread_create(&thread->thread_id, &thread->thread_attr, thread->thread_fn, thread);
+	if (0 != retv) {
+		fprintf(stderr, "[EE] %s: failed to create thread: %s\n", thread->name, strerror(retv));
+		return -1;
+	}
+
+	/* Very naive method of checking if a thread has started correctly: wait
+	   a bit and check thread's flag. */
+	millisleep_nonintr(100);
+	if (thread->status != thread_running) {
+		fprintf(stderr, "[EE] %s: thread has not started correctly\n", thread->name);
+		return -1;
+	}
+
+	return 0;
+}
+
+
+
+
 int thread_join(thread_t * thread)
 {
 	pthread_join(thread->thread_id, NULL);

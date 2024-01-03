@@ -43,6 +43,12 @@ typedef struct thread_t {
    @return -1 on error
  */
 int thread_start(thread_t * thread);
+int thread_start2(thread_t * thread);
+
+
+
+
+int thread_init(thread_t * thread);
 
 
 
