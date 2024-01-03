@@ -33,7 +33,9 @@
 
 
 #define _DEFAULT_SOURCE
-#define _GNU_SOURCE /* strcasestr() */
+
+
+
 
 #include "config.h"
 
@@ -404,12 +406,11 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 	/* Expectation 3: cwdaemon was behaving correctly enough to key a proper
 	   Morse message on cwdevice. */
 	if (test_case->send_message_request) {
-		const char * needle = strcasestr(morse->u.morse_receive.string, test_case->message);
-		if (NULL == needle) {
+		if (!morse_receive_text_is_correct(morse->u.morse_receive.string, test_case->message)) {
 			test_log_err("Didn't detect [%s] in received Morse message: [%s]\n", test_case->message, morse->u.morse_receive.string);
 			return -1;
 		}
-		test_log_info("Correctly found [%s]/[%s] in received Morse message [%s]\n", needle, test_case->message, morse->u.morse_receive.string);
+		test_log_info("Correctly found [%s] in received Morse message [%s]\n", test_case->message, morse->u.morse_receive.string);
 	}
 
 

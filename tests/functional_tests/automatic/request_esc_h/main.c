@@ -32,7 +32,9 @@
 
 
 #define _DEFAULT_SOURCE
-#define _GNU_SOURCE /* strcasestr() */
+
+
+
 
 #include "config.h"
 
@@ -236,11 +238,8 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 	   While this is not THE feature that needs to be verified by this test,
 	   it's good to know that we received full and correct data. */
 	{
-		/* TODO acerion 2023.12.31: move comparing of received and expected
-		   string to some library function. */
 		const char * received_string = morse_event->u.morse_receive.string;
-		const char * needle = strcasestr(received_string, test_case->message);
-		if (NULL == needle) {
+		if (!morse_receive_text_is_correct(received_string, test_case->message)) {
 			test_log_err("Received incorrect Morse message: expected [%s], received [%s]\n",
 			             test_case->message, received_string);
 			return -1;

@@ -219,8 +219,8 @@ static int evaluate_events(events_t * events, const char * message1, const char 
 	/* Expectation 3: both Morse receive events contain correct received text. */
 	const char * received_string1 = morse1->u.morse_receive.string;
 	const char * received_string2 = morse2->u.morse_receive.string;
-	if (!correct_morse_receive_text(received_string1, message1)
-	    || !correct_morse_receive_text(received_string2, message2)) {
+	if (!morse_receive_text_is_correct(received_string1, message1)
+	    || !morse_receive_text_is_correct(received_string2, message2)) {
 
 		test_log_err("Incorrect text in Morse receive event(s): [%s], [%s]\n",
 		             received_string1, received_string2);

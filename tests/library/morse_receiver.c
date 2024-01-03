@@ -23,7 +23,6 @@
 
 
 
-#include "process.h"
 #define _GNU_SOURCE /* strcasestr() */
 
 
@@ -198,8 +197,15 @@ void * morse_receiver_thread_fn(void * thread_arg)
 
 
 
-bool correct_morse_receive_text(const char * received_text, const char * expected_message)
+bool morse_receive_text_is_correct(const char * received_text, const char * expected_message)
 {
+	/*
+	  When comparing strings, remember that a cw receiver may have received
+	  first characters incorrectly. Text of message passed to
+	  client_send_request*() is often prefixed with some startup text that is
+	  allowed to be mis-received, so that the main part of text request is
+	  received correctly and can be recognized with strcasestr().
+	*/
 	const char * needle = strcasestr(received_text, expected_message);
 	return NULL != needle;
 }

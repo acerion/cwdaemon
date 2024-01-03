@@ -20,7 +20,21 @@ typedef struct morse_receiver_config_t {
 int morse_receiver_setup(cw_easy_receiver_t * easy_rec, int wpm);
 int morse_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec);
 void * morse_receiver_thread_fn(void * thread_arg);
-bool correct_morse_receive_text(const char * received_text, const char * expected_message);
+
+
+
+
+/**
+   @brief Test whether text received through Morse receiver matches expected string
+
+   @param[in] received_text Text received by Morse receiver
+   @param[in] expected_message The text that we have expected to receive
+
+   @return true if there is a match
+   @return false otherwise
+*/
+bool morse_receive_text_is_correct(const char * received_text, const char * expected_message);
+
 
 
 

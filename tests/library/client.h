@@ -20,6 +20,10 @@ typedef struct client_t {
 
 
 int client_send_request(client_t * client, int request, const char * value);
+
+/* See comment inside of morse_receive_text_is_correct() to learn why this
+   function is needed (in nutshell: cw receiver may mis-receive initial
+   letters of message). */
 int client_send_request_va(client_t * client, int request, const char * format, ...) __attribute__ ((format (printf, 3, 4)));
 
 

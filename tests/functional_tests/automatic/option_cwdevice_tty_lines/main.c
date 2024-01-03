@@ -291,7 +291,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 
 	/* Expectation 3: the Morse event contains correct received text. */
-	if (!correct_morse_receive_text(event_morse->u.morse_receive.string, test_case->string_to_play)) {
+	if (!morse_receive_text_is_correct(event_morse->u.morse_receive.string, test_case->string_to_play)) {
 		test_log_err("Expectation 3: unexpected received text [%s]\n", event_morse->u.morse_receive.string);
 		return -1;
 	}

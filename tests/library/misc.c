@@ -34,7 +34,6 @@
 
 
 
-#define _GNU_SOURCE /* strcasestr() */
 
 #include "config.h"
 
