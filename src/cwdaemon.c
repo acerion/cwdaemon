@@ -1567,7 +1567,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
 	{ "options",     required_argument,       0, 'o'},  /* Driver-specific options. */
-	{ "help",        no_argument,             0, 0},  /* Print help text and exit. */
+	{ "help",        no_argument,             0, 'h'},  /* Print help text and exit. */
 
 	{ 0,             0,                       0, 0} };
 
@@ -1667,8 +1667,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else {
-				cwdaemon_args_help();
-				exit(EXIT_SUCCESS);
+				; /* All long options have been already handled. */
 			}
 		} else {
 			cwdaemon_args_process_short(c, optarg);

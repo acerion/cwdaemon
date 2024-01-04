@@ -19,7 +19,7 @@ This release will push forward the following internal tickets:
 R0012
 R0011
 
-* TODO Define scope of changes to be done in this release
+* STARTED Define scope of changes to be done in this release
 
 Describe them here, and stick to them during the development phase. Don't
 extend the scope unless really necessary (e.g. unless you find a serious
@@ -30,7 +30,7 @@ requests' list, put the ticket numbers on the list below.
 
 The goals of this development cycle are:
 
-** TODO Must-haves
+** STARTED Must-haves
 
 *** TODO https://github.com/acerion/cwdaemon/issues/12
 Fix it.
@@ -71,15 +71,19 @@ instead of current qa/clang_tidy.sh script. Fix a bunch of issues reported by
 clang-tidy, but don't try to fix them all just yet. You can leave something
 for next release.
 
-** TODO Nice-to-haves
+** STARTED Nice-to-haves
 
 *** TODO https://github.com/acerion/cwdaemon/issues/10
 Understand it better. Fix if necessary.
 
-*** TODO R0011: move forward with the ticket by fixing/adjusting just one more option
+*** STARTED R0011: move forward with the ticket by fixing/adjusting just one more option
 
-Slowly, one option at a time. The options work so don't try to adjust
-everything at once.
+Do this slowly, one option at a time. The processing of command-line options
+functions correctly so don't try to adjust everything at once and
+accidentally break something.
+
+DONE: options addressed in this release:
+ - 'h'/"help" (print help text)
 
 *** TODO Unit tests
 

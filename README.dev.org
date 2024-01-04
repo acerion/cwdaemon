@@ -152,7 +152,9 @@ you can see in cwdaemon_args_long[] that the fourth field of 'struct option'
 is set to 'o', and that the option is handled by call to
 cwdaemon_params_options() only in cwdaemon_args_process_short().
 
-
+Do this slowly, one option at a time. The processing of command-line options
+functions correctly so don't try to adjust everything at once and
+accidentally break something.
 
 ** TODO R0012: Static code analysis with clang-tidy
 
