@@ -55,6 +55,11 @@ New release. Changes since previous release:
       the name. The default name is overwritten with the value passed to the
       script.
 
+    * Unit tests have been added for following existing code:
+
+      - cwdaemon_get_long() function
+
+
 * Debugging of libcw
 
     When `-I`/`--libcwflags` option is passed to cwdaemon to enable debugging
