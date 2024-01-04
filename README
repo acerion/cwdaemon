@@ -296,6 +296,13 @@ cwdaemon 0.12.0 has been compiled and tested on following platforms:
  - FreeBSD 13.2-RELEASE, amd64, gcc 12.2.0, libcw 7.0.0 (unixcw 3.6.0)
 
 
+Quality Assurance
+-----------------
+
+- Compiler flags
+    - -D_FORTIFY_SOURCE=2
+
+
 Credits
 -------
 Conversion to stand-alone utility, basic work, POSIX porting, integration

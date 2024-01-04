@@ -6660,6 +6660,7 @@ esac
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
+CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
   CFLAGS="${CFLAGS} -Wswitch-default -Wimplicit-function-declaration -Wswitch-enum"

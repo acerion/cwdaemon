@@ -43,8 +43,14 @@ Investigate, clarify and document unclear items.
 *** TODO Quality of man page
 Carefully review the man page. Fix typos, omissions, misinformations.
 
-*** TODO fortify-source=2
+*** DONE fortify-source=2
 Add it to compilation options. Fix issues triggered by this option.
+
+DONE: -D_FORTIFY_SORUCE=2 has been added to CFLAGS in configure.ac. It is
+used when compiling code of daemon and when compiling tests code.
+
+There were no issues found when I ran my automatic functional tests. Some
+issues may arise in the future, though.
 
 *** TODO Basic tests with valgrind
 

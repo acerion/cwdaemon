@@ -59,6 +59,8 @@ New release. Changes since previous release:
 
       - cwdaemon_get_long() function
 
+    * Adding "-D_FORTIFY_SOURCE=2" to list of arguments passed to C compiler.
+
 
 * Debugging of libcw
 
