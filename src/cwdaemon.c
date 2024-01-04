@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#include <stdbool.h>
-
 # if HAVE_STDIO_H
 # include <stdio.h>
 #endif
@@ -108,6 +106,7 @@
 #include "lib/sleep.h"
 #include "log.h"
 #include "socket.h"
+#include "utils.h"
 
 
 
@@ -366,8 +365,6 @@ bool cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
 void cwdaemon_reset_libcw_output(void);
 
-/* Utility functions. */
-bool cwdaemon_get_long(const char *buf, long *lvp);
 
 
 
@@ -822,44 +819,6 @@ void cwdaemon_reset_libcw_output(void)
 
 	return;
 }
-
-
-
-
-
-/**
-   \brief Properly parse a 'long' integer
-
-   Parse a string with digits, convert it to a long integer
-
-   \param[in] buf input buffer with a string
-   \param[out] lvp pointer to output long int variable
-
-   \return false on failure
-   \return true on success
-*/
-bool cwdaemon_get_long(const char * buf, long * lvp)
-{
-	if (NULL == buf) {
-		return false;
-	}
-
-	errno = 0;
-
-	char *ep = NULL;
-	long lv = strtol(buf, &ep, 10);
-	if (buf[0] == '\0' || *ep != '\0') {
-		return false;
-	}
-
-	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN)) {
-		return false;
-	}
-	*lvp = lv;
-
-	return true;
-}
-
 
 
 

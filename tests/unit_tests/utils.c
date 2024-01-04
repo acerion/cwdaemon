@@ -33,6 +33,7 @@
 
 
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -45,6 +46,8 @@ static int test_build_full_device_path_success(void);
 static int test_build_full_device_path_failure(void);
 static int test_build_full_device_path_length(void);
 static int test_find_opt_value(void);
+static int test_cwdaemon_get_long(void);
+
 
 
 
@@ -53,6 +56,7 @@ static int (*tests[])(void) = {
 	test_build_full_device_path_failure,
 	test_build_full_device_path_length,
 	test_find_opt_value,
+	test_cwdaemon_get_long,
 	NULL
 };
 
@@ -253,4 +257,76 @@ static int test_find_opt_value(void)
 	return 0;
 }
 
+
+
+
+static int test_cwdaemon_get_long(void)
+{
+	const long doesnt_matter = 6789;
+
+	const struct test_case_t {
+		const char * input;
+		bool expected_retv;
+		long int expected_value;
+	} test_cases[] = {
+		/* Failure cases. */
+		{ "",                     false, doesnt_matter },
+#if LONG_MAX == 9223372036854775807L
+		{ "-9223372036854775809", false, doesnt_matter }, /* Underflow of long int. */
+		{  "9223372036854775808", false, doesnt_matter }, /* Overflow of long int. */
+#else /* 32-bit machine, LONG_MAX == 2147483647L */
+		{ "-2147483649",          false, doesnt_matter }, /* Underflow of long int. */
+		{  "2147483648",          false, doesnt_matter }, /* Overflow of long int. */
+#endif
+		{ "0x05",                 false, doesnt_matter }, /* Non-decimal notation. */
+		{ "4e5",                  false, doesnt_matter }, /* Non-decimal notation. */
+		{ "74Morse",              false, doesnt_matter }, /* Some characters aren't digits. */
+		{ "74ac45",               false, doesnt_matter }, /* Some characters aren't decimal digits. */
+		{ "four",                 false, doesnt_matter }, /* None of characters are decimal digits. */
+		{ "\03345",               false, doesnt_matter }, /* Leading non-digit, non-space character. 033(oct) = 27(dec) = 0x1b = ESC. */
+
+
+		/* Success cases. */
+		{ "-2147483648",          true,  INT_MIN       }, /* INT_MIN, should be handled correctly by function that converts long values. */
+		{ "-01024",               true,  -1024         },
+		{ "-1024",                true,  -1024         },
+		{ "-01",                  true,  -1            },
+		{ "-1",                   true,  -1            },
+		{ "0",                    true,  0             },
+		{ "000",                  true,  0             },
+		{ "1024",                 true,  1024          },
+		{ "01024",                true,  1024          },
+		{ "2147483647",           true,  INT_MAX       }, /* INT_MAX, should be handled correctly by function that converts long values. */
+	};
+
+
+	const size_t n_test_cases = sizeof (test_cases) / sizeof (test_cases[0]);
+	for (size_t i = 0; i < n_test_cases; i++) {
+		long value = 0;
+		const struct test_case_t * tcase = &test_cases[i];
+
+		const bool retv = cwdaemon_get_long(tcase->input, &value);
+		if (retv != tcase->expected_retv) {
+			fprintf(stderr, "[EE] Unexpected return value in test case %zu / %zu: %d\n",
+			        i + 1, n_test_cases, retv);
+			return -1;
+		}
+
+		if (retv == false) {
+			/* cwdaemon_get_long() failed to convert input string. No need to
+			   make further checks. */
+			continue;
+		}
+
+		if (value != tcase->expected_value) {
+			fprintf(stderr, "[EE] Unexpected converted value in test case %zu / %zu: %ld (expected %ld)\n",
+			        i + 1, n_test_cases, value, tcase->expected_value);
+			return -1;
+		}
+	}
+
+	fprintf(stderr, "[II] Tests of cwdaemon_get_long() have succeeded\n");
+
+	return 0;
+}
 

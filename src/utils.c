@@ -25,7 +25,9 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h> /* strncasecmp() */
 
@@ -119,4 +121,30 @@ opt_t find_opt_value(const char * input, const char * keyword, const char ** val
 	*value = equal + 1;
 	return opt_success;
 }
+
+
+
+
+bool cwdaemon_get_long(const char * buf, long * lvp)
+{
+	if (NULL == buf) {
+		return false;
+	}
+
+	errno = 0;
+
+	char *ep = NULL;
+	const long lv = strtol(buf, &ep, 10);
+	if (buf[0] == '\0' || *ep != '\0') {
+		return false;
+	}
+
+	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN)) {
+		return false;
+	}
+
+	*lvp = lv;
+	return true;
+}
+
 

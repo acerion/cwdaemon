@@ -4,6 +4,7 @@
 
 
 
+#include <stdbool.h>
 #include <stddef.h> /* size_t */
 
 
@@ -73,6 +74,22 @@ typedef enum {
    @return value of opt_t indicating status of searching
 */
 opt_t find_opt_value(const char * input, const char * keyword, const char ** value);
+
+
+
+
+/**
+   \brief Parse a string with 'long' integer
+
+   Parse a string with digits, convert it to a long integer
+
+   \param[in] buf input buffer with a string
+   \param[out] lvp pointer to output long int variable
+
+   \return false on failure
+   \return true on success
+*/
+bool cwdaemon_get_long(const char *buf, long *lvp);
 
 
 
