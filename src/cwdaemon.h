@@ -74,7 +74,12 @@
 #define CWDAEMON_MORSE_TONE_DEFAULT           800 /* [Hz] */
 #define CWDAEMON_MORSE_VOLUME_DEFAULT          70 /* [%] */
 
-#define CWDAEMON_NETWORK_PORT_DEFAULT                  6789
+/** Minimal acceptable number of port on which cdwaemon can listen. */
+#define CWDAEMON_NETWORK_PORT_MIN           1024
+/** Maximal acceptable number of port on which cdwaemon can listen. */
+#define CWDAEMON_NETWORK_PORT_MAX          65535
+/** Default number of port on which cwdaemon listens. */
+#define CWDAEMON_NETWORK_PORT_DEFAULT       6789
 
 /* TODO: why the limitation to 50 ms? Is it enough? */
 #define CWDAEMON_PTT_DELAY_DEFAULT              0 /* [ms] */
