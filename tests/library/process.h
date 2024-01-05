@@ -62,17 +62,20 @@ typedef struct {
 	   IP will be used. */
 	char l3_address[INET6_ADDRSTRLEN];
 
-	/*
-	  Layer 4 port where cwdaemon is available. Passed to cwdaemon
-	  through -p/--port command line arg.
+	/**
+	   Layer 4 UDP port on which cwdaemon is listening. Passed to cwdaemon
+	   through -p/--port command line option.
 
-	  negative value: use default cwdaemon port;
-	  0: use random port;
-	  positive value: use given port value;
+	   0 or negative value: use random port when starting cwdaemon
+	   positive value: use given port value when starting cwdaemon
 
-	  I'm using zero to signify random port, because this should be the
-	  default testing method: to run a cwdaemon with default port, and
-	  zero is the easiest value to assign to this field.
+	   I'm using zero to signify random port, because this should be the
+	   default testing method: to run a cwdaemon with any valid port number,
+	   and zero is the easiest value to assign to this field.
+
+	   I'm using 'int' type instead of 'in_port_t' type to allow testing
+	   situations where an invalid port number (e.g. 65536) is passed to
+	   cwdaemon. 'in_port_t' type would not allow that value.
 	*/
 	int l4_port;
 } cwdaemon_opts_t;

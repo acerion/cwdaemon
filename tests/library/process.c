@@ -52,10 +52,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "log.h"
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
+#include "src/lib/random.h"
 #include "src/lib/sleep.h"
 
 
@@ -81,26 +83,126 @@ static char g_arg_tone[10] = { 0 };
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
+/**
+   @brief Return port number per specification in @p opts
+
+   The returned value will either be an explicity value specified in @p opts,
+   or a random value if @p opts doesn't specify it.
+
+   The random value is slightly biased towards being a cwdaemon's default
+   value of port.
+
+   Function uses 'int' instead of 'in_port_t' type for port value because in
+   some tests we may explicitly specify an invalid port value (e.g. 100000)
+   in @p opts to see how cwdaemon handles it. 'in_port_t' type would not
+   allow such value.
+
+   @param[in] opts cwdaemon's configuration options
+   @paran[out] port Port on which cwdaemon should listen
+
+   @return -1 on errors
+   @return 0 on success
+*/
+static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 {
-	const int default_l4_port = 6789; /* TODO: replace with a constant from cwdaemon. */
-	int l4_port = 0;
-	if (opts->l4_port < 0) {
-		l4_port = default_l4_port;
-	} else if (opts->l4_port == 0) {
-		int random_port = find_unused_random_local_udp_port();
-		if (random_port > 0) {
-			l4_port = random_port;
-		} else {
-			l4_port = default_l4_port; /* Too bad, use a default port. Not the end of the world. */
-		}
-	} else {
-		if (opts->l4_port >= CWDAEMON_NETWORK_PORT_MIN && opts->l4_port <= CWDAEMON_NETWORK_PORT_MAX) {
-			l4_port = opts->l4_port;
-		} else {
-			fprintf(stderr, "[EE] invalid L4 port value %d\n", opts->l4_port);
+	if (opts->l4_port <= 0) {
+		/* Generate random (but still valid, within valid range) port
+		   number. */
+		in_port_t random_valid_port = 0;
+		if (0 != find_unused_random_biased_local_udp_port(&random_valid_port)) {
+			test_log_err("Failed to get random port %s\n", "");
 			return -1;
 		}
+		*port = (int) random_valid_port;
+	} else {
+		if (opts->l4_port < CWDAEMON_NETWORK_PORT_MIN || opts->l4_port > CWDAEMON_NETWORK_PORT_MAX) {
+			/* Invalid (out of range) values may be allowed in code testing
+			   how cwdaemon process handles invalid values of ports.
+			   Therefore this is just a warning situation. */
+			fprintf(stderr, "[WW] Requested value of port is out of range: %d, continuing with the value anyway\n", opts->l4_port);
+		}
+		*port = opts->l4_port;
+	}
+
+	return 0;
+}
+
+
+
+
+/**
+   @brief Conditionally add "network port" option to @p argv
+
+   The option is added either in short form "-p" or in long form "--port".
+   The form is selected at random. This is used to test that both short
+   option ("-p") and long option ("--port") are handled correctly by
+   cwdaemon.
+
+   If currently selected port number is cwdaemon's default port number, the
+   function may at random decide not to add the "network port" option to @p
+   argv. This is used to test that cwdaemon can run correctly without
+   explicit port option. cwdaemon should use default port in such situation.
+
+   @param[in] opts cwdaemon's configuration options
+   @param[out] argv processes' argv vector to which to append "port" option
+   @param[in/out] argc Index to @p argv, incremented by this function
+   @param[out] port Port selected by this function based on config from @p opts
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int * argc, int * port)
+{
+	if (0 != get_port_number(opts, port)) {
+		test_log_err("Failed to get port number from opts %s\n", "");
+		return -1;
+	}
+
+	if (*port == CWDAEMON_NETWORK_PORT_DEFAULT) {
+		/* We can, but we don't have to add explicit "port" command line
+		   option when a default port value is to be used by the server. */
+		bool implicit_port_argument = false;
+		cwdaemon_random_bool(&implicit_port_argument);
+
+		if (implicit_port_argument) {
+			/* Let cwdaemon start without explicitly specified port. */
+			test_log_info("cwdaemon will start with default port, without explicit 'port' option %s\n", "");
+			return 0;
+		}
+	}
+
+	bool use_long_opt = false;
+	if (0 != cwdaemon_random_bool(&use_long_opt)) {
+		test_log_err("Failed go get 'use long opt' random boolean %s\n", "");
+		return -1;
+	}
+
+	static char port_buf[16] = { 0 };
+	snprintf(port_buf, sizeof (port_buf), "%d", *port);
+	if (use_long_opt) {
+		argv[(*argc)++] = "--port";
+	} else {
+		argv[(*argc)++] = "-p";
+	}
+	argv[(*argc)++] = port_buf;
+
+	return 0;
+}
+
+
+
+
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
+{
+	int l4_port = 0;
+
+	const char * argv[20] = { 0 };
+	int a = 0;
+	argv[a++] = path;
+
+	if (0 != get_option_port(opts, argv, &a, &l4_port)) {
+		test_log_err("Failed to get 'port' option for command line %s\n", "");
+		return -1;
 	}
 
 	pid_t pid = fork();
@@ -111,9 +213,6 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			return -1;
 		}
 
-		const char * argv[20] = { 0 };
-		int a = 0;
-		argv[a++] = path;
 		if (0 != opts->tone) {
 			argv[a++] = "-T";
 			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", opts->tone);
@@ -198,11 +297,6 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			; /* Allow cwdaemon server to use default assignment of tty pins. */
 		}
 
-
-		char port_buf[16] = { 0 };
-		snprintf(port_buf, sizeof (port_buf), "%d", l4_port);
-		argv[a++] = "-p";
-		argv[a++] = port_buf;
 
 		int b = 0;
 		while (argv[b]) {

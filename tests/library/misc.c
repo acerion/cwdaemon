@@ -68,7 +68,7 @@
    @return true if given port is used (open), or if due to error this cannot be checked
    @return false otherwise
 */
-static bool is_local_udp_port_used(int port)
+static bool is_local_udp_port_used(in_port_t port)
 {
 	struct sockaddr_in request_addr = { 0 };
 	request_addr.sin_family = AF_INET;
@@ -92,29 +92,40 @@ static bool is_local_udp_port_used(int port)
 
 
 
-/*
-  TODO acerion 2022.02.18: this function should probably be slightly biased
-  towards cwdaemon's default port. With the bias we can test the most common
-  setup more often, while still being able to test uncommon cases.
-*/
-int find_unused_random_local_udp_port(void)
+int find_unused_random_biased_local_udp_port(in_port_t * port)
 {
-	const unsigned int lower = CWDAEMON_NETWORK_PORT_MIN;
-	const unsigned int upper = CWDAEMON_NETWORK_PORT_MAX;
+	/* Be slightly biased towards selecting cwdaemon's default port. */
+	unsigned int bias_input = 0;
+	const unsigned int bias_min = 0;
+	const unsigned int bias_max = 20;
+	if (0 != cwdaemon_random_uint(bias_min, bias_max, &bias_input)) {
+		return -1;
+	}
+	const bool try_default_port_first = bias_input == (bias_max / 2);
+
 
 	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
 	for (int i = 0; i < n; i++) {
-		unsigned int port = 0;
-		if (0 != cwdaemon_random_uint(lower, upper, &port)) {
-			fprintf(stderr, "[ERROR] Failed to get port in range %d - %d\n", lower, upper);
-			return 0;
+		unsigned int value = 0;
+
+		if (i == 0 && try_default_port_first) {
+			value = CWDAEMON_NETWORK_PORT_DEFAULT;
+		} else {
+			const unsigned int lower = CWDAEMON_NETWORK_PORT_MIN;
+			const unsigned int upper = CWDAEMON_NETWORK_PORT_MAX;
+			if (0 != cwdaemon_random_uint(lower, upper, &value)) {
+				fprintf(stderr, "[EE] Failed to get random port in range %u - %u\n", lower, upper);
+				return -1;
+			}
 		}
 
-		if (!is_local_udp_port_used((int) port)) {
-			return (int) port;
+		if (!is_local_udp_port_used((in_port_t) value)) {
+			*port = (in_port_t) value;
+			return 0;
 		}
 	}
-	return 0;
+
+	return -1;
 }
 
 
