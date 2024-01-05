@@ -3,6 +3,13 @@ cwdaemon 0.13.0 / 20ab.cd.ef
 New release. Changes since previous release:
 
 
+* Bug fixes
+
+    * cwdaemon was accepting value 65536 for command line option
+      "-p"/"--port". This has been now fixed: cwdaemon accepts values only in
+      range <1024 - 65535> (inclusive).
+
+
 * Quality Assurance
 
     * Fixing issues found in C code by current version of clangd LSP server.

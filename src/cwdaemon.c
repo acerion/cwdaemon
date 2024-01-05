@@ -1768,7 +1768,7 @@ void cwdaemon_params_nofork(void)
 bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port)
 {
 	long lv = 0;
-	if (!cwdaemon_get_long(opt_arg, &lv) || lv < 1024 || lv > 65536) {
+	if (!cwdaemon_get_long(opt_arg, &lv) || lv < CWDAEMON_NETWORK_PORT_MIN || lv > CWDAEMON_NETWORK_PORT_MAX) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid requested port number: \"%s\"", opt_arg);
 		return false;
