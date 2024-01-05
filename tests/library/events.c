@@ -83,7 +83,7 @@ void events_print(const events_t * events)
 			        escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
 			break;
 		case event_type_sigchld:
-			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = %2x\n",
+			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
 			        e,
 			        sec, ts.tv_nsec,
 			        event->u.sigchld.wstatus);

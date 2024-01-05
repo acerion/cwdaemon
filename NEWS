@@ -62,6 +62,18 @@ New release. Changes since previous release:
       the name. The default name is overwritten with the value passed to the
       script.
 
+    * Adding functional test for corner cases of "-p"/"--port" command line
+      option.
+
+      Existing other functional tests already are indirectly testing the
+      option by passing it to cwdaemon with various valid values of network
+      port.
+
+      The new, dedicated functional test is testing corner cases where
+      selected values of network port (valid and invalid) are passed to
+      cwdaemon through "-p"/"--port" command line option. The test verifies
+      if cwdaemon starts (or doesn't start) as expected.
+
     * Unit tests have been added for following existing code:
 
       - cwdaemon_get_long() function

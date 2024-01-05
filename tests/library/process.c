@@ -105,7 +105,12 @@ static char g_arg_tone[10] = { 0 };
 */
 static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 {
-	if (opts->l4_port <= 0) {
+	if (opts->l4_port == -1) {
+		/* Special case used in "option_port" functional test. Run the
+		   process with invalid port zero. */
+		fprintf(stderr, "[WW] Requested value of port is out of range: %d, continuing with the value anyway\n", 0);
+		*port = 0;
+	} else if (opts->l4_port == 0) {
 		/* Generate random (but still valid, within valid range) port
 		   number. */
 		in_port_t random_valid_port = 0;
@@ -161,10 +166,10 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 	if (*port == CWDAEMON_NETWORK_PORT_DEFAULT) {
 		/* We can, but we don't have to add explicit "port" command line
 		   option when a default port value is to be used by the server. */
-		bool implicit_port_argument = false;
-		cwdaemon_random_bool(&implicit_port_argument);
+		bool explicit_port_argument = true;
+		cwdaemon_random_bool(&explicit_port_argument);
 
-		if (implicit_port_argument) {
+		if (!explicit_port_argument) {
 			/* Let cwdaemon start without explicitly specified port. */
 			test_log_info("cwdaemon will start with default port, without explicit 'port' option %s\n", "");
 			return 0;
@@ -351,7 +356,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			server->l4_port = l4_port;
 			return 0;
 		} else {
-			fprintf(stderr, "[EE] waitpid() returns %d\n", waited_pid);
+			fprintf(stderr, "[EE] starting of process: waitpid() returns %d, errno = %s\n", waited_pid, strerror(errno));
 			return -1;
 		}
 	}

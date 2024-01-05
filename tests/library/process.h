@@ -66,8 +66,9 @@ typedef struct {
 	   Layer 4 UDP port on which cwdaemon is listening. Passed to cwdaemon
 	   through -p/--port command line option.
 
-	   0 or negative value: use random port when starting cwdaemon
-	   positive value: use given port value when starting cwdaemon
+	   -1: use zero as port number passed to cwdaemon (dirty special case);
+	   0: use random port when starting cwdaemon;
+	   positive value: use given port value when starting cwdaemon;
 
 	   I'm using zero to signify random port, because this should be the
 	   default testing method: to run a cwdaemon with any valid port number,

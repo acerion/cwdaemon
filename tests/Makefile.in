@@ -89,6 +89,7 @@ build_triplet = @build@
 host_triplet = @host@
 @FUNCTIONAL_TESTS_TRUE@am__append_1 = library functional_tests
 @FUNCTIONAL_TESTS_TRUE@am__append_2 = functional_tests/automatic/option_cwdevice_tty_lines/test_program \
+@FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/option_port/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/reset_register_callback/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_5/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_h/test_program
@@ -799,6 +800,13 @@ unit_tests/time_utils.log: unit_tests/time_utils
 functional_tests/automatic/option_cwdevice_tty_lines/test_program.log: functional_tests/automatic/option_cwdevice_tty_lines/test_program
 	@p='functional_tests/automatic/option_cwdevice_tty_lines/test_program'; \
 	b='functional_tests/automatic/option_cwdevice_tty_lines/test_program'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+functional_tests/automatic/option_port/test_program.log: functional_tests/automatic/option_port/test_program
+	@p='functional_tests/automatic/option_port/test_program'; \
+	b='functional_tests/automatic/option_port/test_program'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
