@@ -54,6 +54,7 @@
 
 #include "misc.h"
 #include "socket.h"
+#include "src/cwdaemon.h"
 #include "src/lib/random.h"
 
 
@@ -98,8 +99,8 @@ static bool is_local_udp_port_used(int port)
 */
 int find_unused_random_local_udp_port(void)
 {
-	const unsigned int lower = 1024;
-	const unsigned int upper = 65535;
+	const unsigned int lower = CWDAEMON_NETWORK_PORT_MIN;
+	const unsigned int upper = CWDAEMON_NETWORK_PORT_MAX;
 
 	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
 	for (int i = 0; i < n; i++) {

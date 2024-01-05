@@ -83,7 +83,10 @@ void cwdaemon_args_help(void)
 	printf("        Do not fork. Print debug information to stdout.\n");
 
 	printf("-p, --port <port>\n");
-	printf("        Use a different UDP port number (> 1023, default: %d).\n", CWDAEMON_NETWORK_PORT_DEFAULT);
+	printf("        Specify a number of UDP port to listen on.\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX);
+	printf("        Default port number is %d.\n", CWDAEMON_NETWORK_PORT_DEFAULT);
+
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	printf("-P, --priority <priority>\n");
 	printf("        Set program's priority (-20 - 20, default: 0).\n");

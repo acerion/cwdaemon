@@ -136,12 +136,15 @@ Default is \fBRTS\fR.
 \fBSet network UDP port\fR
 .IP
 Command line argument: -p, --port <port number>
+.IP
+Allowed values of port number are in range <1024 - 65535>, inclusive.
+.br
+If this option is not used, cwdaemon will listen on UDP port 6789 by default.
 
 .IP
 Escaped request: <ESC>9<port number>
-
 .IP
-This escaped request is obsolete and has no effect. Command line argument works as expected.
+This escaped request is obsolete and has no effect.
 
 
 

@@ -12,7 +12,8 @@
 # Default for linux: parport0 with ppdev driver
 DEVICE="parport0"
 
-# default 6789
+# UDP port to listen on. Valid values are in range <1024 - 65535>, inclusive.
+# Default value is 6789.
 #UDPPORT="6789"
 
 # priority -20 to +20

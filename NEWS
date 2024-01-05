@@ -79,6 +79,14 @@ New release. Changes since previous release:
     hardcoded to constant value "NONE", which made debugging of libcw
     impossible.
 
+
+* Misc
+
+    * Improved documentation of the "-p"/"--port" command line option in:
+	  - man page ("man cwdaemon")
+	  - help text (cwdaemon --help)
+
+
 ----
 
 

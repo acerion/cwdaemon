@@ -14,8 +14,9 @@
 /**
    @brief Find a UDP port that is not used on local machine
 
-   The port is randomly selected from range of ports above 1023 (above last
-   well-known port).
+   The port is randomly selected from range of non-privileged ports (i.e.
+   from range <1024 - 65535>, inclusive. See also CWDAEMON_NETWORK_PORT_MIN
+   and CWDAEMON_NETWORK_PORT_MAX).
 
    @return a port number that is unused on success
    @return 0 on failure to find an unused port

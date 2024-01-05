@@ -46,10 +46,6 @@
 
 #include <stdbool.h>
 
-#if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-#include <lp.h>
-#endif
-
 
 
 

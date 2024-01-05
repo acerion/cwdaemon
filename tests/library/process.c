@@ -55,6 +55,7 @@
 #include "misc.h"
 #include "process.h"
 #include "socket.h"
+#include "src/cwdaemon.h"
 #include "src/lib/sleep.h"
 
 
@@ -94,7 +95,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			l4_port = default_l4_port; /* Too bad, use a default port. Not the end of the world. */
 		}
 	} else {
-		if (opts->l4_port >= 1024 && opts->l4_port <= 65535) {
+		if (opts->l4_port >= CWDAEMON_NETWORK_PORT_MIN && opts->l4_port <= CWDAEMON_NETWORK_PORT_MAX) {
 			l4_port = opts->l4_port;
 		} else {
 			fprintf(stderr, "[EE] invalid L4 port value %d\n", opts->l4_port);
