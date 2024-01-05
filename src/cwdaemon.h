@@ -130,6 +130,9 @@ int null_ptt (cwdevice * dev, int onoff);
 typedef struct cwdaemon_t {
 	int socket_descriptor;
 
+	/** UDP port the server listens on. */
+	in_port_t network_port;
+
 	/* cwdaemon usually receives requests from client, but on occasions
 	   it needs to send a reply back. This is why in addition to
 	   request_* we also have reply_* */

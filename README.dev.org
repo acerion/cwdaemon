@@ -36,6 +36,20 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
     "[ERROR] cwdaemon: Invalid value of option for keying device (expected 'key|ptt=RTS|DTR|none'): [ke=none]"
 
 
+- Use "option" when referring to command line tokens passed to cwdaemon
+  program that are used to configure and control the behaviour of the daemon.
+
+  Don't use "command". Don't use "switch". "Don't use arg".
+
+  "command" can be used in "command line option" phrase, but only as part of
+  "command line".
+
+  "--help" token is an option (a command line option).
+  "-p 4242" is an option with value "4242".
+
+  "./src/cwdaemon -n" starts a program with "-n" command line option.
+
+  Rationale: "man 1/3 getopt" talks about parsing of "options".
 
 
 * Bugs, features

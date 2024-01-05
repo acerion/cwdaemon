@@ -45,17 +45,16 @@
    Initialize network socket and other network variables.
 
    \param cwdaemon cwdaemon instance
-   \param port network port to listen on
 
    \return false on failure
    \return true on success
 */
-bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon, uint16_t network_port)
+bool cwdaemon_initialize_socket(cwdaemon_t * cwdaemon)
 {
 	memset(&cwdaemon->request_addr, '\0', sizeof (cwdaemon->request_addr));
 	cwdaemon->request_addr.sin_family = AF_INET;
 	cwdaemon->request_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	cwdaemon->request_addr.sin_port = htons(network_port);
+	cwdaemon->request_addr.sin_port = htons(cwdaemon->network_port);
 	cwdaemon->request_addrlen = sizeof (cwdaemon->request_addr);
 
 	cwdaemon->socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);

@@ -245,25 +245,13 @@ static const int tq_low_watermark = 1;
 static bool has_audio_output = false;
 
 
-
-
-/* Default UDP port we listen on. Can be changed only through command
-   line switch.
-
-   There is a code path suggesting that it was possible to change the
-   port using network request, but now this code path is marked as
-   "obsolete".
-
-   Using uint16_t because in the end the value is assigned to "in_port_t
-   sin_port", and in_port_t is an alias for uint16_t.
- */
-static uint16_t g_network_port = CWDAEMON_NETWORK_PORT_DEFAULT;
-
-
 static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
 
 
-static cwdaemon_t g_cwdaemon = { .socket_descriptor = -1 };
+static cwdaemon_t g_cwdaemon = {
+	.socket_descriptor = -1,
+	.network_port = CWDAEMON_NETWORK_PORT_DEFAULT,
+};
 
 
 
@@ -387,7 +375,7 @@ static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
 static bool cwdaemon_params_cwdevice(const char * opt_arg);
-static bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port);
+static bool cwdaemon_option_network_port(in_port_t * port, const char * opt_arg);
 static bool cwdaemon_params_priority(int *priority, const char * opt_arg);
 static bool cwdaemon_params_wpm(int *wpm, const char * opt_arg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg);
@@ -1658,7 +1646,7 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		cwdaemon_params_nofork();
 		break;
 	case 'p':
-		if (!cwdaemon_params_network_port(opt_arg, &g_network_port)) {
+		if (!cwdaemon_option_network_port(&g_cwdaemon.network_port, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1764,20 +1752,25 @@ void cwdaemon_params_nofork(void)
 }
 
 
-bool cwdaemon_params_network_port(const char * opt_arg, uint16_t * port)
+
+
+bool cwdaemon_option_network_port(in_port_t * port, const char * opt_arg)
 {
+	const long int port_min = CWDAEMON_NETWORK_PORT_MIN;
+	const long int port_max = CWDAEMON_NETWORK_PORT_MAX;
 	long lv = 0;
-	if (!cwdaemon_get_long(opt_arg, &lv) || lv < CWDAEMON_NETWORK_PORT_MIN || lv > CWDAEMON_NETWORK_PORT_MAX) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested port number: \"%s\"", opt_arg);
+	if (!cwdaemon_get_long(opt_arg, &lv) || lv < port_min || lv > port_max) {
+		log_message(LOG_ERR, "Invalid requested port number: \"%s\", must be in range <%ld - %ld>, inclusive",
+		            opt_arg, port_min, port_max);
 		return false;
-	} else {
-		*port = (uint16_t) lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested port number: \"%d\"", *port);
-		return true;
 	}
+
+	*port = (in_port_t) lv;
+	log_message(LOG_INFO, "requested port number: %u", *port);
+	return true;
 }
+
+
 
 
 bool cwdaemon_params_priority(int *priority, const char * opt_arg)
@@ -2304,7 +2297,7 @@ int main(int argc, char *argv[])
 	}
 
 	atexit(cwdaemon_close_socket_wrapper);
-	if (!cwdaemon_initialize_socket(&g_cwdaemon, g_network_port)) {
+	if (!cwdaemon_initialize_socket(&g_cwdaemon)) {
 		exit(EXIT_FAILURE);
 	}
 

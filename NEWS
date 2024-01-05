@@ -82,6 +82,8 @@ New release. Changes since previous release:
 
 * Misc
 
+    * Refactored handling of "-p"/"--port" command line option.
+
     * Improved documentation of the "-p"/"--port" command line option in:
 	  - man page ("man cwdaemon")
 	  - help text (cwdaemon --help)
