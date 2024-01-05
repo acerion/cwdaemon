@@ -90,6 +90,7 @@ accidentally break something.
 
 DONE: options addressed in this release:
  - 'h'/"help" (print help text)
+ - 'p'/"port" (network port on which cwdaemon listens)
 
 *** STARTED Unit tests
 

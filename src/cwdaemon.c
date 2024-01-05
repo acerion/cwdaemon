@@ -1515,7 +1515,7 @@ static const char   *cwdaemon_args_short = "d:hniy:I:f:o:p:P:s:t:T:v:Vw:x:";
 static struct option cwdaemon_args_long[] = {
 	{ "cwdevice",    required_argument,       0, 0},  /* Keying device. */
 	{ "nofork",      no_argument,             0, 0},  /* Don't fork. */
-	{ "port",        required_argument,       0, 0},  /* Network port number. */
+	{ "port",        required_argument,       0, 'p' },  /* Network port number. */
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	{ "priority",    required_argument,       0, 0},  /* Process priority. */
 #endif
@@ -1529,8 +1529,8 @@ static struct option cwdaemon_args_long[] = {
 	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
-	{ "options",     required_argument,       0, 'o'},  /* Driver-specific options. */
-	{ "help",        no_argument,             0, 'h'},  /* Print help text and exit. */
+	{ "options",     required_argument,       0, 'o' },  /* Driver-specific options. */
+	{ "help",        no_argument,             0, 'h' },  /* Print help text and exit. */
 
 	{ 0,             0,                       0, 0} };
 
@@ -1561,11 +1561,6 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 
 			} else if (!strcmp(optname, "nofork")) {
 				cwdaemon_params_nofork();
-
-			} else if (!strcmp(optname, "port")) {
-				if (!cwdaemon_params_network_port(optarg, &g_network_port)) {
-					exit(EXIT_FAILURE);
-				}
 
 			} else if (!strcmp(optname, "priority")) {
 				if (!cwdaemon_params_priority(&process_priority, optarg)) {
