@@ -103,3 +103,19 @@ int cwdaemon_random_uint(unsigned int lower, unsigned int upper, unsigned int * 
 }
 
 
+
+
+int cwdaemon_random_bool(bool * result)
+{
+	const unsigned int lower = 1;
+	const unsigned int upper = 100;
+	unsigned int uint = 0;
+	if (0 != cwdaemon_random_uint(lower, upper, &uint)) {
+		return -1;
+	}
+
+	*result = uint % 2;
+	return 0;
+}
+
+

@@ -44,16 +44,35 @@
 
 
 static int test_cwdaemon_random_uint(void);
+static int test_cwdaemon_random_bool(void);
+
+
+
+
+static int (*tests[])(void) = {
+	test_cwdaemon_random_uint,
+	test_cwdaemon_random_bool,
+	NULL
+};
 
 
 
 
 int main(void)
 {
-	if (0 != test_cwdaemon_random_uint()) {
-		return -1;
+	const uint32_t seed = cwdaemon_srandom(0);
+	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
+
+	int i = 0;
+	while (tests[i]) {
+		if (0 != tests[i]()) {
+			fprintf(stdout, "[EE] Test result: failure in tests #%d\n", i);
+			return -1;
+		}
+		i++;
 	}
 
+	fprintf(stdout, "[II] Test result: success\n");
 	return 0;
 }
 
@@ -98,7 +117,44 @@ static int test_cwdaemon_random_uint(void)
 		}
 	}
 
+	fprintf(stderr, "[II] Tests of cwdaemon_random_uint() have succeeded\n");
+
 	return 0;
 }
 
+
+
+
+static int test_cwdaemon_random_bool(void)
+{
+	int trues = 0;
+	int falses = 0;
+	for (int i = 0; i < CALLS_TO_RANDOM; i++) {
+		bool value = false;
+		if (0 != cwdaemon_random_bool(&value)) {
+			fprintf(stderr, "[EE] Call #%d to cwdaemon_random_bool() has failed\n", i);
+			return -1;
+		}
+		if (value) {
+			trues++;
+		} else {
+			falses++;
+		}
+	}
+
+	if (trues == 0 || falses == 0) {
+		fprintf(stderr, "[EE] Either 'trues' or 'falses' counter is zero\n");
+		return -1;
+	}
+
+	const double proportion = (double) trues / (double) falses;
+	if (proportion < 0.95 || proportion > 1.05) {
+		fprintf(stderr, "[EE] Proportion of trues vs. falses is invalid: %.3f\n", proportion);
+		return -1;
+	}
+
+	fprintf(stderr, "[II] Tests of cwdaemon_random_bool() have succeeded (proportion = %.3f)\n", proportion);
+
+	return 0;
+}
 

@@ -4,6 +4,7 @@
 
 
 
+#include <stdbool.h>
 #include <stdint.h>
 
 
@@ -36,6 +37,21 @@ uint32_t cwdaemon_srandom(uint32_t seed);
    @return -1 on failure
 */
 int cwdaemon_random_uint(unsigned int lower, unsigned int upper, unsigned int * result);
+
+
+
+
+/**
+   @brief Get random value of type "bool"
+
+   The random value is returned through @p result.
+
+   @param[out] result Generated random value
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdaemon_random_bool(bool * result);
 
 
 
