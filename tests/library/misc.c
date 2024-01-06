@@ -94,7 +94,17 @@ static bool is_local_udp_port_used(in_port_t port)
 
 int find_unused_random_biased_local_udp_port(in_port_t * port)
 {
-	/* Be slightly biased towards selecting cwdaemon's default port. */
+	/*
+	  Be slightly biased towards selecting cwdaemon's default port.
+
+	  This bias is needed to:
+	  - make situations where test code doesn't explicitly specify port
+	    option more frequent (see text above).
+	  - make situations where cwdaemon is tested with its most commonly used
+	    port number more frequent. cwdaemon can be started with any
+	    unprivileged port, but I believe that in 99.9% of situations it is
+	    listening on default port.
+	 */
 	unsigned int bias_input = 0;
 	const unsigned int bias_min = 0;
 	const unsigned int bias_max = 20;
