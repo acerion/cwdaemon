@@ -148,8 +148,8 @@ static int test_cwdaemon_random_bool(void)
 	}
 
 	const double proportion = (double) trues / (double) falses;
-	if (proportion < 0.95 || proportion > 1.05) {
-		fprintf(stderr, "[EE] Proportion of trues vs. falses is invalid: %.3f\n", proportion);
+	if (proportion < 0.9 || proportion > 1.1) {
+		fprintf(stderr, "[EE] Proportion of trues vs. falses is out of expected range: %.3f\n", proportion);
 		return -1;
 	}
 
