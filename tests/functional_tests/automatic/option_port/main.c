@@ -121,12 +121,19 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "success case: port 0",        .message = "paris",  .expected_fail = true,   .port = -1 },
+	{ .description = "failure case: port 0",        .message = "paris",  .expected_fail = true,   .port = -1 },
 	{ .description = "failure case: port 1",        .message = "paris",  .expected_fail = true,   .port = 1  },
+	{ .description = "failure case: port MIN - 2",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
 	{ .description = "failure case: port MIN - 1",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },
+
+	/* All valid ports between MIN and MAX are indirectly tested by other
+	   functional tests that use random valid port. Here we just explicitly
+	   test the MIN and MAX itself */
 	{ .description = "success case: port MIN",      .message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN     },
 	{ .description = "success case: port MAX",      .message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX     },
+
 	{ .description = "failure case: port MAX + 1",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1 },
+	{ .description = "failure case: port MAX + 2",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2 },
 };
 
 
