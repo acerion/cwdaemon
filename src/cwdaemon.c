@@ -2316,7 +2316,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (0 != g_libcw_debug_flags) { /* debugging libcw as well */
+	if (0 != g_libcw_debug_flags) { /* We are debugging libcw as well. */
 
 		cw_debug_set_flags(&cw_debug_object, g_libcw_debug_flags);
 
@@ -2334,9 +2334,9 @@ int main(int argc, char *argv[])
 		case CWDAEMON_VERBOSITY_D:
 			cw_debug_object.level = CW_DEBUG_DEBUG;
 			break;
-		case CWDAEMON_VERBOSITY_N:
+		case CWDAEMON_VERBOSITY_N: /* N == NONE. */
 		default:
-			cw_debug_object.level = CW_DEBUG_DEBUG;
+			cw_debug_object.level = CW_DEBUG_NONE;
 			break;
 		}
 	}
