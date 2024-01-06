@@ -94,11 +94,19 @@ New release. Changes since previous release:
 
 * Misc
 
-    * Refactored handling of "-p"/"--port" command line option.
+    * Refactored handling of following command line options:
+      - "-p"/"--port",
+      - "-I"/"--libcwflags"
 
-    * Improved documentation of the "-p"/"--port" command line option in:
-	  - man page ("man cwdaemon")
-	  - help text (cwdaemon --help)
+    * Improved documentation of the following command line options:
+      - "-p"/"--port"
+      - "-I"/"--libcwflags"
+
+      in:
+
+      - man page ("man cwdaemon")
+      - help text (cwdaemon --help)
+
 
 
 ----

@@ -264,10 +264,9 @@ FILE *cwdaemon_debug_f = NULL;
 char *cwdaemon_debug_f_path = NULL;
 
 
-/* An integer that is a result of ORing libcw's debug flags. See
-   libcw.h (or is it libcw_debug.h?) for numeric values of the
-   flags. */
-static long int libcw_debug_flags = 0;
+/* An integer that is a result of ORing libcw's debug flags. See CW_DEBUG_*
+   symbols in libcw.h for numeric values of the flags. */
+static uint32_t g_libcw_debug_flags;
 
 
 
@@ -385,7 +384,7 @@ static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
 static void cwdaemon_params_inc_verbosity(int *verbosity);
 static bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg);
-static bool cwdaemon_params_libcwflags(const char * opt_arg);
+static bool cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_arg);
 static bool cwdaemon_params_debugfile(const char * opt_arg);
 static bool cwdaemon_params_system(int *system, const char * opt_arg);
 static bool cwdaemon_params_ptt_on_off(const char * opt_arg);
@@ -1696,7 +1695,7 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 'I':
-		if (!cwdaemon_params_libcwflags(opt_arg)) {
+		if (!cwdaemon_option_libcwflags(&g_libcw_debug_flags, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -2011,22 +2010,24 @@ bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg)
 }
 
 
-bool cwdaemon_params_libcwflags(const char * opt_arg)
+
+
+static bool cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_arg)
 {
 	long lv = 0;
 	if (!cwdaemon_get_long(opt_arg, &lv)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested debug flags: \"%s\" (should be numeric value)", opt_arg);
-		libcw_debug_flags = 0;
+		log_message(LOG_ERR, "Invalid requested debug flags: \"%s\" (should be decimal value)", opt_arg);
+		*flags = 0;
 
 		return false;
-	} else {
-		libcw_debug_flags = lv;
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested libcw debug flags: \"%ld\"", libcw_debug_flags);
-		return true;
 	}
+
+	*flags = (uint32_t) lv;
+	log_message(LOG_INFO, "Requested libcw debug flags: %u (dec) / %08x (hex)", *flags, *flags);
+	return true;
 }
+
+
 
 
 bool cwdaemon_params_debugfile(const char * opt_arg)
@@ -2315,9 +2316,9 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (0 != libcw_debug_flags) { /* debugging libcw as well */
+	if (0 != g_libcw_debug_flags) { /* debugging libcw as well */
 
-		cw_debug_set_flags(&cw_debug_object, libcw_debug_flags);
+		cw_debug_set_flags(&cw_debug_object, g_libcw_debug_flags);
 
 		/* Use the same verbosity for libcw as is configured for cwdaemon. */
 		switch (current_verbosity) {

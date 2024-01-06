@@ -270,7 +270,10 @@ See chapter "DEBUGGING" below for more information.
 
 
 .TP
-\fBSet numeric value of libcw debug flags\fR
+\fBSet value of libcw debug flags\fR
+.IP
+Specify value (as decimal number) of flags passed to libcw for purposes of debugging of the libcw library.
+
 .IP
 Command line argument: -I, --libcwflags <flags>
 

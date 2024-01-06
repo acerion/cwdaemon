@@ -127,8 +127,11 @@ void cwdaemon_args_help(void)
 	printf("        i = information\n");
 	printf("        d = details\n");
 	printf("        Alternatively you can use -i option.\n");
+
 	printf("-I, --libcwflags <flags>\n");
-	printf("        Numeric value of debug flags to be passed to libcw.\n");
+	printf("        Specify value (as decimal number) of flags passed to libcw for\n");
+	printf("        purposes of debugging of the libcw library.\n");
+
 	printf("-f, --debugfile <output>\n");
 	printf("        Print debug information to <output> instead of stdout.\n");
 	printf("        Value of <output> can be explicitly stated as \"stdout\"\n");
