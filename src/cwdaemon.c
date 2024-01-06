@@ -1514,7 +1514,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "weighting",   required_argument,       0, 0},  /* CW weight. */
 	{ "tone",        required_argument,       0, 0},  /* CW tone. */
 	{ "verbosity",   required_argument,       0, 0},  /* Verbosity of cwdaemon's debug strings. */
-	{ "libcwflags",  required_argument,       0, 0},  /* libcw's debug flags. */
+	{ "libcwflags",  required_argument,       0, 'I' },  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
 	{ "options",     required_argument,       0, 'o' },  /* Driver-specific options. */
@@ -1594,11 +1594,6 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 
 			} else if (!strcmp(optname, "verbosity")) {
 				if (!cwdaemon_params_set_verbosity(&default_verbosity, optarg)) {
-					exit(EXIT_FAILURE);
-				}
-
-			} else if (!strcmp(optname, "libcwflags")) {
-				if (!cwdaemon_params_libcwflags(optarg)) {
 					exit(EXIT_FAILURE);
 				}
 

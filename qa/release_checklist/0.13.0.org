@@ -82,7 +82,7 @@ for next release.
 *** TODO https://github.com/acerion/cwdaemon/issues/10
 Understand it better. Fix if necessary.
 
-*** STARTED R0011: move forward with the ticket by fixing/adjusting just one more option
+*** DONE R0011: move forward with the ticket by fixing/adjusting just one more option
 
 Do this slowly, one option at a time. The processing of command-line options
 functions correctly so don't try to adjust everything at once and
@@ -91,6 +91,7 @@ accidentally break something.
 DONE: options addressed in this release:
  - 'h'/"help" (print help text)
  - 'p'/"port" (network port on which cwdaemon listens)
+ - 'I'/"libcwflags" (libcw debug flags)
 
 *** STARTED Unit tests
 
