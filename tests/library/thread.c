@@ -34,7 +34,7 @@
 #include <string.h>
 
 #include "thread.h"
-#include "src/lib/sleep.h"
+#include "sleep.h"
 
 
 
@@ -50,7 +50,7 @@ int thread_start(thread_t * thread)
 
 	/* Very naive method of checking if a thread has started correctly: wait
 	   a bit and check thread's flag. */
-	millisleep_nonintr(100);
+	test_millisleep_nonintr(100);
 	if (thread->status != thread_running) {
 		fprintf(stderr, "[EE] %s: thread has not started correctly\n", thread->name);
 		return -1;
@@ -83,7 +83,7 @@ int thread_start2(thread_t * thread)
 
 	/* Very naive method of checking if a thread has started correctly: wait
 	   a bit and check thread's flag. */
-	millisleep_nonintr(100);
+	test_millisleep_nonintr(100);
 	if (thread->status != thread_running) {
 		fprintf(stderr, "[EE] %s: thread has not started correctly\n", thread->name);
 		return -1;

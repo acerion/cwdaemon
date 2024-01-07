@@ -99,7 +99,7 @@ Done for tty devices through -o/--option command line option.
 Per man page on linux the function is removed in newer POSIX. Replace it with nanosleep().
 
 Today (2024.01.06) the C code doesn't use usleep() anymore.
-Sleep is done using nanosleep() - see src/lib/sleep.c.
+Sleep is done using nanosleep() - see src/sleep.c.
 
 ** TODO [#C] R0006: Bug: duplicated error message for invalid PTT delay
 

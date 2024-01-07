@@ -17,14 +17,13 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-SUBDIRS = lib
-
 # program(s) to be built in current dir
 sbin_PROGRAMS = cwdaemon
 
 # source code files used to build cwdaemon program
 cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h \
                    options.c options.h \
+                   sleep.c sleep.h \
                    socket.c socket.h utils.c utils.h
 
 # target-specific preprocessor flags (#defs and include dirs)
@@ -34,5 +33,5 @@ cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 # Target-specific linker flags (objects to link). Order is important: first
 # static libraries then dynamic. Otherwise linker may not find symbols from
 # the dynamic library.
-cwdaemon_LDADD = $(top_builddir)/src/lib/libcwdaemon.a ${LIBCW_LIBS}
+cwdaemon_LDADD = ${LIBCW_LIBS}
 

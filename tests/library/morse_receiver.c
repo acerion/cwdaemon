@@ -44,7 +44,7 @@
 #include "../library/thread.h"
 #include "events.h"
 #include "morse_receiver.h"
-#include "src/lib/sleep.h"
+#include "sleep.h"
 
 
 
@@ -213,7 +213,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	*/
 	struct timespec spec = { 0 };
 	do {
-		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
+		const int sleep_retv = test_millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
 			fprintf(stderr, "[EE] Morse receiver thread: error in sleep while receiving Morse code\n");
 		}

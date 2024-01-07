@@ -53,7 +53,7 @@
 #include "socket.h"
 #include "thread.h"
 
-#include "src/lib/sleep.h"
+#include "sleep.h"
 
 
 
@@ -216,7 +216,7 @@ void * client_socket_receiver_thread_fn(void * thread_arg)
 
 
 	do {
-		const int sleep_retv = millisleep_nonintr(loop_iter_sleep_ms);
+		const int sleep_retv = test_millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
 			fprintf(stderr, "[EE] error in sleep while waiting for data on socket\n");
 		}

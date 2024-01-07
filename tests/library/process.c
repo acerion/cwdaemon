@@ -56,9 +56,9 @@
 #include "misc.h"
 #include "process.h"
 #include "random.h"
+#include "sleep.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
-#include "src/lib/sleep.h"
 
 
 
@@ -331,7 +331,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 		  at the beginning of received text, but why add another factor that
 		  decreases quality of receiving?
 		*/
-		const int sleep_retv = millisleep_nonintr(300);
+		const int sleep_retv = test_millisleep_nonintr(300);
 		if (sleep_retv) {
 			fprintf(stderr, "[EE] Error during sleep in parent: %s\n", strerror(errno));
 			return -1;
@@ -477,7 +477,7 @@ int local_server_stop(cwdaemon_server_t * server, client_t * client)
 	client_send_request(client, CWDAEMON_REQUEST_EXIT, "");
 
 	/* Give the server some time to exit. */
-	const int sleep_retv = sleep_nonintr(2);
+	const int sleep_retv = test_sleep_nonintr(2);
 	if (sleep_retv) {
 		fprintf(stderr, "[NOTIC] error during sleep while waiting for local server to exit\n");
 	}

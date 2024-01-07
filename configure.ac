@@ -188,7 +188,6 @@ AC_SUBST(GZIP_ENV, $my_gzip_env)
 
 AC_CONFIG_FILES([Makefile
 	src/Makefile
-	src/lib/Makefile
 	doc/Makefile
 	examples/Makefile
 	doc/cwdaemon.8

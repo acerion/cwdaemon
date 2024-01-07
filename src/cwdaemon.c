@@ -107,9 +107,9 @@
 
 #include "cwdaemon.h"
 #include "help.h"
-#include "lib/sleep.h"
 #include "log.h"
 #include "options.h"
+#include "sleep.h"
 #include "socket.h"
 #include "utils.h"
 

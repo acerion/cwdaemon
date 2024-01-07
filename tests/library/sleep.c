@@ -22,6 +22,34 @@
 
 
 
+/**
+   Sleep functions.
+
+   The same file exists in two places:
+    - src/sleep.c
+    - tests/library/sleep.c
+
+   The reasoning behind the duplication is following:
+   1. I need sleep functions in daemon and in test code.
+   2. On one hand I could have single definition of the functions and share
+      them between daemon and test code, which would lead to increased
+      coupling between the two parts of cwdaemon package.
+   3. on the other hand I could have copies of definitions of the function in
+      daemon's code and tests' code. This would result in duplication of (small
+      amount of) code.
+   4. Out of the two options, I now consider the duplication to be lesser evil.
+
+   If I went with having common implementation of sleep functions for daemon
+   and for tests, this would make build system configuration a bit more
+   complicated.
+
+   TODO acerion 2024.01.07: be aware of the duplication and try to keep the
+   files in the two locations in sync.
+*/
+
+
+
+
 #define _GNU_SOURCE /* struct timespec */
 
 
@@ -38,7 +66,7 @@
 
 
 
-int microsleep_nonintr(unsigned int usecs)
+int test_microsleep_nonintr(unsigned int usecs)
 {
 	const unsigned long seconds = usecs / CWDAEMON_MICROSECS_PER_SEC;
 	const unsigned long micros  = usecs % CWDAEMON_MICROSECS_PER_SEC;
@@ -68,19 +96,19 @@ int microsleep_nonintr(unsigned int usecs)
 
 
 
-int millisleep_nonintr(unsigned int millisecs)
+int test_millisleep_nonintr(unsigned int millisecs)
 {
-	return microsleep_nonintr(millisecs * CWDAEMON_MICROSECS_PER_MILLISEC);
+	return test_microsleep_nonintr(millisecs * CWDAEMON_MICROSECS_PER_MILLISEC);
 }
 
 
 
 
-int sleep_nonintr(unsigned int secs)
+int test_sleep_nonintr(unsigned int secs)
 {
 	/*
 	  Implementing as direct call to nanosleep() instead of implementing it
-	  as a wrapper to microsleep_nonintr() because I want to avoid first
+	  as a wrapper to test_microsleep_nonintr() because I want to avoid first
 	  doing a multiplication of function argument by 10^6 and then dividing
 	  argument again back by 10^6.
 	*/

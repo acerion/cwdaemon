@@ -6780,7 +6780,7 @@ GZIP_ENV=$my_gzip_env
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/lib/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec tests/Makefile tests/unit_tests/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Makefile doc/cwdaemon.8 cwdaemon.spec tests/Makefile tests/unit_tests/Makefile"
 
 
 if test "x$enable_functional_tests" = xyes ; then
@@ -7524,7 +7524,6 @@ do
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "src/lib/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/Makefile" ;;
     "doc/Makefile") CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
     "examples/Makefile") CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
     "doc/cwdaemon.8") CONFIG_FILES="$CONFIG_FILES doc/cwdaemon.8" ;;

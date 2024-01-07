@@ -41,7 +41,7 @@
 
 #include "cwdevice_observer.h"
 #include "misc.h"
-#include "src/lib/sleep.h"
+#include "sleep.h"
 
 
 
@@ -112,7 +112,7 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 			}
 		}
 
-		const int sleep_retv = microsleep_nonintr(observer->poll_interval_us);
+		const int sleep_retv = test_microsleep_nonintr(observer->poll_interval_us);
 		if (sleep_retv) {
 			fprintf(stderr, "[ERROR] error in sleep in key poll\n");
 		}

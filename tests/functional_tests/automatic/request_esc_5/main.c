@@ -52,10 +52,6 @@
 
 #include <errno.h>
 
-
-
-
-#include "src/lib/sleep.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
@@ -65,6 +61,7 @@
 #include "tests/library/process.h"
 #include "tests/library/random.h"
 #include "tests/library/socket.h"
+#include "tests/library/sleep.h"
 #include "tests/library/test_env.h"
 #include "tests/library/thread.h"
 #include "tests/library/time_utils.h"
@@ -296,7 +293,7 @@ static int run_test_case(const test_case_t * test_case)
 
 		/* Give cwdaemon some time to exit cleanly. cwdaemon needs ~1.3
 		   second. */
-		const int sleep_retv = sleep_nonintr(2);
+		const int sleep_retv = test_sleep_nonintr(2);
 		if (sleep_retv) {
 			fprintf(stderr, "[ERROR] error during sleep in cleanup\n");
 		}
