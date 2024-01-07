@@ -99,24 +99,21 @@ Distribution archive is created correctly.
 Tests implemented in tests/unit_tests.
 
 *Steps*
-1. ./configure
+1. ./configure --enable-functional-tests
 2. make check
 
 *Expected result*
-All tests should be "PASS"
+All unit tests should have "PASS" status in output of "make check" command.
 
-PASS: tests/unit_tests/utils
-============================================================================
-Testsuite summary for cwdaemon 0.12.0
-============================================================================
-# TOTAL: 1
-# PASS:  1
-# SKIP:  0
-# XFAIL: 0
-# FAIL:  0
-# XPASS: 0
-# ERROR: 0
-============================================================================
+PASS: unit_tests/daemon_utils
+PASS: unit_tests/daemon_options
+PASS: unit_tests/tests_random
+PASS: unit_tests/tests_time_utils
+
+*Notes*
+
+Count of unit tests depends on whether you pass "--enable-functional-tests"
+to ./configure or not. Test both cases.
 
 *Actual result*
 
