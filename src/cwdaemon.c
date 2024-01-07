@@ -384,7 +384,6 @@ static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
 static void cwdaemon_params_inc_verbosity(int *verbosity);
 static bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg);
-static bool cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_arg);
 static bool cwdaemon_params_debugfile(const char * opt_arg);
 static bool cwdaemon_params_system(int *system, const char * opt_arg);
 static bool cwdaemon_params_ptt_on_off(const char * opt_arg);
@@ -1695,7 +1694,7 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 'I':
-		if (!cwdaemon_option_libcwflags(&g_libcw_debug_flags, opt_arg)) {
+		if (0 != cwdaemon_option_libcwflags(&g_libcw_debug_flags, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1987,24 +1986,6 @@ bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg)
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
 						"requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
-	return true;
-}
-
-
-
-
-static bool cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_arg)
-{
-	long lv = 0;
-	if (!cwdaemon_get_long(opt_arg, &lv)) {
-		log_message(LOG_ERR, "Invalid requested debug flags: \"%s\" (should be decimal value)", opt_arg);
-		*flags = 0;
-
-		return false;
-	}
-
-	*flags = (uint32_t) lv;
-	log_message(LOG_INFO, "Requested libcw debug flags: %u (dec) / %08x (hex)", *flags, *flags);
 	return true;
 }
 

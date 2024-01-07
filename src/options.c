@@ -42,7 +42,7 @@
    @brief Parse value of "-p"/"--port" command line option
 
    @param[out] port Parsed value of network port
-   @param[in] opt_value Value of command line option
+   @param[in] opt_value String value of command line option
 
    @return 0 on success
    @return -1 on failure
@@ -62,6 +62,34 @@ int cwdaemon_option_network_port(in_port_t * port, const char * opt_value)
 	log_message(LOG_INFO, "requested port number: %u", *port);
 	return 0;
 }
+
+
+
+
+/**
+   @brief Parse value of "-I"/"--libcwflags" command line option
+
+   @param[out] flags Parsed value of flags
+   @param[in] opt_value String value of command line option
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_value)
+{
+	long lv = 0;
+	if (!cwdaemon_get_long(opt_value, &lv)) {
+		log_message(LOG_ERR, "Invalid requested debug flags: \"%s\" (should be decimal value)", opt_value);
+		*flags = 0;
+
+		return -1;
+	}
+
+	*flags = (uint32_t) lv;
+	log_message(LOG_INFO, "Requested libcw debug flags: %u (dec) / %08x (hex)", *flags, *flags);
+	return 0;
+}
+
 
 
 
