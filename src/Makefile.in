@@ -129,6 +129,8 @@ am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
 cwdaemon_DEPENDENCIES = $(am__DEPENDENCIES_1)
+cwdaemon_LINK = $(CCLD) $(cwdaemon_CFLAGS) $(CFLAGS) \
+	$(cwdaemon_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -216,6 +218,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_GCOV = @ENABLE_GCOV@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FUNCTIONAL_TESTS = @FUNCTIONAL_TESTS@
@@ -315,6 +318,8 @@ cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c hel
 
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
+@ENABLE_GCOV_TRUE@cwdaemon_LDFLAGS = --coverage
+@ENABLE_GCOV_TRUE@cwdaemon_CFLAGS = --coverage
 
 # Target-specific linker flags (objects to link). Order is important: first
 # static libraries then dynamic. Otherwise linker may not find symbols from
@@ -398,7 +403,7 @@ clean-sbinPROGRAMS:
 
 cwdaemon$(EXEEXT): $(cwdaemon_OBJECTS) $(cwdaemon_DEPENDENCIES) $(EXTRA_cwdaemon_DEPENDENCIES) 
 	@rm -f cwdaemon$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(cwdaemon_OBJECTS) $(cwdaemon_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(cwdaemon_LINK) $(cwdaemon_OBJECTS) $(cwdaemon_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -440,144 +445,144 @@ am--depfiles: $(am__depfiles_remade)
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 cwdaemon-cwdaemon.o: cwdaemon.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-cwdaemon.o -MD -MP -MF $(DEPDIR)/cwdaemon-cwdaemon.Tpo -c -o cwdaemon-cwdaemon.o `test -f 'cwdaemon.c' || echo '$(srcdir)/'`cwdaemon.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-cwdaemon.o -MD -MP -MF $(DEPDIR)/cwdaemon-cwdaemon.Tpo -c -o cwdaemon-cwdaemon.o `test -f 'cwdaemon.c' || echo '$(srcdir)/'`cwdaemon.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-cwdaemon.Tpo $(DEPDIR)/cwdaemon-cwdaemon.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdaemon.c' object='cwdaemon-cwdaemon.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-cwdaemon.o `test -f 'cwdaemon.c' || echo '$(srcdir)/'`cwdaemon.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-cwdaemon.o `test -f 'cwdaemon.c' || echo '$(srcdir)/'`cwdaemon.c
 
 cwdaemon-cwdaemon.obj: cwdaemon.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-cwdaemon.obj -MD -MP -MF $(DEPDIR)/cwdaemon-cwdaemon.Tpo -c -o cwdaemon-cwdaemon.obj `if test -f 'cwdaemon.c'; then $(CYGPATH_W) 'cwdaemon.c'; else $(CYGPATH_W) '$(srcdir)/cwdaemon.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-cwdaemon.obj -MD -MP -MF $(DEPDIR)/cwdaemon-cwdaemon.Tpo -c -o cwdaemon-cwdaemon.obj `if test -f 'cwdaemon.c'; then $(CYGPATH_W) 'cwdaemon.c'; else $(CYGPATH_W) '$(srcdir)/cwdaemon.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-cwdaemon.Tpo $(DEPDIR)/cwdaemon-cwdaemon.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdaemon.c' object='cwdaemon-cwdaemon.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-cwdaemon.obj `if test -f 'cwdaemon.c'; then $(CYGPATH_W) 'cwdaemon.c'; else $(CYGPATH_W) '$(srcdir)/cwdaemon.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-cwdaemon.obj `if test -f 'cwdaemon.c'; then $(CYGPATH_W) 'cwdaemon.c'; else $(CYGPATH_W) '$(srcdir)/cwdaemon.c'; fi`
 
 cwdaemon-log.o: log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-log.o -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-log.o -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-log.Tpo $(DEPDIR)/cwdaemon-log.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='log.c' object='cwdaemon-log.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.o `test -f 'log.c' || echo '$(srcdir)/'`log.c
 
 cwdaemon-log.obj: log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-log.obj -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-log.obj -MD -MP -MF $(DEPDIR)/cwdaemon-log.Tpo -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-log.Tpo $(DEPDIR)/cwdaemon-log.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='log.c' object='cwdaemon-log.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-log.obj `if test -f 'log.c'; then $(CYGPATH_W) 'log.c'; else $(CYGPATH_W) '$(srcdir)/log.c'; fi`
 
 cwdaemon-lp.o: lp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-lp.o -MD -MP -MF $(DEPDIR)/cwdaemon-lp.Tpo -c -o cwdaemon-lp.o `test -f 'lp.c' || echo '$(srcdir)/'`lp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-lp.o -MD -MP -MF $(DEPDIR)/cwdaemon-lp.Tpo -c -o cwdaemon-lp.o `test -f 'lp.c' || echo '$(srcdir)/'`lp.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-lp.Tpo $(DEPDIR)/cwdaemon-lp.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lp.c' object='cwdaemon-lp.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-lp.o `test -f 'lp.c' || echo '$(srcdir)/'`lp.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-lp.o `test -f 'lp.c' || echo '$(srcdir)/'`lp.c
 
 cwdaemon-lp.obj: lp.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-lp.obj -MD -MP -MF $(DEPDIR)/cwdaemon-lp.Tpo -c -o cwdaemon-lp.obj `if test -f 'lp.c'; then $(CYGPATH_W) 'lp.c'; else $(CYGPATH_W) '$(srcdir)/lp.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-lp.obj -MD -MP -MF $(DEPDIR)/cwdaemon-lp.Tpo -c -o cwdaemon-lp.obj `if test -f 'lp.c'; then $(CYGPATH_W) 'lp.c'; else $(CYGPATH_W) '$(srcdir)/lp.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-lp.Tpo $(DEPDIR)/cwdaemon-lp.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lp.c' object='cwdaemon-lp.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-lp.obj `if test -f 'lp.c'; then $(CYGPATH_W) 'lp.c'; else $(CYGPATH_W) '$(srcdir)/lp.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-lp.obj `if test -f 'lp.c'; then $(CYGPATH_W) 'lp.c'; else $(CYGPATH_W) '$(srcdir)/lp.c'; fi`
 
 cwdaemon-ttys.o: ttys.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-ttys.o -MD -MP -MF $(DEPDIR)/cwdaemon-ttys.Tpo -c -o cwdaemon-ttys.o `test -f 'ttys.c' || echo '$(srcdir)/'`ttys.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-ttys.o -MD -MP -MF $(DEPDIR)/cwdaemon-ttys.Tpo -c -o cwdaemon-ttys.o `test -f 'ttys.c' || echo '$(srcdir)/'`ttys.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-ttys.Tpo $(DEPDIR)/cwdaemon-ttys.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ttys.c' object='cwdaemon-ttys.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-ttys.o `test -f 'ttys.c' || echo '$(srcdir)/'`ttys.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-ttys.o `test -f 'ttys.c' || echo '$(srcdir)/'`ttys.c
 
 cwdaemon-ttys.obj: ttys.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-ttys.obj -MD -MP -MF $(DEPDIR)/cwdaemon-ttys.Tpo -c -o cwdaemon-ttys.obj `if test -f 'ttys.c'; then $(CYGPATH_W) 'ttys.c'; else $(CYGPATH_W) '$(srcdir)/ttys.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-ttys.obj -MD -MP -MF $(DEPDIR)/cwdaemon-ttys.Tpo -c -o cwdaemon-ttys.obj `if test -f 'ttys.c'; then $(CYGPATH_W) 'ttys.c'; else $(CYGPATH_W) '$(srcdir)/ttys.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-ttys.Tpo $(DEPDIR)/cwdaemon-ttys.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='ttys.c' object='cwdaemon-ttys.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-ttys.obj `if test -f 'ttys.c'; then $(CYGPATH_W) 'ttys.c'; else $(CYGPATH_W) '$(srcdir)/ttys.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-ttys.obj `if test -f 'ttys.c'; then $(CYGPATH_W) 'ttys.c'; else $(CYGPATH_W) '$(srcdir)/ttys.c'; fi`
 
 cwdaemon-null.o: null.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-null.o -MD -MP -MF $(DEPDIR)/cwdaemon-null.Tpo -c -o cwdaemon-null.o `test -f 'null.c' || echo '$(srcdir)/'`null.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-null.o -MD -MP -MF $(DEPDIR)/cwdaemon-null.Tpo -c -o cwdaemon-null.o `test -f 'null.c' || echo '$(srcdir)/'`null.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-null.Tpo $(DEPDIR)/cwdaemon-null.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='null.c' object='cwdaemon-null.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-null.o `test -f 'null.c' || echo '$(srcdir)/'`null.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-null.o `test -f 'null.c' || echo '$(srcdir)/'`null.c
 
 cwdaemon-null.obj: null.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-null.obj -MD -MP -MF $(DEPDIR)/cwdaemon-null.Tpo -c -o cwdaemon-null.obj `if test -f 'null.c'; then $(CYGPATH_W) 'null.c'; else $(CYGPATH_W) '$(srcdir)/null.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-null.obj -MD -MP -MF $(DEPDIR)/cwdaemon-null.Tpo -c -o cwdaemon-null.obj `if test -f 'null.c'; then $(CYGPATH_W) 'null.c'; else $(CYGPATH_W) '$(srcdir)/null.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-null.Tpo $(DEPDIR)/cwdaemon-null.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='null.c' object='cwdaemon-null.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-null.obj `if test -f 'null.c'; then $(CYGPATH_W) 'null.c'; else $(CYGPATH_W) '$(srcdir)/null.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-null.obj `if test -f 'null.c'; then $(CYGPATH_W) 'null.c'; else $(CYGPATH_W) '$(srcdir)/null.c'; fi`
 
 cwdaemon-help.o: help.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-help.o -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-help.o -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-help.Tpo $(DEPDIR)/cwdaemon-help.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='help.c' object='cwdaemon-help.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.o `test -f 'help.c' || echo '$(srcdir)/'`help.c
 
 cwdaemon-help.obj: help.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-help.obj -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-help.obj -MD -MP -MF $(DEPDIR)/cwdaemon-help.Tpo -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-help.Tpo $(DEPDIR)/cwdaemon-help.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='help.c' object='cwdaemon-help.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
 
 cwdaemon-options.o: options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-options.o -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-options.o -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-options.Tpo $(DEPDIR)/cwdaemon-options.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='cwdaemon-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
 cwdaemon-options.obj: options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-options.obj -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-options.obj -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-options.Tpo $(DEPDIR)/cwdaemon-options.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='cwdaemon-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 
 cwdaemon-sleep.o: sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-sleep.o -MD -MP -MF $(DEPDIR)/cwdaemon-sleep.Tpo -c -o cwdaemon-sleep.o `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-sleep.o -MD -MP -MF $(DEPDIR)/cwdaemon-sleep.Tpo -c -o cwdaemon-sleep.o `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-sleep.Tpo $(DEPDIR)/cwdaemon-sleep.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sleep.c' object='cwdaemon-sleep.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-sleep.o `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-sleep.o `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
 
 cwdaemon-sleep.obj: sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-sleep.obj -MD -MP -MF $(DEPDIR)/cwdaemon-sleep.Tpo -c -o cwdaemon-sleep.obj `if test -f 'sleep.c'; then $(CYGPATH_W) 'sleep.c'; else $(CYGPATH_W) '$(srcdir)/sleep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-sleep.obj -MD -MP -MF $(DEPDIR)/cwdaemon-sleep.Tpo -c -o cwdaemon-sleep.obj `if test -f 'sleep.c'; then $(CYGPATH_W) 'sleep.c'; else $(CYGPATH_W) '$(srcdir)/sleep.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-sleep.Tpo $(DEPDIR)/cwdaemon-sleep.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sleep.c' object='cwdaemon-sleep.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-sleep.obj `if test -f 'sleep.c'; then $(CYGPATH_W) 'sleep.c'; else $(CYGPATH_W) '$(srcdir)/sleep.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-sleep.obj `if test -f 'sleep.c'; then $(CYGPATH_W) 'sleep.c'; else $(CYGPATH_W) '$(srcdir)/sleep.c'; fi`
 
 cwdaemon-socket.o: socket.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-socket.o -MD -MP -MF $(DEPDIR)/cwdaemon-socket.Tpo -c -o cwdaemon-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-socket.o -MD -MP -MF $(DEPDIR)/cwdaemon-socket.Tpo -c -o cwdaemon-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-socket.Tpo $(DEPDIR)/cwdaemon-socket.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socket.c' object='cwdaemon-socket.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
 
 cwdaemon-socket.obj: socket.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-socket.obj -MD -MP -MF $(DEPDIR)/cwdaemon-socket.Tpo -c -o cwdaemon-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-socket.obj -MD -MP -MF $(DEPDIR)/cwdaemon-socket.Tpo -c -o cwdaemon-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-socket.Tpo $(DEPDIR)/cwdaemon-socket.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socket.c' object='cwdaemon-socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
 
 cwdaemon-utils.o: utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.o -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.o -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-utils.Tpo $(DEPDIR)/cwdaemon-utils.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='utils.c' object='cwdaemon-utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
 
 cwdaemon-utils.obj: utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.obj -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -MT cwdaemon-utils.obj -MD -MP -MF $(DEPDIR)/cwdaemon-utils.Tpo -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-utils.Tpo $(DEPDIR)/cwdaemon-utils.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='utils.c' object='cwdaemon-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(cwdaemon_CFLAGS) $(CFLAGS) -c -o cwdaemon-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -805,6 +810,9 @@ uninstall-am: uninstall-sbinPROGRAMS
 
 .PRECIOUS: Makefile
 
+
+@ENABLE_GCOV_TRUE@gcov:
+@ENABLE_GCOV_TRUE@	echo "Hello gcov"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

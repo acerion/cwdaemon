@@ -120,7 +120,26 @@ Testsuite summary for cwdaemon 0.12.0
 
 *Actual result*
 
+*** TODO gcov/lcov
 
+Purpose: confirm that it's possible to generate a coverage report for unit
+tests.
+
+*Steps*
+
+The steps are copied from relevant sections in top-level README file:
+
+1. ./configure --enable-gcov
+2. make gcov
+3. <web browser> tests/unit_tests/coverage/index.html
+4. make gcov-clean
+
+*Expected results*
+1. Summary of configuration step correctly shows enabled gcov,
+2. There are no errors during generation of gcov/lcov report,
+3. Contents of the report looks correct (no obvious problems with the
+   report).
+4. There are no errors during cleanup step.
 
 *** TODO functional tests
 

@@ -223,6 +223,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_GCOV = @ENABLE_GCOV@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FUNCTIONAL_TESTS = @FUNCTIONAL_TESTS@
@@ -827,7 +828,7 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/doc/schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/doc/schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 
-        # The scripts will be installed as executable.
+# The scripts will be installed as executable.
 	$(INSTALL_SCRIPT) $(srcdir)/examples/example.sh $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) $(srcdir)/examples/example.pl $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) $(srcdir)/cwsetup.sh $(DESTDIR)$(pkgdatadir)
@@ -845,6 +846,14 @@ rpm: Makefile
 	make dist
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
+
+@ENABLE_GCOV_TRUE@gcov:
+@ENABLE_GCOV_TRUE@	make clean
+@ENABLE_GCOV_TRUE@	make check
+@ENABLE_GCOV_TRUE@	make gcov -C tests/unit_tests
+
+@ENABLE_GCOV_TRUE@gcov-clean:
+@ENABLE_GCOV_TRUE@	make gcov-clean -C tests/unit_tests
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

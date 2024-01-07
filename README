@@ -303,6 +303,19 @@ Quality Assurance
     - -D_FORTIFY_SOURCE=2
 
 
+
+- Unit tests
+    - Small parts of daemon are tested with unit tests (see
+      tests/unit_tests/README).
+    - Few utility functions used in functional tests are tested with unit
+      tests (see tests/unit_tests/README).
+    - A very basic support for gcov/lcov is available. Relevant commands:
+        - ./configure --enable-gcov
+        - make gcov
+        - <web browser> tests/unit_tests/coverage/index.html
+        - make gcov-clean
+
+
 Credits
 -------
 Conversion to stand-alone utility, basic work, POSIX porting, integration

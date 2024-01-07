@@ -151,6 +151,28 @@ AC_DEFINE_UNQUOTED([TEST_TTY_CWDEVICE_NAME],["${test_tty_cwdevice_name}"],[Name 
 
 
 
+# Run code coverage tool?
+AC_ARG_ENABLE(gcov,
+    AS_HELP_STRING([--enable-gcov], [enable gcov code coverage report for unit tests of cwdaemon]),
+    [],
+    [enable_gcov=no])
+
+AC_MSG_CHECKING([whether to enable gcov unit for tests for cwdaemon])
+if test x$enable_gcov = xyes ; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+AM_CONDITIONAL([ENABLE_GCOV], [test x$enable_gcov = xyes])
+AC_SUBST(ENABLE_GCOV)
+
+if test x$enable_gcov = xyes ; then
+   CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
+fi
+
+
+
+
 # LIBCW_LIBDIR is needed to extend value of LD_LIBRARY_PATH used when starting
 # test instance of cwdaemon.
 if $PKG_CONFIG --atleast-version=5 libcw; then
@@ -218,13 +240,14 @@ AC_OUTPUT
 # console.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
-AC_MSG_NOTICE([  operating system:  ..............  $host_os])
-AC_MSG_NOTICE([  libcw library path:  ............  $LIBCW_LIBDIR])
+AC_MSG_NOTICE([  operating system: ...............  $host_os])
+AC_MSG_NOTICE([  libcw library path: .............  $LIBCW_LIBDIR])
 AC_MSG_NOTICE([  libcw library version: ..........  $(pkg-config --modversion libcw)])
-AC_MSG_NOTICE([  LIBCW_LIBS:  ....................  $LIBCW_LIBS])
+AC_MSG_NOTICE([  LIBCW_LIBS: .....................  $LIBCW_LIBS])
 AC_MSG_NOTICE([  LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS])
-AC_MSG_NOTICE([  CFLAGS:  ........................  $CFLAGS])
+AC_MSG_NOTICE([  CFLAGS: .........................  $CFLAGS])
 AC_MSG_NOTICE([  enable unit tests: ..............  yes])
+AC_MSG_NOTICE([  enable gcov: ....................  $enable_gcov])
 AC_MSG_NOTICE([  enable functional tests: ........  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
     AC_MSG_NOTICE([      test tty cwdevice name: ...... $test_tty_cwdevice_name])

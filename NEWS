@@ -81,6 +81,14 @@ New release. Changes since previous release:
 
     * Adding "-D_FORTIFY_SOURCE=2" to list of arguments passed to C compiler.
 
+    * Adding most basic support for gcov/lcov to find holes in unit-tested
+      code. Four releavnt commands are:
+
+      - ./configure --enable-gcov
+      - make gcov
+      - <web browser> tests/unit_tests/coverage/index.html
+      - make gcov-clean
+
 
 * Debugging of libcw
 

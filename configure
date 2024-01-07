@@ -658,6 +658,9 @@ GZIP_ENV
 LIBCW_LIBDIR
 LIBCW_CFLAGS
 LIBCW_LIBS
+ENABLE_GCOV
+ENABLE_GCOV_FALSE
+ENABLE_GCOV_TRUE
 FUNCTIONAL_TESTS
 FUNCTIONAL_TESTS_FALSE
 FUNCTIONAL_TESTS_TRUE
@@ -776,6 +779,7 @@ enable_dependency_tracking
 enable_functional_tests
 with_test_cwdaemon_path
 with_test_tty_cwdevice_name
+enable_gcov
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1427,6 +1431,8 @@ Optional Features:
                           speeds up one-time build
   --enable-functional-tests
                           enable functional tests of cwdaemon
+  --enable-gcov           enable gcov code coverage report for unit tests of
+                          cwdaemon
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -6744,6 +6750,42 @@ printf "%s\n" "#define TEST_TTY_CWDEVICE_NAME \"${test_tty_cwdevice_name}\"" >>c
 
 
 
+# Run code coverage tool?
+# Check whether --enable-gcov was given.
+if test ${enable_gcov+y}
+then :
+  enableval=$enable_gcov;
+else $as_nop
+  enable_gcov=no
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to enable gcov unit for tests for cwdaemon" >&5
+printf %s "checking whether to enable gcov unit for tests for cwdaemon... " >&6; }
+if test x$enable_gcov = xyes ; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+ if test x$enable_gcov = xyes; then
+  ENABLE_GCOV_TRUE=
+  ENABLE_GCOV_FALSE='#'
+else
+  ENABLE_GCOV_TRUE='#'
+  ENABLE_GCOV_FALSE=
+fi
+
+
+
+if test x$enable_gcov = xyes ; then
+   CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
+fi
+
+
+
+
 # LIBCW_LIBDIR is needed to extend value of LD_LIBRARY_PATH used when starting
 # test instance of cwdaemon.
 if $PKG_CONFIG --atleast-version=5 libcw; then
@@ -6931,6 +6973,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${FUNCTIONAL_TESTS_TRUE}" && test -z "${FUNCTIONAL_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"FUNCTIONAL_TESTS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_GCOV_TRUE}" && test -z "${ENABLE_GCOV_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_GCOV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -8277,20 +8323,22 @@ fi
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
 printf "%s\n" "$as_me: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system:  ..............  $host_os" >&5
-printf "%s\n" "$as_me:   operating system:  ..............  $host_os" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path:  ............  $LIBCW_LIBDIR" >&5
-printf "%s\n" "$as_me:   libcw library path:  ............  $LIBCW_LIBDIR" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system: ...............  $host_os" >&5
+printf "%s\n" "$as_me:   operating system: ...............  $host_os" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path: .............  $LIBCW_LIBDIR" >&5
+printf "%s\n" "$as_me:   libcw library path: .............  $LIBCW_LIBDIR" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&5
 printf "%s\n" "$as_me:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS:  ....................  $LIBCW_LIBS" >&5
-printf "%s\n" "$as_me:   LIBCW_LIBS:  ....................  $LIBCW_LIBS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS: .....................  $LIBCW_LIBS" >&5
+printf "%s\n" "$as_me:   LIBCW_LIBS: .....................  $LIBCW_LIBS" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&5
 printf "%s\n" "$as_me:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS:  ........................  $CFLAGS" >&5
-printf "%s\n" "$as_me:   CFLAGS:  ........................  $CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS: .........................  $CFLAGS" >&5
+printf "%s\n" "$as_me:   CFLAGS: .........................  $CFLAGS" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ..............  yes" >&5
 printf "%s\n" "$as_me:   enable unit tests: ..............  yes" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable gcov: ....................  $enable_gcov" >&5
+printf "%s\n" "$as_me:   enable gcov: ....................  $enable_gcov" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ........  $enable_functional_tests" >&5
 printf "%s\n" "$as_me:   enable functional tests: ........  $enable_functional_tests" >&6;}
 if test x$enable_functional_tests = xyes ; then

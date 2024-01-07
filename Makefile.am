@@ -29,7 +29,7 @@ install-data-local:
 	$(INSTALL_DATA) $(srcdir)/doc/schematics/parallelport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_DATA) $(srcdir)/doc/schematics/serialport_circuit.jpg $(DESTDIR)$(pkgdatadir)
 
-        # The scripts will be installed as executable.
+# The scripts will be installed as executable.
 	$(INSTALL_SCRIPT) $(srcdir)/examples/example.sh $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) $(srcdir)/examples/example.pl $(DESTDIR)$(pkgdatadir)
 	$(INSTALL_SCRIPT) $(srcdir)/cwsetup.sh $(DESTDIR)$(pkgdatadir)
@@ -50,5 +50,15 @@ rpm: Makefile
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
 
+
+if ENABLE_GCOV
+gcov:
+	make clean
+	make check
+	make gcov -C tests/unit_tests
+
+gcov-clean:
+	make gcov-clean -C tests/unit_tests
+endif
 
 
