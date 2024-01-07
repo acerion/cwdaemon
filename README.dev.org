@@ -53,7 +53,7 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
 
 
 * Bugs, features
-** TODO R0001: Bug: PulseAudio for system services
+** TODO [#C] R0001: Bug: PulseAudio for system services
 
 Summary:
 cwdaemon started by systemd can't open PulseAudio sound sink.
@@ -73,12 +73,12 @@ You can also see this when you start "cwdaemon -n -x p" by hand as root.
 This is probably a bug in libcw, but I'm putting it here because it was found
 during work on cwdaemon and I didn't investigate it in libcw yet.
 
-** TODO R0002: Bug: Makefiles in deb/usr/share/cwdaemon
+** TODO [#C] R0002: Bug: Makefiles in deb/usr/share/cwdaemon
 The dir in deb package contains Makefile.am and Makefile.in, which are pretty
 useless for end-user. It would be better to have just a simple Makefile in
 that location.
 
-** TODO R0003: Feature: Add printing of specific envs
+** TODO [#C] R0003: Feature: Add printing of specific envs
 
 Print XDG_RUNTIME_DIR, LD_LIBRARY_PATH and perhaps something else, but only
 if you enable it explicitly in code (#ifdef 0 by default).
@@ -95,10 +95,13 @@ https://forums.qrz.com/index.php?threads/cw-keyer-with-no-dtr-pin-cwdaemon-cwlib
 
 Done for tty devices through -o/--option command line option.
 
-** TODO R0005: Bug: usleep() is obsolete
+** DONE R0005: Bug: usleep() is obsolete
 Per man page on linux the function is removed in newer POSIX. Replace it with nanosleep().
 
-** TODO R0006: Bug: duplicated error message for invalid PTT delay
+Today (2024.01.06) the C code doesn't use usleep() anymore.
+Sleep is done using nanosleep() - see src/lib/sleep.c.
+
+** TODO [#C] R0006: Bug: duplicated error message for invalid PTT delay
 
 During execution of cwtest_escd.pl test, when invalid values are sent in
 escaped request, cwdaemon prints error log twice:
@@ -106,12 +109,12 @@ escaped request, cwdaemon prints error log twice:
 [ERROR] cwdaemon: invalid requested PTT delay [ms]: "0.096100" (should be integer between 0 and 50 inclusive)
 [ERROR] cwdaemon: invalid requested PTT delay [ms]: "0.096100" (should be integer between 0 and 50 inclusive)
 
-** TODO R0007: Bug: cwdaemon_params_pttdelay() returns magic values
+** TODO [#C] R0007: Bug: cwdaemon_params_pttdelay() returns magic values
 
 cwdaemon_params_pttdelay() can return 0/1/2. Replace the integer values with
 enums.
 
-** TODO R0008: Feature: better set of values for 'invalid' functional tests
+** TODO [#B] R0008: Feature: better set of values for 'invalid' functional tests
 
 Some functional tests implemented in Perl are sending float values as invalid
 values of escaped requests. Currently the values look like this:
@@ -134,7 +137,7 @@ Testing cwdaemon with both 0.031000 and 0.096100, or with 264.396222 and
 819.628287 doesn't bring much value. The set of values should be
 re-evaluated.
 
-** TODO R0009: Feature: duration of functional tests
+** TODO [#C] R0009: Feature: duration of functional tests
 
 Execution time of each functional test (and in future of non-functional test)
 should be:
@@ -146,7 +149,7 @@ should be:
 3. The value should be then also displayed at the beginning of each
    functional test, to give tester some expectation for duration of test.
 
-** TODO R0010: Feature: clear indication of results of tests
+** TODO [#B] R0010: Feature: clear indication of results of tests
 
 Each test case in each type of test (functional, non-functional, unit test)
 should clearly and explicitly indicate PASS or FAIL result in output printed
@@ -156,7 +159,7 @@ Tester should always be unambiguously informed about PASS/FAIL result. He
 should not be forced to read sentences in logs, he should be able to evaluate
 tests' results just by looking at PASS/FAIL indicator in output of logs.
 
-** IN-PROGRESS R0011: Feature: unify handling of short and long command line options
+** IN-PROGRESS [#C] R0011: Feature: unify handling of short and long command line options
 
 Handling of the short and long options is duplicated between
 cwdaemon_args_process_short() and cwdaemon_args_process_long().
@@ -170,15 +173,35 @@ Do this slowly, one option at a time. The processing of command-line options
 functions correctly so don't try to adjust everything at once and
 accidentally break something.
 
-** TODO R0012: Static code analysis with clang-tidy
+** IN-PROGRESS [#A] R0012: Static code analysis with clang-tidy
 
 Add/improve tools and procedures for static code analysis with clang-tidy.
 
-** TODO R0013: Static code analysis with cppcheck
+** TODO [#A] R0013: Static code analysis with cppcheck
 
 Add/improve tools and procedures for static code analysis with cppcheck.
 
-** TODO R0014: Static code analysis with gcc fanalyse
+** TODO [#A] R0014: Static code analysis with gcc fanalyse
 
 Add/improve tools and procedures for static code analysis with gcc fanalyse.
+
+** TODO [#C] R0015: Improve approach to logging
+
+Code from src/log.c should be refactored to provide the following features:
+
+ - there should be single function or an unified and consistent set of
+   functions used for logging information. Currently three are three
+   functions:
+
+    - log_message()
+    - cwdaemon_errmsg()
+    - cwdaemon_debug()
+
+ - it should be possible to disable logging at compile time in a way that
+   removes log message strings from cwdaemon binary. The purpose of this is
+   to have an option to reduce size of cwdaemon binary.
+
+ - verbosity/severity of log messages doesn't use custom VERBOSITY enums, but
+   relies on LOG_ERR and friends.
+
 

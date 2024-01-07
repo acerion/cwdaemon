@@ -35,7 +35,7 @@ The goals of this development cycle are:
 *** TODO https://github.com/acerion/cwdaemon/issues/12
 Fix it.
 
-*** TODO Review and prioritize items from README.dev.org
+*** DONE Review and prioritize items from README.dev.org
 
 See which items are critical.
 Investigate, clarify and document unclear items.
