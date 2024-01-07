@@ -87,8 +87,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = random$(EXEEXT) utils$(EXEEXT) time_utils$(EXEEXT) \
-	test_options$(EXEEXT)
+check_PROGRAMS = daemon_options$(EXEEXT) daemon_utils$(EXEEXT) \
+	$(am__EXEEXT_1)
+@FUNCTIONAL_TESTS_TRUE@am__append_1 = tests_random tests_time_utils
 subdir = tests/unit_tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -99,25 +100,29 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@FUNCTIONAL_TESTS_TRUE@am__EXEEXT_1 = tests_random$(EXEEXT) \
+@FUNCTIONAL_TESTS_TRUE@	tests_time_utils$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_random_OBJECTS = ../library/random-random.$(OBJEXT) \
-	./random-random.$(OBJEXT)
-random_OBJECTS = $(am_random_OBJECTS)
-random_LDADD = $(LDADD)
-am_test_options_OBJECTS = ./test_options-options.$(OBJEXT) \
-	../../src/test_options-options.$(OBJEXT) \
-	../../src/test_options-log.$(OBJEXT) \
-	../../src/test_options-utils.$(OBJEXT)
-test_options_OBJECTS = $(am_test_options_OBJECTS)
-test_options_LDADD = $(LDADD)
-am_time_utils_OBJECTS = ../library/time_utils-time_utils.$(OBJEXT) \
-	./time_utils-time_utils.$(OBJEXT)
-time_utils_OBJECTS = $(am_time_utils_OBJECTS)
-time_utils_LDADD = $(LDADD)
-am_utils_OBJECTS = ../../src/utils-utils.$(OBJEXT) \
-	./utils-utils.$(OBJEXT)
-utils_OBJECTS = $(am_utils_OBJECTS)
-utils_LDADD = $(LDADD)
+am_daemon_options_OBJECTS =  \
+	../../src/daemon_options-options.$(OBJEXT) \
+	../../src/daemon_options-log.$(OBJEXT) \
+	../../src/daemon_options-utils.$(OBJEXT) \
+	./daemon_options-daemon_options.$(OBJEXT)
+daemon_options_OBJECTS = $(am_daemon_options_OBJECTS)
+daemon_options_LDADD = $(LDADD)
+am_daemon_utils_OBJECTS = ../../src/daemon_utils-utils.$(OBJEXT) \
+	./daemon_utils-daemon_utils.$(OBJEXT)
+daemon_utils_OBJECTS = $(am_daemon_utils_OBJECTS)
+daemon_utils_LDADD = $(LDADD)
+am_tests_random_OBJECTS = ../library/tests_random-random.$(OBJEXT) \
+	./tests_random-tests_random.$(OBJEXT)
+tests_random_OBJECTS = $(am_tests_random_OBJECTS)
+tests_random_LDADD = $(LDADD)
+am_tests_time_utils_OBJECTS =  \
+	../library/tests_time_utils-time_utils.$(OBJEXT) \
+	./tests_time_utils-tests_time_utils.$(OBJEXT)
+tests_time_utils_OBJECTS = $(am_tests_time_utils_OBJECTS)
+tests_time_utils_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -133,16 +138,16 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ../../src/$(DEPDIR)/test_options-log.Po \
-	../../src/$(DEPDIR)/test_options-options.Po \
-	../../src/$(DEPDIR)/test_options-utils.Po \
-	../../src/$(DEPDIR)/utils-utils.Po \
-	../library/$(DEPDIR)/random-random.Po \
-	../library/$(DEPDIR)/time_utils-time_utils.Po \
-	./$(DEPDIR)/random-random.Po \
-	./$(DEPDIR)/test_options-options.Po \
-	./$(DEPDIR)/time_utils-time_utils.Po \
-	./$(DEPDIR)/utils-utils.Po
+am__depfiles_remade = ../../src/$(DEPDIR)/daemon_options-log.Po \
+	../../src/$(DEPDIR)/daemon_options-options.Po \
+	../../src/$(DEPDIR)/daemon_options-utils.Po \
+	../../src/$(DEPDIR)/daemon_utils-utils.Po \
+	../library/$(DEPDIR)/tests_random-random.Po \
+	../library/$(DEPDIR)/tests_time_utils-time_utils.Po \
+	./$(DEPDIR)/daemon_options-daemon_options.Po \
+	./$(DEPDIR)/daemon_utils-daemon_utils.Po \
+	./$(DEPDIR)/tests_random-tests_random.Po \
+	./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -160,10 +165,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(random_SOURCES) $(test_options_SOURCES) \
-	$(time_utils_SOURCES) $(utils_SOURCES)
-DIST_SOURCES = $(random_SOURCES) $(test_options_SOURCES) \
-	$(time_utils_SOURCES) $(utils_SOURCES)
+SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
+	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
+DIST_SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
+	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -303,14 +308,18 @@ top_srcdir = @top_srcdir@
 
 # Don't forget to use a relative directory path even for files in current
 # dir.
-random_SOURCES = ../library/random.c ../library/random.h ./random.c
-random_CPPFLAGS = -I$(top_srcdir)
-utils_SOURCES = ../../src/utils.c ./utils.c
-utils_CPPFLAGS = -I$(top_srcdir)
-time_utils_SOURCES = ../library/time_utils.c ./time_utils.c
-time_utils_CPPFLAGS = -I$(top_srcdir)
-test_options_SOURCES = ./options.c ../../src/options.c ../../src/log.c ../../src/utils.c
-test_options_CPPFLAGS = -I$(top_srcdir)
+
+# Below are unit tests for code used in daemon.
+daemon_utils_SOURCES = ../../src/utils.c ./daemon_utils.c
+daemon_utils_CPPFLAGS = -I$(top_srcdir)
+daemon_options_SOURCES = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
+daemon_options_CPPFLAGS = -I$(top_srcdir)
+
+# Below are unit tests for code used in functional tests.
+tests_time_utils_SOURCES = ../library/time_utils.c ./tests_time_utils.c
+tests_time_utils_CPPFLAGS = -I$(top_srcdir)
+tests_random_SOURCES = ../library/random.c ../library/random.h ./tests_random.c
+tests_random_CPPFLAGS = -I$(top_srcdir)
 all: all-am
 
 .SUFFIXES:
@@ -347,59 +356,61 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-../library/$(am__dirstamp):
-	@$(MKDIR_P) ../library
-	@: > ../library/$(am__dirstamp)
-../library/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ../library/$(DEPDIR)
-	@: > ../library/$(DEPDIR)/$(am__dirstamp)
-../library/random-random.$(OBJEXT): ../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-./$(am__dirstamp):
-	@$(MKDIR_P) .
-	@: > ./$(am__dirstamp)
-$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ./$(DEPDIR)
-	@: > $(DEPDIR)/$(am__dirstamp)
-./random-random.$(OBJEXT): ./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
-
-random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES) $(EXTRA_random_DEPENDENCIES) 
-	@rm -f random$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(random_OBJECTS) $(random_LDADD) $(LIBS)
-./test_options-options.$(OBJEXT): ./$(am__dirstamp) \
-	$(DEPDIR)/$(am__dirstamp)
 ../../src/$(am__dirstamp):
 	@$(MKDIR_P) ../../src
 	@: > ../../src/$(am__dirstamp)
 ../../src/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ../../src/$(DEPDIR)
 	@: > ../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/test_options-options.$(OBJEXT): ../../src/$(am__dirstamp) \
+../../src/daemon_options-options.$(OBJEXT): ../../src/$(am__dirstamp) \
 	../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/test_options-log.$(OBJEXT): ../../src/$(am__dirstamp) \
+../../src/daemon_options-log.$(OBJEXT): ../../src/$(am__dirstamp) \
 	../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/test_options-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
+../../src/daemon_options-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
 	../../src/$(DEPDIR)/$(am__dirstamp)
-
-test_options$(EXEEXT): $(test_options_OBJECTS) $(test_options_DEPENDENCIES) $(EXTRA_test_options_DEPENDENCIES) 
-	@rm -f test_options$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_options_OBJECTS) $(test_options_LDADD) $(LIBS)
-../library/time_utils-time_utils.$(OBJEXT):  \
-	../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-./time_utils-time_utils.$(OBJEXT): ./$(am__dirstamp) \
+./$(am__dirstamp):
+	@$(MKDIR_P) .
+	@: > ./$(am__dirstamp)
+$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ./$(DEPDIR)
+	@: > $(DEPDIR)/$(am__dirstamp)
+./daemon_options-daemon_options.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
-time_utils$(EXEEXT): $(time_utils_OBJECTS) $(time_utils_DEPENDENCIES) $(EXTRA_time_utils_DEPENDENCIES) 
-	@rm -f time_utils$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(time_utils_OBJECTS) $(time_utils_LDADD) $(LIBS)
-../../src/utils-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
+daemon_options$(EXEEXT): $(daemon_options_OBJECTS) $(daemon_options_DEPENDENCIES) $(EXTRA_daemon_options_DEPENDENCIES) 
+	@rm -f daemon_options$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(daemon_options_OBJECTS) $(daemon_options_LDADD) $(LIBS)
+../../src/daemon_utils-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
 	../../src/$(DEPDIR)/$(am__dirstamp)
-./utils-utils.$(OBJEXT): ./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
+./daemon_utils-daemon_utils.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
 
-utils$(EXEEXT): $(utils_OBJECTS) $(utils_DEPENDENCIES) $(EXTRA_utils_DEPENDENCIES) 
-	@rm -f utils$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(utils_OBJECTS) $(utils_LDADD) $(LIBS)
+daemon_utils$(EXEEXT): $(daemon_utils_OBJECTS) $(daemon_utils_DEPENDENCIES) $(EXTRA_daemon_utils_DEPENDENCIES) 
+	@rm -f daemon_utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(daemon_utils_OBJECTS) $(daemon_utils_LDADD) $(LIBS)
+../library/$(am__dirstamp):
+	@$(MKDIR_P) ../library
+	@: > ../library/$(am__dirstamp)
+../library/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../library/$(DEPDIR)
+	@: > ../library/$(DEPDIR)/$(am__dirstamp)
+../library/tests_random-random.$(OBJEXT): ../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+./tests_random-tests_random.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+tests_random$(EXEEXT): $(tests_random_OBJECTS) $(tests_random_DEPENDENCIES) $(EXTRA_tests_random_DEPENDENCIES) 
+	@rm -f tests_random$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_random_OBJECTS) $(tests_random_LDADD) $(LIBS)
+../library/tests_time_utils-time_utils.$(OBJEXT):  \
+	../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+./tests_time_utils-tests_time_utils.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+tests_time_utils$(EXEEXT): $(tests_time_utils_OBJECTS) $(tests_time_utils_DEPENDENCIES) $(EXTRA_tests_time_utils_DEPENDENCIES) 
+	@rm -f tests_time_utils$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_time_utils_OBJECTS) $(tests_time_utils_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -410,16 +421,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/test_options-log.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/test_options-options.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/test_options-utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_options-options.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-log.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_options.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_utils-daemon_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_random-tests_random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_time_utils-tests_time_utils.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -443,145 +454,145 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-../library/random-random.o: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/random-random.o -MD -MP -MF ../library/$(DEPDIR)/random-random.Tpo -c -o ../library/random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/random-random.Tpo ../library/$(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/random-random.o' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-options.o: ../../src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-options.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-options.Tpo -c -o ../../src/daemon_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-options.Tpo ../../src/$(DEPDIR)/daemon_options-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/daemon_options-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
 
-../library/random-random.obj: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/random-random.obj -MD -MP -MF ../library/$(DEPDIR)/random-random.Tpo -c -o ../library/random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/random-random.Tpo ../library/$(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/random-random.obj' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-options.obj: ../../src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-options.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-options.Tpo -c -o ../../src/daemon_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-options.Tpo ../../src/$(DEPDIR)/daemon_options-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/daemon_options-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
 
-./random-random.o: ./random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./random-random.o -MD -MP -MF $(DEPDIR)/random-random.Tpo -c -o ./random-random.o `test -f './random.c' || echo '$(srcdir)/'`./random.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/random-random.Tpo $(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./random.c' object='./random-random.o' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-log.o: ../../src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-log.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-log.Tpo -c -o ../../src/daemon_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-log.Tpo ../../src/$(DEPDIR)/daemon_options-log.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/daemon_options-log.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./random-random.o `test -f './random.c' || echo '$(srcdir)/'`./random.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
 
-./random-random.obj: ./random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./random-random.obj -MD -MP -MF $(DEPDIR)/random-random.Tpo -c -o ./random-random.obj `if test -f './random.c'; then $(CYGPATH_W) './random.c'; else $(CYGPATH_W) '$(srcdir)/./random.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/random-random.Tpo $(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./random.c' object='./random-random.obj' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-log.obj: ../../src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-log.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-log.Tpo -c -o ../../src/daemon_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-log.Tpo ../../src/$(DEPDIR)/daemon_options-log.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/daemon_options-log.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./random-random.obj `if test -f './random.c'; then $(CYGPATH_W) './random.c'; else $(CYGPATH_W) '$(srcdir)/./random.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
 
-./test_options-options.o: ./options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./test_options-options.o -MD -MP -MF $(DEPDIR)/test_options-options.Tpo -c -o ./test_options-options.o `test -f './options.c' || echo '$(srcdir)/'`./options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_options-options.Tpo $(DEPDIR)/test_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./options.c' object='./test_options-options.o' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-utils.o: ../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-utils.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-utils.Tpo -c -o ../../src/daemon_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-utils.Tpo ../../src/$(DEPDIR)/daemon_options-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_options-utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./test_options-options.o `test -f './options.c' || echo '$(srcdir)/'`./options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
 
-./test_options-options.obj: ./options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./test_options-options.obj -MD -MP -MF $(DEPDIR)/test_options-options.Tpo -c -o ./test_options-options.obj `if test -f './options.c'; then $(CYGPATH_W) './options.c'; else $(CYGPATH_W) '$(srcdir)/./options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_options-options.Tpo $(DEPDIR)/test_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./options.c' object='./test_options-options.obj' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_options-utils.obj: ../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-utils.Tpo -c -o ../../src/daemon_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-utils.Tpo ../../src/$(DEPDIR)/daemon_options-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_options-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./test_options-options.obj `if test -f './options.c'; then $(CYGPATH_W) './options.c'; else $(CYGPATH_W) '$(srcdir)/./options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
 
-../../src/test_options-options.o: ../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-options.o -MD -MP -MF ../../src/$(DEPDIR)/test_options-options.Tpo -c -o ../../src/test_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-options.Tpo ../../src/$(DEPDIR)/test_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/test_options-options.o' libtool=no @AMDEPBACKSLASH@
+./daemon_options-daemon_options.o: ./daemon_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_options-daemon_options.o -MD -MP -MF $(DEPDIR)/daemon_options-daemon_options.Tpo -c -o ./daemon_options-daemon_options.o `test -f './daemon_options.c' || echo '$(srcdir)/'`./daemon_options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_options-daemon_options.Tpo $(DEPDIR)/daemon_options-daemon_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_options.c' object='./daemon_options-daemon_options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_options.o `test -f './daemon_options.c' || echo '$(srcdir)/'`./daemon_options.c
 
-../../src/test_options-options.obj: ../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-options.obj -MD -MP -MF ../../src/$(DEPDIR)/test_options-options.Tpo -c -o ../../src/test_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-options.Tpo ../../src/$(DEPDIR)/test_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/test_options-options.obj' libtool=no @AMDEPBACKSLASH@
+./daemon_options-daemon_options.obj: ./daemon_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_options-daemon_options.obj -MD -MP -MF $(DEPDIR)/daemon_options-daemon_options.Tpo -c -o ./daemon_options-daemon_options.obj `if test -f './daemon_options.c'; then $(CYGPATH_W) './daemon_options.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_options-daemon_options.Tpo $(DEPDIR)/daemon_options-daemon_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_options.c' object='./daemon_options-daemon_options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_options.obj `if test -f './daemon_options.c'; then $(CYGPATH_W) './daemon_options.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_options.c'; fi`
 
-../../src/test_options-log.o: ../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-log.o -MD -MP -MF ../../src/$(DEPDIR)/test_options-log.Tpo -c -o ../../src/test_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-log.Tpo ../../src/$(DEPDIR)/test_options-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/test_options-log.o' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_utils-utils.o: ../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_utils-utils.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o ../../src/daemon_utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_utils-utils.Tpo ../../src/$(DEPDIR)/daemon_utils-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_utils-utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
 
-../../src/test_options-log.obj: ../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-log.obj -MD -MP -MF ../../src/$(DEPDIR)/test_options-log.Tpo -c -o ../../src/test_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-log.Tpo ../../src/$(DEPDIR)/test_options-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/test_options-log.obj' libtool=no @AMDEPBACKSLASH@
+../../src/daemon_utils-utils.obj: ../../src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_utils-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o ../../src/daemon_utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_utils-utils.Tpo ../../src/$(DEPDIR)/daemon_utils-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_utils-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
 
-../../src/test_options-utils.o: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-utils.o -MD -MP -MF ../../src/$(DEPDIR)/test_options-utils.Tpo -c -o ../../src/test_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-utils.Tpo ../../src/$(DEPDIR)/test_options-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/test_options-utils.o' libtool=no @AMDEPBACKSLASH@
+./daemon_utils-daemon_utils.o: ./daemon_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_utils-daemon_utils.o -MD -MP -MF $(DEPDIR)/daemon_utils-daemon_utils.Tpo -c -o ./daemon_utils-daemon_utils.o `test -f './daemon_utils.c' || echo '$(srcdir)/'`./daemon_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_utils-daemon_utils.Tpo $(DEPDIR)/daemon_utils-daemon_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_utils.c' object='./daemon_utils-daemon_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_utils-daemon_utils.o `test -f './daemon_utils.c' || echo '$(srcdir)/'`./daemon_utils.c
 
-../../src/test_options-utils.obj: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/test_options-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/test_options-utils.Tpo -c -o ../../src/test_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/test_options-utils.Tpo ../../src/$(DEPDIR)/test_options-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/test_options-utils.obj' libtool=no @AMDEPBACKSLASH@
+./daemon_utils-daemon_utils.obj: ./daemon_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_utils-daemon_utils.obj -MD -MP -MF $(DEPDIR)/daemon_utils-daemon_utils.Tpo -c -o ./daemon_utils-daemon_utils.obj `if test -f './daemon_utils.c'; then $(CYGPATH_W) './daemon_utils.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_utils-daemon_utils.Tpo $(DEPDIR)/daemon_utils-daemon_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_utils.c' object='./daemon_utils-daemon_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/test_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_utils-daemon_utils.obj `if test -f './daemon_utils.c'; then $(CYGPATH_W) './daemon_utils.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_utils.c'; fi`
 
-../library/time_utils-time_utils.o: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/time_utils-time_utils.o -MD -MP -MF ../library/$(DEPDIR)/time_utils-time_utils.Tpo -c -o ../library/time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/time_utils-time_utils.Tpo ../library/$(DEPDIR)/time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
+../library/tests_random-random.o: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_random-random.o -MD -MP -MF ../library/$(DEPDIR)/tests_random-random.Tpo -c -o ../library/tests_random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_random-random.Tpo ../library/$(DEPDIR)/tests_random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_random-random.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
 
-../library/time_utils-time_utils.obj: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/time_utils-time_utils.obj -MD -MP -MF ../library/$(DEPDIR)/time_utils-time_utils.Tpo -c -o ../library/time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/time_utils-time_utils.Tpo ../library/$(DEPDIR)/time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+../library/tests_random-random.obj: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_random-random.obj -MD -MP -MF ../library/$(DEPDIR)/tests_random-random.Tpo -c -o ../library/tests_random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_random-random.Tpo ../library/$(DEPDIR)/tests_random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_random-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
 
-./time_utils-time_utils.o: ./time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./time_utils-time_utils.o -MD -MP -MF $(DEPDIR)/time_utils-time_utils.Tpo -c -o ./time_utils-time_utils.o `test -f './time_utils.c' || echo '$(srcdir)/'`./time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/time_utils-time_utils.Tpo $(DEPDIR)/time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./time_utils.c' object='./time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
+./tests_random-tests_random.o: ./tests_random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_random-tests_random.o -MD -MP -MF $(DEPDIR)/tests_random-tests_random.Tpo -c -o ./tests_random-tests_random.o `test -f './tests_random.c' || echo '$(srcdir)/'`./tests_random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_random-tests_random.Tpo $(DEPDIR)/tests_random-tests_random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_random.c' object='./tests_random-tests_random.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./time_utils-time_utils.o `test -f './time_utils.c' || echo '$(srcdir)/'`./time_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_random-tests_random.o `test -f './tests_random.c' || echo '$(srcdir)/'`./tests_random.c
 
-./time_utils-time_utils.obj: ./time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./time_utils-time_utils.obj -MD -MP -MF $(DEPDIR)/time_utils-time_utils.Tpo -c -o ./time_utils-time_utils.obj `if test -f './time_utils.c'; then $(CYGPATH_W) './time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./time_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/time_utils-time_utils.Tpo $(DEPDIR)/time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./time_utils.c' object='./time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+./tests_random-tests_random.obj: ./tests_random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_random-tests_random.obj -MD -MP -MF $(DEPDIR)/tests_random-tests_random.Tpo -c -o ./tests_random-tests_random.obj `if test -f './tests_random.c'; then $(CYGPATH_W) './tests_random.c'; else $(CYGPATH_W) '$(srcdir)/./tests_random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_random-tests_random.Tpo $(DEPDIR)/tests_random-tests_random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_random.c' object='./tests_random-tests_random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./time_utils-time_utils.obj `if test -f './time_utils.c'; then $(CYGPATH_W) './time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./time_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_random-tests_random.obj `if test -f './tests_random.c'; then $(CYGPATH_W) './tests_random.c'; else $(CYGPATH_W) '$(srcdir)/./tests_random.c'; fi`
 
-../../src/utils-utils.o: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/utils-utils.o -MD -MP -MF ../../src/$(DEPDIR)/utils-utils.Tpo -c -o ../../src/utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/utils-utils.Tpo ../../src/$(DEPDIR)/utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/utils-utils.o' libtool=no @AMDEPBACKSLASH@
+../library/tests_time_utils-time_utils.o: ../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_time_utils-time_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o ../library/tests_time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
 
-../../src/utils-utils.obj: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/utils-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/utils-utils.Tpo -c -o ../../src/utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/utils-utils.Tpo ../../src/$(DEPDIR)/utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/utils-utils.obj' libtool=no @AMDEPBACKSLASH@
+../library/tests_time_utils-time_utils.obj: ../library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_time_utils-time_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o ../library/tests_time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
 
-./utils-utils.o: ./utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./utils-utils.o -MD -MP -MF $(DEPDIR)/utils-utils.Tpo -c -o ./utils-utils.o `test -f './utils.c' || echo '$(srcdir)/'`./utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/utils-utils.Tpo $(DEPDIR)/utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./utils.c' object='./utils-utils.o' libtool=no @AMDEPBACKSLASH@
+./tests_time_utils-tests_time_utils.o: ./tests_time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_time_utils-tests_time_utils.o -MD -MP -MF $(DEPDIR)/tests_time_utils-tests_time_utils.Tpo -c -o ./tests_time_utils-tests_time_utils.o `test -f './tests_time_utils.c' || echo '$(srcdir)/'`./tests_time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_time_utils-tests_time_utils.Tpo $(DEPDIR)/tests_time_utils-tests_time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_time_utils.c' object='./tests_time_utils-tests_time_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./utils-utils.o `test -f './utils.c' || echo '$(srcdir)/'`./utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_time_utils-tests_time_utils.o `test -f './tests_time_utils.c' || echo '$(srcdir)/'`./tests_time_utils.c
 
-./utils-utils.obj: ./utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./utils-utils.obj -MD -MP -MF $(DEPDIR)/utils-utils.Tpo -c -o ./utils-utils.obj `if test -f './utils.c'; then $(CYGPATH_W) './utils.c'; else $(CYGPATH_W) '$(srcdir)/./utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/utils-utils.Tpo $(DEPDIR)/utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./utils.c' object='./utils-utils.obj' libtool=no @AMDEPBACKSLASH@
+./tests_time_utils-tests_time_utils.obj: ./tests_time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_time_utils-tests_time_utils.obj -MD -MP -MF $(DEPDIR)/tests_time_utils-tests_time_utils.Tpo -c -o ./tests_time_utils-tests_time_utils.obj `if test -f './tests_time_utils.c'; then $(CYGPATH_W) './tests_time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./tests_time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_time_utils-tests_time_utils.Tpo $(DEPDIR)/tests_time_utils-tests_time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_time_utils.c' object='./tests_time_utils-tests_time_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./utils-utils.obj `if test -f './utils.c'; then $(CYGPATH_W) './utils.c'; else $(CYGPATH_W) '$(srcdir)/./utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_time_utils-tests_time_utils.obj `if test -f './tests_time_utils.c'; then $(CYGPATH_W) './tests_time_utils.c'; else $(CYGPATH_W) '$(srcdir)/./tests_time_utils.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -713,16 +724,16 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ../../src/$(DEPDIR)/test_options-log.Po
-	-rm -f ../../src/$(DEPDIR)/test_options-options.Po
-	-rm -f ../../src/$(DEPDIR)/test_options-utils.Po
-	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
-	-rm -f ../library/$(DEPDIR)/random-random.Po
-	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
-	-rm -f ./$(DEPDIR)/random-random.Po
-	-rm -f ./$(DEPDIR)/test_options-options.Po
-	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
-	-rm -f ./$(DEPDIR)/utils-utils.Po
+		-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
+	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
+	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
+	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -768,16 +779,16 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ../../src/$(DEPDIR)/test_options-log.Po
-	-rm -f ../../src/$(DEPDIR)/test_options-options.Po
-	-rm -f ../../src/$(DEPDIR)/test_options-utils.Po
-	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
-	-rm -f ../library/$(DEPDIR)/random-random.Po
-	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
-	-rm -f ./$(DEPDIR)/random-random.Po
-	-rm -f ./$(DEPDIR)/test_options-options.Po
-	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
-	-rm -f ./$(DEPDIR)/utils-utils.Po
+		-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
+	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
+	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
+	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
+	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

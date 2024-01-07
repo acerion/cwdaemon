@@ -1,3 +1,12 @@
-Unit tests for code from src/.
+daemon_*.c: unit tests for code from src/ (for the code of cwdaemon).
 
-Use "make check" in top-level dir to run the tests.
+tests_*.c: unit tests for code from tests/functional_tests/ (for the code of
+functional tests, because I care about quality of functional tests too ;) ).
+
+Tests from the first group are always enabled because compilation of cwdaemon
+is always enabled.
+
+Use "configure --enable-functional-tests" to enable unit tests from the
+second group, because functional tests are disabled by default.
+
+Use "make check" in top-level dir to run enabled tests.
