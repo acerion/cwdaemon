@@ -53,9 +53,9 @@
 #include <libcw.h>
 
 #include "misc.h"
+#include "random.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
-#include "src/lib/random.h"
 
 
 

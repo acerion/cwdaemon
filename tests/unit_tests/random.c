@@ -23,7 +23,7 @@
 
 
 /**
-   @file Unit tests for cwdaemon/src/lib/random.c
+   @file Unit tests for cwdaemon/tests/library/random.c
 */
 
 
@@ -31,7 +31,7 @@
 
 #include <stdio.h>
 
-#include "src/lib/random.h"
+#include "tests/library/random.h"
 
 
 

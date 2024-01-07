@@ -118,8 +118,8 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
 	lib_tests_a-events.$(OBJEXT) lib_tests_a-misc.$(OBJEXT) \
 	lib_tests_a-morse_receiver.$(OBJEXT) \
-	lib_tests_a-process.$(OBJEXT) lib_tests_a-socket.$(OBJEXT) \
-	lib_tests_a-test_env.$(OBJEXT) \
+	lib_tests_a-process.$(OBJEXT) lib_tests_a-random.$(OBJEXT) \
+	lib_tests_a-socket.$(OBJEXT) lib_tests_a-test_env.$(OBJEXT) \
 	lib_tests_a-time_utils.$(OBJEXT) lib_tests_a-thread.$(OBJEXT)
 lib_tests_a_OBJECTS = $(am_lib_tests_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -145,6 +145,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
 	./$(DEPDIR)/lib_tests_a-morse_receiver.Po \
 	./$(DEPDIR)/lib_tests_a-process.Po \
+	./$(DEPDIR)/lib_tests_a-random.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
 	./$(DEPDIR)/lib_tests_a-test_env.Po \
 	./$(DEPDIR)/lib_tests_a-thread.Po \
@@ -315,6 +316,7 @@ check_HEADERS = client.h             \
                 misc.h               \
                 morse_receiver.h     \
                 process.h            \
+                random.h             \
                 socket.h             \
                 test_env.h           \
                 time_utils.h         \
@@ -331,6 +333,7 @@ lib_tests_a_SOURCES = client.c             \
                       misc.c               \
                       morse_receiver.c     \
                       process.c            \
+                      random.c             \
                       socket.c             \
                       test_env.c           \
                       time_utils.c         \
@@ -393,6 +396,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-process.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_env.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-thread.Po@am__quote@ # am--include-marker
@@ -531,6 +535,20 @@ lib_tests_a-process.obj: process.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='process.c' object='lib_tests_a-process.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-process.obj `if test -f 'process.c'; then $(CYGPATH_W) 'process.c'; else $(CYGPATH_W) '$(srcdir)/process.c'; fi`
+
+lib_tests_a-random.o: random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-random.o -MD -MP -MF $(DEPDIR)/lib_tests_a-random.Tpo -c -o lib_tests_a-random.o `test -f 'random.c' || echo '$(srcdir)/'`random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-random.Tpo $(DEPDIR)/lib_tests_a-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='random.c' object='lib_tests_a-random.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-random.o `test -f 'random.c' || echo '$(srcdir)/'`random.c
+
+lib_tests_a-random.obj: random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-random.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-random.Tpo -c -o lib_tests_a-random.obj `if test -f 'random.c'; then $(CYGPATH_W) 'random.c'; else $(CYGPATH_W) '$(srcdir)/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-random.Tpo $(DEPDIR)/lib_tests_a-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='random.c' object='lib_tests_a-random.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-random.obj `if test -f 'random.c'; then $(CYGPATH_W) 'random.c'; else $(CYGPATH_W) '$(srcdir)/random.c'; fi`
 
 lib_tests_a-socket.o: socket.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-socket.o -MD -MP -MF $(DEPDIR)/lib_tests_a-socket.Tpo -c -o lib_tests_a-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
@@ -720,6 +738,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-random.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
@@ -777,6 +796,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-process.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-random.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po

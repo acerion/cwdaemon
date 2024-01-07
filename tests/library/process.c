@@ -55,9 +55,9 @@
 #include "log.h"
 #include "misc.h"
 #include "process.h"
+#include "random.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
-#include "src/lib/random.h"
 #include "src/lib/sleep.h"
 
 

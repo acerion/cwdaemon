@@ -55,7 +55,6 @@
 
 
 
-#include "src/lib/random.h"
 #include "src/lib/sleep.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
@@ -64,6 +63,7 @@
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/process.h"
+#include "tests/library/random.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
 #include "tests/library/thread.h"

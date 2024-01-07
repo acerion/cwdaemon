@@ -99,7 +99,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__dirstamp = $(am__leading_dot)dirstamp
-am_random_OBJECTS = $(top_builddir)/src/lib/random-random.$(OBJEXT) \
+am_random_OBJECTS = ../library/random-random.$(OBJEXT) \
 	./random-random.$(OBJEXT)
 random_OBJECTS = $(am_random_OBJECTS)
 random_LDADD = $(LDADD)
@@ -126,9 +126,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade =  \
-	$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po \
-	../../src/$(DEPDIR)/utils-utils.Po \
+am__depfiles_remade = ../../src/$(DEPDIR)/utils-utils.Po \
+	../library/$(DEPDIR)/random-random.Po \
 	../library/$(DEPDIR)/time_utils-time_utils.Po \
 	./$(DEPDIR)/random-random.Po \
 	./$(DEPDIR)/time_utils-time_utils.Po \
@@ -292,7 +291,7 @@ top_srcdir = @top_srcdir@
 
 # Don't forget to use a relative directory path even for files in current
 # dir.
-random_SOURCES = $(top_builddir)/src/lib/random.c $(top_builddir)/src/lib/random.h ./random.c
+random_SOURCES = ../library/random.c ../library/random.h ./random.c
 random_CPPFLAGS = -I$(top_srcdir)
 utils_SOURCES = ../../src/utils.c ./utils.c
 utils_CPPFLAGS = -I$(top_srcdir)
@@ -334,15 +333,14 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-$(top_builddir)/src/lib/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/src/lib
-	@: > $(top_builddir)/src/lib/$(am__dirstamp)
-$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/src/lib/$(DEPDIR)
-	@: > $(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/lib/random-random.$(OBJEXT):  \
-	$(top_builddir)/src/lib/$(am__dirstamp) \
-	$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
+../library/$(am__dirstamp):
+	@$(MKDIR_P) ../library
+	@: > ../library/$(am__dirstamp)
+../library/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) ../library/$(DEPDIR)
+	@: > ../library/$(DEPDIR)/$(am__dirstamp)
+../library/random-random.$(OBJEXT): ../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
 ./$(am__dirstamp):
 	@$(MKDIR_P) .
 	@: > ./$(am__dirstamp)
@@ -354,12 +352,6 @@ $(DEPDIR)/$(am__dirstamp):
 random$(EXEEXT): $(random_OBJECTS) $(random_DEPENDENCIES) $(EXTRA_random_DEPENDENCIES) 
 	@rm -f random$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(random_OBJECTS) $(random_LDADD) $(LIBS)
-../library/$(am__dirstamp):
-	@$(MKDIR_P) ../library
-	@: > ../library/$(am__dirstamp)
-../library/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ../library/$(DEPDIR)
-	@: > ../library/$(DEPDIR)/$(am__dirstamp)
 ../library/time_utils-time_utils.$(OBJEXT):  \
 	../library/$(am__dirstamp) \
 	../library/$(DEPDIR)/$(am__dirstamp)
@@ -385,7 +377,6 @@ utils$(EXEEXT): $(utils_OBJECTS) $(utils_DEPENDENCIES) $(EXTRA_utils_DEPENDENCIE
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f $(top_builddir)/src/lib/*.$(OBJEXT)
 	-rm -f ../../src/*.$(OBJEXT)
 	-rm -f ../library/*.$(OBJEXT)
 	-rm -f ./*.$(OBJEXT)
@@ -393,8 +384,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/lib/$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time_utils-time_utils.Po@am__quote@ # am--include-marker
@@ -422,19 +413,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-$(top_builddir)/src/lib/random-random.o: $(top_builddir)/src/lib/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lib/random-random.o -MD -MP -MF $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo -c -o $(top_builddir)/src/lib/random-random.o `test -f '$(top_builddir)/src/lib/random.c' || echo '$(srcdir)/'`$(top_builddir)/src/lib/random.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lib/random.c' object='$(top_builddir)/src/lib/random-random.o' libtool=no @AMDEPBACKSLASH@
+../library/random-random.o: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/random-random.o -MD -MP -MF ../library/$(DEPDIR)/random-random.Tpo -c -o ../library/random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/random-random.Tpo ../library/$(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/random-random.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lib/random-random.o `test -f '$(top_builddir)/src/lib/random.c' || echo '$(srcdir)/'`$(top_builddir)/src/lib/random.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
 
-$(top_builddir)/src/lib/random-random.obj: $(top_builddir)/src/lib/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lib/random-random.obj -MD -MP -MF $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo -c -o $(top_builddir)/src/lib/random-random.obj `if test -f '$(top_builddir)/src/lib/random.c'; then $(CYGPATH_W) '$(top_builddir)/src/lib/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lib/random.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/lib/$(DEPDIR)/random-random.Tpo $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lib/random.c' object='$(top_builddir)/src/lib/random-random.obj' libtool=no @AMDEPBACKSLASH@
+../library/random-random.obj: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/random-random.obj -MD -MP -MF ../library/$(DEPDIR)/random-random.Tpo -c -o ../library/random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/random-random.Tpo ../library/$(DEPDIR)/random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/random-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lib/random-random.obj `if test -f '$(top_builddir)/src/lib/random.c'; then $(CYGPATH_W) '$(top_builddir)/src/lib/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lib/random.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
 
 ./random-random.o: ./random.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./random-random.o -MD -MP -MF $(DEPDIR)/random-random.Tpo -c -o ./random-random.o `test -f './random.c' || echo '$(srcdir)/'`./random.c
@@ -627,8 +618,6 @@ distclean-generic:
 	-rm -f ../library/$(am__dirstamp)
 	-rm -f ./$(am__dirstamp)
 	-test -z "$(DEPDIR)/$(am__dirstamp)" || rm -f $(DEPDIR)/$(am__dirstamp)
-	-test -z "$(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/src/lib/$(DEPDIR)/$(am__dirstamp)
-	-test -z "$(top_builddir)/src/lib/$(am__dirstamp)" || rm -f $(top_builddir)/src/lib/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -638,8 +627,8 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
-	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+		-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/random-random.Po
 	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/random-random.Po
 	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
@@ -689,8 +678,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f $(top_builddir)/src/lib/$(DEPDIR)/random-random.Po
-	-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+		-rm -f ../../src/$(DEPDIR)/utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/random-random.Po
 	-rm -f ../library/$(DEPDIR)/time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/random-random.Po
 	-rm -f ./$(DEPDIR)/time_utils-time_utils.Po
