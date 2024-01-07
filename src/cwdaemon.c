@@ -109,6 +109,7 @@
 #include "help.h"
 #include "lib/sleep.h"
 #include "log.h"
+#include "options.h"
 #include "socket.h"
 #include "utils.h"
 
@@ -374,7 +375,6 @@ static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
 static bool cwdaemon_params_cwdevice(const char * opt_arg);
-static bool cwdaemon_option_network_port(in_port_t * port, const char * opt_arg);
 static bool cwdaemon_params_priority(int *priority, const char * opt_arg);
 static bool cwdaemon_params_wpm(int *wpm, const char * opt_arg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char * opt_arg);
@@ -1640,7 +1640,7 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		cwdaemon_params_nofork();
 		break;
 	case 'p':
-		if (!cwdaemon_option_network_port(&g_cwdaemon.network_port, opt_arg)) {
+		if (0 != cwdaemon_option_network_port(&g_cwdaemon.network_port, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1743,25 +1743,6 @@ void cwdaemon_params_nofork(void)
 		g_forking = false;
 	}
 	return;
-}
-
-
-
-
-bool cwdaemon_option_network_port(in_port_t * port, const char * opt_arg)
-{
-	const long int port_min = CWDAEMON_NETWORK_PORT_MIN;
-	const long int port_max = CWDAEMON_NETWORK_PORT_MAX;
-	long lv = 0;
-	if (!cwdaemon_get_long(opt_arg, &lv) || lv < port_min || lv > port_max) {
-		log_message(LOG_ERR, "Invalid requested port number: \"%s\", must be in range <%ld - %ld>, inclusive",
-		            opt_arg, port_min, port_max);
-		return false;
-	}
-
-	*port = (in_port_t) lv;
-	log_message(LOG_INFO, "requested port number: %u", *port);
-	return true;
 }
 
 

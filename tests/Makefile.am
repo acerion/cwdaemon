@@ -5,6 +5,7 @@ SUBDIRS = unit_tests
 TESTS  = unit_tests/random
 TESTS += unit_tests/utils
 TESTS += unit_tests/time_utils
+TESTS += unit_tests/test_options
 
 
 if FUNCTIONAL_TESTS

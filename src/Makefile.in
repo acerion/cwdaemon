@@ -123,8 +123,8 @@ PROGRAMS = $(sbin_PROGRAMS)
 am_cwdaemon_OBJECTS = cwdaemon-cwdaemon.$(OBJEXT) \
 	cwdaemon-log.$(OBJEXT) cwdaemon-lp.$(OBJEXT) \
 	cwdaemon-ttys.$(OBJEXT) cwdaemon-null.$(OBJEXT) \
-	cwdaemon-help.$(OBJEXT) cwdaemon-socket.$(OBJEXT) \
-	cwdaemon-utils.$(OBJEXT)
+	cwdaemon-help.$(OBJEXT) cwdaemon-options.$(OBJEXT) \
+	cwdaemon-socket.$(OBJEXT) cwdaemon-utils.$(OBJEXT)
 cwdaemon_OBJECTS = $(am_cwdaemon_OBJECTS)
 am__DEPENDENCIES_1 =
 cwdaemon_DEPENDENCIES = $(top_builddir)/src/lib/libcwdaemon.a \
@@ -147,8 +147,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/cwdaemon-cwdaemon.Po \
 	./$(DEPDIR)/cwdaemon-help.Po ./$(DEPDIR)/cwdaemon-log.Po \
 	./$(DEPDIR)/cwdaemon-lp.Po ./$(DEPDIR)/cwdaemon-null.Po \
-	./$(DEPDIR)/cwdaemon-socket.Po ./$(DEPDIR)/cwdaemon-ttys.Po \
-	./$(DEPDIR)/cwdaemon-utils.Po
+	./$(DEPDIR)/cwdaemon-options.Po ./$(DEPDIR)/cwdaemon-socket.Po \
+	./$(DEPDIR)/cwdaemon-ttys.Po ./$(DEPDIR)/cwdaemon-utils.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -349,7 +349,11 @@ top_srcdir = @top_srcdir@
 SUBDIRS = lib
 
 # source code files used to build cwdaemon program
-cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h socket.c socket.h utils.c utils.h
+cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c help.c help.h \
+                   options.c options.h \
+                   socket.c socket.h utils.c utils.h
+
+
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 
@@ -448,6 +452,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-log.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-lp.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-null.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-ttys.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cwdaemon-utils.Po@am__quote@ # am--include-marker
@@ -557,6 +562,20 @@ cwdaemon-help.obj: help.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='help.c' object='cwdaemon-help.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-help.obj `if test -f 'help.c'; then $(CYGPATH_W) 'help.c'; else $(CYGPATH_W) '$(srcdir)/help.c'; fi`
+
+cwdaemon-options.o: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-options.o -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-options.Tpo $(DEPDIR)/cwdaemon-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='cwdaemon-options.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+
+cwdaemon-options.obj: options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-options.obj -MD -MP -MF $(DEPDIR)/cwdaemon-options.Tpo -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/cwdaemon-options.Tpo $(DEPDIR)/cwdaemon-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='options.c' object='cwdaemon-options.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cwdaemon-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
 
 cwdaemon-socket.o: socket.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cwdaemon_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cwdaemon-socket.o -MD -MP -MF $(DEPDIR)/cwdaemon-socket.Tpo -c -o cwdaemon-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
@@ -790,6 +809,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/cwdaemon-log.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-options.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-utils.Po
@@ -843,6 +863,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/cwdaemon-log.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-lp.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-null.Po
+	-rm -f ./$(DEPDIR)/cwdaemon-options.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-socket.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-ttys.Po
 	-rm -f ./$(DEPDIR)/cwdaemon-utils.Po

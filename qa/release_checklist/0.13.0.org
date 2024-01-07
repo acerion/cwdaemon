@@ -100,6 +100,7 @@ unit tests for the function(s) to cwdaemon test suite.
 
 DONE: unit tests have been added for following code that existed in 0.12.0:
  - cwdaemon_get_long() function,
+ - cwdaemon_option_network_port() function,
 
 * SKIPPED Add -Werror to CFLAGS
 During development phase you don't want to introduce any issues that can be
