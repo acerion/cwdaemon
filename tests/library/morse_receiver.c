@@ -211,7 +211,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	  receiver how a 'keying' pin on tty device is changing state, and the
 	  receiver is translating this into text.
 	*/
-	struct timespec spec = { 0 };
+	struct timespec last_character_receive_tstamp = { 0 };
 	do {
 		const int sleep_retv = test_millisleep_nonintr(loop_iter_sleep_ms);
 		if (sleep_retv) {
@@ -228,7 +228,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 				fprintf(stderr, "%c", erd.character);
 				fflush(stderr);
 				buffer[buffer_i++] = erd.character;
-				clock_gettime(CLOCK_MONOTONIC, &spec);
+				clock_gettime(CLOCK_MONOTONIC, &last_character_receive_tstamp);
 			} else {
 				; /* NOOP */
 			}
@@ -236,21 +236,8 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 
 	} while (loop_iters-- > 0);
 
-	if (spec.tv_sec != 0 && spec.tv_nsec != 0) {
-		pthread_mutex_lock(&g_events.mutex);
-		{
-			event_t * event = &g_events.events[g_events.event_idx];
-			event->event_type = event_type_morse_receive;
-			event->tstamp = spec;
-
-			event_morse_receive_t * morse = &event->u.morse_receive;
-			const size_t n = sizeof (morse->string);
-			strncpy(morse->string, buffer, n);
-			morse->string[n - 1] = '\0';
-
-			g_events.event_idx++;
-		}
-		pthread_mutex_unlock(&g_events.mutex);
+	if (last_character_receive_tstamp.tv_sec != 0 && last_character_receive_tstamp.tv_nsec != 0) {
+		events_insert_morse_receive_event(&g_events, buffer, &last_character_receive_tstamp);
 	}
 
 	fprintf(stderr, "[II] Morse receiver received string [%s]\n", buffer);

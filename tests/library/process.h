@@ -15,6 +15,17 @@
 
 
 
+/** Data type used in handling exit of a child process. */
+typedef struct child_exit_info_t {
+	pid_t pid;                            /**< pid of process on which to do waitpid(). */
+	struct timespec sigchld_timestamp;    /**< timestamp at which sigchld has occurred. */
+	int wstatus;                          /**< Second arg to waitpid(). */
+	pid_t waitpid_retv;                   /**< Value returned by waitpid(). */
+} child_exit_info_t;
+
+
+
+
 /* For now this structure doesn't allow for usage and tests of remote
    cwdaemon server. */
 typedef struct cwdaemon_server_t {

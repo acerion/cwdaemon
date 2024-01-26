@@ -5,6 +5,9 @@
 
 
 #include <pthread.h>
+#include <time.h>
+
+#include "process.h"
 
 
 
@@ -82,6 +85,13 @@ void events_print(const events_t * events);
    @param[in/out] events Events structure to clear
 */
 void events_clear(events_t * events);
+
+
+
+
+int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp);
+int events_insert_socket_receive_event(events_t * events, const char * receive_buffer);
+int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);
 
 
 

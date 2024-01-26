@@ -75,14 +75,6 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 
-/** Data type used in handling exit of a child process. */
-typedef struct child_exit_info_t {
-	pid_t pid;                            /**< pid of process on which to do waitpid(). */
-	struct timespec sigchld_timestamp;    /**< timestamp at which sigchld has occurred. */
-	int wstatus;                          /**< Second arg to waitpid(). */
-	pid_t waitpid_retv;                   /**< Value returned by waitpid(). */
-} child_exit_info_t;
-
 static child_exit_info_t g_child_exit_info;
 
 
@@ -303,15 +295,7 @@ static int run_test_case(const test_case_t * test_case)
 			  My tests show that there is no need to sort (by timestamp) the
 			  array afterwards.
 			*/
-			pthread_mutex_lock(&g_events.mutex);
-			{
-				g_events.events[g_events.event_idx].tstamp = g_child_exit_info.sigchld_timestamp;
-				g_events.events[g_events.event_idx].event_type = event_type_sigchld;
-				g_events.events[g_events.event_idx].u.sigchld.wstatus = g_child_exit_info.wstatus;
-				g_events.event_idx++;
-				//qsort(g_events.events, g_events.event_idx, sizeof (event_t), event_sort_fn);
-			}
-			pthread_mutex_unlock(&g_events.mutex);
+			events_insert_sigchld_event(&g_events, &g_child_exit_info);
 		} else {
 			/* There was never a signal from child (at least not in
 			   reasonable time. This will be recognized by

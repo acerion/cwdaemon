@@ -111,3 +111,73 @@ void events_clear(events_t * events)
 	/* Don't touch events::mutex. */
 
 }
+
+
+
+
+int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp)
+{
+	pthread_mutex_lock(&events->mutex);
+	{
+		event_t * event = &events->events[events->event_idx];
+		event->event_type = event_type_morse_receive;
+		event->tstamp = *last_character_receive_tstamp;
+
+		event_morse_receive_t * morse = &event->u.morse_receive;
+		const size_t n = sizeof (morse->string);
+		strncpy(morse->string, buffer, n);
+		morse->string[n - 1] = '\0';
+
+		events->event_idx++;
+	}
+	pthread_mutex_unlock(&events->mutex);
+
+	return 0;
+}
+
+
+
+
+
+int events_insert_socket_receive_event(events_t * events, const char * receive_buffer)
+{
+	struct timespec spec = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &spec);
+
+	pthread_mutex_lock(&events->mutex);
+	{
+		event_t * event = &events->events[events->event_idx];
+		event->event_type = event_type_client_socket_receive;
+		event->tstamp = spec;
+
+		event_client_socket_receive_t * socket = &event->u.socket_receive;
+		const size_t n = sizeof (socket->string);
+		strncpy(socket->string, receive_buffer, n);
+		socket->string[n - 1] = '\0';
+
+		events->event_idx++;
+	}
+	pthread_mutex_unlock(&events->mutex);
+
+	return 0;
+}
+
+
+
+
+int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info)
+{
+	pthread_mutex_lock(&events->mutex);
+	{
+		events->events[events->event_idx].tstamp = exit_info->sigchld_timestamp;
+		events->events[events->event_idx].event_type = event_type_sigchld;
+		events->events[events->event_idx].u.sigchld.wstatus = exit_info->wstatus;
+
+		events->event_idx++;
+		//qsort(events->events, events->event_idx, sizeof (event_t), event_sort_fn);
+	}
+	pthread_mutex_unlock(&events->mutex);
+
+	return 0;
+}
+

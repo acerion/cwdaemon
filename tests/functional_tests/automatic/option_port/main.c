@@ -95,14 +95,6 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 
-/** Data type used in handling exit of a child process. */
-typedef struct child_exit_info_t {
-	pid_t pid;                            /**< pid of process on which to do waitpid(). */
-	struct timespec sigchld_timestamp;    /**< timestamp at which sigchld has occurred. */
-	int wstatus;                          /**< Second arg to waitpid(). */
-	pid_t waitpid_retv;                   /**< Value returned by waitpid(). */
-} child_exit_info_t;
-
 static child_exit_info_t g_child_exit_info;
 
 
@@ -212,9 +204,10 @@ int main(void)
 
 
 
-static int save_exit_to_events(void)
+
+static int save_exit_to_events(const child_exit_info_t * child_exit_info)
 {
-	if (0 != g_child_exit_info.sigchld_timestamp.tv_sec) {
+	if (0 != child_exit_info->sigchld_timestamp.tv_sec) {
 		/*
 		  SIGCHLD was received by test program at some point in time.
 		  Record this in array of events.
@@ -225,15 +218,7 @@ static int save_exit_to_events(void)
 		  My tests show that there is no need to sort (by timestamp) the
 		  array afterwards.
 		*/
-		pthread_mutex_lock(&g_events.mutex);
-		{
-			g_events.events[g_events.event_idx].tstamp = g_child_exit_info.sigchld_timestamp;
-			g_events.events[g_events.event_idx].event_type = event_type_sigchld;
-			g_events.events[g_events.event_idx].u.sigchld.wstatus = g_child_exit_info.wstatus;
-			g_events.event_idx++;
-			//qsort(g_events.events, g_events.event_idx, sizeof (event_t), event_sort_fn);
-		}
-		pthread_mutex_unlock(&g_events.mutex);
+		events_insert_sigchld_event(&g_events, child_exit_info);
 	}
 
 	return 0;
@@ -268,7 +253,7 @@ static int run_test_case(const test_case_t * test_case)
 
 	const int retv = server_start(&cwdaemon_opts, &server);
 	if (0 != retv) {
-		save_exit_to_events();
+		save_exit_to_events(&g_child_exit_info);
 		if (test_case->expected_fail) {
 			return 0;
 		} else {
@@ -320,7 +305,7 @@ static int run_test_case(const test_case_t * test_case)
 		test_log_err("Failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
 		failure = true;
 	}
-	save_exit_to_events();
+	save_exit_to_events(&g_child_exit_info);
 
 	/* Close our socket to cwdaemon server. */
 	client_disconnect(&client);

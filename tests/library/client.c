@@ -228,24 +228,8 @@ void * client_socket_receiver_thread_fn(void * thread_arg)
 		if (-1 != r) {
 			char escaped[64] = { 0 };
 			fprintf(stderr, "[II] Received reply [%s] from cwdaemon server. Ending listening on the socket.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
-			struct timespec spec = { 0 };
-			clock_gettime(CLOCK_MONOTONIC, &spec);
 
-			pthread_mutex_lock(&g_events.mutex);
-			{
-
-				event_t * event = &g_events.events[g_events.event_idx];
-				event->event_type = event_type_client_socket_receive;
-				event->tstamp = spec;
-
-				event_client_socket_receive_t * socket = &event->u.socket_receive;
-				const size_t n = sizeof (socket->string);
-				strncpy(socket->string, client->reply_buffer, n);
-				socket->string[n - 1] = '\0';
-
-				g_events.event_idx++;
-			}
-			pthread_mutex_unlock(&g_events.mutex);
+			events_insert_socket_receive_event(&g_events, client->reply_buffer);
 
 			break;
 		}
