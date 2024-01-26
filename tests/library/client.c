@@ -211,10 +211,10 @@ int client_disconnect(client_t * client)
 
 
 
-static void * client_socket_receiver_thread_poll_fn(void * thread_arg)
+static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 {
-	thread_t * thread = (thread_t *) thread_arg;
-	client_t * client = (client_t *) thread->thread_fn_arg;
+	client_t * client = (client_t *) client_arg;
+	thread_t * thread = &client->socket_receiver_thread;;
 
 	thread->status = thread_running;
 
@@ -253,6 +253,7 @@ static void * client_socket_receiver_thread_poll_fn(void * thread_arg)
 
 int client_socket_receive_enable(client_t * client)
 {
+	thread_ctor(&client->socket_receiver_thread);
 	client->socket_receiver_thread.name = "socket receiver thread";
 	client->socket_receiver_thread.thread_fn = client_socket_receiver_thread_poll_fn;
 	client->socket_receiver_thread.thread_fn_arg = client;
@@ -313,13 +314,9 @@ int client_dtor(client_t * client)
 {
 	bool success = true;
 
-	if (client->socket_receiver_thread.thread_fn) {
-		/* Cleaning up a thread makes sense only if there is some thread function. */
-		if (0 != thread_cleanup(&client->socket_receiver_thread)) {
-			test_log_err("cwdaemon client: failed to clean up '%s' thread\n", client->socket_receiver_thread.name);
-			success = false;
-		}
-		client->socket_receiver_thread.thread_fn = NULL;
+	if (0 != thread_dtor(&client->socket_receiver_thread)) {
+		test_log_err("cwdaemon client: failed to clean up '%s' thread\n", client->socket_receiver_thread.name);
+		success = false;
 	}
 
 	return success ? 0 : -1;

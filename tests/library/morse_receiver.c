@@ -71,7 +71,7 @@ morse_receiver_t * morse_receiver_ctor(const morse_receiver_config_t * config)
 {
 	morse_receiver_t * receiver = (morse_receiver_t *) calloc(1, sizeof (morse_receiver_t));
 
-	thread_init(&receiver->thread);
+	thread_ctor(&receiver->thread);
 
 	receiver->thread.thread_fn = morse_receiver_thread_fn;
 	receiver->thread.thread_fn_arg = receiver;
@@ -93,7 +93,7 @@ void morse_receiver_dtor(morse_receiver_t ** receiver)
 	if (NULL == *receiver) {
 		return;
 	}
-	thread_cleanup(&(*receiver)->thread);
+	thread_dtor(&(*receiver)->thread);
 
 	free(*receiver);
 	*receiver = NULL;
@@ -106,7 +106,7 @@ void morse_receiver_dtor(morse_receiver_t ** receiver)
 
 int morse_receiver_start(morse_receiver_t * receiver)
 {
-	thread_start2(&receiver->thread);
+	thread_start(&receiver->thread);
 	return 0;
 }
 

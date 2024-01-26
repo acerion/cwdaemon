@@ -39,30 +39,7 @@
 
 
 
-int thread_start(thread_t * thread)
-{
-	pthread_attr_init(&thread->thread_attr);
-	int retv = pthread_create(&thread->thread_id, &thread->thread_attr, thread->thread_fn, thread);
-	if (0 != retv) {
-		fprintf(stderr, "[EE] %s: failed to create thread: %s\n", thread->name, strerror(retv));
-		return -1;
-	}
-
-	/* Very naive method of checking if a thread has started correctly: wait
-	   a bit and check thread's flag. */
-	test_millisleep_nonintr(100);
-	if (thread->status != thread_running) {
-		fprintf(stderr, "[EE] %s: thread has not started correctly\n", thread->name);
-		return -1;
-	}
-
-	return 0;
-}
-
-
-
-
-int thread_init(thread_t * thread)
+int thread_ctor(thread_t * thread)
 {
 	pthread_attr_init(&thread->thread_attr);
 	thread->status = thread_not_started;
@@ -73,9 +50,9 @@ int thread_init(thread_t * thread)
 
 
 
-int thread_start2(thread_t * thread)
+int thread_start(thread_t * thread)
 {
-	int retv = pthread_create(&thread->thread_id, &thread->thread_attr, thread->thread_fn, thread);
+	int retv = pthread_create(&thread->thread_id, &thread->thread_attr, thread->thread_fn, thread->thread_fn_arg);
 	if (0 != retv) {
 		fprintf(stderr, "[EE] %s: failed to create thread: %s\n", thread->name, strerror(retv));
 		return -1;
@@ -105,9 +82,15 @@ int thread_join(thread_t * thread)
 
 
 
-int thread_cleanup(thread_t * thread)
+int thread_dtor(thread_t * thread)
 {
-	pthread_attr_destroy(&thread->thread_attr);
+	if (thread->thread_fn) {
+		/* Cleaning up a thread makes sense only if there is some thread function. */
+		pthread_attr_destroy(&thread->thread_attr);
+		thread->thread_fn = NULL;
+		thread->thread_fn_arg = NULL;
+		thread->status = thread_not_started;
+	}
 
 	return 0;
 }
