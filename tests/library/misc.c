@@ -99,19 +99,34 @@ int find_unused_random_biased_local_udp_port(in_port_t * port)
 
 	  This bias is needed to:
 	  - make situations where test code doesn't explicitly specify port
-	    option more frequent (see text above).
+	    option to be more frequent. Test code can recognize that a default
+	    port is requested, and the test code may then decide to not specify
+	    port explicitly. Not specifying port explicitly and relying on
+	    implicit/default port number is just another case of functional
+	    testing.
 	  - make situations where cwdaemon is tested with its most commonly used
 	    port number more frequent. cwdaemon can be started with any
 	    unprivileged port, but I believe that in 99.9% of situations it is
 	    listening on default port.
-	 */
+
+	  Look for following logs in output of functional tests that are a
+	  result of the bias:
+
+	  "
+	  [II] cwdaemon will start with default port, without explicit 'port' option
+	  /home/kamil/tmp/tmpfs/git_repo/src/cwdaemon -T 640 -x s -n -d ttyUSB0 -s 10
+	  "
+
+	  TODO acerion 2024.01.07: can we somehow test automatically the fact
+	  that sometimes the port is not specified explicitly?
+	*/
 	unsigned int bias_input = 0;
 	const unsigned int bias_min = 0;
 	const unsigned int bias_max = 20;
 	if (0 != cwdaemon_random_uint(bias_min, bias_max, &bias_input)) {
 		return -1;
 	}
-	const bool try_default_port_first = bias_input == (bias_max / 2);
+	const bool try_default_port_first = bias_input == bias_max;
 
 
 	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
