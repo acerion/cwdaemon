@@ -73,36 +73,6 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 #define RECEIVE_TOTAL_WAIT_MS (15 * 1000)
 
 
-#define PTT_EXPERIMENT 1
-
-#if PTT_EXPERIMENT
-typedef struct ptt_sink_t {
-	int dummy;
-} ptt_sink_t;
-
-
-
-
-static ptt_sink_t g_ptt_sink = { 0 };
-
-
-
-
-/**
-   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
-
-   A simple wrapper that seems to be convenient.
-*/
-static bool on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
-{
-	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
-	fprintf(stderr, "[DEBUG] ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
-
-	return true;
-}
-#endif /* #if PTT_EXPERIMENT */
-
-
 
 
 typedef struct test_case_t {

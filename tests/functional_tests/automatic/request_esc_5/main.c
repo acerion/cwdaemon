@@ -122,29 +122,6 @@ static int run_test_case(const test_case_t * test_case);
 
 
 
-static void print_waitpid(const char * prefix, int wstatus, pid_t pid, int err_no)
-{
-	if (pid > 0) {
-		fprintf(stderr, "%s: Child process %d changed state\n", prefix, pid);
-		if (WIFEXITED(wstatus)) {
-			fprintf(stderr, "%s: Child process %d exited, exit status = %d\n", prefix, pid, WEXITSTATUS(wstatus));
-		} else if (WIFSIGNALED(wstatus)) {
-			fprintf(stderr, "%s: Child process %d was terminated by signal %d\n", prefix, pid, WTERMSIG(wstatus));
-		} else if (WIFSTOPPED(wstatus)) {
-			fprintf(stderr, "%s: Child process %d was stopped by signal %d\n", prefix, pid, WSTOPSIG(wstatus));
-		} else {
-			fprintf(stderr, "%s: Child process %d has unhandled wstatus %d / 0x%x\n", prefix, pid, wstatus, wstatus);
-		}
-	} else if (0 == pid) {
-		fprintf(stderr, "%s: waitpid() returns zero\n", prefix);
-	} else {
-		fprintf(stderr, "%s: waitpid() returns %d, errno = %s\n", prefix, pid, strerror(err_no));
-	}
-}
-
-
-
-
 /*
   Since this test is starting a child process, we want to handle SIGCHLD
   signal.
