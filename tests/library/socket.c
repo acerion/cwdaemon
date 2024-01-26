@@ -58,29 +58,29 @@
 
 
 
-int cwdaemon_socket_connect(const char * address, const char * port)
+int open_socket_to_server(const char * server_ip_address, in_port_t server_in_port)
 {
 	/* Code in this function has been copied from
 	   getaddrinfo() man page. */
 
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof(struct addrinfo));
+	struct addrinfo hints = { 0 };
 	hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
 	hints.ai_socktype = SOCK_DGRAM; /* Datagram socket */
 	hints.ai_flags = 0;
 	hints.ai_protocol = IPPROTO_UDP;
 
 	struct addrinfo * result = NULL;
-	int rv = getaddrinfo(address, port, &hints, &result);
+	char port_buf[16] = { 0 };
+	snprintf(port_buf, sizeof (port_buf), "%d", server_in_port);
+	int rv = getaddrinfo(server_ip_address, port_buf, &hints, &result);
 	if (rv) {
 		fprintf(stderr, "[EE] call to getaddrinfo() failed %s\n", gai_strerror(rv));
 		return -1;
 	}
 
-	/* getaddrinfo() returns a list of address structures. Try each
-	   address until we successfully connect(2). If socket(2) (or
-	   connect(2)) fails, we close the socket and try the next
-	   address. */
+	/* getaddrinfo() returns a list of address structures. Try each address
+	   until we successfully connect(2). If socket(2) or connect(2) fails, we
+	   close the socket and try the next address. */
 	int fd = -1;
 	for (struct addrinfo * rp = result; rp; rp = rp->ai_next) {
 		fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
@@ -98,7 +98,7 @@ int cwdaemon_socket_connect(const char * address, const char * port)
 	freeaddrinfo(result); /* No longer needed */
 
 	if (-1 == fd) {
-		fprintf(stderr, "[EE] Could not open a socket to cwdaemon\n");
+		fprintf(stderr, "[EE] Cannot not open a socket to cwdaemon server\n");
 	}
 	return fd;
 }

@@ -52,6 +52,7 @@
 
 #include <libcw.h>
 
+#include "log.h"
 #include "misc.h"
 #include "random.h"
 #include "socket.h"
@@ -161,19 +162,17 @@ int find_unused_random_biased_local_udp_port(in_port_t * port)
   with remote machines too (but I didn't test it all that well).
 */
 __attribute__((unused))
-static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
+static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t server_in_port)
 {
 	struct timeval tv = { .tv_sec = 2 };
 
-	char port_buf[16] = { 0 };
-	snprintf(port_buf, sizeof (port_buf), "%d", port);
-	int fd = cwdaemon_socket_connect(server, port_buf);
-	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
+	int socket = open_socket_to_server(server, server_in_port);
+	setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
 
 	const char * requested_message_value = "e";
 	const char * requested_reply_value   = "t";
 
-	client_t client = { .sock = fd };
+	client_t client = { .sock = socket };
 	client_send_request(&client, CWDAEMON_REQUEST_REPLY, requested_message_value);
 	client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
 
@@ -181,12 +180,12 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, int port)
 	   is a process on the other side of socket that behaves like
 	   cwdaemon. */
 	char recv_buf[32] = { 0 };
-	const ssize_t r = recv(fd, recv_buf, sizeof (recv_buf), 0);
-	close(fd);
+	const ssize_t r = recv(socket, recv_buf, sizeof (recv_buf), 0);
+	close(socket);
 
 	// TODO (acerion): we should compare recv_buf with requested_reply_value.
 
-	//fprintf(stderr, "port %d, socket %d, rec %d\n", port, fd, r);
+	test_log_debug("Trying to communicate with remote server at [%s:%u], recv(%d) -> %ld\n", server, server_in_port, socket, r);
 
 	return -1 != r;
 }

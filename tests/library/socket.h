@@ -4,6 +4,11 @@
 
 
 
+#include <netinet/in.h>
+
+
+
+
 #define CWDAEMON_REQUEST_RESET         0
 #define CWDAEMON_REQUEST_MESSAGE       1
 #define CWDAEMON_REQUEST_SPEED         2
@@ -26,7 +31,7 @@
 
 
 
-int cwdaemon_socket_connect(const char * address, const char * port);
+int open_socket_to_server(const char * server_ip_address, in_port_t server_in_port);
 
 
 
