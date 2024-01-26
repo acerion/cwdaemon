@@ -5,6 +5,7 @@
 
 
 #include <pthread.h>
+#include <stdbool.h>
 
 
 
@@ -29,6 +30,8 @@ typedef struct thread_t {
 	pthread_attr_t thread_attr;
 
 	thread_status_t status;        /**< Current status of thread. Set by thread, read by client code. */
+
+	bool thread_loop_continue;     /**< Flag controlling whether a loop inside of thread should be running. */
 } thread_t;
 
 

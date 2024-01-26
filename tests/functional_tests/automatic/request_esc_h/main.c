@@ -297,11 +297,6 @@ int main(void)
 
 
 
-		thread_t socket_receiver_thread = { .name = "socket receiver thread", .thread_fn = client_socket_receiver_thread_fn, .thread_fn_arg = &client };
-
-
-
-
 		/* Prepare local test instance of cwdaemon server. */
 		if (0 != server_start(&server_opts, &server)) {
 			fprintf(stderr, "[EE] Failed to start cwdaemon server, terminating\n");
@@ -310,20 +305,20 @@ int main(void)
 		}
 
 
+		client_socket_receive_enable(&client);
 		if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
 			test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
 			failure = true;
 			goto cleanup;
 		}
-
-
-		if (0 != morse_receiver_start(morse_receiver)) {
-			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
+		if (0 != client_socket_receive_start(&client)) {
+			test_log_err("Test: failed to start socket receiver %s\n", "");
 			failure = true;
 			goto cleanup;
 		}
-		if (0 != thread_start(&socket_receiver_thread)) {
-			fprintf(stderr, "[EE] Failed to start socket receiver thread\n");
+
+		if (0 != morse_receiver_start(morse_receiver)) {
+			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
 			failure = true;
 			goto cleanup;
 		}
@@ -351,10 +346,8 @@ int main(void)
 		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "start %s", test_case->message);
 
 
-		thread_join(&socket_receiver_thread);
 		morse_receiver_wait(morse_receiver);
-
-
+		client_socket_receive_stop(&client);
 
 
 		/* For debugging only. */
@@ -372,7 +365,7 @@ int main(void)
 	cleanup:
 		events_clear(&g_events);
 
-		thread_cleanup(&socket_receiver_thread);
+
 
 		/* Terminate local test instance of cwdaemon server. */
 		if (0 != local_server_stop(&server, &client)) {
@@ -389,6 +382,7 @@ int main(void)
 
 		/* Close our socket to cwdaemon server. */
 		client_disconnect(&client);
+		client_dtor(&client);
 
 		if (failure) {
 			fprintf(stderr, "[EE] Test case %zd/%zd failed, terminating\n", i + 1, n);

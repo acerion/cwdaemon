@@ -41,6 +41,7 @@
 
 
 #include <errno.h>
+#include <poll.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,6 +68,11 @@
 
 
 extern events_t g_events;
+
+
+
+
+static void * client_socket_receiver_thread_poll_fn(void * client_arg);
 
 
 
@@ -205,43 +211,87 @@ int client_disconnect(client_t * client)
 
 
 
-void * client_socket_receiver_thread_fn(void * thread_arg)
+static void * client_socket_receiver_thread_poll_fn(void * thread_arg)
 {
 	thread_t * thread = (thread_t *) thread_arg;
 	client_t * client = (client_t *) thread->thread_fn_arg;
+
 	thread->status = thread_running;
 
-	const int loop_iter_sleep_ms = 10; /* [milliseconds] Sleep duration in one iteration of a loop. TODO acerion 2023.12.28: use a constant. */
-	const int loop_total_wait_ms = RECEIVE_TOTAL_WAIT_MS;
-	int loop_iters = loop_total_wait_ms / loop_iter_sleep_ms;
+	while (thread->thread_loop_continue) {
 
+		struct pollfd descriptor = { .fd = client->sock, .events = POLLIN };
+		const nfds_t n_descriptors = 1;
 
-	do {
-		const int sleep_retv = test_millisleep_nonintr(loop_iter_sleep_ms);
-		if (sleep_retv) {
-			fprintf(stderr, "[EE] error in sleep while waiting for data on socket\n");
+		const int timeout_ms = (1 * 1000);
+		const int ready = poll(&descriptor, n_descriptors, timeout_ms);
+		if (0 == ready) {
+			/* Timeout. */
+			// fprintf(stdout, "[DD] cwdaemon client: receive poll() timeout\n");
+		} else if (n_descriptors == (nfds_t) ready) {
+			if (descriptor.revents != POLLIN) {
+				test_log_err("cwdaemon client: Unexpected event on poll socket: %02x\n", descriptor.revents);
+				break;
+			}
+			const ssize_t r = recv(descriptor.fd, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
+			if (-1 != r) {
+				char escaped[64] = { 0 };
+				test_log_info("cwdaemon client: received [%s] from cwdaemon server.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
+				events_insert_socket_receive_event(&g_events, client->reply_buffer);
+			}
+		} else {
+			test_log_err("cwdaemon client: poll() error %s\n", "");
 		}
-
-
-		/* Try receiving preconfigured reply. */
-		const ssize_t r = recv(client->sock, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
-		if (-1 != r) {
-			char escaped[64] = { 0 };
-			fprintf(stderr, "[II] Received reply [%s] from cwdaemon server. Ending listening on the socket.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
-
-			events_insert_socket_receive_event(&g_events, client->reply_buffer);
-
-			break;
-		}
-	} while (loop_iters-- > 0);
-
-	if (loop_iters <= 0) {
-		fprintf(stderr, "[NN] Expected reply from cwdaemon was not received within given time\n");
 	}
 
 	thread->status = thread_stopped_ok;
 	return NULL;
 }
+
+
+
+
+int client_socket_receive_enable(client_t * client)
+{
+	client->socket_receiver_thread.name = "socket receiver thread";
+	client->socket_receiver_thread.thread_fn = client_socket_receiver_thread_poll_fn;
+	client->socket_receiver_thread.thread_fn_arg = client;
+
+	return 0;
+}
+
+
+
+
+int client_socket_receive_start(client_t * client)
+{
+	if (NULL == client->socket_receiver_thread.thread_fn) {
+		test_log_err("cwdaemon client: trying to start 'socket receive' thread without thread function %s\n", "");
+		return -1;
+	}
+	client->socket_receiver_thread.thread_loop_continue = true;
+	if (0 != thread_start(&client->socket_receiver_thread)) {
+		test_log_err("cwdaemon client: failed to start socket receiver thread %s\n", "");
+		return -1;
+	}
+
+	return 0;
+}
+
+
+
+
+int client_socket_receive_stop(client_t * client)
+{
+	test_log_info("cwdaemon client: stopping %s\n", client->socket_receiver_thread.name);
+	client->socket_receiver_thread.thread_loop_continue = false;
+	sleep(1);
+	thread_join(&client->socket_receiver_thread);
+	test_log_info("cwdaemon client: stopped %s\n", client->socket_receiver_thread.name);
+
+	return 0;
+}
+
 
 
 
@@ -254,5 +304,24 @@ int client_connect_to_server(client_t * client, const char * server_ip_address, 
 	}
 
 	return 0;
+}
+
+
+
+
+int client_dtor(client_t * client)
+{
+	bool success = true;
+
+	if (client->socket_receiver_thread.thread_fn) {
+		/* Cleaning up a thread makes sense only if there is some thread function. */
+		if (0 != thread_cleanup(&client->socket_receiver_thread)) {
+			test_log_err("cwdaemon client: failed to clean up '%s' thread\n", client->socket_receiver_thread.name);
+			success = false;
+		}
+		client->socket_receiver_thread.thread_fn = NULL;
+	}
+
+	return success ? 0 : -1;
 }
 

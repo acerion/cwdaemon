@@ -13,13 +13,25 @@
 
 #include <netinet/in.h>
 
+#include "thread.h"
+
 
 
 
 typedef struct client_t {
 	int sock;                 /**< Network socket used by client to communicate with server. */
 	char reply_buffer[64];    /**< Buffer for receiving replies from server. */
+
+	thread_t socket_receiver_thread;
 } client_t;
+
+
+
+
+/**
+   @brief Destructor
+*/
+int client_dtor(client_t * client);
 
 
 
@@ -53,7 +65,10 @@ int client_disconnect(client_t * client);
 
 
 
-void * client_socket_receiver_thread_fn(void * thread_arg);
+int client_socket_receive_enable(client_t * client);
+int client_socket_receive_start(client_t * client);
+int client_socket_receive_stop(client_t * client);
+
 
 
 
