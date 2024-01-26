@@ -220,6 +220,8 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 
 	while (thread->thread_loop_continue) {
 
+		memset(client->reply_buffer, 0, sizeof (client->reply_buffer));
+
 		struct pollfd descriptor = { .fd = client->sock, .events = POLLIN };
 		const nfds_t n_descriptors = 1;
 
