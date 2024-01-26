@@ -118,7 +118,7 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "failure case: port 0",        .message = "paris",  .expected_fail = true,   .port = -1 },
+	{ .description = "failure case: port 0",        .message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in process.c as "pass port 0 to cwdaemon". */
 	{ .description = "failure case: port 1",        .message = "paris",  .expected_fail = true,   .port = 1  },
 	{ .description = "failure case: port MIN - 2",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
 	{ .description = "failure case: port MIN - 1",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },
