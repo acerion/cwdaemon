@@ -74,6 +74,16 @@ New release. Changes since previous release:
       cwdaemon through "-p"/"--port" command line option. The test verifies
       if cwdaemon starts (or doesn't start) as expected.
 
+      The test is located in tests/functional_tests/automatic/option_port/.
+
+    * Adding functional test for "caret" request.
+
+      The test is only testing basic test cases where only a single "caret"
+      request is being sent. More complicated scenarios are not being tested
+      (yet).
+
+      The test is located in tests/functional_tests/automatic/request_caret/.
+
     * Unit tests have been added for following existing code:
 
       - cwdaemon_get_long() function

@@ -300,20 +300,35 @@ Quality Assurance
 -----------------
 
 - Compiler flags
+
     - -D_FORTIFY_SOURCE=2
 
+- Static analysis of code
 
+    - clang-tidy is being run on code of cwdaemon and on code of unit and
+      functional tests. Scope of checks is specified by .clang-tidy config
+      file found in repo's root dir.
 
 - Unit tests
+
     - Small parts of daemon are tested with unit tests (see
       tests/unit_tests/README).
+
     - Few utility functions used in functional tests are tested with unit
       tests (see tests/unit_tests/README).
+
     - A very basic support for gcov/lcov is available. Relevant commands:
         - ./configure --enable-gcov
         - make gcov
         - <web browser> tests/unit_tests/coverage/index.html
         - make gcov-clean
+
+- Functional tests
+
+    - Automatic (unattended) tests that cover to some degree a small (but
+      growing) set of functionalities.
+
+      The tests are located in tests/functional_tests/automatic/ dir.
 
 
 Credits
