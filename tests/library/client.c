@@ -49,6 +49,7 @@
 
 #include "client.h"
 #include "events.h"
+#include "log.h"
 #include "misc.h"
 #include "socket.h"
 #include "thread.h"
@@ -260,4 +261,14 @@ void * client_socket_receiver_thread_fn(void * thread_arg)
 
 
 
+int client_connect_to_server(client_t * client, const char * server_ip_address, in_port_t server_in_port)
+{
+	client->sock = open_socket_to_server(server_ip_address, server_in_port);
+	if (client->sock < 0) {
+		test_log_err("cwdaemon client: failed to connect to cwdaemon server socket at [%s:%u]\n", server_ip_address, server_in_port);
+		return -1;
+	}
+
+	return 0;
+}
 

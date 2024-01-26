@@ -47,6 +47,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "tests/library/client.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
 #include "tests/library/log.h"
@@ -104,13 +105,18 @@ int main(void)
 
 	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &server, &client)) {
+	if (0 != server_start(&cwdaemon_opts, &server)) {
 		test_log_err("Failed to start cwdaemon server, exiting %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
 
 
+	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
 
 
 	/* This sends a text request to cwdaemon server that works in initial state,

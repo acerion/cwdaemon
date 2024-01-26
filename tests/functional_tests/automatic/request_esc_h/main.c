@@ -46,6 +46,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "tests/library/client.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
@@ -302,12 +303,18 @@ int main(void)
 
 
 		/* Prepare local test instance of cwdaemon server. */
-		if (0 != cwdaemon_start_and_connect(&server_opts, &server, &client)) {
+		if (0 != server_start(&server_opts, &server)) {
 			fprintf(stderr, "[EE] Failed to start cwdaemon server, terminating\n");
 			failure = true;
 			goto cleanup;
 		}
 
+
+		if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
+			test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+			failure = true;
+			goto cleanup;
+		}
 
 
 		if (0 != morse_receiver_start(morse_receiver)) {

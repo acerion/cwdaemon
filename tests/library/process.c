@@ -365,7 +365,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 
 
 
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * server, client_t * client)
+int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
 {
 	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, server)) {
@@ -373,17 +373,10 @@ int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t *
 		return -1;
 	}
 
-	char cwdaemon_address[INET6_ADDRSTRLEN] = { 0 };
 	if (0 == strlen(opts->l3_address)) {
-		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", "127.0.0.1");
+		snprintf(server->ip_address, sizeof (server->ip_address), "%s", "127.0.0.1");
 	} else {
-		snprintf(cwdaemon_address, sizeof (cwdaemon_address), "%s", opts->l3_address);
-	}
-
-	client->sock = open_socket_to_server(cwdaemon_address, (in_port_t) server->l4_port);
-	if (client->sock < 0) {
-		fprintf(stderr, "[EE] Failed to connect to cwdaemon socket\n");
-		return -1;
+		snprintf(server->ip_address, sizeof (server->ip_address), "%s", opts->l3_address);
 	}
 
 	return 0;

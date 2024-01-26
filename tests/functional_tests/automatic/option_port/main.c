@@ -72,6 +72,7 @@
 #include <errno.h>
 
 #include "src/cwdaemon.h"
+#include "tests/library/client.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
@@ -252,8 +253,10 @@ static int run_test_case(const test_case_t * test_case)
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
+	const morse_receiver_config_t morse_config = { .wpm = wpm };
 	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
+	morse_receiver_t * morse_receiver = NULL;
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = 640,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -263,7 +266,7 @@ static int run_test_case(const test_case_t * test_case)
 		.l4_port        = test_case->port,
 	};
 
-	const int retv = cwdaemon_start_and_connect(&cwdaemon_opts, &server, &client);
+	const int retv = server_start(&cwdaemon_opts, &server);
 	if (0 != retv) {
 		save_exit_to_events();
 		if (test_case->expected_fail) {
@@ -281,8 +284,15 @@ static int run_test_case(const test_case_t * test_case)
 		}
 	}
 
-	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
+
+	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+
+	morse_receiver = morse_receiver_ctor(&morse_config);
 	if (0 != morse_receiver_start(morse_receiver)) {
 		fprintf(stderr, "[EE] Failed to start Morse receiver\n");
 		failure = true;

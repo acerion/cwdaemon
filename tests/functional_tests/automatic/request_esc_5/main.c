@@ -52,6 +52,7 @@
 
 #include <errno.h>
 
+#include "tests/library/client.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
@@ -212,7 +213,7 @@ static int run_test_case(const test_case_t * test_case)
 		.wpm            = wpm,
 	};
 
-	if (0 != cwdaemon_start_and_connect(&cwdaemon_opts, &server, &client)) {
+	if (0 != server_start(&cwdaemon_opts, &server)) {
 		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
 		failure = true;
 		goto cleanup;
@@ -220,6 +221,11 @@ static int run_test_case(const test_case_t * test_case)
 	g_child_exit_info.pid = server.pid;
 
 
+	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
 
 
 	if (test_case->send_message_request) {

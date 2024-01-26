@@ -21,6 +21,7 @@ typedef struct cwdaemon_server_t {
 	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
 	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
 	int wstatus;  /**< Second argument to waitpid(). */
+	char ip_address[INET6_ADDRSTRLEN]; /**< String representation of server's IP address. */
 } cwdaemon_server_t;
 
 
@@ -86,10 +87,15 @@ typedef struct {
 
 
 /**
+   @brief Start instance of cwdaemon server
+
+   Currently the functional tests only deal with local test instance of
+   cwdaemon server, so this function is starting a local cwdaemon process.
+
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_start_and_connect(const cwdaemon_opts_t * opts, cwdaemon_server_t * server, client_t * client);
+int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server);
 
 
 
