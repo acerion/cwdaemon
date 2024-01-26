@@ -64,7 +64,6 @@
 #include "tests/library/sleep.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
-#include "tests/library/thread.h"
 #include "tests/library/time_utils.h"
 
 
