@@ -51,7 +51,7 @@
 
 /* [milliseconds]. Total time for receiving a message (either receiving a
    Morse code message, or receiving a reply from cwdaemon server). */
-#define RECEIVE_TOTAL_WAIT_MS (15 * 1000)
+#define RECEIVE_TOTAL_WAIT_MS (30 * 1000)
 
 
 
