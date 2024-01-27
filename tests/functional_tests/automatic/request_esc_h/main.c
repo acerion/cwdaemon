@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 
 
 /**
-   Tests of "<ESC>h request" feature.
+   Test of "<ESC>h request" feature: prepare a reply to be sent by cwdaemon.
 */
 
 
@@ -38,24 +38,18 @@
 
 #include "config.h"
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include "tests/library/client.h"
-#include "tests/library/cwdevice_observer.h"
-#include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/process.h"
 #include "tests/library/random.h"
-#include "tests/library/sleep.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
 #include "tests/library/time_utils.h"
@@ -64,13 +58,6 @@
 
 
 events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
-/* [milliseconds]. Total time for receiving a message (either receiving a
-   Morse code message, or receiving a reply from cwdaemon server). */
-#define RECEIVE_TOTAL_WAIT_MS (15 * 1000)
 
 
 
@@ -110,9 +97,65 @@ static test_case_t g_test_cases[] = {
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
 	  .message                 = "paris",
-	  .requested_reply_value   = "I am a reply to your 27th request.",
+	  .requested_reply_value   = "This is a reply to your 27th request.",
 	},
 };
+
+
+
+
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
+static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver);
+
+
+
+
+int main(void)
+{
+#if 0
+	if (!test_env_is_usable(test_env_libcw_without_signals)) {
+		test_log_err("Test: preconditions for test env are not met, exiting %s\n", "");
+		exit(EXIT_FAILURE);
+	}
+#endif
+
+	const uint32_t seed = cwdaemon_srandom(0);
+	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
+
+	bool failure = false;
+	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
+	cwdaemon_server_t server = { 0 };
+	client_t client = { 0 };
+	morse_receiver_t * morse_receiver = NULL;
+
+	if (0 != test_setup(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at test setup %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+	if (run_test_cases(g_test_cases, n_test_cases, &client, morse_receiver)) {
+		test_log_err("Test: failed at running test cases %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+ cleanup:
+	if (0 != test_teardown(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at test tear down %s\n", "");
+		failure = true;
+	}
+
+	test_log_newline(); /* Visual separator. */
+	if (failure) {
+		test_log_err("Test: the test has failed %s\n", "");
+		exit(EXIT_FAILURE);
+	} else {
+		test_log_info("Test: the test has passed %s\n", "");
+		exit(EXIT_SUCCESS);
+	}
+}
 
 
 
@@ -137,7 +180,7 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 	/* Expectation 1: there should be only two events. */
 	{
 		if (2 != events->event_idx) {
-			test_log_err("Unexpected count of events: %d\n", events->event_idx);
+			test_log_err("Test: unexpected count of events: %d\n", events->event_idx);
 			return -1;
 		}
 	}
@@ -168,13 +211,13 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 
 				// This is the current incorrect behaviour that is accepted
 				// for now.
-				test_log_warn("Incorrect (but currently expected) order of events: %d -> %d\n",
+				test_log_warn("Test: incorrect (but currently expected) order of events: %d -> %d\n",
 				              event_0->event_type, event_1->event_type);
 				socket_event = event_0;
 				morse_event = event_1;
 				; /* Pass. */
 			} else {
-				test_log_err("Completely incorrect order of events: %d -> %d\n",
+				test_log_err("Test: completely incorrect order of events: %d -> %d\n",
 				             event_0->event_type, event_1->event_type);
 				return -1;
 			}
@@ -195,7 +238,7 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 	if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
 		; /* Pass. */
 	} else {
-		test_log_err("Time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+		test_log_err("Test: time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
 		             diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
@@ -210,11 +253,11 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 	{
 		const char * received_string = morse_event->u.morse_receive.string;
 		if (!morse_receive_text_is_correct(received_string, test_case->message)) {
-			test_log_err("Received incorrect Morse message: expected [%s], received [%s]\n",
+			test_log_err("Test: received incorrect Morse message: expected [%s], received [%s]\n",
 			             test_case->message, received_string);
 			return -1;
 		} else {
-			test_log_info("Received expected Morse message: expected [%s], received [%s]\n",
+			test_log_info("Test: received expected Morse message: expected [%s], received [%s]\n",
 			              test_case->message, received_string);
 			; /* Pass. */
 		}
@@ -237,11 +280,11 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 		escape_string(actual_raw, escaped_actual, sizeof (escaped_actual));
 
 		if (0 != strcmp(expected_raw, actual_raw)) {
-			test_log_err("Received incorrect message in socket reply: expected [%s], received [%s]\n",
+			test_log_err("Test: received incorrect message in socket reply: expected [%s], received [%s]\n",
 			             escaped_expected, escaped_actual);
 			return -1;
 		} else {
-			test_log_info("Received expected message in socket reply: expected [%s], received [%s]\n",
+			test_log_info("Test: received expected message in socket reply: expected [%s], received [%s]\n",
 			              escaped_expected, escaped_actual);
 			; /* Pass. */
 		}
@@ -255,17 +298,9 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 
 
 
-int main(void)
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
 {
-#if 0
-	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
-		exit(EXIT_FAILURE);
-	}
-#endif
-
-	const uint32_t seed = cwdaemon_srandom(0);
-	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
+	bool failure = false;
 
 	int wpm = 10;
 	/* Remember that some receive timeouts in tests were selected when the
@@ -273,6 +308,8 @@ int main(void)
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
+
+	/* Prepare local test instance of cwdaemon server. */
 	cwdaemon_opts_t server_opts = {
 		.tone           = 700,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -280,53 +317,82 @@ int main(void)
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 	};
+	if (0 != server_start(&server_opts, server)) {
+		test_log_err("Test: tailed to start cwdaemon server %s\n", "");
+		failure = true;
+	}
+
+
+	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.27: remove casting. */
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		failure = true;
+	}
+	client_socket_receive_enable(client);
+	if (0 != client_socket_receive_start(client)) {
+		test_log_err("Test: failed to start socket receiver %s\n", "");
+		failure = true;
+	}
+
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
+	*morse_receiver = morse_receiver_ctor(&morse_config);
+	if (NULL == *morse_receiver) {
+		test_log_err("Test: failed to create Morse receiver %s\n", "");
+		failure = true;
+	}
 
+
+	return failure ? -1 : 0;
+}
+
+
+
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
+{
 	bool failure = false;
 
-	const size_t n = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	for (size_t i = 0; i < n; i++) {
-		test_case_t * test_case = &g_test_cases[i];
-		fprintf(stderr, "\n[II] Starting test case %zd/%zd: %s\n", i + 1, n, test_case->description);
+	morse_receiver_dtor(morse_receiver);
 
-		cwdaemon_server_t server = { 0 };
-		client_t client = { 0 };
+	/* Terminate local test instance of cwdaemon server. */
+	if (0 != local_server_stop(server, client)) {
+		/*
+		  Stopping a server is not a main part of a test, but if a
+		  server can't be closed then it means that the main part of the
+		  code has left server in bad condition. The bad condition is an
+		  indication of an error in tested functionality. Therefore set
+		  failure to true.
+		*/
+		test_log_err("Test: failed to correctly stop local test instance of cwdaemon %s\n", "");
+		failure = true;
+	}
+
+	client_socket_receive_stop(client);
+	client_disconnect(client);
+	client_dtor(client);
+
+	return failure ? -1 : 0;
+}
 
 
 
-		/* Prepare local test instance of cwdaemon server. */
-		if (0 != server_start(&server_opts, &server)) {
-			fprintf(stderr, "[EE] Failed to start cwdaemon server, terminating\n");
-			failure = true;
-			goto cleanup;
-		}
 
+static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver)
+{
+	bool failure = false;
 
-		client_socket_receive_enable(&client);
-		if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
-			test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
-			failure = true;
-			goto cleanup;
-		}
-		if (0 != client_socket_receive_start(&client)) {
-			test_log_err("Test: failed to start socket receiver %s\n", "");
-			failure = true;
-			goto cleanup;
-		}
+	for (size_t i = 0; i < n_test_cases; i++) {
+		test_case_t * test_case = &test_cases[i];
+
+		test_log_newline(); /* Visual separator. */
+		test_log_info("Test: starting test case %zd/%zd: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		if (0 != morse_receiver_start(morse_receiver)) {
-			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
+			test_log_err("Test: failed to start Morse receiver %s\n", "");
 			failure = true;
-			goto cleanup;
+			break;
 		}
 
-
-
 		/*
-		  The actual testing is done here.
-
 		  First we ask cwdaemon to remember a reply that should be sent back
 		  to us after a message is played.
 
@@ -339,14 +405,13 @@ int main(void)
 		*/
 
 		/* Ask cwdaemon to send us this reply back after playing a message. */
-		client_send_request(&client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
+		client_send_request(client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
 
 		/* Send the message to be played. */
-		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "start %s", test_case->message);
+		client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "start %s", test_case->message);
 
 
 		morse_receiver_wait(morse_receiver);
-		client_socket_receive_stop(&client);
 
 
 		/* For debugging only. */
@@ -354,54 +419,18 @@ int main(void)
 
 		/* Validation of test run. */
 		if (0 != events_evaluate(&g_events, test_case)) {
-			fprintf(stderr, "[EE] Test failure: problem with collected events\n");
+			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
-			goto cleanup;
+			break;
 		}
 
-
-
-	cleanup:
+		/* Clear stuff before running next test case. */
 		events_clear(&g_events);
 
 
-
-		/* Terminate local test instance of cwdaemon server. */
-		if (0 != local_server_stop(&server, &client)) {
-			/*
-			  Stopping a server is not a main part of a test, but if a
-			  server can't be closed then it means that the main part of the
-			  code has left server in bad condition. The bad condition is an
-			  indication of an error in tested functionality. Therefore set
-			  failure to true.
-			*/
-			fprintf(stderr, "[ERROR] Failed to correctly stop local test instance of cwdaemon.\n");
-			failure = true;
-		}
-
-		/* Close our socket to cwdaemon server. */
-		client_disconnect(&client);
-		client_dtor(&client);
-
-		if (failure) {
-			fprintf(stderr, "[EE] Test case %zd/%zd failed, terminating\n", i + 1, n);
-			break;
-		} else {
-			fprintf(stderr, "[II] Test case %zd/%zd succeeded\n\n", i + 1, n);
-		}
+		test_log_info("Test: test case %zd/%zd succeeded\n\n", i + 1, n_test_cases);
 	}
 
-
-
-	morse_receiver_dtor(&morse_receiver);
-
-
-	if (failure) {
-		exit(EXIT_FAILURE);
-	} else {
-		exit(EXIT_SUCCESS);
-	}
+	return failure ? -1 : 0;
 }
-
-
 
