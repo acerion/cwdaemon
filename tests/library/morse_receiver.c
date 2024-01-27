@@ -201,22 +201,35 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	char buffer[32] = { 0 };
 	int buffer_i = 0;
 
-	const int loop_iter_sleep_ms = 10; /* [milliseconds] Sleep duration in one iteration of a loop. TODO acerion 2023.12.28: use a constant. */
-	const int loop_total_wait_ms = RECEIVE_TOTAL_WAIT_MS;
-	int loop_iters = loop_total_wait_ms / loop_iter_sleep_ms;
+	/*
+	  [milliseconds]. A time that the loop can spend idling (without
+	  receiving any char or inter-word-space) before the loop decides that
+	  nothing more will be received.
 
+	  TODO acerion 2024.01.27: use a constant.
+
+	  This value depends on wpm: for lower speeds the time should be higher,
+	  for higher speeds it can be lower. TODO acerion 2024.01.27: calculate
+	  the time using duration of longest character/representation as input.
+	*/
+	const int total_wait_ms = 5 * 1000;
+
+	const int poll_interval_ms = 10; /* [milliseconds]. TODO acerion 2024.01.27: use a constant. */
+	int remaining_wait_ms = total_wait_ms;
+	struct timespec last_character_receive_tstamp = { 0 };
 
 	/*
-	  Receiving a Morse code. cwdevice observer is telling a Morse code
-	  receiver how a 'keying' pin on tty device is changing state, and the
-	  receiver is translating this into text.
+	  The loop below is receiving a Morse code. cwdevice observer is telling
+	  a Morse code receiver how a 'keying' pin on tty device is changing
+	  state, and the receiver is translating this into text. The text is put
+	  into 'buffer[]'.
 	*/
-	struct timespec last_character_receive_tstamp = { 0 };
 	do {
-		const int sleep_retv = test_millisleep_nonintr(loop_iter_sleep_ms);
+		const int sleep_retv = test_millisleep_nonintr(poll_interval_ms);
 		if (sleep_retv) {
 			fprintf(stderr, "[EE] Morse receiver thread: error in sleep while receiving Morse code\n");
 		}
+		remaining_wait_ms -= poll_interval_ms;
 
 		cw_rec_data_t erd = { 0 };
 		if (cw_easy_receiver_poll_data(&cw_receiver, &erd)) {
@@ -224,17 +237,18 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 				fprintf(stderr, " ");
 				fflush(stderr);
 				buffer[buffer_i++] = ' ';
+				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 			} else if (erd.character) {
 				fprintf(stderr, "%c", erd.character);
 				fflush(stderr);
 				buffer[buffer_i++] = erd.character;
+				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 				clock_gettime(CLOCK_MONOTONIC, &last_character_receive_tstamp);
 			} else {
 				; /* NOOP */
 			}
 		}
-
-	} while (loop_iters-- > 0);
+	} while (remaining_wait_ms > 0);
 
 	if (last_character_receive_tstamp.tv_sec != 0 && last_character_receive_tstamp.tv_nsec != 0) {
 		events_insert_morse_receive_event(&g_events, buffer, &last_character_receive_tstamp);
