@@ -2,7 +2,7 @@
  * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
  */
+
+
+
+
+/**
+   Wrapper around "easy receiver", using it's API to:
+    - inform the easy receiver that observer of cwdevice is seeing changes of "keying" pin,
+    - poll from the receiver the received characters and inter-word-spaces.
+*/
 
 
 
@@ -45,13 +54,6 @@
 #include "events.h"
 #include "morse_receiver.h"
 #include "sleep.h"
-
-
-
-
-/* [milliseconds]. Total time for receiving a message (either receiving a
-   Morse code message, or receiving a reply from cwdaemon server). */
-#define RECEIVE_TOTAL_WAIT_MS (30 * 1000)
 
 
 
@@ -167,9 +169,9 @@ static int cw_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy
 
 static void * morse_receiver_thread_fn(void * receiver_arg)
 {
-	morse_receiver_t * receiver = (morse_receiver_t *) receiver_arg;
+	morse_receiver_t * morse_receiver = (morse_receiver_t *) receiver_arg;
 
-	thread_t * thread = &receiver->thread;
+	thread_t * thread = &morse_receiver->thread;
 	cwdevice_observer_t cwdevice_observer = { 0 };
 	cw_easy_receiver_t cw_receiver = { 0 };
 
@@ -178,20 +180,20 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	/* Preparation of test helpers. */
 	{
 		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &cw_receiver, &receiver->config.observer_tty_pins_config)) {
-			fprintf(stderr, "[EE] Morse receiver thread: failed to set up observer of cwdevice\n");
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &cw_receiver, &morse_receiver->config.observer_tty_pins_config)) {
+			test_log_err("Morse receiver thread: failed to set up observer of cwdevice %s\n", "");
 			thread->status = thread_stopped_err;
 			return NULL;
 		}
 		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
-			fprintf(stderr, "[EE] Morse receiver thread: failed to start up cwdevice observer\n");
+			test_log_err("Morse receiver thread: failed to start up cwdevice observer %s\n", "");
 			thread->status = thread_stopped_err;
 			return NULL;
 		}
 		/* Prepare receiver of Morse code. */
-		const int wpm = receiver->config.wpm == 0 ? CW_SPEED_INITIAL : receiver->config.wpm;
+		const int wpm = morse_receiver->config.wpm == 0 ? CW_SPEED_INITIAL : morse_receiver->config.wpm;
 		if (0 != cw_receiver_setup(&cw_receiver, wpm)) {
-			fprintf(stderr, "[EE] Morse receiver thread: failed to set up Morse receiver\n");
+			test_log_err("Morse receiver thread: failed to set up Morse receiver %s\n", "");
 			thread->status = thread_stopped_err;
 			return NULL;
 		}
@@ -227,20 +229,20 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	do {
 		const int sleep_retv = test_millisleep_nonintr(poll_interval_ms);
 		if (sleep_retv) {
-			fprintf(stderr, "[EE] Morse receiver thread: error in sleep while receiving Morse code\n");
+			test_log_err("Morse receiver thread: error in sleep while receiving Morse code %s\n", "");
 		}
 		remaining_wait_ms -= poll_interval_ms;
 
 		cw_rec_data_t erd = { 0 };
 		if (cw_easy_receiver_poll_data(&cw_receiver, &erd)) {
 			if (erd.is_iws) {
-				fprintf(stderr, " ");
-				fflush(stderr);
+				fprintf(stdout, " ");
+				fflush(stdout);
 				buffer[buffer_i++] = ' ';
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 			} else if (erd.character) {
-				fprintf(stderr, "%c", erd.character);
-				fflush(stderr);
+				fprintf(stdout, "%c", erd.character);
+				fflush(stdout);
 				buffer[buffer_i++] = erd.character;
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 				clock_gettime(CLOCK_MONOTONIC, &last_character_receive_tstamp);
@@ -254,7 +256,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		events_insert_morse_receive_event(&g_events, buffer, &last_character_receive_tstamp);
 	}
 
-	fprintf(stderr, "[II] Morse receiver received string [%s]\n", buffer);
+	test_log_info("Morse receiver thread: received string [%s]\n", buffer);
 
 	/* Cleanup of test helpers. */
 	cw_receiver_desetup(&cw_receiver);
@@ -276,6 +278,10 @@ bool morse_receive_text_is_correct(const char * received_text, const char * expe
 	  client_send_request*() is often prefixed with some startup text that is
 	  allowed to be mis-received, so that the main part of text request is
 	  received correctly and can be recognized with strcasestr().
+
+	  TODO acerion 2024.01.27: the function needs some improvements. The
+	  function should confirm that the expected_message is at the very end of
+	  received text.
 	*/
 	const char * needle = strcasestr(received_text, expected_message);
 	return NULL != needle;
