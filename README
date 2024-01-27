@@ -314,8 +314,14 @@ Quality Assurance
     - Small parts of daemon are tested with unit tests (see
       tests/unit_tests/README).
 
+      The tests are enabled by default.
+
+      The tests are executed with "make check".
+
     - Few utility functions used in functional tests are tested with unit
-      tests (see tests/unit_tests/README).
+      tests, if the functional tests are enabled.
+
+    - See tests/unit_tests/README for more info.
 
     - A very basic support for gcov/lcov is available. Relevant commands:
         - ./configure --enable-gcov
@@ -329,6 +335,17 @@ Quality Assurance
       growing) set of functionalities.
 
       The tests are located in tests/functional_tests/automatic/ dir.
+
+      The tests are disabled by default. They can be enabled at compile time
+      by passing '--enable-functional-tests' flag to './configure'.
+
+      The tests are executed with "make check".
+
+      The tests require presence of USB-TTY converter, which is visible as
+      /dev/ttyUSB0 (on other OSes the default name may be different). The
+      name of /dev/ device can be configured at compile time with
+      '--with-test-tty-cwdevice-name=<name>' flag passed to './configure'
+      script.
 
 
 Credits
