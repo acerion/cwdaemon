@@ -25,7 +25,7 @@
 
 
 /**
-   Test of caret ('^') request.
+   Test(s) of caret ('^') request. For now there is just a basic test.
 */
 
 

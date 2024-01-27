@@ -117,17 +117,20 @@ int basic_caret_test(void)
 	morse_receiver_t * morse_receiver = NULL;
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at test setup %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
 
 	if (0 != run_test_cases(g_test_cases, n_test_cases, &client, morse_receiver)) {
+		test_log_err("Test: failed at running test cases %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
 
  cleanup:
 	if (0 != test_teardown(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at test tear down %s\n", "");
 		failure = true;
 	}
 
@@ -269,6 +272,8 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
+
+	/* Prepare local test instance of cwdaemon server. */
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = 640,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -281,9 +286,17 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 		failure = true;
 	}
 
-	client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port); /* TODO acerion 2024.01.24: remove casting. */
+
+	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.24: remove casting. */
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		failure = true;
+	}
 	client_socket_receive_enable(client);
-	client_socket_receive_start(client);
+	if (0 != client_socket_receive_start(client)) {
+		test_log_err("Test: failed to start socket receiver %s\n", "");
+		failure = true;
+	}
+
 
 	morse_receiver_config_t morse_config = { .wpm = wpm };
 	*morse_receiver = morse_receiver_ctor(&morse_config);
@@ -318,8 +331,8 @@ static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_re
 	}
 
 	client_socket_receive_stop(client);
-	/* Close our socket to cwdaemon server. */
 	client_disconnect(client);
+	client_dtor(client);
 
 	return failure ? -1 : 0;
 }
