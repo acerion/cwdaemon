@@ -215,7 +215,7 @@ static int cmpevent(const void * p1, const void * p2)
 
 int events_sort(events_t * events)
 {
-	const bool do_debug = true;
+	const bool do_debug = false;
 	if (do_debug) {
 		fprintf(stderr, "Events before sort:\n");
 		fprintf(stderr, "vvvvvvvv\n");
