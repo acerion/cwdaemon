@@ -81,21 +81,83 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 typedef struct test_case_t {
-	const char * description;    /**< Tester-friendly description of test case. */
-	const char * message;        /**< Text to be sent to cwdaemon server in the MESSAGE request. Does not include caret! */
-	bool attach_caret;           /**< Messages in corner-case tests may not include caret. */
+	const char * description;                 /**< Tester-friendly description of test case. */
+	const char * full_message;                /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
+	const char * full_expected_socket_reply;  /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
+	const char * expected_morse_receive;      /**< What is expected to be received by Morse code receiver (without ending space). */
 } test_case_t;
 
 
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "basic test: mixed characters and a caret",           .message = "2 crows, one stork?",  .attach_caret = true, },
-	{ .description = "basic test: two words and a caret",                  .message = "Hello world!",         .attach_caret = true, },
-	{ .description = "basic test: single character and a caret",           .message = "f",                    .attach_caret = true, },
-	{ .description = "basic test: few characters and a caret",             .message = "Texas",                .attach_caret = true, },
-	{ .description = "basic test: empty text and a caret",                 .message = "",                     .attach_caret = true, },
-	{ .description = "basic test: mixed characters and a caret (again)",   .message = "when, now, right: ",   .attach_caret = true, },
+	{ .description = "mixed characters",
+	  .full_message               = "22 crows, 1 stork?^",
+	  .full_expected_socket_reply = "22 crows, 1 stork?\r\n",
+	  .expected_morse_receive     = "22 crows, 1 stork?",
+	},
+
+
+
+	/*
+	  Handling of caret in cwdaemon indicates that once a first caret is
+	  recognized, the caret and everything after it is ignored:
+
+	      case '^':
+	          *x = '\0';     // Remove '^' and possible trailing garbage.
+	*/
+	{ .description = "additional message after caret",
+	  .full_message               = "Fun^Joy^",
+	  .full_expected_socket_reply = "Fun\r\n",
+	  .expected_morse_receive     = "Fun",
+	},
+	{ .description = "message with two carets",
+	  .full_message               = "Monday^^",
+	  .full_expected_socket_reply = "Monday\r\n",
+	  .expected_morse_receive     = "Monday",
+	},
+
+
+
+	{ .description = "two words",
+	  .full_message               = "Hello world!^",
+	  .full_expected_socket_reply = "Hello world!\r\n",
+	  .expected_morse_receive     = "Hello world!",
+	},
+
+	/* There should be no action from cwdaemon: neither keying nor socket
+	   reply. */
+	{ .description = "empty text",
+	  .full_message               = "^",
+	  .full_expected_socket_reply = "",
+	  .expected_morse_receive     = "",
+	},
+
+	{ .description = "single character",
+	  .full_message               = "f^",
+	  .full_expected_socket_reply = "f\r\n",
+	  .expected_morse_receive     = "f",
+	},
+
+	{ .description = "single word",
+	  .full_message               = "Paris^",
+	  .full_expected_socket_reply = "Paris\r\n",
+	  .expected_morse_receive     = "Paris",
+	},
+
+	/* Notice how the leading space from message is preserved in socket reply. */
+	{ .description = "single word with leading space",
+	  .full_message               = " London^",
+	  .full_expected_socket_reply = " London\r\n",
+	  .expected_morse_receive     = "London",
+	},
+
+	/* Notice how the trailing space from message is preserved in socket reply. */
+	{ .description = "mixed characters with trailing space",
+	  .full_message               = "when, now = right: ^",
+	  .full_expected_socket_reply = "when, now = right: \r\n",
+	  .expected_morse_receive     = "when, now = right:",
+	},
 };
 
 
@@ -143,107 +205,161 @@ int basic_caret_test(void)
 
 static int evaluate_events(const events_t * events, const test_case_t * test_case)
 {
-	/* Expectation 1: there should be 2 events:
-	    - Receiving some reply over socket from cwdaemon server,
-	    - Receiving some Morse code on cwdevice.
+	/*
+	  Expectation 1: in most cases there should be 2 events:
+	   - Receiving some reply over socket from cwdaemon server,
+	   - Receiving some Morse code on cwdevice.
+	  In other cases there should be zero events.
+
+	  The two events go hand in hand: if one is expected, the other is too.
+	  If one is not expected to occur, the other is not expected either.
 	*/
-	{
-		const int expected = 2;
-		if (expected != events->event_idx) {
-			test_log_err("Test: unexpected count of events: %d\n", events->event_idx);
+	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
+	const bool expecting_socket_reply_event = 0 != strlen(test_case->full_expected_socket_reply);
+	if (!expecting_morse_event && !expecting_socket_reply_event) {
+		if (0 != events->event_idx) {
+			test_log_err("Test: incorrect count of events recorded. Expected 0 events, got %d\n", events->event_idx);
 			return -1;
 		}
+		test_log_info("Test: there are zero events (as expected), so evaluation of events is now completed %s\n", "");
+		return 0;
+	} else if (expecting_morse_event && expecting_socket_reply_event) {
+		if (2 != events->event_idx) {
+			test_log_err("Test: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
+			return -1;
+		}
+	} else {
+		test_log_err("Test: Incorrect situation when checking 'expecting' flags: %d != %d\n", expecting_morse_event, expecting_socket_reply_event);
+		return -1;
+	}
+	test_log_info("Test: count of events is correct: %d\n", events->event_idx);
+
+
+
+
+	/*
+	  Expectation 2: events are of correct type.
+	*/
+	const event_t * morse_event = NULL;
+	const event_t * socket_event = NULL;
+	int morse_idx = -1;
+	int socket_idx = -1;
+
+	if (events->events[0].event_type == events->events[1].event_type) {
+		test_log_err("Test: both events have the same type %s\n", "");
+		return -1;
+	}
+
+	if (events->events[0].event_type == event_type_morse_receive) {
+		morse_event = &events->events[0];
+		morse_idx = 0;
+	} else if (events->events[1].event_type == event_type_morse_receive) {
+		morse_event = &events->events[1];
+		morse_idx = 1;
+	} else {
+		test_log_err("Test: can't find Morse receive event in events table %s\n", "");
+		return -1;
+	}
+
+	if (events->events[0].event_type == event_type_client_socket_receive) {
+		socket_event = &events->events[0];
+		socket_idx = 0;
+	} else if (events->events[1].event_type == event_type_client_socket_receive) {
+		socket_event = &events->events[1];
+		socket_idx = 1;
+	} else {
+		test_log_err("Test: can't find socket receive event in events table %s\n", "");
+		return -1;
 	}
 
 
 
 
 	/*
-	  Expectation 2: events in proper order.
+	  Expectation 3: events in proper order.
 
 	  I'm not 100% sure what the correct order should be in perfect
 	  implementation of cwdaemon. In 0.12.0 it is "socket receive" first, and
 	  then "morse receive" second, unless a message sent to server ends with
 	  space.
 
+	  TODO acerion 2024.01.28: check what SHOULD be the correct order of the
+	  two events. Some comments in cwdaemon indicate that reply should be
+	  sent after end of playing Morse.
+
 	  TODO acerion 2024.01.26: Double check the corner case with space at the
 	  end of message.
 	*/
-	const event_t * event_0 = NULL;
-	const event_t * event_1 = NULL;
-	int i = 0;
-	if (events->events[i].event_type != event_type_client_socket_receive) {
-		test_log_warn("Test: unexpected type of event %d: %d\n", i, events->events[i].event_type);
-		//return -1; /* TODO acerion 2024.01.26: uncomment. */
+	if (morse_idx < socket_idx) {
+		test_log_warn("Test: unexpected order of events: Morse first (idx = %d), socket second (idx = %d)\n", morse_idx, socket_idx);
+		//return -1; /* TODO acerion 2024.01.26: uncomment after your are certain of correct order of events. */
+	} else {
+		test_log_info("Test: expected order of events: socket first (idx = %d), Morse second (idx = %d)\n", socket_idx, morse_idx);
 	}
-	event_0 = &events->events[i];
-	i++;
 
-	if (events->events[i].event_type != event_type_morse_receive) {
-		test_log_warn("Test: unexpected type of event %d: %d\n", i, events->events[i].event_type);
-		//return -1; /* TODO acerion 2024.01.26: uncomment. */
-	}
-	event_1 = &events->events[i];
-	i++;
 
-	if (event_0->event_type != event_type_client_socket_receive
-	    && event_1->event_type != event_type_client_socket_receive) {
-		test_log_err("Test: none of events is 'client socket receive' event: %d, %d\n", event_0->event_type, event_1->event_type);
+
+
+	/*
+	  Expectation 4: cwdaemon client has received over socket a correct
+	  reply.
+	*/
+	const char * full_expected = test_case->full_expected_socket_reply;
+	char escaped_expected[64] = { 0 };
+	escape_string(full_expected, escaped_expected, sizeof (escaped_expected));
+
+	const char * full_received = socket_event->u.socket_receive.string;
+	char escaped_received[64] = { 0 };
+	escape_string(full_received, escaped_received, sizeof (escaped_received));
+
+	if (0 != strcmp(full_received, full_expected)) {
+		test_log_err("Test: received socket reply [%s] doesn't match expected socket reply [%s]\n", escaped_received, escaped_expected);
 		return -1;
 	}
-	if (event_0->event_type != event_type_morse_receive
-	    && event_1->event_type != event_type_morse_receive) {
-		test_log_err("Test: none of events is 'morse receive' event: %d, %d\n", event_0->event_type, event_1->event_type);
-		return -1;
+	test_log_info("Test: received socket reply [%s] matches expected reply [%s]\n", escaped_received, escaped_expected);
+
+
+
+
+	/*
+	  Expectation 5: cwdaemon keyed a proper Morse message on cwdevice.
+
+	  Receiving of message by Morse receiver should not be verified if the
+	  expected message is too short (the problem with "warm-up" of receiver).
+	  TOOO acerion 2024.01.28: remove "do_morse_test" flag after fixing
+	  receiver.
+	*/
+	const bool do_morse_test = strlen(test_case->expected_morse_receive) > 1;
+	if (do_morse_test) {
+		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
+			test_log_err("Test: received Morse message [%s] doesn't match expected receive [%s]\n",
+			             morse_event->u.morse_receive.string, test_case->expected_morse_receive);
+			return -1;
+		}
+		test_log_info("Test: received Morse message [%s] matches expected receive [%s] (ignoring the first character)\n",
+		              morse_event->u.morse_receive.string, test_case->expected_morse_receive);
+	} else {
+		test_log_notice("Test: skipping verification of message received by Morse receiver due to short expected string %s\n", "");
 	}
 
-	const event_t * socket_event = event_0->event_type == event_type_client_socket_receive ? event_0 : event_1;
-	const event_t * morse_event = event_0->event_type == event_type_morse_receive ? event_0 : event_1;
 
 
 
+	/*
+	  Expectation 6: "Morse receive" event and "socket receive" event are
+	  close to each other.
 
-	/* Expectation 3: cwdaemon client has received over socket a correct
-	   reply. */
-	char escaped_received_reply[64] = { 0 };
-	escape_string(socket_event->u.socket_receive.string, escaped_received_reply, sizeof (escaped_received_reply));
-	char expected_reply[128] = { 0 };
-	const int n = snprintf(expected_reply, sizeof (expected_reply), "one %s%c%c", test_case->message, '\r', '\n');
-	if (0 != memcmp(expected_reply, socket_event->u.socket_receive.string, n)) {
-		test_log_err("Test: didn't detect [%s] in reply received over network: [%s]\n", test_case->message, escaped_received_reply);
-		return -1;
-	}
-	test_log_info("Test: correctly found [%s] in reply received over network [%s]\n", test_case->message, escaped_received_reply);
-
-
-
-
-	/* Expectation 4: cwdaemon was behaving correctly enough to key a proper
-	   Morse message on cwdevice. */
-	if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->message)) {
-		test_log_err("Test: didn't detect [%s] in received Morse message: [%s]\n", test_case->message, morse_event->u.morse_receive.string);
-		return -1;
-	}
-	test_log_info("Test: correctly found [%s] in received Morse message [%s]\n", test_case->message, morse_event->u.morse_receive.string);
-
-
-
-
-	/* Expectation 4: "Morse receive" event and "socket receive" event are
-	   close to each other.
-
-	   TODO acerion 2024.01.26: the threshold is still 0.5 seconds. That's a
-	   lot. Try to bring it down. Notice that the time diff may depend on
-	   Morse code speed (wpm).
+	  TODO acerion 2024.01.26: the threshold is still 0.5 seconds. That's a
+	  lot. Try to bring it down. Notice that the time diff may depend on
+	  Morse code speed (wpm).
 	*/
 	struct timespec diff = { 0 };
-	if (event_0->tstamp.tv_sec < event_1->tstamp.tv_sec
-	    || (event_0->tstamp.tv_sec == event_1->tstamp.tv_sec && event_0->tstamp.tv_nsec < event_1->tstamp.tv_nsec)) {
-
-		timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
+	if (morse_idx < socket_idx) {
+		timespec_diff(&morse_event->tstamp, &socket_event->tstamp, &diff);
 	} else {
-		timespec_diff(&event_1->tstamp, &event_0->tstamp, &diff);
+		timespec_diff(&socket_event->tstamp, &morse_event->tstamp, &diff);
 	}
+
 	const int threshold = 500L * 1000 * 1000; /* [nanoseconds] */
 	if (diff.tv_sec == 0 && diff.tv_nsec < threshold) {
 		test_log_info("Test: 'Morse receive' event and 'socket receive' event aren't too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
@@ -358,14 +474,11 @@ static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_
 		}
 
 		/* Send the message to be played. */
-		if (test_case->attach_caret) {
-			client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "one %s^", test_case->message);
-		} else {
-			client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->message);
-		}
+		client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "%s", test_case->full_message);
 
 		morse_receiver_wait(morse_receiver);
 
+		events_sort(&g_events);
 		events_print(&g_events); /* For debug only. */
 		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
