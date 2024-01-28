@@ -4,20 +4,9 @@
 
 
 
-#include <stdbool.h>
-
-
-
-
-#define CWDAEMON_MICROSECS_PER_MILLISEC               1000 /* Microseconds in millisecond. */
-#define CWDAEMON_MICROSECS_PER_SEC                 1000000 /* Microseconds in second. */
-#define CWDAEMON_NANOSECS_PER_MICROSEC                1000 /* Nanoseconds in microsecond. */
-#define CWDAEMON_NANOSECS_PER_SEC               1000000000 /* Nanoseconds in second. */
-
-
-
-
 /**
+   @file
+
    Sleep functions for cwdaemon
 
    Three separate functions for microseconds, milliseconds and for seconds.
@@ -27,6 +16,19 @@
    your value specfied in seconds or in microseconds, and don't worry about
    using correct X_PER_Y multiplier.
 */
+
+
+
+
+#include <stdbool.h>
+
+
+
+
+#define CWDAEMON_MICROSECS_PER_MILLISEC               1000 /* Microseconds in millisecond. */
+#define CWDAEMON_MICROSECS_PER_SEC                 1000000 /* Microseconds in second. */
+#define CWDAEMON_NANOSECS_PER_MICROSEC                1000 /* Nanoseconds in microsecond. */
+#define CWDAEMON_NANOSECS_PER_SEC               1000000000 /* Nanoseconds in second. */
 
 
 
