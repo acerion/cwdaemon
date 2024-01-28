@@ -51,6 +51,16 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
 
   Rationale: "man 1/3 getopt" talks about parsing of "options".
 
+- Use "reply" or "socket reply" when referring to data sent back by cwdaemon
+  server to clients over socket network.
+
+  The reply is sent back in response to either <ESC>h request or to caret
+  request.
+
+- Use "full reply" or "full socket reply" when referring to a reply that:
+    - includes leading 'h' character and trailing "\r\n" bytes and is sent in
+      response to <ESC>H request
+    - includes trailing "\r\n" bytes and is sent in response to caret request.
 
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services
