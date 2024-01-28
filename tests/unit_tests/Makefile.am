@@ -4,7 +4,10 @@
 # Programs to be built when "make check" target is built.
 check_PROGRAMS  = daemon_options daemon_utils
 if FUNCTIONAL_TESTS
-check_PROGRAMS += tests_random tests_time_utils tests_morse_receiver
+check_PROGRAMS += tests_random \
+                  tests_time_utils \
+                  tests_morse_receiver \
+                  tests_events
 endif
 
 
@@ -62,6 +65,9 @@ tests_random_CPPFLAGS = -I$(top_srcdir)
 
 tests_morse_receiver_SOURCES = ../library/morse_receiver_utils.c ./tests_morse_receiver.c
 tests_morse_receiver_CPPFLAGS = -I$(top_srcdir)
+
+tests_events_SOURCES = ../library/events.c ../library/misc.c  ../library/random.c ./tests_events.c
+tests_events_CPPFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS)
 
 
 

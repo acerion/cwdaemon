@@ -42,8 +42,15 @@
 
 
 
+#define _POSIX_C_SOURCE 200809L /* struct timespec */
+
+
+
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "tests/library/events.h"
 #include "tests/library/misc.h"
@@ -177,6 +184,53 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
 		//qsort(events->events, events->event_idx, sizeof (event_t), event_sort_fn);
 	}
 	pthread_mutex_unlock(&events->mutex);
+
+	return 0;
+}
+
+
+
+static int cmpevent(const void * p1, const void * p2)
+{
+	const event_t * a = (const event_t *) (const long int *) p1;
+	const event_t * b = (const event_t *) (const long int *) p2;
+
+	if (a->tstamp.tv_sec < b->tstamp.tv_sec) {
+		return -1;
+	} else if (a->tstamp.tv_sec > b->tstamp.tv_sec) {
+		return 1;
+	} else {
+		if (a->tstamp.tv_nsec < b->tstamp.tv_nsec) {
+			return -1;
+		} else if (a->tstamp.tv_nsec > b->tstamp.tv_nsec) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+}
+
+
+
+
+int events_sort(events_t * events)
+{
+	const bool do_debug = true;
+	if (do_debug) {
+		fprintf(stderr, "Events before sort:\n");
+		fprintf(stderr, "vvvvvvvv\n");
+		events_print(events);
+		fprintf(stderr, "^^^^^^^^\n");
+	}
+
+	qsort(events->events, events->event_idx, sizeof (event_t), cmpevent);
+
+	if (do_debug) {
+		fprintf(stderr, "Events after sort:\n");
+		fprintf(stderr, "vvvvvvvv\n");
+		events_print(events);
+		fprintf(stderr, "^^^^^^^^\n");
+	}
 
 	return 0;
 }

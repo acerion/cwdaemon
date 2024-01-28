@@ -89,6 +89,41 @@ void events_clear(events_t * events);
 
 
 
+/**
+   @brief Sort events by timestamp
+
+   This function sorts the events by their timestamp: from oldest to newest.
+
+   Sometimes the events are inserted in non-chronological order. They need to
+   be sorted before being evaluated.
+
+   One example of non-chronological insert is with Morse receiver: the
+   receiver will stop receiving after a break after last character grows into
+   inter-word-space. However the event that should be saved to events array
+   has happened shortly before, when the last character has been received.
+
+   An example sequence of events is this:
+    1. a character is received, timestamp of receiving is saved in temporary
+       variable.
+    2. a space after the character is long enough to be recognized after some
+       time as inter-word-space,
+    3. some event unrelated to Morse code has occurred and is recorded into
+       events array.
+    4. nothing more is received after that time (after the inter-word-space),
+       so receiver decides to save the timestamp from temporary variable into
+       events array.
+    So even though event from point 1 happened earlier, it is added to array
+    of events after event from point 3.
+
+   @param[in/out] events Events structure in which the events should be sorted.
+
+   @return 0
+*/
+int events_sort(events_t * events);
+
+
+
+
 int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp);
 int events_insert_socket_receive_event(events_t * events, const char * receive_buffer);
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);

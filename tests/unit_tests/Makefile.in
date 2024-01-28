@@ -89,7 +89,11 @@ build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = daemon_options$(EXEEXT) daemon_utils$(EXEEXT) \
 	$(am__EXEEXT_1)
-@FUNCTIONAL_TESTS_TRUE@am__append_1 = tests_random tests_time_utils tests_morse_receiver
+@FUNCTIONAL_TESTS_TRUE@am__append_1 = tests_random \
+@FUNCTIONAL_TESTS_TRUE@                  tests_time_utils \
+@FUNCTIONAL_TESTS_TRUE@                  tests_morse_receiver \
+@FUNCTIONAL_TESTS_TRUE@                  tests_events
+
 subdir = tests/unit_tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -102,7 +106,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @FUNCTIONAL_TESTS_TRUE@am__EXEEXT_1 = tests_random$(EXEEXT) \
 @FUNCTIONAL_TESTS_TRUE@	tests_time_utils$(EXEEXT) \
-@FUNCTIONAL_TESTS_TRUE@	tests_morse_receiver$(EXEEXT)
+@FUNCTIONAL_TESTS_TRUE@	tests_morse_receiver$(EXEEXT) \
+@FUNCTIONAL_TESTS_TRUE@	tests_events$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_daemon_options_OBJECTS =  \
 	../../src/daemon_options-options.$(OBJEXT) \
@@ -119,6 +124,12 @@ daemon_utils_OBJECTS = $(am_daemon_utils_OBJECTS)
 daemon_utils_LDADD = $(LDADD)
 daemon_utils_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(daemon_utils_LDFLAGS) $(LDFLAGS) -o $@
+am_tests_events_OBJECTS = ../library/tests_events-events.$(OBJEXT) \
+	../library/tests_events-misc.$(OBJEXT) \
+	../library/tests_events-random.$(OBJEXT) \
+	./tests_events-tests_events.$(OBJEXT)
+tests_events_OBJECTS = $(am_tests_events_OBJECTS)
+tests_events_LDADD = $(LDADD)
 am_tests_morse_receiver_OBJECTS = ../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT) \
 	./tests_morse_receiver-tests_morse_receiver.$(OBJEXT)
 tests_morse_receiver_OBJECTS = $(am_tests_morse_receiver_OBJECTS)
@@ -151,11 +162,15 @@ am__depfiles_remade = ../../src/$(DEPDIR)/daemon_options-log.Po \
 	../../src/$(DEPDIR)/daemon_options-options.Po \
 	../../src/$(DEPDIR)/daemon_options-utils.Po \
 	../../src/$(DEPDIR)/daemon_utils-utils.Po \
+	../library/$(DEPDIR)/tests_events-events.Po \
+	../library/$(DEPDIR)/tests_events-misc.Po \
+	../library/$(DEPDIR)/tests_events-random.Po \
 	../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po \
 	../library/$(DEPDIR)/tests_random-random.Po \
 	../library/$(DEPDIR)/tests_time_utils-time_utils.Po \
 	./$(DEPDIR)/daemon_options-daemon_options.Po \
 	./$(DEPDIR)/daemon_utils-daemon_utils.Po \
+	./$(DEPDIR)/tests_events-tests_events.Po \
 	./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po \
 	./$(DEPDIR)/tests_random-tests_random.Po \
 	./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
@@ -177,11 +192,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
-	$(tests_morse_receiver_SOURCES) $(tests_random_SOURCES) \
-	$(tests_time_utils_SOURCES)
+	$(tests_events_SOURCES) $(tests_morse_receiver_SOURCES) \
+	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
 DIST_SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
-	$(tests_morse_receiver_SOURCES) $(tests_random_SOURCES) \
-	$(tests_time_utils_SOURCES)
+	$(tests_events_SOURCES) $(tests_morse_receiver_SOURCES) \
+	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -339,6 +354,8 @@ tests_random_SOURCES = ../library/random.c ../library/random.h ./tests_random.c
 tests_random_CPPFLAGS = -I$(top_srcdir)
 tests_morse_receiver_SOURCES = ../library/morse_receiver_utils.c ./tests_morse_receiver.c
 tests_morse_receiver_CPPFLAGS = -I$(top_srcdir)
+tests_events_SOURCES = ../library/events.c ../library/misc.c  ../library/random.c ./tests_events.c
+tests_events_CPPFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -413,6 +430,18 @@ daemon_utils$(EXEEXT): $(daemon_utils_OBJECTS) $(daemon_utils_DEPENDENCIES) $(EX
 ../library/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ../library/$(DEPDIR)
 	@: > ../library/$(DEPDIR)/$(am__dirstamp)
+../library/tests_events-events.$(OBJEXT): ../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+../library/tests_events-misc.$(OBJEXT): ../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+../library/tests_events-random.$(OBJEXT): ../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+./tests_events-tests_events.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+tests_events$(EXEEXT): $(tests_events_OBJECTS) $(tests_events_DEPENDENCIES) $(EXTRA_tests_events_DEPENDENCIES) 
+	@rm -f tests_events$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_events_OBJECTS) $(tests_events_LDADD) $(LIBS)
 ../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT):  \
 	../library/$(am__dirstamp) \
 	../library/$(DEPDIR)/$(am__dirstamp)
@@ -453,11 +482,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-events.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-misc.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_utils-daemon_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_events-tests_events.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_random-tests_random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_time_utils-tests_time_utils.Po@am__quote@ # am--include-marker
@@ -567,6 +600,62 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_utils.c' object='./daemon_utils-daemon_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_utils-daemon_utils.obj `if test -f './daemon_utils.c'; then $(CYGPATH_W) './daemon_utils.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_utils.c'; fi`
+
+../library/tests_events-events.o: ../library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-events.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-events.Tpo -c -o ../library/tests_events-events.o `test -f '../library/events.c' || echo '$(srcdir)/'`../library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-events.Tpo ../library/$(DEPDIR)/tests_events-events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/events.c' object='../library/tests_events-events.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-events.o `test -f '../library/events.c' || echo '$(srcdir)/'`../library/events.c
+
+../library/tests_events-events.obj: ../library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-events.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-events.Tpo -c -o ../library/tests_events-events.obj `if test -f '../library/events.c'; then $(CYGPATH_W) '../library/events.c'; else $(CYGPATH_W) '$(srcdir)/../library/events.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-events.Tpo ../library/$(DEPDIR)/tests_events-events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/events.c' object='../library/tests_events-events.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-events.obj `if test -f '../library/events.c'; then $(CYGPATH_W) '../library/events.c'; else $(CYGPATH_W) '$(srcdir)/../library/events.c'; fi`
+
+../library/tests_events-misc.o: ../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-misc.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-misc.Tpo -c -o ../library/tests_events-misc.o `test -f '../library/misc.c' || echo '$(srcdir)/'`../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-misc.Tpo ../library/$(DEPDIR)/tests_events-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/misc.c' object='../library/tests_events-misc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-misc.o `test -f '../library/misc.c' || echo '$(srcdir)/'`../library/misc.c
+
+../library/tests_events-misc.obj: ../library/misc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-misc.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-misc.Tpo -c -o ../library/tests_events-misc.obj `if test -f '../library/misc.c'; then $(CYGPATH_W) '../library/misc.c'; else $(CYGPATH_W) '$(srcdir)/../library/misc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-misc.Tpo ../library/$(DEPDIR)/tests_events-misc.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/misc.c' object='../library/tests_events-misc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-misc.obj `if test -f '../library/misc.c'; then $(CYGPATH_W) '../library/misc.c'; else $(CYGPATH_W) '$(srcdir)/../library/misc.c'; fi`
+
+../library/tests_events-random.o: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-random.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-random.Tpo -c -o ../library/tests_events-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-random.Tpo ../library/$(DEPDIR)/tests_events-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_events-random.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+
+../library/tests_events-random.obj: ../library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-random.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-random.Tpo -c -o ../library/tests_events-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-random.Tpo ../library/$(DEPDIR)/tests_events-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_events-random.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+
+./tests_events-tests_events.o: ./tests_events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_events-tests_events.o -MD -MP -MF $(DEPDIR)/tests_events-tests_events.Tpo -c -o ./tests_events-tests_events.o `test -f './tests_events.c' || echo '$(srcdir)/'`./tests_events.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_events-tests_events.Tpo $(DEPDIR)/tests_events-tests_events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_events.c' object='./tests_events-tests_events.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_events-tests_events.o `test -f './tests_events.c' || echo '$(srcdir)/'`./tests_events.c
+
+./tests_events-tests_events.obj: ./tests_events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_events-tests_events.obj -MD -MP -MF $(DEPDIR)/tests_events-tests_events.Tpo -c -o ./tests_events-tests_events.obj `if test -f './tests_events.c'; then $(CYGPATH_W) './tests_events.c'; else $(CYGPATH_W) '$(srcdir)/./tests_events.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_events-tests_events.Tpo $(DEPDIR)/tests_events-tests_events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_events.c' object='./tests_events-tests_events.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_events-tests_events.obj `if test -f './tests_events.c'; then $(CYGPATH_W) './tests_events.c'; else $(CYGPATH_W) '$(srcdir)/./tests_events.c'; fi`
 
 ../library/tests_morse_receiver-morse_receiver_utils.o: ../library/morse_receiver_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_morse_receiver-morse_receiver_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o ../library/tests_morse_receiver-morse_receiver_utils.o `test -f '../library/morse_receiver_utils.c' || echo '$(srcdir)/'`../library/morse_receiver_utils.c
@@ -786,11 +875,15 @@ distclean: distclean-am
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-events.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-misc.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_events-tests_events.Po
 	-rm -f ./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
 	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
 	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
@@ -843,11 +936,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-events.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-misc.Po
+	-rm -f ../library/$(DEPDIR)/tests_events-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_events-tests_events.Po
 	-rm -f ./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
 	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
 	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
@@ -897,9 +994,6 @@ uninstall-am:
 @ENABLE_GCOV_TRUE@	rm -rf coverage
 @ENABLE_GCOV_TRUE@	rm -f *.gcda *.gcno
 @ENABLE_GCOV_TRUE@	rm -f ../../src/*.gcda ../../src/*.gcno
-# $(LIBCW_CFLAGS)
-# tests_morse_receiver_CPPFLAGS += -D_POSIX_C_SOURCE=200809L # struct timespec
-# tests_morse_receiver_LDADD = $(LIBCW_LIBS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
