@@ -32,13 +32,9 @@
 
 
 
-#define _GNU_SOURCE /* strcasestr() */
-
-
-
-
 #include "config.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -265,26 +261,6 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 
 	thread->status = thread_stopped_ok;
 	return NULL;
-}
-
-
-
-
-bool morse_receive_text_is_correct(const char * received_text, const char * expected_message)
-{
-	/*
-	  When comparing strings, remember that a cw receiver may have received
-	  first characters incorrectly. Text of message passed to
-	  client_send_request*() is often prefixed with some startup text that is
-	  allowed to be mis-received, so that the main part of text request is
-	  received correctly and can be recognized with strcasestr().
-
-	  TODO acerion 2024.01.27: the function needs some improvements. The
-	  function should confirm that the expected_message is at the very end of
-	  received text.
-	*/
-	const char * needle = strcasestr(received_text, expected_message);
-	return NULL != needle;
 }
 
 

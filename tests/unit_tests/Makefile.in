@@ -89,7 +89,7 @@ build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = daemon_options$(EXEEXT) daemon_utils$(EXEEXT) \
 	$(am__EXEEXT_1)
-@FUNCTIONAL_TESTS_TRUE@am__append_1 = tests_random tests_time_utils
+@FUNCTIONAL_TESTS_TRUE@am__append_1 = tests_random tests_time_utils tests_morse_receiver
 subdir = tests/unit_tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -101,7 +101,8 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @FUNCTIONAL_TESTS_TRUE@am__EXEEXT_1 = tests_random$(EXEEXT) \
-@FUNCTIONAL_TESTS_TRUE@	tests_time_utils$(EXEEXT)
+@FUNCTIONAL_TESTS_TRUE@	tests_time_utils$(EXEEXT) \
+@FUNCTIONAL_TESTS_TRUE@	tests_morse_receiver$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_daemon_options_OBJECTS =  \
 	../../src/daemon_options-options.$(OBJEXT) \
@@ -118,6 +119,10 @@ daemon_utils_OBJECTS = $(am_daemon_utils_OBJECTS)
 daemon_utils_LDADD = $(LDADD)
 daemon_utils_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(daemon_utils_LDFLAGS) $(LDFLAGS) -o $@
+am_tests_morse_receiver_OBJECTS = ../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT) \
+	./tests_morse_receiver-tests_morse_receiver.$(OBJEXT)
+tests_morse_receiver_OBJECTS = $(am_tests_morse_receiver_OBJECTS)
+tests_morse_receiver_LDADD = $(LDADD)
 am_tests_random_OBJECTS = ../library/tests_random-random.$(OBJEXT) \
 	./tests_random-tests_random.$(OBJEXT)
 tests_random_OBJECTS = $(am_tests_random_OBJECTS)
@@ -146,10 +151,12 @@ am__depfiles_remade = ../../src/$(DEPDIR)/daemon_options-log.Po \
 	../../src/$(DEPDIR)/daemon_options-options.Po \
 	../../src/$(DEPDIR)/daemon_options-utils.Po \
 	../../src/$(DEPDIR)/daemon_utils-utils.Po \
+	../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po \
 	../library/$(DEPDIR)/tests_random-random.Po \
 	../library/$(DEPDIR)/tests_time_utils-time_utils.Po \
 	./$(DEPDIR)/daemon_options-daemon_options.Po \
 	./$(DEPDIR)/daemon_utils-daemon_utils.Po \
+	./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po \
 	./$(DEPDIR)/tests_random-tests_random.Po \
 	./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 am__mv = mv -f
@@ -170,9 +177,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
-	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
+	$(tests_morse_receiver_SOURCES) $(tests_random_SOURCES) \
+	$(tests_time_utils_SOURCES)
 DIST_SOURCES = $(daemon_options_SOURCES) $(daemon_utils_SOURCES) \
-	$(tests_random_SOURCES) $(tests_time_utils_SOURCES)
+	$(tests_morse_receiver_SOURCES) $(tests_random_SOURCES) \
+	$(tests_time_utils_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -328,6 +337,8 @@ tests_time_utils_SOURCES = ../library/time_utils.c ./tests_time_utils.c
 tests_time_utils_CPPFLAGS = -I$(top_srcdir)
 tests_random_SOURCES = ../library/random.c ../library/random.h ./tests_random.c
 tests_random_CPPFLAGS = -I$(top_srcdir)
+tests_morse_receiver_SOURCES = ../library/morse_receiver_utils.c ./tests_morse_receiver.c
+tests_morse_receiver_CPPFLAGS = -I$(top_srcdir)
 all: all-am
 
 .SUFFIXES:
@@ -402,6 +413,15 @@ daemon_utils$(EXEEXT): $(daemon_utils_OBJECTS) $(daemon_utils_DEPENDENCIES) $(EX
 ../library/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ../library/$(DEPDIR)
 	@: > ../library/$(DEPDIR)/$(am__dirstamp)
+../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT):  \
+	../library/$(am__dirstamp) \
+	../library/$(DEPDIR)/$(am__dirstamp)
+./tests_morse_receiver-tests_morse_receiver.$(OBJEXT):  \
+	./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
+
+tests_morse_receiver$(EXEEXT): $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_DEPENDENCIES) $(EXTRA_tests_morse_receiver_DEPENDENCIES) 
+	@rm -f tests_morse_receiver$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_LDADD) $(LIBS)
 ../library/tests_random-random.$(OBJEXT): ../library/$(am__dirstamp) \
 	../library/$(DEPDIR)/$(am__dirstamp)
 ./tests_random-tests_random.$(OBJEXT): ./$(am__dirstamp) \
@@ -433,10 +453,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_utils-daemon_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_random-tests_random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_time_utils-tests_time_utils.Po@am__quote@ # am--include-marker
 
@@ -545,6 +567,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_utils.c' object='./daemon_utils-daemon_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_utils-daemon_utils.obj `if test -f './daemon_utils.c'; then $(CYGPATH_W) './daemon_utils.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_utils.c'; fi`
+
+../library/tests_morse_receiver-morse_receiver_utils.o: ../library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_morse_receiver-morse_receiver_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o ../library/tests_morse_receiver-morse_receiver_utils.o `test -f '../library/morse_receiver_utils.c' || echo '$(srcdir)/'`../library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/morse_receiver_utils.c' object='../library/tests_morse_receiver-morse_receiver_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_morse_receiver-morse_receiver_utils.o `test -f '../library/morse_receiver_utils.c' || echo '$(srcdir)/'`../library/morse_receiver_utils.c
+
+../library/tests_morse_receiver-morse_receiver_utils.obj: ../library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_morse_receiver-morse_receiver_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o ../library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '../library/morse_receiver_utils.c'; then $(CYGPATH_W) '../library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/morse_receiver_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/morse_receiver_utils.c' object='../library/tests_morse_receiver-morse_receiver_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '../library/morse_receiver_utils.c'; then $(CYGPATH_W) '../library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/morse_receiver_utils.c'; fi`
+
+./tests_morse_receiver-tests_morse_receiver.o: ./tests_morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_morse_receiver-tests_morse_receiver.o -MD -MP -MF $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Tpo -c -o ./tests_morse_receiver-tests_morse_receiver.o `test -f './tests_morse_receiver.c' || echo '$(srcdir)/'`./tests_morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Tpo $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_morse_receiver.c' object='./tests_morse_receiver-tests_morse_receiver.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_morse_receiver-tests_morse_receiver.o `test -f './tests_morse_receiver.c' || echo '$(srcdir)/'`./tests_morse_receiver.c
+
+./tests_morse_receiver-tests_morse_receiver.obj: ./tests_morse_receiver.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_morse_receiver-tests_morse_receiver.obj -MD -MP -MF $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Tpo -c -o ./tests_morse_receiver-tests_morse_receiver.obj `if test -f './tests_morse_receiver.c'; then $(CYGPATH_W) './tests_morse_receiver.c'; else $(CYGPATH_W) '$(srcdir)/./tests_morse_receiver.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Tpo $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./tests_morse_receiver.c' object='./tests_morse_receiver-tests_morse_receiver.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_morse_receiver-tests_morse_receiver.obj `if test -f './tests_morse_receiver.c'; then $(CYGPATH_W) './tests_morse_receiver.c'; else $(CYGPATH_W) '$(srcdir)/./tests_morse_receiver.c'; fi`
 
 ../library/tests_random-random.o: ../library/random.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_random-random.o -MD -MP -MF ../library/$(DEPDIR)/tests_random-random.Tpo -c -o ../library/tests_random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
@@ -736,10 +786,12 @@ distclean: distclean-am
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
 	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
 	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 	-rm -f Makefile
@@ -791,10 +843,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
+	-rm -f ./$(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Po
 	-rm -f ./$(DEPDIR)/tests_random-tests_random.Po
 	-rm -f ./$(DEPDIR)/tests_time_utils-tests_time_utils.Po
 	-rm -f Makefile
@@ -843,6 +897,9 @@ uninstall-am:
 @ENABLE_GCOV_TRUE@	rm -rf coverage
 @ENABLE_GCOV_TRUE@	rm -f *.gcda *.gcno
 @ENABLE_GCOV_TRUE@	rm -f ../../src/*.gcda ../../src/*.gcno
+# $(LIBCW_CFLAGS)
+# tests_morse_receiver_CPPFLAGS += -D_POSIX_C_SOURCE=200809L # struct timespec
+# tests_morse_receiver_LDADD = $(LIBCW_LIBS)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

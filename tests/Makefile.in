@@ -92,6 +92,7 @@ host_triplet = @host@
 # These unit tests are for code that is used only in functional tests.
 @FUNCTIONAL_TESTS_TRUE@am__append_2 = unit_tests/tests_random \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_time_utils \
+@FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_morse_receiver \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/option_cwdevice_tty_lines/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/option_port/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/reset_register_callback/test_program \
@@ -808,6 +809,13 @@ unit_tests/tests_random.log: unit_tests/tests_random
 unit_tests/tests_time_utils.log: unit_tests/tests_time_utils
 	@p='unit_tests/tests_time_utils'; \
 	b='unit_tests/tests_time_utils'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unit_tests/tests_morse_receiver.log: unit_tests/tests_morse_receiver
+	@p='unit_tests/tests_morse_receiver'; \
+	b='unit_tests/tests_morse_receiver'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

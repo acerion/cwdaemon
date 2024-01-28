@@ -34,20 +34,5 @@ int morse_receiver_wait(morse_receiver_t * receiver);
 
 
 
-
-/**
-   @brief Test whether text received through Morse receiver matches expected string
-
-   @param[in] received_text Text received by Morse receiver
-   @param[in] expected_message The text that we have expected to receive
-
-   @return true if there is a match
-   @return false otherwise
-*/
-bool morse_receive_text_is_correct(const char * received_text, const char * expected_message);
-
-
-
-
 #endif /* #ifndef CWDAEMON_TEST_LIB_MORSE_RECEIVER_H */
 
