@@ -107,7 +107,8 @@ static test_case_t g_test_cases[] = {
 
 static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
 static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
-static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver);
+static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver);
+static int evaluate_events(events_t * events, const test_case_t * test_case);
 
 
 
@@ -136,7 +137,7 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (run_test_cases(g_test_cases, n_test_cases, &client, morse_receiver)) {
+	if (test_run(g_test_cases, n_test_cases, &client, morse_receiver)) {
 		test_log_err("Test: failed at running test cases %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -162,13 +163,22 @@ int main(void)
 
 
 /**
+   @brief Evaluate events that were reported by objects used during execution
+   of single test case
+
    Look at contents of @p events and check if order and types of events are
    as expected.
+
+   The events may include
+     - receiving Morse code
+     - receiving reply from cwdaemon server,
+     - changes of state of PTT pin,
+     - exiting of local instance of cwdaemon server process,
 
    @return 0 if events are in proper order and of proper type
    @return -1 otherwise
 */
-static int events_evaluate(events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	const event_t * event_0 = &events->events[0];
 	const event_t * event_1 = &events->events[1];
@@ -299,6 +309,9 @@ static int events_evaluate(events_t * events, const test_case_t * test_case)
 
 
 
+/**
+   @brief Prepare resources used to execute set of test cases
+*/
 static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
 {
 	bool failure = false;
@@ -348,6 +361,10 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 
 
 
+
+/**
+   @brief Clean up resources used to execute set of test cases
+*/
 static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
 {
 	bool failure = false;
@@ -377,7 +394,10 @@ static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_re
 
 
 
-static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver)
+/**
+   @brief Run all test cases. Evaluate results (the events) of each test case.
+*/
+static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 
@@ -419,7 +439,7 @@ static int run_test_cases(test_case_t * test_cases, size_t n_test_cases, client_
 		events_print(&g_events);
 
 		/* Validation of test run. */
-		if (0 != events_evaluate(&g_events, test_case)) {
+		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			break;

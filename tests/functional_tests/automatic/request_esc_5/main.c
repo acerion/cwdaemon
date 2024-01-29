@@ -109,7 +109,7 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int events_evaluate(const events_t * events, const test_case_t * test_case);
+static int evaluate_events(const events_t * events, const test_case_t * test_case);
 static int run_test_case(const test_case_t * test_case);
 
 
@@ -162,7 +162,7 @@ int main(void)
 		}
 
 		events_print(&g_events); /* For debug only. */
-		if (0 != events_evaluate(&g_events, test_case)) {
+		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
 			failure = true;
 			break;
@@ -299,7 +299,7 @@ static int run_test_case(const test_case_t * test_case)
 		} else {
 			/* There was never a signal from child (at least not in
 			   reasonable time. This will be recognized by
-			   events_evaluate(). */
+			   evaluate_events(). */
 		}
 	}
 
@@ -318,8 +318,23 @@ static int run_test_case(const test_case_t * test_case)
 
 
 
+/**
+   @brief Evaluate events that were reported by objects used during execution
+   of single test case
 
-static int events_evaluate(const events_t * events, const test_case_t * test_case)
+   Look at contents of @p events and check if order and types of events are
+   as expected.
+
+   The events may include
+     - receiving Morse code
+     - receiving reply from cwdaemon server,
+     - changes of state of PTT pin,
+     - exiting of local instance of cwdaemon server process,
+
+   @return 0 if events are in proper order and of proper type
+   @return -1 otherwise
+*/
+static int evaluate_events(const events_t * events, const test_case_t * test_case)
 {
 	/* Expectation 1: there should be N events:
 	    - Morse receive (if test_case::message is empty then we don't expect this event to occur),
