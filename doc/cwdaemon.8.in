@@ -126,7 +126,7 @@ Default is \fBDTR\fR.
 \fBptt=RTS|DTR|none\fR
 
 .IP
-Use \fBRTS\fR or \fBDTS\fR line for SSB PTT, or \fBnone\fR disable PTT.
+Use \fBRTS\fR or \fBDTS\fR line for SSB PTT, or \fBnone\fR to disable PTT.
 Default is \fBRTS\fR.
 
 
