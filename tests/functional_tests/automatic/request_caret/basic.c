@@ -234,21 +234,21 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	const bool expecting_socket_reply_event = 0 != strlen(test_case->full_expected_socket_reply);
 	if (!expecting_morse_event && !expecting_socket_reply_event) {
 		if (0 != events->event_idx) {
-			test_log_err("Test: incorrect count of events recorded. Expected 0 events, got %d\n", events->event_idx);
+			test_log_err("Expectation 1: incorrect count of events recorded. Expected 0 events, got %d\n", events->event_idx);
 			return -1;
 		}
-		test_log_info("Test: there are zero events (as expected), so evaluation of events is now completed %s\n", "");
+		test_log_info("Expectation 1: there are zero events (as expected), so evaluation of events is now completed %s\n", "");
 		return 0;
 	} else if (expecting_morse_event && expecting_socket_reply_event) {
 		if (2 != events->event_idx) {
-			test_log_err("Test: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
+			test_log_err("Expectation 1: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
 			return -1;
 		}
 	} else {
-		test_log_err("Test: Incorrect situation when checking 'expecting' flags: %d != %d\n", expecting_morse_event, expecting_socket_reply_event);
+		test_log_err("Expectation 1: Incorrect situation when checking 'expecting' flags: %d != %d\n", expecting_morse_event, expecting_socket_reply_event);
 		return -1;
 	}
-	test_log_info("Test: count of events is correct: %d\n", events->event_idx);
+	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
 
 
 
@@ -262,7 +262,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	int socket_idx = -1;
 
 	if (events->events[0].event_type == events->events[1].event_type) {
-		test_log_err("Test: both events have the same type %s\n", "");
+		test_log_err("Expectation 2: both events have the same type %s\n", "");
 		return -1;
 	}
 
@@ -273,7 +273,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 		morse_event = &events->events[1];
 		morse_idx = 1;
 	} else {
-		test_log_err("Test: can't find Morse receive event in events table %s\n", "");
+		test_log_err("Expectation 2: can't find Morse receive event in events table %s\n", "");
 		return -1;
 	}
 
@@ -284,7 +284,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 		socket_event = &events->events[1];
 		socket_idx = 1;
 	} else {
-		test_log_err("Test: can't find socket receive event in events table %s\n", "");
+		test_log_err("Expectation 2: can't find socket receive event in events table %s\n", "");
 		return -1;
 	}
 
@@ -307,10 +307,10 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	  end of message.
 	*/
 	if (morse_idx < socket_idx) {
-		test_log_warn("Test: unexpected order of events: Morse first (idx = %d), socket second (idx = %d)\n", morse_idx, socket_idx);
+		test_log_warn("Expectation 3: unexpected order of events: Morse first (idx = %d), socket second (idx = %d)\n", morse_idx, socket_idx);
 		//return -1; /* TODO acerion 2024.01.26: uncomment after your are certain of correct order of events. */
 	} else {
-		test_log_info("Test: expected order of events: socket first (idx = %d), Morse second (idx = %d)\n", socket_idx, morse_idx);
+		test_log_info("Expectation 3: expected order of events: socket first (idx = %d), Morse second (idx = %d)\n", socket_idx, morse_idx);
 	}
 
 
@@ -329,10 +329,10 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	escape_string(full_received, escaped_received, sizeof (escaped_received));
 
 	if (0 != strcmp(full_received, full_expected)) {
-		test_log_err("Test: received socket reply [%s] doesn't match expected socket reply [%s]\n", escaped_received, escaped_expected);
+		test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", escaped_received, escaped_expected);
 		return -1;
 	}
-	test_log_info("Test: received socket reply [%s] matches expected reply [%s]\n", escaped_received, escaped_expected);
+	test_log_info("Expectation 4: received socket reply [%s] matches expected reply [%s]\n", escaped_received, escaped_expected);
 
 
 
@@ -348,14 +348,14 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	const bool do_morse_test = strlen(test_case->expected_morse_receive) > 1;
 	if (do_morse_test) {
 		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
-			test_log_err("Test: received Morse message [%s] doesn't match expected receive [%s]\n",
+			test_log_err("Expectation 5: received Morse message [%s] doesn't match expected receive [%s]\n",
 			             morse_event->u.morse_receive.string, test_case->expected_morse_receive);
 			return -1;
 		}
-		test_log_info("Test: received Morse message [%s] matches expected receive [%s] (ignoring the first character)\n",
+		test_log_info("Expectation 5: received Morse message [%s] matches expected receive [%s] (ignoring the first character)\n",
 		              morse_event->u.morse_receive.string, test_case->expected_morse_receive);
 	} else {
-		test_log_notice("Test: skipping verification of message received by Morse receiver due to short expected string %s\n", "");
+		test_log_notice("Expectation 5: skipping verification of message received by Morse receiver due to short expected string %s\n", "");
 	}
 
 
@@ -378,9 +378,9 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	const int threshold = 500L * 1000 * 1000; /* [nanoseconds] */
 	if (diff.tv_sec == 0 && diff.tv_nsec < threshold) {
-		test_log_info("Test: 'Morse receive' event and 'socket receive' event aren't too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
+		test_log_info("Expectation 6: 'Morse receive' event and 'socket receive' event aren't too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 	} else {
-		test_log_err("Test: 'Morse receive' event and 'socket receive' event are too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
+		test_log_err("Expectation 6: 'Morse receive' event and 'socket receive' event are too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
 
