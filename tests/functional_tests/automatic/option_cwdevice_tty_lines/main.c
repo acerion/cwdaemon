@@ -276,7 +276,7 @@ static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_r
 static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	if (0 != morse_receiver_start(morse_receiver)) {
-		test_log_err("Failed to start Morse receiver (%d)\n", 1);
+		test_log_err("Test: failed to start Morse receiver (%d)\n", 1);
 		return -1;
 	}
 
@@ -286,10 +286,10 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 
 	events_print(events);
 	if (0 != evaluate_events(events, test_case)) {
-		test_log_err("Evaluation of events has failed %s\n", "");
+		test_log_err("Test: evaluation of events has failed %s\n", "");
 		return -1;
 	}
-	test_log_info("Evaluation of events was successful %s\n", "");
+	test_log_info("Test: evaluation of events was successful %s\n", "");
 
 	events_clear(events);
 
@@ -317,7 +317,7 @@ static int testcase_teardown(cwdaemon_server_t * server, client_t * client, mors
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
 		*/
-		test_log_err("Failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
+		test_log_err("Test: failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
 		failure = true;
 	}
 
@@ -363,7 +363,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	if (0 == events->event_idx) {
 		/* No more expectations to fulfill. */
-		test_log_info("Evaluation of test events was successful %s\n", "");
+		test_log_info("Test: evaluation of test events was successful %s\n", "");
 		return 0;
 	}
 
@@ -394,7 +394,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 
 
-	test_log_info("Evaluation of test events was successful %s\n", "");
+	test_log_info("Test: evaluation of test events was successful %s\n", "");
 
 	return 0;
 }

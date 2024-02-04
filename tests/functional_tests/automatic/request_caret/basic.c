@@ -510,7 +510,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			failure = true;
 			break;
 		}
-		test_log_info("Evaluation of events was successful for test case %zu / %zu\n", i + 1, n_test_cases);
+		test_log_info("Test: evaluation of events was successful for test case %zu / %zu\n", i + 1, n_test_cases);
 
 		/* Clear stuff before running next test case. */
 		events_clear(&g_events);

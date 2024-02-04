@@ -75,13 +75,13 @@ int main(void)
 {
 #if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		test_log_err("Preconditions for test env are not met, exiting %s\n", "");
+		test_log_err("Test: preconditions for test env are not met, exiting %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 #endif
 
 	const uint32_t seed = cwdaemon_srandom(0);
-	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	int wpm = 10;
 	/* Remember that some receive timeouts in tests were selected when the
@@ -106,7 +106,7 @@ int main(void)
 	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
 	if (0 != server_start(&cwdaemon_opts, &server)) {
-		test_log_err("Failed to start cwdaemon server, exiting %s\n", "");
+		test_log_err("Test: failed to start cwdaemon server, exiting %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -124,7 +124,7 @@ int main(void)
 	   broken yet. */
 	{
 		if (0 != morse_receiver_start(morse_receiver)) {
-			test_log_err("Failed to start Morse receiver (%d)\n", 1);
+			test_log_err("Test: failed to start Morse receiver (%d)\n", 1);
 			failure = true;
 			goto cleanup;
 		}
@@ -145,7 +145,7 @@ int main(void)
 	   state. A fixed cwdaemon should reset itself correctly. */
 	{
 		if (0 != morse_receiver_start(morse_receiver)) {
-			test_log_err("Failed to start Morse receiver (%d)\n", 2);
+			test_log_err("Test: failed to start Morse receiver (%d)\n", 2);
 			failure = true;
 			goto cleanup;
 		}
@@ -158,10 +158,10 @@ int main(void)
 
 
 	if (0 != evaluate_events(&g_events, message1, message2)) {
-		test_log_err("Evaluation of events has failed %s\n", "");
+		test_log_err("Test: evaluation of events has failed %s\n", "");
 		failure = true;
 	} else {
-		test_log_info("Evaluation of events was successful %s\n", "");
+		test_log_info("Test: evaluation of events was successful %s\n", "");
 	}
 
 
@@ -179,7 +179,7 @@ int main(void)
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
 		*/
-		test_log_err("Failed to correctly stop local test instance of cwdaemon server %s\n", "");
+		test_log_err("Test: failed to correctly stop local test instance of cwdaemon server %s\n", "");
 		failure = true;
 	}
 
@@ -205,10 +205,10 @@ static int evaluate_events(events_t * events, const char * message1, const char 
 {
 	/* Expectation 1: there are two events: Morse code was keyed (and received) on cwdevice twice. */
 	if (2  != events->event_idx) {
-		test_log_err("Incorrect count of events: %d\n", events->event_idx);
+		test_log_err("Expectation 1: incorrect count of events: %d\n", events->event_idx);
 		return -1;
 	}
-	test_log_info("Correct count of test events: %d\n", events->event_idx);
+	test_log_info("Expectation 1: correct count of test events: %d\n", events->event_idx);
 
 
 
@@ -219,10 +219,10 @@ static int evaluate_events(events_t * events, const char * message1, const char 
 	if (morse1->event_type != event_type_morse_receive
 	    || morse2->event_type != event_type_morse_receive) {
 
-		test_log_err("Incorrect type of event(s): %d, %d\n", morse1->event_type, morse2->event_type);
+		test_log_err("Expectation 2: incorrect type of event(s): %d, %d\n", morse1->event_type, morse2->event_type);
 		return -1;
 	}
-	test_log_info("Correct types of test events: %d, %d\n", morse1->event_type, morse2->event_type);
+	test_log_info("Expectation 2: correct types of test events: %d, %d\n", morse1->event_type, morse2->event_type);
 
 
 
@@ -233,17 +233,17 @@ static int evaluate_events(events_t * events, const char * message1, const char 
 	if (!morse_receive_text_is_correct(received_string1, message1)
 	    || !morse_receive_text_is_correct(received_string2, message2)) {
 
-		test_log_err("Incorrect text in Morse receive event(s): [%s], [%s]\n",
+		test_log_err("Expectation 3: incorrect text in Morse receive event(s): [%s], [%s]\n",
 		             received_string1, received_string2);
 		return -1;
 	}
-	test_log_info("Correct text in Morse receive events: [%s], [%s]\n",
+	test_log_info("Expectation 3: correct text in Morse receive events: [%s], [%s]\n",
 	              received_string1, received_string2);
 
 
 
 
-	test_log_info("Evaluation of test events was successful %s\n", "");
+	test_log_info("Test: evaluation of test events was successful %s\n", "");
 
 	return 0;
 }

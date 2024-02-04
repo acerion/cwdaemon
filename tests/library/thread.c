@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "log.h"
 #include "thread.h"
 #include "sleep.h"
 
@@ -54,7 +55,7 @@ int thread_start(thread_t * thread)
 {
 	int retv = pthread_create(&thread->thread_id, &thread->thread_attr, thread->thread_fn, thread->thread_fn_arg);
 	if (0 != retv) {
-		fprintf(stderr, "[EE] %s: failed to create thread: %s\n", thread->name, strerror(retv));
+		test_log_err("Test: %s: failed to create thread: %s\n", thread->name, strerror(retv));
 		return -1;
 	}
 
@@ -62,7 +63,7 @@ int thread_start(thread_t * thread)
 	   a bit and check thread's flag. */
 	test_millisleep_nonintr(100);
 	if (thread->status != thread_running) {
-		fprintf(stderr, "[EE] %s: thread has not started correctly\n", thread->name);
+		test_log_err("Test: %s: thread has not started correctly\n", thread->name);
 		return -1;
 	}
 

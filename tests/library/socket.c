@@ -53,6 +53,7 @@
 
 
 
+#include "log.h"
 #include "socket.h"
 
 
@@ -74,7 +75,7 @@ int open_socket_to_server(const char * server_ip_address, in_port_t server_in_po
 	snprintf(port_buf, sizeof (port_buf), "%d", server_in_port);
 	int rv = getaddrinfo(server_ip_address, port_buf, &hints, &result);
 	if (rv) {
-		fprintf(stderr, "[EE] call to getaddrinfo() failed %s\n", gai_strerror(rv));
+		test_log_err("Test: call to getaddrinfo() failed %s\n", gai_strerror(rv));
 		return -1;
 	}
 
@@ -98,7 +99,7 @@ int open_socket_to_server(const char * server_ip_address, in_port_t server_in_po
 	freeaddrinfo(result); /* No longer needed */
 
 	if (-1 == fd) {
-		fprintf(stderr, "[EE] Cannot not open a socket to cwdaemon server\n");
+		test_log_err("Test: cannot open a socket to cwdaemon server %s\n", "");
 	}
 	return fd;
 }

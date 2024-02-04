@@ -40,6 +40,7 @@
 
 
 #include "cwdevice_observer.h"
+#include "log.h"
 #include "misc.h"
 #include "sleep.h"
 
@@ -62,7 +63,7 @@ int cwdevice_observer_start(cwdevice_observer_t * observer)
 	observer->do_polling = true;
 	const int retv = pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
 	if (0 != retv) {
-		fprintf(stderr, "[EE] Failed to create an observer thread: %d\n", retv);
+		test_log_err("cwdevice observer: failed to create an observer thread: %d\n", retv);
 		observer->do_polling = false;
 		return -1;
 	} else {
@@ -94,7 +95,7 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 		bool ptt_is_on = false;
 
 		if (!observer->poll_once_fn(observer, &key_is_down, &ptt_is_on)) {
-			fprintf(stderr, "[EE] Failed to poll once\n");
+			test_log_err("cwdevice observer: failed to poll once %s\n", "");
 			return NULL;
 		}
 
@@ -114,7 +115,7 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 
 		const int sleep_retv = test_microsleep_nonintr(observer->poll_interval_us);
 		if (sleep_retv) {
-			fprintf(stderr, "[ERROR] error in sleep in key poll\n");
+			test_log_err("cwdevice observer: error in sleep in key poll %s\n", "");
 		}
 	}
 

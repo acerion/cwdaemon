@@ -79,7 +79,7 @@ static bool is_local_udp_port_used(in_port_t port)
 
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd == -1) {
-		fprintf(stderr, "[EE] can't open socket\n");
+		test_log_err("Test: can't open socket %s\n", "");
 		 /* Since we can't open a socket we can't be really sure, but
 		    to be safe return true here. */
 		return true;
@@ -140,7 +140,7 @@ int find_unused_random_biased_local_udp_port(in_port_t * port)
 			const unsigned int lower = CWDAEMON_NETWORK_PORT_MIN;
 			const unsigned int upper = CWDAEMON_NETWORK_PORT_MAX;
 			if (0 != cwdaemon_random_uint(lower, upper, &value)) {
-				fprintf(stderr, "[EE] Failed to get random port in range %u - %u\n", lower, upper);
+				test_log_err("Test: failed to get random port in range %u - %u\n", lower, upper);
 				return -1;
 			}
 		}
@@ -185,7 +185,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 
 	// TODO (acerion): we should compare recv_buf with requested_reply_value.
 
-	test_log_debug("Trying to communicate with remote server at [%s:%u], recv(%d) -> %ld\n", server, server_in_port, socket, r);
+	test_log_debug("Test: trying to communicate with remote server at [%s:%u], recv(%d) -> %ld\n", server, server_in_port, socket, r);
 
 	return -1 != r;
 }

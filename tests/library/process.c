@@ -108,14 +108,14 @@ static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 	if (opts->l4_port == -1) {
 		/* Special case used in "option_port" functional test. Run the
 		   process with invalid port zero. */
-		fprintf(stderr, "[WW] Requested value of port is out of range: %d, continuing with the value anyway\n", 0);
+		test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", 0);
 		*port = 0;
 	} else if (opts->l4_port == 0) {
 		/* Generate random (but still valid, within valid range) port
 		   number. */
 		in_port_t random_valid_port = 0;
 		if (0 != find_unused_random_biased_local_udp_port(&random_valid_port)) {
-			test_log_err("Failed to get random port %s\n", "");
+			test_log_err("Test: failed to get random port %s\n", "");
 			return -1;
 		}
 		*port = (int) random_valid_port;
@@ -124,7 +124,7 @@ static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 			/* Invalid (out of range) values may be allowed in code testing
 			   how cwdaemon process handles invalid values of ports.
 			   Therefore this is just a warning situation. */
-			fprintf(stderr, "[WW] Requested value of port is out of range: %d, continuing with the value anyway\n", opts->l4_port);
+			test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", opts->l4_port);
 		}
 		*port = opts->l4_port;
 	}
@@ -159,7 +159,7 @@ static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int * argc, int * port)
 {
 	if (0 != get_port_number(opts, port)) {
-		test_log_err("Failed to get port number from opts %s\n", "");
+		test_log_err("Test: failed to get port number from opts %s\n", "");
 		return -1;
 	}
 
@@ -171,14 +171,14 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 
 		if (!explicit_port_argument) {
 			/* Let cwdaemon start without explicitly specified port. */
-			test_log_info("cwdaemon will start with default port, without explicit 'port' option %s\n", "");
+			test_log_info("Test: cwdaemon will start with default port, without explicit 'port' option %s\n", "");
 			return 0;
 		}
 	}
 
 	bool use_long_opt = false;
 	if (0 != cwdaemon_random_bool(&use_long_opt)) {
-		test_log_err("Failed go get 'use long opt' random boolean %s\n", "");
+		test_log_err("Test: failed go get 'use long opt' random boolean %s\n", "");
 		return -1;
 	}
 
@@ -206,7 +206,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 	argv[a++] = path;
 
 	if (0 != get_option_port(opts, argv, &a, &l4_port)) {
-		test_log_err("Failed to get 'port' option for command line %s\n", "");
+		test_log_err("Test: failed to get 'port' option for command line %s\n", "");
 		return -1;
 	}
 
@@ -214,7 +214,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 	if (0 == pid) {
 		char * env[ENV_MAX_COUNT + 1] = { 0 };
 		if (0 != prepare_env(env)) {
-			fprintf(stderr, "[EE] failed to prepare env table for child process\n");
+			test_log_err("Test: failed to prepare env table for child process %s\n", "");
 			return -1;
 		}
 
@@ -253,7 +253,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
 			break;
 		default:
-			fprintf(stderr, "[EE] unsupported %d sound system\n", opts->sound_system);
+			test_log_err("Test: unsupported %d sound system\n", opts->sound_system);
 			return -1;
 		};
 
@@ -311,7 +311,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 		fprintf(stderr, "\n");
 
 		execve(path, (char * const *) argv, env);
-		fprintf(stderr, "[EE] Returning after failed exec(): %s\n", strerror(errno));
+		test_log_err("Test: reurning after failed exec(): %s\n", strerror(errno));
 		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
 		/*
@@ -333,30 +333,30 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 		*/
 		const int sleep_retv = test_millisleep_nonintr(300);
 		if (sleep_retv) {
-			fprintf(stderr, "[EE] Error during sleep in parent: %s\n", strerror(errno));
+			test_log_err("Test: error during sleep in parent: %s\n", strerror(errno));
 			return -1;
 		}
 
 		pid_t waited_pid = waitpid(pid, &server->wstatus, WNOHANG);
 		if (pid == waited_pid) {
-			fprintf(stderr, "[NN] Child process %d changed state\n", pid);
+			test_log_notice("Test: Child process %d changed state\n", pid);
 			if (WIFEXITED(server->wstatus)) {
-				fprintf(stderr, "[EE] Child process exited too early, exit status = %d\n", WEXITSTATUS(server->wstatus));
+				test_log_err("Test: child process exited too early, exit status = %d\n", WEXITSTATUS(server->wstatus));
 			} else if (WIFSIGNALED(server->wstatus)) {
-				fprintf(stderr, "[EE] Child process was terminated by signal %d\n", WTERMSIG(server->wstatus));
+				test_log_err("Test: child process was terminated by signal %d\n", WTERMSIG(server->wstatus));
 			} else if (WIFSTOPPED(server->wstatus)) {
-				fprintf(stderr, "[EE] Child process was stopped by signal %d\n", WSTOPSIG(server->wstatus));
+				test_log_err("Test: child process was stopped by signal %d\n", WSTOPSIG(server->wstatus));
 			} else {
-				fprintf(stderr, "[EE] Child process didn't start correctly due to unknown reason\n");
+				test_log_err("Test: child process didn't start correctly due to unknown reason %s\n", "");
 			}
 			return -1;
 		} else if (0 == waited_pid) {
-			fprintf(stderr, "[II] cwdaemon server started, pid = %d, l4 port = %d\n", pid, l4_port);
+			test_log_info("Test: cwdaemon server started, pid = %d, l4 port = %d\n", pid, l4_port);
 			server->pid = pid;
 			server->l4_port = l4_port;
 			return 0;
 		} else {
-			fprintf(stderr, "[EE] starting of process: waitpid() returns %d, errno = %s\n", waited_pid, strerror(errno));
+			test_log_err("Test: starting of process: waitpid() returns %d, errno = %s\n", waited_pid, strerror(errno));
 			return -1;
 		}
 	}
@@ -369,7 +369,7 @@ int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
 {
 	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, server)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon server\n");
+		test_log_err("Test: failed to start cwdaemon server %s\n", "");
 		return -1;
 	}
 
@@ -403,7 +403,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 		static char ld_path[BUF_SIZE] = { 0 };
 		int n = snprintf(ld_path, sizeof (ld_path), "%s", "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:" LIBCW_LIBDIR "/");
 		if (n >= BUF_SIZE) {
-			fprintf(stderr, "[EE] overflow when writing ld_path to env table\n");
+			test_log_err("Test: overflow when writing ld_path to env table %s\n", "");
 			return -1;
 		}
 		env[env_i] = ld_path;
@@ -432,7 +432,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 		if (value) {
 			int n = snprintf(xdg_runtime, sizeof (xdg_runtime), "%s=%s", name, value);
 			if (n >= BUF_SIZE) {
-				fprintf(stderr, "[EE] overflow when writing XDG RUNTIME DIR to env table\n");
+				test_log_err("Test: overflow when writing XDG RUNTIME DIR to env table %s\n", "");
 				return -1;
 			}
 			env[env_i] = xdg_runtime;
@@ -442,7 +442,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 
 	if (env_i > ENV_MAX_COUNT) {
 		/* TODO: it may be too late for this check: writing past the array size may have already happened. */
-		fprintf(stderr, "[EE] Count of env items in env table is exceeded: %d > %d\n", env_i, ENV_MAX_COUNT);
+		test_log_err("Test: count of env items in env table is exceeded: %d > %d\n", env_i, ENV_MAX_COUNT);
 		return -1;
 	}
 
@@ -470,17 +470,17 @@ int local_server_stop(cwdaemon_server_t * server, client_t * client)
 	/* Give the server some time to exit. */
 	const int sleep_retv = test_sleep_nonintr(2);
 	if (sleep_retv) {
-		fprintf(stderr, "[NOTIC] error during sleep while waiting for local server to exit\n");
+		test_log_notice("Test: error during sleep while waiting for local server to exit %s\n", "");
 	}
 
 	/* Now check if test instance of cwdaemon is no longer present, as expected. */
 	if (0 == waitpid(server->pid, &server->wstatus, WNOHANG)) {
 		/* Process still exists, kill it. */
-		fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
+		test_log_err("Test: local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL %s\n", "");
 		/* The fact that we need to kill cwdaemon with a
 		   signal is a bug. */
 		kill(server->pid, SIGKILL);
-		fprintf(stderr, "[NOTIC] Local test instance of cwdaemon was forcibly killed\n");
+		test_log_notice("Test: local test instance of cwdaemon was forcibly killed %s\n", "");
 		retval = -1;
 	}
 

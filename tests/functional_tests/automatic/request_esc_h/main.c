@@ -191,7 +191,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation 1: there should be only two events. */
 	{
 		if (2 != events->event_idx) {
-			test_log_err("Test: unexpected count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: unexpected count of events: %d\n", events->event_idx);
 			return -1;
 		}
 	}
@@ -222,13 +222,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 				// This is the current incorrect behaviour that is accepted
 				// for now.
-				test_log_warn("Test: incorrect (but currently expected) order of events: %d -> %d\n",
+				test_log_warn("Expectation 2: incorrect (but currently expected) order of events: %d -> %d\n",
 				              event_0->event_type, event_1->event_type);
 				socket_event = event_0;
 				morse_event = event_1;
 				; /* Pass. */
 			} else {
-				test_log_err("Test: completely incorrect order of events: %d -> %d\n",
+				test_log_err("Expectation 2: completely incorrect order of events: %d -> %d\n",
 				             event_0->event_type, event_1->event_type);
 				return -1;
 			}
@@ -249,7 +249,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
 		; /* Pass. */
 	} else {
-		test_log_err("Test: time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+		test_log_err("Expectation 3: time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
 		             diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
@@ -264,11 +264,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	{
 		const char * received_string = morse_event->u.morse_receive.string;
 		if (!morse_receive_text_is_correct(received_string, test_case->message)) {
-			test_log_err("Test: received incorrect Morse message: expected [%s], received [%s]\n",
+			test_log_err("Expectation 4: received incorrect Morse message: expected [%s], received [%s]\n",
 			             test_case->message, received_string);
 			return -1;
 		} else {
-			test_log_info("Test: received expected Morse message: expected [%s], received [%s]\n",
+			test_log_info("Expectation 4: received expected Morse message: expected [%s], received [%s]\n",
 			              test_case->message, received_string);
 			; /* Pass. */
 		}
@@ -291,11 +291,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		escape_string(actual_raw, escaped_actual, sizeof (escaped_actual));
 
 		if (0 != strcmp(expected_raw, actual_raw)) {
-			test_log_err("Test: received incorrect message in socket reply: expected [%s], received [%s]\n",
+			test_log_err("Expectation 5: received incorrect message in socket reply: expected [%s], received [%s]\n",
 			             escaped_expected, escaped_actual);
 			return -1;
 		} else {
-			test_log_info("Test: received expected message in socket reply: expected [%s], received [%s]\n",
+			test_log_info("Expectation 5: received expected message in socket reply: expected [%s], received [%s]\n",
 			              escaped_expected, escaped_actual);
 			; /* Pass. */
 		}

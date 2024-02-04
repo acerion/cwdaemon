@@ -53,6 +53,7 @@
 #include <time.h>
 
 #include "tests/library/events.h"
+#include "tests/library/log.h"
 #include "tests/library/misc.h"
 
 
@@ -78,27 +79,27 @@ void events_print(const events_t * events)
 		const long int sec = ts.tv_sec - first_ts.tv_sec; /* Normalize. Make the timestamps more readable. */
 		switch (event->event_type) {
 		case event_type_morse_receive:
-			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: Morse receive:  [%s]\n",
-			        e,
-			        sec, ts.tv_nsec,
-			        event->u.morse_receive.string);
+			test_log_debug("Test: event #%02zd: %3ld.%09ld: Morse receive:  [%s]\n",
+			               e,
+			               sec, ts.tv_nsec,
+			               event->u.morse_receive.string);
 			break;
 		case event_type_client_socket_receive:
-			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
-			        e,
-			        sec, ts.tv_nsec,
-			        escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
+			test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
+			               e,
+			               sec, ts.tv_nsec,
+			               escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
 			break;
 		case event_type_sigchld:
-			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
-			        e,
-			        sec, ts.tv_nsec,
-			        event->u.sigchld.wstatus);
+			test_log_debug("Test: event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
+			               e,
+			               sec, ts.tv_nsec,
+			               event->u.sigchld.wstatus);
 			break;
 		case event_type_request_exit:
-			fprintf(stderr, "[DD] event #%02zd: %3ld.%09ld: EXIT request\n",
-			        e,
-			        sec, ts.tv_nsec);
+			test_log_debug("Test: event #%02zd: %3ld.%09ld: EXIT request\n",
+			               e,
+			               sec, ts.tv_nsec);
 			break;
 		case event_type_none:
 		default:
@@ -217,19 +218,19 @@ int events_sort(events_t * events)
 {
 	const bool do_debug = false;
 	if (do_debug) {
-		fprintf(stderr, "Events before sort:\n");
-		fprintf(stderr, "vvvvvvvv\n");
+		test_log_debug("Test: events before sort: %s\n", "");
+		test_log_debug("Test: vvvvvvvv %s\n", "");
 		events_print(events);
-		fprintf(stderr, "^^^^^^^^\n");
+		test_log_debug("Test: ^^^^^^^^ %s\n", "");
 	}
 
 	qsort(events->events, events->event_idx, sizeof (event_t), cmpevent);
 
 	if (do_debug) {
-		fprintf(stderr, "Events after sort:\n");
-		fprintf(stderr, "vvvvvvvv\n");
+		test_log_debug("Test: events after sort: %s\n", "");
+		test_log_debug("Test: vvvvvvvv %s\n", "");
 		events_print(events);
-		fprintf(stderr, "^^^^^^^^\n");
+		test_log_debug("Test: ^^^^^^^^ %s\n", "");
 	}
 
 	return 0;

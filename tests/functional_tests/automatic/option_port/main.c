@@ -154,13 +154,13 @@ int main(void)
 {
 #if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
+		test_log_err("Test: preconditions for test env are not met, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 #endif
 
 	const uint32_t seed = cwdaemon_srandom(0);
-	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	signal(SIGCHLD, sighandler);
 
@@ -173,17 +173,17 @@ int main(void)
 		const test_case_t * test_case = &g_test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
-		test_log_info("Starting test case %zu / %zu: %s\n", i + 1, n, test_case->description);
+		test_log_info("Test: starting test case %zu / %zu: %s\n", i + 1, n, test_case->description);
 
 		if (0 != run_test_case(test_case)) {
-			test_log_err("Running test case %zu / %zu has failed\n", i + 1, n);
+			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n);
 			failure = true;
 			break;
 		}
 
 		events_print(&g_events); /* For debug only. */
 		if (0 != events_evaluate(&g_events, test_case)) {
-			test_log_err("Evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
+			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
 			failure = true;
 			break;
 		}
@@ -257,12 +257,12 @@ static int run_test_case(const test_case_t * test_case)
 		if (test_case->expected_fail) {
 			return 0;
 		} else {
-			test_log_err("Unexpected failure to start cwdaemon with valid port %d\n", test_case->port);
+			test_log_err("Test: unexpected failure to start cwdaemon with valid port %d\n", test_case->port);
 			return -1;
 		}
 	} else {
 		if (test_case->expected_fail) {
-			test_log_err("Unexpected success in starting cwdaemon with invalid port %d\n", test_case->port);
+			test_log_err("Test: unexpected success in starting cwdaemon with invalid port %d\n", test_case->port);
 			return -1;
 		} else {
 			; /* Go to next testing phase. */
@@ -279,7 +279,7 @@ static int run_test_case(const test_case_t * test_case)
 
 	morse_receiver = morse_receiver_ctor(&morse_config);
 	if (0 != morse_receiver_start(morse_receiver)) {
-		fprintf(stderr, "[EE] Failed to start Morse receiver\n");
+		test_log_err("Test: failed to start Morse receiver %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -302,7 +302,7 @@ static int run_test_case(const test_case_t * test_case)
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
 		*/
-		test_log_err("Failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
+		test_log_err("Test: failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
 		failure = true;
 	}
 	save_exit_to_events(&g_child_exit_info);
@@ -311,10 +311,10 @@ static int run_test_case(const test_case_t * test_case)
 	client_disconnect(&client);
 
 	if (failure) {
-		fprintf(stderr, "[EE] Test case failed, terminating %s\n", "");
+		test_log_err("Test: test case failed, terminating %s\n", "");
 		exit(EXIT_FAILURE);
 	} else {
-		fprintf(stderr, "[II] Test case succeeded %s\n", "");
+		test_log_info("Test: test case succeeded %s\n", "");
 	}
 
 
@@ -346,7 +346,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 	if (test_case->expected_fail) {
 		/* We only expect "exit" event to be recorded. */
 		if (1 != events->event_idx) {
-			test_log_err("Failure case: incorrect count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: failure case: incorrect count of events: %d\n", events->event_idx);
 			return -1;
 		}
 	} else {
@@ -354,7 +354,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 		   cwdaemon was running and listening on valid port), and then a
 		   clean "exit" event. */
 		if (2 != events->event_idx) {
-			test_log_err("Success case: incorrect count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: success case: incorrect count of events: %d\n", events->event_idx);
 			return -1;
 		}
 	}
@@ -370,14 +370,14 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 	if (test_case->expected_fail) {
 		int i = 0;
 		if (events->events[i].event_type != event_type_sigchld) {
-			test_log_err("Failure case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
+			test_log_err("Expectation 2: failure case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
 			return -1;
 		}
 		sigchld_event = &events->events[i];
 	} else {
 		int i = 0;
 		if (events->events[i].event_type != event_type_morse_receive) {
-			test_log_err("Success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
+			test_log_err("Expectation 2: success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
 			return -1;
 		}
 		morse_event = &events->events[i];
@@ -385,7 +385,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 		i++;
 
 		if (events->events[i].event_type != event_type_sigchld) {
-			test_log_err("Success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
+			test_log_err("Expectation 2: success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
 			return -1;
 		}
 		sigchld_event = &events->events[i];
@@ -440,7 +440,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 
 
 
-	test_log_info("Evaluation of test events was successful %s\n", "");
+	test_log_info("Test: Evaluation of test events was successful %s\n", "");
 
 	return 0;
 }

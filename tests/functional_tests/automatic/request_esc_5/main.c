@@ -134,13 +134,13 @@ int main(void)
 {
 #if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		fprintf(stderr, "[EE] Preconditions for test env are not met, exiting\n");
+		test_log_err("Test: preconditions for test env are not met, exiting\n");
 		exit(EXIT_FAILURE);
 	}
 #endif
 
 	const uint32_t seed = cwdaemon_srandom(0);
-	fprintf(stderr, "[DD] Random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	signal(SIGCHLD, sighandler);
 
@@ -153,17 +153,17 @@ int main(void)
 		const test_case_t * test_case = &g_test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
-		test_log_info("Starting test case %zu / %zu: %s\n", i + 1, n, test_case->description);
+		test_log_info("Test: starting test case %zu / %zu: %s\n", i + 1, n, test_case->description);
 
 		if (0 != run_test_case(test_case)) {
-			test_log_err("Running test case %zu / %zu has failed\n", i + 1, n);
+			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n);
 			failure = true;
 			break;
 		}
 
 		events_print(&g_events); /* For debug only. */
 		if (0 != evaluate_events(&g_events, test_case)) {
-			test_log_err("Evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
+			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
 			failure = true;
 			break;
 		}
@@ -206,7 +206,7 @@ static int run_test_case(const test_case_t * test_case)
 	};
 
 	if (0 != server_start(&cwdaemon_opts, &server)) {
-		fprintf(stderr, "[EE] Failed to start cwdaemon, exiting\n");
+		test_log_err("Test: failed to start cwdaemon, exiting %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -224,7 +224,7 @@ static int run_test_case(const test_case_t * test_case)
 		const morse_receiver_config_t morse_config = { .wpm = wpm };
 		morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
 		if (0 != morse_receiver_start(morse_receiver)) {
-			fprintf(stderr, "[EE] Failed to start Morse receiver\n");
+			test_log_err("Test: failed to start Morse receiver %s\n", "");
 			failure = true;
 			goto cleanup;
 		}
@@ -270,17 +270,17 @@ static int run_test_case(const test_case_t * test_case)
 		   second. */
 		const int sleep_retv = test_sleep_nonintr(2);
 		if (sleep_retv) {
-			fprintf(stderr, "[ERROR] error during sleep in cleanup\n");
+			test_log_err("Test: error during sleep in cleanup %s\n", "");
 		}
 
 		/* Now check if test instance of cwdaemon server has disappeared as expected. */
 		if (0 == kill(server.pid, 0)) {
 			/* Process still exists, kill it. */
-			fprintf(stderr, "[ERROR] Local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL\n");
+			test_log_err("Test: local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL %s\n", "");
 			/* The fact that we need to kill cwdaemon with a
 			   signal is a bug. */
 			kill(server.pid, SIGKILL);
-			fprintf(stderr, "[ERROR] Local test instance of cwdaemon was forcibly killed\n");
+			test_log_err("Test: local test instance of cwdaemon was forcibly killed %s\n", "");
 			failure = true;
 		}
 
@@ -344,7 +344,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	{
 		const int expected = test_case->send_message_request ? 3 : 2;
 		if (expected != events->event_idx) {
-			test_log_err("Unexpected count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: unexpected count of events: %d\n", events->event_idx);
 			return -1;
 		}
 	}
@@ -360,7 +360,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	if (test_case->send_message_request) {
 		if (events->events[i].event_type != event_type_morse_receive) {
-			test_log_err("Unexpected type of event %d: %d\n", i, events->events[i].event_type);
+			test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
 			return -1;
 		}
 		morse = &events->events[i];
@@ -369,14 +369,14 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 
 	if (events->events[i].event_type != event_type_request_exit) {
-		test_log_err("Unexpected type of event %d: %d\n", i, events->events[i].event_type);
+		test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
 		return -1;
 	}
 	exit_request = &events->events[i];
 	i++;
 
 	if (events->events[i].event_type != event_type_sigchld) {
-		test_log_err("Unexpected type of event %d: %d\n", i, events->events[i].event_type);
+		test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
 		return -1;
 	}
 	sigchld = &events->events[i];
@@ -388,10 +388,10 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	/* Expectation 3: cwdaemon keyed a proper Morse message on cwdevice. */
 	if (test_case->send_message_request) {
 		if (!morse_receive_text_is_correct(morse->u.morse_receive.string, test_case->message)) {
-			test_log_err("Didn't detect [%s] in received Morse message: [%s]\n", test_case->message, morse->u.morse_receive.string);
+			test_log_err("Expectation 3: didn't detect [%s] in received Morse message: [%s]\n", test_case->message, morse->u.morse_receive.string);
 			return -1;
 		}
-		test_log_info("Correctly found [%s] in received Morse message [%s]\n", test_case->message, morse->u.morse_receive.string);
+		test_log_info("Expectation 3: correctly found [%s] in received Morse message [%s]\n", test_case->message, morse->u.morse_receive.string);
 	}
 
 
@@ -401,10 +401,10 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	const int wstatus = sigchld->u.sigchld.wstatus;
 	const bool clean_exit = WIFEXITED(wstatus) && 0 == WEXITSTATUS(wstatus);
 	if (!clean_exit) {
-		test_log_err("cwdaemon server didn't exit cleanly, wstatus = %d\n", wstatus);
+		test_log_err("Expectation 4: cwdaemon server didn't exit cleanly, wstatus = %d\n", wstatus);
 		return -1;
 	}
-	test_log_info("Exit status of cwdaemon server is correct (expecting 0): %d\n", wstatus);
+	test_log_info("Expectation 4: exit status of cwdaemon server is correct (expecting 0): %d\n", wstatus);
 
 
 
@@ -414,15 +414,15 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	struct timespec diff = { 0 };
 	timespec_diff(&exit_request->tstamp, &sigchld->tstamp, &diff);
 	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
-		test_log_err("Duration of exit was longer than expected: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
+		test_log_err("Expectation 5: duration of exit was longer than expected: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
-	test_log_info("cwdaemon server exited in expected amount of time: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
+	test_log_info("Expectation 5: cwdaemon server exited in expected amount of time: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
 
 
 
 
-	test_log_info("Evaluation of test events was successful %s\n", "");
+	test_log_info("Test: Evaluation of test events was successful %s\n", "");
 
 	return 0;
 }

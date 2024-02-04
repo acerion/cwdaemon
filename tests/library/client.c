@@ -173,7 +173,7 @@ int client_send_request(client_t * client, int request, const char * value)
 	}
 
 	if (send_rc == -1) {
-		fprintf(stderr, "[ERROR] Failed to send request to server: %s.\n", strerror(errno));
+		test_log_err("cwdaemon client: failed to send request to server: %s.\n", strerror(errno));
 		return -1;
 	} else {
 		return 0;
@@ -222,7 +222,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 		const int ready = poll(&descriptor, n_descriptors, timeout_ms);
 		if (0 == ready) {
 			/* Timeout. */
-			// fprintf(stdout, "[DD] cwdaemon client: receive poll() timeout\n");
+			// test_log_debug("cwdaemon client: receive poll() timeout\n");
 		} else if (n_descriptors == (nfds_t) ready) {
 			if (descriptor.revents != POLLIN) {
 				test_log_err("cwdaemon client: Unexpected event on poll socket: %02x\n", descriptor.revents);
