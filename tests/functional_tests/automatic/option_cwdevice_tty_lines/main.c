@@ -384,10 +384,11 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	/* Expectation 3: the Morse event contains correct received text. */
 	if (!morse_receive_text_is_correct(event_morse->u.morse_receive.string, test_case->full_message)) {
-		test_log_err("Expectation 3: unexpected received text [%s]\n", event_morse->u.morse_receive.string);
+		test_log_err("Expectation 3: received Morse message [%s] doesn't match text from message request [%s]\n",
+		             event_morse->u.morse_receive.string, test_case->full_message);
 		return -1;
 	}
-	test_log_info("Expectation 3: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
+	test_log_info("Expectation 3: received Morse message [%s] matches text from message request [%s] (ignoring the first character)\n",
 	              event_morse->u.morse_receive.string, test_case->full_message);
 
 
