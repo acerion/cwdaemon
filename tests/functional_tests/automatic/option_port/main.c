@@ -395,35 +395,46 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 
 
 
-	/* Expectation 3: correct contents of events. */
+	/* Expectation 3: cwdaemon terminated in expected way. */
 	const int wstatus = sigchld_event->u.sigchld.wstatus;
 	if (test_case->expected_fail) {
+		/* cwdaemon should have exited when it detected invalid value of port
+		   option. */
 		if (!WIFEXITED(wstatus)) {
-			test_log_err("Failure case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
+			test_log_err("Expectation 3: failure case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
 			return -1;
 		}
 		if (EXIT_FAILURE != WEXITSTATUS(wstatus)) {
-			test_log_err("Success case: incorrect exit status (expected 0): 0x%04x\n", WEXITSTATUS(wstatus));
+			test_log_err("Expectation 3: failure case: incorrect exit status (expected %04x/EXIT_FAILURE): 0x%04x\n", EXIT_FAILURE, WEXITSTATUS(wstatus));
 			return -1;
 		}
-		test_log_info("Expectation 3: failure case: exit status was correct (0x%04x)\n", wstatus);
+		test_log_info("Expectation 3: failure case: exit status is as expected (0x%04x)\n", wstatus);
 	} else {
-		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->message)) {
-			test_log_err("Success case: Invalid received string [%s] doesn't match [%s]\n",
-			             morse_event->u.morse_receive.string, test_case->message);
-			return -1;
-		}
-		test_log_info("Expectation 3a: success case: received Morse test was correct: [%s]\n", morse_event->u.morse_receive.string);
-
+		/* cwdaemon should have exited when asked nicely (through request) at
+		   the end of testcase. */
 		if (!WIFEXITED(wstatus)) {
-			test_log_err("Success case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
+			test_log_err("Expectation 3: success case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
 			return -1;
 		}
 		if (EXIT_SUCCESS != WEXITSTATUS(wstatus)) {
-			test_log_err("Success case: incorrect exit status (expected 0/EXIT_SUCCESS): 0x%04x\n", WEXITSTATUS(wstatus));
+			test_log_err("Expectation 3: success case: incorrect exit status (expected 0/EXIT_SUCCESS): 0x%04x\n", WEXITSTATUS(wstatus));
 			return -1;
 		}
-		test_log_info("Expectation 3b: success case: exit status was correct (0x%04x)\n", wstatus);
+		test_log_info("Expectation 3: success case: exit status is as expected (0x%04x)\n", wstatus);
+	}
+
+
+
+
+	/* Expectation 4: the Morse event contains correct received text. */
+	if (!test_case->expected_fail) {
+		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->message)) {
+			test_log_err("Expectation 4: success case: received Morse message [%s] doesn't match text from message request [%s]\n",
+			             morse_event->u.morse_receive.string, test_case->message);
+			return -1;
+		}
+		test_log_info("Expectation 4: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
+		              morse_event->u.morse_receive.string, test_case->message);
 	}
 
 
