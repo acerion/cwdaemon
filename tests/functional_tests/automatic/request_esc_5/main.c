@@ -392,10 +392,11 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	{
 		const int expected = test_case->send_message_request ? 3 : 2;
 		if (expected != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: unexpected count of events: %d (expected %d)\n", events->event_idx, expected);
 			return -1;
 		}
 	}
+	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
 
 
 
@@ -429,6 +430,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	}
 	sigchld = &events->events[i];
 	i++;
+	test_log_info("Expectation 2: types of events are correct %s\n", "");
 
 
 
@@ -442,6 +444,8 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 		}
 		test_log_info("Expectation 3: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
 		              morse->u.morse_receive.string, test_case->full_message);
+	} else {
+		test_log_info("Expectation 3: skipping verification of Morse message, because this test doesn't play Morse code %s\n", "");
 	}
 
 

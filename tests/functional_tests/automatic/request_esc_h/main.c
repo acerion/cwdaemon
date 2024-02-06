@@ -191,10 +191,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation 1: there should be only two events. */
 	{
 		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: unexpected count of events: %d (expected 2)\n", events->event_idx);
 			return -1;
 		}
 	}
+	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
 
 
 
@@ -234,6 +235,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			}
 		}
 	}
+	test_log_info("Expectation 2: types of events are correct %s\n", "");
 
 
 
@@ -242,17 +244,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Maximal allowed time span between the two events. Currently (0.12.0)
 	   the time span is ~300ms.
 	   TODO acerion 2023.12.31: shorten the time span. */
-	const long int thresh = (long) 500 * 1000 * 1000;
-
+	const long int threshold = (long) 500 * 1000 * 1000;
 	struct timespec diff = { 0 };
 	timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
-	if (diff.tv_sec == 0 && diff.tv_nsec < thresh) {
-		; /* Pass. */
-	} else {
-		test_log_err("Expectation 3: time difference between end of Morse receive and receiving a reply is too large: %ld:%ld\n",
+	if (diff.tv_sec > 0 || diff.tv_nsec > threshold) {
+		test_log_err("Expectation 3: time difference between end of 'Morse receive' and receiving socket reply is too large: %ld.%09ld seconds\n",
 		             diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
+	test_log_info("Expectation 3: time difference between end of 'Morse receive' and receiving socket reply is ok: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 
 
 
@@ -292,11 +292,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			test_log_err("Expectation 5: received incorrect message in socket reply: expected [%s], received [%s]\n",
 			             escaped_expected, escaped_actual);
 			return -1;
-		} else {
-			test_log_info("Expectation 5: received expected message in socket reply: expected [%s], received [%s]\n",
-			              escaped_expected, escaped_actual);
-			; /* Pass. */
 		}
+
+		test_log_info("Expectation 5: received expected message in socket reply: expected [%s], received [%s]\n",
+		              escaped_expected, escaped_actual);
 	}
 
 

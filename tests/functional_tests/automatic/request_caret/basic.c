@@ -287,6 +287,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 		test_log_err("Expectation 2: can't find socket receive event in events table %s\n", "");
 		return -1;
 	}
+	test_log_info("Expectation 2: types of events are correct %s\n", "");
 
 
 
@@ -377,12 +378,11 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 	}
 
 	const int threshold = 500L * 1000 * 1000; /* [nanoseconds] */
-	if (diff.tv_sec == 0 && diff.tv_nsec < threshold) {
-		test_log_info("Expectation 6: 'Morse receive' event and 'socket receive' event aren't too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
-	} else {
-		test_log_err("Expectation 6: 'Morse receive' event and 'socket receive' event are too far apart: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
+	if (diff.tv_sec > 0 || diff.tv_nsec > threshold) {
+		test_log_err("Expectation 6: time difference between end of 'Morse receive' and receiving socket reply is too large: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
+	test_log_info("Expectation 6: time difference between end of 'Morse receive' and receiving socket reply is ok: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 
 
 
