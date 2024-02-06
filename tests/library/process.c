@@ -356,7 +356,10 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 			server->l4_port = l4_port;
 			return 0;
 		} else {
-			test_log_err("Test: starting of process: waitpid() returns %d, errno = %s\n", waited_pid, strerror(errno));
+			/* Some test cases may expect the server not to start (e.g. when
+			   testing values of options out-of-range. Therefore this is just
+			   a warning. */
+			test_log_warn("Test: starting of process: waitpid() returns %d, errno = %s\n", waited_pid, strerror(errno));
 			return -1;
 		}
 	}
@@ -369,7 +372,10 @@ int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
 {
 	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, server)) {
-		test_log_err("Test: failed to start cwdaemon server %s\n", "");
+		/* Some test cases may expect the server not to start (e.g. when
+		   testing values of options out-of-range. Therefore this is just a
+		   warning. */
+		test_log_warn("Test: failed to start cwdaemon server %s\n", "");
 		return -1;
 	}
 
