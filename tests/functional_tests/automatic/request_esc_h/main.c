@@ -64,8 +64,8 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 typedef struct test_case_t {
-	const char * description;                /**< Tester-friendly description of test case. */
-	const char * message;                    /**< Text to be sent to cwdaemon server by cwdaemon client in a request. */
+	const char * description;                /** Human-readable description of the test case. */
+	const char * full_message;               /** Full text of message to be played by cwdaemon. */
 	const char * requested_reply_value;      /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
 } test_case_t;
 
@@ -76,28 +76,28 @@ static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. We request cwdaemon server to send us empty
 	   string in reply. */
 	{ .description             = "success case, empty reply value",
-	  .message                 = "paris",
+	  .full_message            = "paris",
 	  .requested_reply_value   = "",
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   single-letter string in reply. */
 	{ .description             = "success case, single-letter as a value of reply",
-	  .message                 = "paris",
+	  .full_message            = "paris",
 	  .requested_reply_value   = "r",
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   single-word string in reply. */
 	{ .description             = "success case, a word as value of reply",
-	  .message                 = "paris",
+	  .full_message            = "paris",
 	  .requested_reply_value   = "reply",
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
-	  .message                 = "paris",
+	  .full_message            = "paris",
 	  .requested_reply_value   = "This is a reply to your 27th request.",
 	},
 };
@@ -263,15 +263,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	   it's good to know that we received full and correct data. */
 	{
 		const char * received_string = morse_event->u.morse_receive.string;
-		if (!morse_receive_text_is_correct(received_string, test_case->message)) {
-			test_log_err("Expectation 4: received incorrect Morse message: expected [%s], received [%s]\n",
-			             test_case->message, received_string);
+		if (!morse_receive_text_is_correct(received_string, test_case->full_message)) {
+			test_log_err("Expectation 4: received Morse message [%s] doesn't match text from message request [%s]\n",
+			             morse_event->u.morse_receive.string, test_case->full_message);
 			return -1;
-		} else {
-			test_log_info("Expectation 4: received expected Morse message: expected [%s], received [%s]\n",
-			              test_case->message, received_string);
-			; /* Pass. */
 		}
+		test_log_info("Expectation 4: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
+		              morse_event->u.morse_receive.string, test_case->full_message);
 	}
 
 
@@ -429,7 +427,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 		client_send_request(client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
 
 		/* Send the message to be played. */
-		client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "start %s", test_case->message);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 
 
 		morse_receiver_wait(morse_receiver);

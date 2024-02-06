@@ -81,9 +81,9 @@ static child_exit_info_t g_child_exit_info;
 
 
 typedef struct test_case_t {
-	const char * description;    /**< Tester-friendly description of test case. */
+	const char * description;    /**< Human-readable description of the test case. */
 	bool send_message_request;   /**< Whether in this test case we should send MESSAGE request. */
-	const char * message;        /**< Text to be sent to cwdaemon server in the MESSAGE request. */
+	const char * full_message;   /**< Full text of message to be played by cwdaemon. */
 } test_case_t;
 
 
@@ -102,8 +102,8 @@ typedef struct test_case_t {
   situations.
 */
 static test_case_t g_test_cases[] = {
-	{ .description = "cwdaemon that has just started", .send_message_request = false                     },
-	{ .description = "cwdaemon that played message",   .send_message_request = true,  .message = "msg"   },
+	{ .description = "exiting a cwdaemon server that has just started",      .send_message_request = false                            },
+	{ .description = "exiting a cwdaemon server that played some message",   .send_message_request = true,  .full_message = "paris"   },
 };
 
 
@@ -230,7 +230,7 @@ static int run_test_case(const test_case_t * test_case)
 		}
 
 		/* Send the message to be played. */
-		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->message);
+		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 
 		morse_receiver_wait(morse_receiver);
 		morse_receiver_dtor(&morse_receiver);
@@ -387,11 +387,13 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	/* Expectation 3: cwdaemon keyed a proper Morse message on cwdevice. */
 	if (test_case->send_message_request) {
-		if (!morse_receive_text_is_correct(morse->u.morse_receive.string, test_case->message)) {
-			test_log_err("Expectation 3: didn't detect [%s] in received Morse message: [%s]\n", test_case->message, morse->u.morse_receive.string);
+		if (!morse_receive_text_is_correct(morse->u.morse_receive.string, test_case->full_message)) {
+			test_log_err("Expectation 3: received Morse message [%s] doesn't match text from message request [%s]\n",
+			             morse->u.morse_receive.string, test_case->full_message);
 			return -1;
 		}
-		test_log_info("Expectation 3: correctly found [%s] in received Morse message [%s]\n", test_case->message, morse->u.morse_receive.string);
+		test_log_info("Expectation 3: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
+		              morse->u.morse_receive.string, test_case->full_message);
 	}
 
 
@@ -404,7 +406,7 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 		test_log_err("Expectation 4: cwdaemon server didn't exit cleanly, wstatus = %d\n", wstatus);
 		return -1;
 	}
-	test_log_info("Expectation 4: exit status of cwdaemon server is correct (expecting 0): %d\n", wstatus);
+	test_log_info("Expectation 4: exit status of cwdaemon server is correct (expecting 0 / EXIT_SUCCESS): %d\n", wstatus);
 
 
 
