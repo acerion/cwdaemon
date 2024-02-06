@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 
 /**
+   @file
+
    Test of EXIT request (and of test code that starts a test instance of
    cwdaemon).
 */
@@ -110,7 +112,9 @@ static test_case_t g_test_cases[] = {
 
 
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
-static int run_test_case(const test_case_t * test_case);
+static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver, const test_case_t * test_case);
+static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t ** morse_receiver, events_t * events);
 
 
 
@@ -145,47 +149,56 @@ int main(void)
 	signal(SIGCHLD, sighandler);
 
 
-	const size_t n = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
+	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
 
-	bool failure = false;
-	for (size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < n_test_cases; i++) {
 
 		const test_case_t * test_case = &g_test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
-		test_log_info("Test: starting test case %zu / %zu: %s\n", i + 1, n, test_case->description);
+		test_log_info("Test: starting test case %zu / %zu: %s\n", i + 1, n_test_cases, test_case->description);
 
-		if (0 != run_test_case(test_case)) {
-			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n);
+		bool failure = false;
+		cwdaemon_server_t server = { 0 };
+		client_t client = { 0 };
+		morse_receiver_t * morse_receiver = NULL;
+
+		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case)) {
+			test_log_err("Test: failed at setting up of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
-			break;
+			goto cleanup;
 		}
 
-		events_print(&g_events); /* For debug only. */
-		if (0 != evaluate_events(&g_events, test_case)) {
-			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n);
+		if (0 != testcase_run(test_case, &server, &client, morse_receiver, &g_events)) {
+			test_log_err("Test: failed at execution of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
-			break;
+			goto cleanup;
 		}
 
-		/* Clear stuff before running next test case. */
-		events_clear(&g_events);
-		memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
 
-		test_log_info("Test case %zu / %zu has succeeded\n\n", i + 1, n);
+	cleanup:
+		if (0 != testcase_teardown(test_case, &client, &morse_receiver, &g_events)) {
+			test_log_err("Test: failed at tear-down for test case %zu / %zu\n", i + 1, n_test_cases);
+			failure = true;
+		}
+
+		if (failure) {
+			test_log_err("Test: test case #%zu/%zu failed, terminating\n", i + 1, n_test_cases);
+			exit(EXIT_FAILURE);
+		}
+		test_log_info("Test: test case #%zu/%zu succeeded\n\n", i + 1, n_test_cases);
 	}
 
-	if (failure) {
-		exit(EXIT_FAILURE);
-	} else {
-		exit(EXIT_SUCCESS);
-	}
+	exit(EXIT_SUCCESS);
 }
 
 
 
 
-static int run_test_case(const test_case_t * test_case)
+/**
+   @brief Prepare resources used to execute single test case
+*/
+static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver, const test_case_t * test_case)
 {
 	bool failure = false;
 
@@ -195,8 +208,7 @@ static int run_test_case(const test_case_t * test_case)
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
-	cwdaemon_server_t server = { 0 };
-	client_t client = { 0 };
+
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = 640,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
@@ -205,35 +217,46 @@ static int run_test_case(const test_case_t * test_case)
 		.wpm            = wpm,
 	};
 
-	if (0 != server_start(&cwdaemon_opts, &server)) {
+	if (0 != server_start(&cwdaemon_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon, exiting %s\n", "");
 		failure = true;
-		goto cleanup;
 	}
-	g_child_exit_info.pid = server.pid;
+	g_child_exit_info.pid = server->pid;
 
 
-	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
-		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server.ip_address, server.l4_port);
+	if (0 != client_connect_to_server(client, server->ip_address, server->l4_port)) {
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
 		failure = true;
-		goto cleanup;
 	}
-
 
 	if (test_case->send_message_request) {
 		const morse_receiver_config_t morse_config = { .wpm = wpm };
-		morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
+		*morse_receiver = morse_receiver_ctor(&morse_config);
+		if (NULL == *morse_receiver) {
+			test_log_err("Test: failed to create Morse receiver %s\n", "");
+			failure = true;
+		}
+	}
+
+	return failure ? -1 : 0;
+}
+
+
+
+
+static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+{
+	if (test_case->send_message_request) {
+
 		if (0 != morse_receiver_start(morse_receiver)) {
 			test_log_err("Test: failed to start Morse receiver %s\n", "");
-			failure = true;
-			goto cleanup;
+			return -1;
 		}
 
 		/* Send the message to be played. */
-		client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 
 		morse_receiver_wait(morse_receiver);
-		morse_receiver_dtor(&morse_receiver);
 	} else {
 		/* Sending an EXIT request to a cwdaemon server that has just started
 		   and did nothing else is also a valid case. */
@@ -257,14 +280,14 @@ static int run_test_case(const test_case_t * test_case)
 		// kill(server.pid, SIGKILL);
 
 		/* First ask nicely for a clean exit. */
-		client_send_request(&client, CWDAEMON_REQUEST_EXIT, "");
-		pthread_mutex_lock(&g_events.mutex);
+		client_send_request(client, CWDAEMON_REQUEST_EXIT, "");
+		pthread_mutex_lock(&events->mutex);
 		{
-			clock_gettime(CLOCK_MONOTONIC, &g_events.events[g_events.event_idx].tstamp);
-			g_events.events[g_events.event_idx].event_type = event_type_request_exit;
-			g_events.event_idx++;
+			clock_gettime(CLOCK_MONOTONIC, &events->events[events->event_idx].tstamp);
+			events->events[events->event_idx].event_type = event_type_request_exit;
+			events->event_idx++;
 		}
-		pthread_mutex_unlock(&g_events.mutex);
+		pthread_mutex_unlock(&events->mutex);
 
 		/* Give cwdaemon some time to exit cleanly. cwdaemon needs ~1.3
 		   second. */
@@ -274,14 +297,14 @@ static int run_test_case(const test_case_t * test_case)
 		}
 
 		/* Now check if test instance of cwdaemon server has disappeared as expected. */
-		if (0 == kill(server.pid, 0)) {
+		if (0 == kill(server->pid, 0)) {
 			/* Process still exists, kill it. */
 			test_log_err("Test: local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL %s\n", "");
 			/* The fact that we need to kill cwdaemon with a
 			   signal is a bug. */
-			kill(server.pid, SIGKILL);
+			kill(server->pid, SIGKILL);
 			test_log_err("Test: local test instance of cwdaemon was forcibly killed %s\n", "");
-			failure = true;
+			return -1;
 		}
 
 		if (0 != g_child_exit_info.sigchld_timestamp.tv_sec) {
@@ -295,7 +318,7 @@ static int run_test_case(const test_case_t * test_case)
 			  My tests show that there is no need to sort (by timestamp) the
 			  array afterwards.
 			*/
-			events_insert_sigchld_event(&g_events, &g_child_exit_info);
+			events_insert_sigchld_event(events, &g_child_exit_info);
 		} else {
 			/* There was never a signal from child (at least not in
 			   reasonable time. This will be recognized by
@@ -305,16 +328,41 @@ static int run_test_case(const test_case_t * test_case)
 
 
 
- cleanup:
+	events_sort(events);
+	events_print(events);
+	if (0 != evaluate_events(events, test_case)) {
+		test_log_err("Test: evaluation of events has failed %s\n", "");
+		return -1;
+	}
+	test_log_info("Test: evaluation of events was successful %s\n", "");
 
-	/*
-	  Close our socket to cwdaemon server. cwdaemon may be stopped, but let's
-	  still try to close socket on our end.
-	*/
-	client_disconnect(&client);
 
-	return failure ? -1 : 0;
+	return 0;
 }
+
+
+
+
+/**
+   @brief Clean up resources used to execute single test case
+*/
+static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t ** morse_receiver, events_t * events)
+{
+	if (test_case->send_message_request) {
+		morse_receiver_dtor(morse_receiver);
+	}
+
+	/* Close our socket to cwdaemon server. */
+	client_disconnect(client);
+	client_dtor(client);
+
+	/* Clear stuff before running next test case. */
+	events_clear(events);
+	memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
+
+	return 0;
+}
+
 
 
 
