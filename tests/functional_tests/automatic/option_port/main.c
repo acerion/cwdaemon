@@ -102,7 +102,7 @@ static child_exit_info_t g_child_exit_info;
 
 typedef struct test_case_t {
 	const char * description;  /** Human-readable description of the test case. */
-	const char * message;      /** Message to be played by cwdaemon. */
+	const char * full_message; /** Full text of message to be played by cwdaemon. */
 	bool expected_fail;        /** Whether we expect cwdaemon to fail to start correctly due to invalid port number. */
 	int port;                  /** Value of port passed to cwdaemon. */
 } test_case_t;
@@ -111,19 +111,19 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "failure case: port 0",        .message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in process.c as "pass port 0 to cwdaemon". */
-	{ .description = "failure case: port 1",        .message = "paris",  .expected_fail = true,   .port = 1  },
-	{ .description = "failure case: port MIN - 2",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
-	{ .description = "failure case: port MIN - 1",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },
+	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in process.c as "pass port 0 to cwdaemon". */
+	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1  },
+	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
+	{ .description = "failure case: port MIN - 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },
 
 	/* All valid ports between MIN and MAX are indirectly tested by other
 	   functional tests that use random valid port. Here we just explicitly
 	   test the MIN and MAX itself */
-	{ .description = "success case: port MIN",      .message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN     },
-	{ .description = "success case: port MAX",      .message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX     },
+	{ .description = "success case: port MIN",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN     },
+	{ .description = "success case: port MAX",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX     },
 
-	{ .description = "failure case: port MAX + 1",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1 },
-	{ .description = "failure case: port MAX + 2",  .message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2 },
+	{ .description = "failure case: port MAX + 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1 },
+	{ .description = "failure case: port MAX + 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2 },
 };
 
 
@@ -211,6 +211,7 @@ int main(void)
 		}
 
 	evaluate:
+		events_sort(&g_events);
 		events_print(&g_events);
 		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Test: evaluation of events has failed %s\n", "");
@@ -356,8 +357,9 @@ static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * serve
 	}
 
 	/* Send the message to be played to double-check that a cwdaemon server
-	   is running, and that it's listening on a network socket. */
-	client_send_request_va(client, CWDAEMON_REQUEST_MESSAGE, "one %s", test_case->message);
+	   is running, and that it's listening on a network socket on a port
+	   specified in test case.. */
+	client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 
 	morse_receiver_wait(morse_receiver);
 
@@ -481,13 +483,13 @@ static int evaluate_events(const events_t * events, const test_case_t * test_cas
 
 	/* Expectation 4: the Morse event contains correct received text. */
 	if (!test_case->expected_fail) {
-		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->message)) {
+		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->full_message)) {
 			test_log_err("Expectation 4: success case: received Morse message [%s] doesn't match text from message request [%s]\n",
-			             morse_event->u.morse_receive.string, test_case->message);
+			             morse_event->u.morse_receive.string, test_case->full_message);
 			return -1;
 		}
 		test_log_info("Expectation 4: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
-		              morse_event->u.morse_receive.string, test_case->message);
+		              morse_event->u.morse_receive.string, test_case->full_message);
 	}
 
 
