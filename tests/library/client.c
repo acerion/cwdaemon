@@ -193,7 +193,7 @@ int client_disconnect(client_t * client)
 		return 0;
 	}
 	if (close(client->sock) == -1) {
-		perror("Failed to close client's socket to cwdaemon server.");
+		test_log_err("cwdaemon client: failed to close client's socket to cwdaemon server: %s\n", strerror(errno));
 		client->sock = -1;
 		return -1;
 	}

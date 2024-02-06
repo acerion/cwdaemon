@@ -214,7 +214,7 @@ static int run_test_case(const test_case_t * test_case)
 
 
 	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
-		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server.ip_address, server.l4_port);
 		failure = true;
 		goto cleanup;
 	}

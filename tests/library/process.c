@@ -465,7 +465,9 @@ int local_server_stop(cwdaemon_server_t * server, client_t * client)
 	*/
 
 	/* First ask nicely for a clean exit. */
-	client_send_request(client, CWDAEMON_REQUEST_EXIT, "");
+	if (0 != client_send_request(client, CWDAEMON_REQUEST_EXIT, "")) {
+		test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
+	}
 
 	/* Give the server some time to exit. */
 	const int sleep_retv = test_sleep_nonintr(2);

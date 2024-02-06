@@ -180,6 +180,7 @@ int main(void)
 		morse_receiver_t * morse_receiver = NULL;
 
 		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case)) {
+			test_log_err("Test: failed at setting up of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
 		}
@@ -200,9 +201,8 @@ int main(void)
 		if (failure) {
 			test_log_err("Test: test case #%zu/%zu failed, terminating\n", i + 1, n_test_cases);
 			exit(EXIT_FAILURE);
-		} else {
-			test_log_info("Test: test case #%zu/%zu succeeded\n\n", i + 1, n_test_cases);
 		}
+		test_log_info("Test: test case #%zu/%zu succeeded\n\n", i + 1, n_test_cases);
 	}
 
 	exit(EXIT_SUCCESS);
@@ -241,7 +241,7 @@ static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_r
 
 
 	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.29: remove casting. */
-		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
 		failure = true;
 	}
 

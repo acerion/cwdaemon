@@ -424,7 +424,7 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 
 
 	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.24: remove casting. */
-		test_log_err("Test: can't connect cwdaemon client to cwdaemon server %s\n", "");
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
 		failure = true;
 	}
 	client_socket_receive_enable(client);

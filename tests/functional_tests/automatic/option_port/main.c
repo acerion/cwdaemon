@@ -346,7 +346,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 	if (test_case->expected_fail) {
 		/* We only expect "exit" event to be recorded. */
 		if (1 != events->event_idx) {
-			test_log_err("Expectation 1: failure case: incorrect count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: failure case: incorrect count of events: %d (expected 1)\n", events->event_idx);
 			return -1;
 		}
 	} else {
@@ -354,7 +354,7 @@ static int events_evaluate(const events_t * events, const test_case_t * test_cas
 		   cwdaemon was running and listening on valid port), and then a
 		   clean "exit" event. */
 		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: success case: incorrect count of events: %d\n", events->event_idx);
+			test_log_err("Expectation 1: success case: incorrect count of events: %d (expected 2)\n", events->event_idx);
 			return -1;
 		}
 	}
