@@ -218,7 +218,7 @@ static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_r
 	};
 
 	if (0 != server_start(&cwdaemon_opts, server)) {
-		test_log_err("Test: failed to start cwdaemon, exiting %s\n", "");
+		test_log_err("Test: failed to start cwdaemon %s\n", "");
 		failure = true;
 	}
 	g_child_exit_info.pid = server->pid;
