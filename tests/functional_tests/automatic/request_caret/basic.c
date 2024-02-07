@@ -165,7 +165,7 @@ static test_case_t g_test_cases[] = {
 
 static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver);
+static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
 
 
@@ -185,7 +185,7 @@ int basic_caret_test(void)
 		goto cleanup;
 	}
 
-	if (0 != test_run(g_test_cases, n_test_cases, &client, &morse_receiver)) {
+	if (0 != test_run(g_test_cases, n_test_cases, &client, &morse_receiver, &g_events)) {
 		test_log_err("Test: failed at running test cases %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -481,7 +481,7 @@ static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_re
 /**
    @brief Run all test cases. Evaluate results (the events) of each test case.
 */
-static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver)
+static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	bool failure = false;
 
@@ -502,9 +502,9 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 
 		morse_receiver_wait(morse_receiver);
 
-		events_sort(&g_events);
-		events_print(&g_events); /* For debug only. */
-		if (0 != evaluate_events(&g_events, test_case)) {
+		events_sort(events);
+		events_print(events); /* For debug only. */
+		if (0 != evaluate_events(events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			break;
@@ -512,7 +512,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 		test_log_info("Test: evaluation of events was successful for test case %zu / %zu\n", i + 1, n_test_cases);
 
 		/* Clear stuff before running next test case. */
-		events_clear(&g_events);
+		events_clear(events);
 
 		test_log_info("Test: test case %zu / %zu has succeeded\n\n", i + 1, n_test_cases);
 	}

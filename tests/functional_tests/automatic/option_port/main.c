@@ -129,9 +129,9 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm);
+static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm, events_t * events);
 static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
-static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
 
@@ -184,7 +184,7 @@ int main(void)
 
 
 		int wpm = 0;
-		if (0 != server_setup(&server, test_case, &wpm)) {
+		if (0 != server_setup(&server, test_case, &wpm, &g_events)) {
 			test_log_err("Test: failed at setting up of server for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -204,7 +204,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &server, &client, &morse_receiver)) {
+		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &g_events)) {
 			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -243,7 +243,7 @@ int main(void)
 
 
 
-static int save_child_exit_to_events(const child_exit_info_t * child_exit_info)
+static int save_child_exit_to_events(const child_exit_info_t * child_exit_info, events_t * events)
 {
 	if (0 != child_exit_info->sigchld_timestamp.tv_sec) {
 		/*
@@ -256,7 +256,7 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info)
 		  My tests show that there is no need to sort (by timestamp) the
 		  array afterwards.
 		*/
-		events_insert_sigchld_event(&g_events, child_exit_info);
+		events_insert_sigchld_event(events, child_exit_info);
 	}
 
 	return 0;
@@ -279,11 +279,12 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info)
    @param[out] server cwdaemon server to set up
    @param[in] test_case Test case according to which to set up a server
    @param[out] wpm Morse code speed used by server
+   @param[in/out] events Events containter
 
    @return 0 if starting of a server ended as expected
    @return -1 if starting of server ended not as expected
 */
-static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm)
+static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm, events_t * events)
 {
 	/* Remember that some receive timeouts in tests were selected when the
 	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
@@ -301,7 +302,7 @@ static int server_setup(cwdaemon_server_t * server, const test_case_t * test_cas
 	};
 	const int retv = server_start(&cwdaemon_opts, server);
 	if (0 != retv) {
-		save_child_exit_to_events(&g_child_exit_info);
+		save_child_exit_to_events(&g_child_exit_info, events);
 		if (test_case->expected_fail) {
 			return 0; /* Setting up of server has failed, as expected. */
 		} else {
@@ -348,7 +349,7 @@ static int testcase_setup(const cwdaemon_server_t * server, client_t * client, m
 
 
 
-static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	if (0 != morse_receiver_start(morse_receiver)) {
 		test_log_err("Test: failed to start Morse receiver %s\n", "");
@@ -369,7 +370,7 @@ static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * serve
 		test_log_err("Test: failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
 		return -1;
 	}
-	save_child_exit_to_events(&g_child_exit_info);
+	save_child_exit_to_events(&g_child_exit_info, events);
 
 
 	return 0;
