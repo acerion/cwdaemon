@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 
 /**
+   @file
+
    Test for proper re-registration of libcw keying callback when handling RESET
    request. https://github.com/acerion/cwdaemon/issues/6
 
@@ -67,6 +69,9 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 static int evaluate_events(events_t * events, const char * message1, const char * message2);
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
 
 
 
@@ -83,18 +88,55 @@ int main(void)
 	const uint32_t seed = cwdaemon_srandom(0);
 	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
+	bool failure = false;
+	cwdaemon_server_t server = { 0 };
+	client_t client = { 0 };
+	morse_receiver_t * morse_receiver = NULL;
+
+	if (0 != test_setup(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at setting up of test %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+	if (0 != test_run(&client, morse_receiver, &g_events)) {
+		test_log_err("Test: failed at execution of test %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+ cleanup:
+	if (0 != test_teardown(&server, &client, &morse_receiver)) {
+		test_log_err("Test: failed at tear-down for test %s\n", "");
+		failure = true;
+	}
+
+	if (failure) {
+		test_log_err("Test: test failed%s\n", "");
+		exit(EXIT_FAILURE);
+	}
+	test_log_info("Test: test succeeded %s\n\n", "");
+
+	exit(EXIT_SUCCESS);
+}
+
+
+
+
+/**
+   @brief Prepare resources used to execute single test case
+*/
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
+{
+	bool failure = false;
+
 	int wpm = 10;
 	/* Remember that some receive timeouts in tests were selected when the
 	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
 	   overrunning the timeouts. */
 	cwdaemon_random_uint(10, 15, (unsigned int *) &wpm);
 
-	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	morse_receiver_t * morse_receiver = morse_receiver_ctor(&morse_config);
-	const char * message1 = "paris";
-	const char * message2 = "texas";
 
-	bool failure = false;
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = 630,
 		.sound_system       = CW_AUDIO_SOUNDCARD,
@@ -102,22 +144,33 @@ int main(void)
 		.cwdevice_name      = TEST_TTY_CWDEVICE_NAME,
 		.wpm                = wpm,
 	};
-
-	cwdaemon_server_t server = { 0 };
-	client_t client = { 0 };
-	if (0 != server_start(&cwdaemon_opts, &server)) {
-		test_log_err("Test: failed to start cwdaemon server, exiting %s\n", "");
+	if (0 != server_start(&cwdaemon_opts, server)) {
+		test_log_err("Test: failed to start cwdaemon server %s\n", "");
 		failure = true;
-		goto cleanup;
 	}
 
-
-	if (0 != client_connect_to_server(&client, server.ip_address, server.l4_port)) {
-		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server.ip_address, server.l4_port);
+	if (0 != client_connect_to_server(client, server->ip_address, server->l4_port)) {
+		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
 		failure = true;
-		goto cleanup;
 	}
 
+	const morse_receiver_config_t morse_config = { .wpm = wpm };
+	*morse_receiver = morse_receiver_ctor(&morse_config);
+	if (NULL == *morse_receiver) {
+		test_log_err("Test: failed to create Morse receiver %s\n", "");
+		failure = true;
+	}
+
+	return failure ? -1 : 0;
+}
+
+
+
+
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+{
+	const char * message1 = "paris";
+	const char * message2 = "finger";
 
 	/* This sends a text request to cwdaemon server that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
@@ -125,20 +178,18 @@ int main(void)
 	{
 		if (0 != morse_receiver_start(morse_receiver)) {
 			test_log_err("Test: failed to start Morse receiver (%d)\n", 1);
-			failure = true;
-			goto cleanup;
+			return -1;
 		}
 
-		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message1);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message1);
 
 		morse_receiver_wait(morse_receiver);
 	}
 
 
-
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	client_send_request(&client, CWDAEMON_REQUEST_RESET, "");
+	client_send_request(client, CWDAEMON_REQUEST_RESET, "");
 
 
 	/* This sends a text request to cwdaemon that works in "after reset"
@@ -146,32 +197,41 @@ int main(void)
 	{
 		if (0 != morse_receiver_start(morse_receiver)) {
 			test_log_err("Test: failed to start Morse receiver (%d)\n", 2);
-			failure = true;
-			goto cleanup;
+			return -1;
 		}
 
-		client_send_request_va(&client, CWDAEMON_REQUEST_MESSAGE, "one %s", message2);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message2);
 
 		morse_receiver_wait(morse_receiver);
 	}
 
 
 
-	if (0 != evaluate_events(&g_events, message1, message2)) {
+	events_sort(events);
+	events_print(events);
+	if (0 != evaluate_events(events, message1, message2)) {
 		test_log_err("Test: evaluation of events has failed %s\n", "");
-		failure = true;
-	} else {
-		test_log_info("Test: evaluation of events was successful %s\n", "");
+		return -1;
 	}
+	test_log_info("Test: evaluation of events was successful %s\n", "");
+
+	return 0;
+}
 
 
 
 
- cleanup:
-	morse_receiver_dtor(&morse_receiver);
+/**
+   @brief Clean up resources used to execute single test case
+*/
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
+{
+	bool failure = false;
+
+	morse_receiver_dtor(morse_receiver);
 
 	/* Terminate local test instance of cwdaemon. */
-	if (0 != local_server_stop(&server, &client)) {
+	if (0 != local_server_stop(server, client)) {
 		/*
 		  Stopping a server is not a main part of a test, but if a
 		  server can't be closed then it means that the main part of the
@@ -187,15 +247,10 @@ int main(void)
 	  Close our socket to cwdaemon server. cwdaemon may be stopped, but let's
 	  still try to close socket on our end.
 	*/
-	client_disconnect(&client);
+	client_disconnect(client);
+	client_dtor(client);
 
-	if (failure) {
-		test_log_err("Test case %d/%d failed, terminating\n", 1, 1);
-		exit(EXIT_FAILURE);
-	} else {
-		test_log_info("Test case %d/%d succeeded\n\n", 1, 1);
-		exit(EXIT_SUCCESS);
-	}
+	return failure ? -1 : 0;
 }
 
 
