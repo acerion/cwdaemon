@@ -27,8 +27,8 @@ typedef struct morse_receiver_t {
 
 
 
-morse_receiver_t * morse_receiver_ctor(const morse_receiver_config_t * config);
-void morse_receiver_dtor(morse_receiver_t ** receiver);
+int morse_receiver_ctor(const morse_receiver_config_t * config, morse_receiver_t * receiver);
+void morse_receiver_dtor(morse_receiver_t * receiver);
 int morse_receiver_start(morse_receiver_t * receiver);
 int morse_receiver_wait(morse_receiver_t * receiver);
 

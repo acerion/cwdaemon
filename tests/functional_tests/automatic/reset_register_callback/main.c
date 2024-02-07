@@ -69,9 +69,9 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 static int evaluate_events(events_t * events, const char * message1, const char * message2);
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver);
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 
 
 
@@ -91,7 +91,7 @@ int main(void)
 	bool failure = false;
 	cwdaemon_server_t server = { 0 };
 	client_t client = { 0 };
-	morse_receiver_t * morse_receiver = NULL;
+	morse_receiver_t morse_receiver = { 0 };
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
 		test_log_err("Test: failed at setting up of test %s\n", "");
@@ -99,7 +99,7 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (0 != test_run(&client, morse_receiver, &g_events)) {
+	if (0 != test_run(&client, &morse_receiver, &g_events)) {
 		test_log_err("Test: failed at execution of test %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -126,7 +126,7 @@ int main(void)
 /**
    @brief Prepare resources used to execute single test case
 */
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
+static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 
@@ -155,8 +155,7 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 	}
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	*morse_receiver = morse_receiver_ctor(&morse_config);
-	if (NULL == *morse_receiver) {
+	if (0 != morse_receiver_ctor(&morse_config, morse_receiver)) {
 		test_log_err("Test: failed to create Morse receiver %s\n", "");
 		failure = true;
 	}
@@ -224,7 +223,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, events
 /**
    @brief Clean up resources used to execute single test case
 */
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver)
+static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 

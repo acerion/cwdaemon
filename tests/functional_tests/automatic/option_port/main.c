@@ -130,9 +130,9 @@ static test_case_t g_test_cases[] = {
 
 
 static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm);
-static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver, int wpm);
+static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
 static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int testcase_teardown(client_t * client, morse_receiver_t ** morse_receiver);
+static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
 
 
@@ -180,7 +180,7 @@ int main(void)
 		bool failure = false;
 		cwdaemon_server_t server = { 0 };
 		client_t client = { 0 };
-		morse_receiver_t * morse_receiver = NULL;
+		morse_receiver_t morse_receiver = { 0 };
 
 
 		int wpm = 0;
@@ -204,7 +204,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &server, &client, morse_receiver)) {
+		if (0 != testcase_run(test_case, &server, &client, &morse_receiver)) {
 			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -324,7 +324,7 @@ static int server_setup(cwdaemon_server_t * server, const test_case_t * test_cas
 /**
    @brief Prepare resources used to execute single test case
 */
-static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t ** morse_receiver, int wpm)
+static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm)
 {
 	bool failure = false;
 
@@ -336,8 +336,7 @@ static int testcase_setup(const cwdaemon_server_t * server, client_t * client, m
 
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	*morse_receiver = morse_receiver_ctor(&morse_config);
-	if (NULL == *morse_receiver) {
+	if (0 != morse_receiver_ctor(&morse_config, morse_receiver)) {
 		test_log_err("Test: failed to create Morse receiver %s\n", "");
 		failure = true;
 	}
@@ -378,7 +377,7 @@ static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * serve
 
 
 
-static int testcase_teardown(client_t * client, morse_receiver_t ** morse_receiver)
+static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver)
 {
 	/* cwdaemon server is being stopped as a part of test case, in
 	   testcase_run(). */
