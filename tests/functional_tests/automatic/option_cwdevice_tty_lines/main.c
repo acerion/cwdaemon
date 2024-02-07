@@ -283,6 +283,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 
 	morse_receiver_wait(morse_receiver);
 
+	events_sort(events);
 	events_print(events);
 	if (0 != evaluate_events(events, test_case)) {
 		test_log_err("Test: evaluation of events has failed %s\n", "");

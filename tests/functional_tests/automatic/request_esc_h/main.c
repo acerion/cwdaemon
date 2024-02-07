@@ -431,10 +431,9 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 		morse_receiver_wait(morse_receiver);
 
 
-		/* For debugging only. */
-		events_print(&g_events);
-
 		/* Validation of test run. */
+		events_sort(&g_events);
+		events_print(&g_events);
 		if (0 != evaluate_events(&g_events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
