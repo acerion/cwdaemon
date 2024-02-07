@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "log.h"
 #include "test_env.h"
 
 
