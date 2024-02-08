@@ -176,6 +176,10 @@ int main(void)
 */
 static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
+	events_sort(events);
+	events_print(events);
+
+
 	const event_t * event_0 = &events->events[0];
 	const event_t * event_1 = &events->events[1];
 	const event_t * morse_event = NULL;
@@ -295,7 +299,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	}
 
 
+
 	/* Evaluation found no errors. */
+	test_log_info("Test: Evaluation of test events was successful %s\n", "");
+
 	return 0;
 }
 
@@ -399,43 +406,43 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 		test_log_newline(); /* Visual separator. */
 		test_log_info("Test: starting test case %zd/%zd: [%s]\n", i + 1, n_test_cases, test_case->description);
 
-		if (0 != morse_receiver_start(morse_receiver)) {
-			test_log_err("Test: failed to start Morse receiver %s\n", "");
-			failure = true;
-			break;
+		/* This is the actual test. */
+		{
+			if (0 != morse_receiver_start(morse_receiver)) {
+				test_log_err("Test: failed to start Morse receiver %s\n", "");
+				failure = true;
+				break;
+			}
+
+			/*
+			  First we ask cwdaemon to remember a reply that should be sent back
+			  to us after a message is played.
+
+			  Then we send the message itself.
+
+			  Then we wait for completion of job by:
+			  - Morse receiver thread that decodes a Morse code on cwdevice,
+			  - socket receiver that receives the remembered reply - this is the
+			    most important part of this test.
+			*/
+
+			/* Ask cwdaemon to send us this reply back after playing a message. */
+			client_send_request(client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
+
+			/* Send the message to be played. */
+			client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
+
+
+			morse_receiver_wait(morse_receiver);
 		}
-
-		/*
-		  First we ask cwdaemon to remember a reply that should be sent back
-		  to us after a message is played.
-
-		  Then we send the message itself.
-
-		  Then we wait for completion of job by:
-		  - Morse receiver thread that decodes a Morse code on cwdevice,
-		  - socket receiver that receives the remembered reply - this is the
-            most important part of this test.
-		*/
-
-		/* Ask cwdaemon to send us this reply back after playing a message. */
-		client_send_request(client, CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
-
-		/* Send the message to be played. */
-		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
-
-
-		morse_receiver_wait(morse_receiver);
 
 
 		/* Validation of test run. */
-		events_sort(events);
-		events_print(events);
 		if (0 != evaluate_events(events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			break;
 		}
-
 		/* Clear stuff before running next test case. */
 		events_clear(events);
 

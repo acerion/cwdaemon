@@ -115,10 +115,10 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int evaluate_events(const events_t * events, const test_case_t * test_case);
+static int evaluate_events(events_t * events, const test_case_t * test_case);
 static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case);
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver);
 
 
 
@@ -180,9 +180,14 @@ int main(void)
 			goto cleanup;
 		}
 
+		if (0 != evaluate_events(&events, test_case)) {
+			test_log_err("Test: evaluation of events has failed for test %zu / %zu\n", i + 1, n_test_cases);
+			failure = true;
+			goto cleanup;
+		}
 
 	cleanup:
-		if (0 != testcase_teardown(test_case, &client, &morse_receiver, &events)) {
+		if (0 != testcase_teardown(test_case, &client, &morse_receiver)) {
 			test_log_err("Test: failed at tear-down for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 		}
@@ -322,23 +327,13 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 			  My tests show that there is no need to sort (by timestamp) the
 			  array afterwards.
 			*/
-			events_insert_sigchld_event(events, &g_child_exit_info);
+			events_insert_sigchld_event(server->events, &g_child_exit_info);
 		} else {
 			/* There was never a signal from child (at least not in
 			   reasonable time. This will be recognized by
 			   evaluate_events(). */
 		}
 	}
-
-
-
-	events_sort(events);
-	events_print(events);
-	if (0 != evaluate_events(events, test_case)) {
-		test_log_err("Test: evaluation of events has failed %s\n", "");
-		return -1;
-	}
-	test_log_info("Test: evaluation of events was successful %s\n", "");
 
 
 	return 0;
@@ -350,7 +345,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 /**
    @brief Clean up resources used to execute single test case
 */
-static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver)
 {
 	if (test_case->send_message_request) {
 		morse_receiver_dtor(morse_receiver);
@@ -360,8 +355,6 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
 	client_disconnect(client);
 	client_dtor(client);
 
-	/* Clear stuff before running next test case. */
-	events_clear(events);
 	memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
 
 	return 0;
@@ -386,8 +379,12 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
    @return 0 if events are in proper order and of proper type
    @return -1 otherwise
 */
-static int evaluate_events(const events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
+	events_sort(events);
+	events_print(events);
+
+
 	/* Expectation 1: there should be N events:
 	    - Morse receive (if test_case::message is empty then we don't expect this event to occur),
 	    - us sending EXIT request to cwdaemon server,

@@ -66,7 +66,7 @@
 
 static int evaluate_events(events_t * events, const char * message1, const char * message2);
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, const char * message1, const char * message2);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 
 
@@ -89,6 +89,9 @@ int main(void)
 	server_t server = { .events = &events };
 	client_t client = { .events = &events };
 	morse_receiver_t morse_receiver = { .events = &events };
+	const char * message1 = "paris";
+	const char * message2 = "finger";
+
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
 		test_log_err("Test: failed at setting up of test %s\n", "");
@@ -96,8 +99,14 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (0 != test_run(&client, &morse_receiver, &events)) {
+	if (0 != test_run(&client, &morse_receiver, message1, message2)) {
 		test_log_err("Test: failed at execution of test %s\n", "");
+		failure = true;
+		goto cleanup;
+	}
+
+	if (0 != evaluate_events(&events, message1, message2)) {
+		test_log_err("Test: evaluation of events has failed %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
@@ -163,11 +172,8 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 
 
-static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, const char * message1, const char * message2)
 {
-	const char * message1 = "paris";
-	const char * message2 = "finger";
-
 	/* This sends a text request to cwdaemon server that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
 	   broken yet. */
@@ -200,16 +206,6 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, events
 
 		morse_receiver_wait(morse_receiver);
 	}
-
-
-
-	events_sort(events);
-	events_print(events);
-	if (0 != evaluate_events(events, message1, message2)) {
-		test_log_err("Test: evaluation of events has failed %s\n", "");
-		return -1;
-	}
-	test_log_info("Test: evaluation of events was successful %s\n", "");
 
 	return 0;
 }
@@ -254,6 +250,10 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 static int evaluate_events(events_t * events, const char * message1, const char * message2)
 {
+	events_sort(events);
+	events_print(events);
+
+
 	/* Expectation 1: there are two events: Morse code was keyed (and received) on cwdevice twice. */
 	if (2  != events->event_idx) {
 		test_log_err("Expectation 1: incorrect count of events: %d\n", events->event_idx);

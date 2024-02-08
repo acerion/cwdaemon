@@ -128,7 +128,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 static int testcase_setup(const server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
-static int evaluate_events(const events_t * events, const test_case_t * test_case);
+static int evaluate_events(events_t * events, const test_case_t * test_case);
 
 
 
@@ -207,19 +207,14 @@ int main(void)
 		}
 
 	evaluate:
-		events_sort(&events);
-		events_print(&events);
 		if (0 != evaluate_events(&events, test_case)) {
-			test_log_err("Test: evaluation of events has failed %s\n", "");
+			test_log_err("Test: evaluation of events has failed for test %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
 		}
-		test_log_info("Test: evaluation of events was successful %s\n", "");
 
 	cleanup:
-		/* Clear stuff before running next test case. */
 		memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
-
 		if (0 != testcase_teardown(&client, &morse_receiver)) {
 			test_log_err("Test: failed at tear-down for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
@@ -390,8 +385,12 @@ static int testcase_teardown(client_t * client, morse_receiver_t * morse_receive
 
 
 
-static int evaluate_events(const events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
+	events_sort(events);
+	events_print(events);
+
+
 	/* Expectation 1: count of events. */
 	if (test_case->expected_fail) {
 		/* We only expect "exit" event to be recorded. */

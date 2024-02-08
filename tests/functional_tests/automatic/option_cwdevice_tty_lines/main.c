@@ -142,9 +142,9 @@ static test_case_t g_test_cases[] = {
 
 
 static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case);
-static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver);
 static int testcase_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int evaluate_events(const events_t * events, const test_case_t * test_case);
+static int evaluate_events(events_t * events, const test_case_t * test_case);
 
 
 
@@ -181,12 +181,17 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &client, &morse_receiver, &events)) {
+		if (0 != testcase_run(test_case, &client, &morse_receiver)) {
 			test_log_err("Test: failed at execution of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
 		}
 
+		if (0 != evaluate_events(&events, test_case)) {
+			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
+			failure = true;
+			goto cleanup;
+		}
 
 	cleanup:
 		if (0 != testcase_teardown(&server, &client, &morse_receiver)) {
@@ -268,7 +273,7 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
    The Morse-receiver should correctly receive the text that cwdaemon was
    playing (unless test_case->expected_failed_receive is set to true).
 */
-static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver)
 {
 	if (0 != morse_receiver_start(morse_receiver)) {
 		test_log_err("Test: failed to start Morse receiver (%d)\n", 1);
@@ -278,16 +283,6 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 	client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 
 	morse_receiver_wait(morse_receiver);
-
-	events_sort(events);
-	events_print(events);
-	if (0 != evaluate_events(events, test_case)) {
-		test_log_err("Test: evaluation of events has failed %s\n", "");
-		return -1;
-	}
-	test_log_info("Test: evaluation of events was successful %s\n", "");
-
-	events_clear(events);
 
 	return 0;
 }
@@ -336,8 +331,12 @@ static int testcase_teardown(server_t * server, client_t * client, morse_receive
      - changes of state of PTT pin,
      - exiting of local instance of cwdaemon server process,
 */
-static int evaluate_events(const events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
+	events_sort(events);
+	events_print(events);
+
+
 	/* Expectation 1: correct count of events. */
 	if (test_case->expected_failed_receive) {
 		if (0 != events->event_idx) {
