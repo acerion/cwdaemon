@@ -2,7 +2,7 @@
  * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,6 +55,7 @@
 #include "tests/library/events.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
+#include "tests/library/time_utils.h"
 
 
 
@@ -75,31 +76,35 @@ void events_print(const events_t * events)
 			/* End of events. */
 			break;
 		}
+
+		/* Normalize timestamps. Make the timestamps more readable. */
 		const struct timespec ts = event->tstamp;
-		const long int sec = ts.tv_sec - first_ts.tv_sec; /* Normalize. Make the timestamps more readable. */
+		struct timespec diff = { 0 };
+		timespec_diff(&first_ts, &ts, &diff);
+
 		switch (event->event_type) {
 		case event_type_morse_receive:
 			test_log_debug("Test: event #%02zd: %3ld.%09ld: Morse receive:  [%s]\n",
 			               e,
-			               sec, ts.tv_nsec,
+			               diff.tv_sec, diff.tv_nsec,
 			               event->u.morse_receive.string);
 			break;
 		case event_type_client_socket_receive:
 			test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
 			               e,
-			               sec, ts.tv_nsec,
+			               diff.tv_sec, diff.tv_nsec,
 			               escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
 			break;
 		case event_type_sigchld:
 			test_log_debug("Test: event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
 			               e,
-			               sec, ts.tv_nsec,
+			               diff.tv_sec, diff.tv_nsec,
 			               event->u.sigchld.wstatus);
 			break;
 		case event_type_request_exit:
 			test_log_debug("Test: event #%02zd: %3ld.%09ld: EXIT request\n",
 			               e,
-			               sec, ts.tv_nsec);
+			               diff.tv_sec, diff.tv_nsec);
 			break;
 		case event_type_none:
 		default:
