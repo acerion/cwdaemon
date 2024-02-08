@@ -2,7 +2,7 @@
  * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * Some of this code is taken from netkeyer.c, which is part of the tlf source,
  * here is the copyright:
@@ -52,6 +52,7 @@
 
 #include <libcw.h>
 
+#include "client.h"
 #include "log.h"
 #include "misc.h"
 #include "random.h"

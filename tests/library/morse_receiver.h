@@ -5,6 +5,7 @@
 
 
 #include "cw_rec_utils.h"
+#include "cwdevice_observer.h"
 #include "misc.h"
 #include "thread.h"
 

@@ -4,9 +4,20 @@
 
 
 
-#include "cw_rec_utils.h"
-#include "cwdevice_observer.h"
-#include "server.h"
+#include <arpa/inet.h> /* in_port_t */
+#include <sys/types.h> /* pid_t */
+#include <time.h>
+
+
+
+
+/** Data type used in handling exit of a child process. */
+typedef struct child_exit_info_t {
+	pid_t pid;                            /**< pid of process on which to do waitpid(). */
+	struct timespec sigchld_timestamp;    /**< timestamp at which sigchld has occurred. */
+	int wstatus;                          /**< Second arg to waitpid(). */
+	pid_t waitpid_retv;                   /**< Value returned by waitpid(). */
+} child_exit_info_t;
 
 
 

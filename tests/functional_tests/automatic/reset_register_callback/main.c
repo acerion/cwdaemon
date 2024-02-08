@@ -57,6 +57,7 @@
 #include "tests/library/morse_receiver.h"
 #include "tests/library/morse_receiver_utils.h"
 #include "tests/library/random.h"
+#include "tests/library/server.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
 
