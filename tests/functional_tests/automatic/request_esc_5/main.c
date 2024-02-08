@@ -81,11 +81,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 static child_exit_info_t g_child_exit_info;
 
 
@@ -168,9 +163,10 @@ int main(void)
 		test_log_info("Test: starting test case %zu / %zu: %s\n", i + 1, n_test_cases, test_case->description);
 
 		bool failure = false;
-		server_t server = { 0 };
-		client_t client = { 0 };
-		morse_receiver_t morse_receiver = { 0 };
+		events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+		server_t server = { .events = &events };
+		client_t client = { .events = &events };
+		morse_receiver_t morse_receiver = { .events = &events };
 
 		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case)) {
 			test_log_err("Test: failed at setting up of test case %zu / %zu\n", i + 1, n_test_cases);
@@ -178,7 +174,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &g_events)) {
+		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &events)) {
 			test_log_err("Test: failed at execution of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -186,7 +182,7 @@ int main(void)
 
 
 	cleanup:
-		if (0 != testcase_teardown(test_case, &client, &morse_receiver, &g_events)) {
+		if (0 != testcase_teardown(test_case, &client, &morse_receiver, &events)) {
 			test_log_err("Test: failed at tear-down for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 		}

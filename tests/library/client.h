@@ -13,6 +13,7 @@
 
 #include <netinet/in.h>
 
+#include "events.h"
 #include "thread.h"
 
 
@@ -23,6 +24,10 @@ typedef struct client_t {
 	char reply_buffer[64];    /**< Buffer for receiving replies from server. */
 
 	thread_t socket_receiver_thread;
+
+	/** Reference to test's events container. Used to collect events
+	    registered during test that are relevant to cwdaemon client. */
+	events_t * events;
 } client_t;
 
 

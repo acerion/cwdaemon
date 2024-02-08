@@ -75,11 +75,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 typedef struct test_case_t {
 	const char * description;                 /**< Tester-friendly description of test case. */
 	const char * full_message;                /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
@@ -175,9 +170,10 @@ int basic_caret_test(void)
 {
 	bool failure = false;
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	server_t server = { 0 };
-	client_t client = { 0 };
-	morse_receiver_t morse_receiver = { 0 };
+	events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+	server_t server = { .events = &events };
+	client_t client = { .events = &events };
+	morse_receiver_t morse_receiver = { .events = &events };
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
 		test_log_err("Test: failed at test setup %s\n", "");
@@ -185,7 +181,7 @@ int basic_caret_test(void)
 		goto cleanup;
 	}
 
-	if (0 != test_run(g_test_cases, n_test_cases, &client, &morse_receiver, &g_events)) {
+	if (0 != test_run(g_test_cases, n_test_cases, &client, &morse_receiver, &events)) {
 		test_log_err("Test: failed at running test cases %s\n", "");
 		failure = true;
 		goto cleanup;

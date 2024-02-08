@@ -12,6 +12,7 @@
 
 #include "client.h"
 #include "cwdevice_observer.h"
+#include "events.h"
 
 
 
@@ -23,6 +24,10 @@ typedef struct server_t {
 	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
 	int wstatus;  /**< Second argument to waitpid(). */
 	char ip_address[INET6_ADDRSTRLEN]; /**< String representation of server's IP address. */
+
+	/** Reference to test's events container. Used to collect events
+	    registered during test that are relevant to cwdaemon server. */
+	events_t * events;
 } server_t;
 
 

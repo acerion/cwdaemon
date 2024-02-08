@@ -90,11 +90,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 static child_exit_info_t g_child_exit_info;
 
 
@@ -129,7 +124,7 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int server_setup(server_t * server, const test_case_t * test_case, int * wpm, events_t * events);
+static int server_setup(server_t * server, const test_case_t * test_case, int * wpm);
 static int testcase_setup(const server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
@@ -178,13 +173,14 @@ int main(void)
 		test_log_info("Test: starting test case %zu / %zu: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		bool failure = false;
-		server_t server = { 0 };
-		client_t client = { 0 };
-		morse_receiver_t morse_receiver = { 0 };
+		events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+		server_t server = { .events = &events };
+		client_t client = { .events = &events };
+		morse_receiver_t morse_receiver = { .events = &events };
 
 
 		int wpm = 0;
-		if (0 != server_setup(&server, test_case, &wpm, &g_events)) {
+		if (0 != server_setup(&server, test_case, &wpm)) {
 			test_log_err("Test: failed at setting up of server for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -204,16 +200,16 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &g_events)) {
+		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &events)) {
 			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
 		}
 
 	evaluate:
-		events_sort(&g_events);
-		events_print(&g_events);
-		if (0 != evaluate_events(&g_events, test_case)) {
+		events_sort(&events);
+		events_print(&events);
+		if (0 != evaluate_events(&events, test_case)) {
 			test_log_err("Test: evaluation of events has failed %s\n", "");
 			failure = true;
 			goto cleanup;
@@ -222,7 +218,6 @@ int main(void)
 
 	cleanup:
 		/* Clear stuff before running next test case. */
-		events_clear(&g_events);
 		memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
 
 		if (0 != testcase_teardown(&client, &morse_receiver)) {
@@ -284,7 +279,7 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info, 
    @return 0 if starting of a server ended as expected
    @return -1 if starting of server ended not as expected
 */
-static int server_setup(server_t * server, const test_case_t * test_case, int * wpm, events_t * events)
+static int server_setup(server_t * server, const test_case_t * test_case, int * wpm)
 {
 	/* Remember that some receive timeouts in tests were selected when the
 	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
@@ -302,7 +297,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 	};
 	const int retv = server_start(&cwdaemon_opts, server);
 	if (0 != retv) {
-		save_child_exit_to_events(&g_child_exit_info, events);
+		save_child_exit_to_events(&g_child_exit_info, server->events);
 		if (test_case->expected_fail) {
 			return 0; /* Setting up of server has failed, as expected. */
 		} else {

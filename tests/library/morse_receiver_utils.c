@@ -29,9 +29,6 @@
    Functions related to Morse receiver. The functions are put in separate
    file to make unit testing easier. The functions have very few
    dependencies, so unit tests don't have to pull many dependencies either.
-
-   One example is "extern g_events" present in morse_receiver.c, but not in
-   this file.
 */
 
 

@@ -54,11 +54,6 @@
 
 
 
-extern events_t g_events;
-
-
-
-
 static int cw_receiver_desetup(__attribute__((unused)) cw_easy_receiver_t * easy_rec);
 static void * morse_receiver_thread_fn(void * receiver_arg);
 
@@ -67,8 +62,6 @@ static void * morse_receiver_thread_fn(void * receiver_arg);
 
 int morse_receiver_ctor(const morse_receiver_config_t * config, morse_receiver_t * receiver)
 {
-	memset(receiver, 0, sizeof (morse_receiver_t));
-
 	thread_ctor(&receiver->thread);
 
 	receiver->thread.thread_fn = morse_receiver_thread_fn;
@@ -243,7 +236,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	} while (remaining_wait_ms > 0);
 
 	if (last_character_receive_tstamp.tv_sec != 0 && last_character_receive_tstamp.tv_nsec != 0) {
-		events_insert_morse_receive_event(&g_events, buffer, &last_character_receive_tstamp);
+		events_insert_morse_receive_event(morse_receiver->events, buffer, &last_character_receive_tstamp);
 	}
 
 	test_log_info("Morse receiver thread: received string [%s]\n", buffer);

@@ -64,11 +64,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 static int evaluate_events(events_t * events, const char * message1, const char * message2);
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events);
@@ -90,9 +85,10 @@ int main(void)
 	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	bool failure = false;
-	server_t server = { 0 };
-	client_t client = { 0 };
-	morse_receiver_t morse_receiver = { 0 };
+	events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+	server_t server = { .events = &events };
+	client_t client = { .events = &events };
+	morse_receiver_t morse_receiver = { .events = &events };
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
 		test_log_err("Test: failed at setting up of test %s\n", "");
@@ -100,7 +96,7 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (0 != test_run(&client, &morse_receiver, &g_events)) {
+	if (0 != test_run(&client, &morse_receiver, &events)) {
 		test_log_err("Test: failed at execution of test %s\n", "");
 		failure = true;
 		goto cleanup;

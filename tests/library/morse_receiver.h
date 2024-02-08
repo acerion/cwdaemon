@@ -6,6 +6,7 @@
 
 #include "cw_rec_utils.h"
 #include "cwdevice_observer.h"
+#include "events.h"
 #include "misc.h"
 #include "thread.h"
 
@@ -23,6 +24,10 @@ typedef struct morse_receiver_config_t {
 typedef struct morse_receiver_t {
 	thread_t thread;
 	morse_receiver_config_t config;
+
+	/** Reference to test's events container. Used to collect events
+	    registered during test by Morse receiver. */
+	events_t * events;
 } morse_receiver_t;
 
 

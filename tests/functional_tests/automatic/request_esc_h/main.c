@@ -58,11 +58,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 typedef struct test_case_t {
 	const char * description;                /** Human-readable description of the test case. */
 	const char * full_message;               /** Full text of message to be played by cwdaemon. */
@@ -127,9 +122,10 @@ int main(void)
 
 	bool failure = false;
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	server_t server = { 0 };
-	client_t client = { 0 };
-	morse_receiver_t morse_receiver = { 0 };
+	events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+	server_t server = { .events = &events };
+	client_t client = { .events = &events };
+	morse_receiver_t morse_receiver = { .events = &events };
 
 	if (0 != test_setup(&server, &client, &morse_receiver)) {
 		test_log_err("Test: failed at test setup %s\n", "");
@@ -137,7 +133,7 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (test_run(g_test_cases, n_test_cases, &client, &morse_receiver, &g_events)) {
+	if (test_run(g_test_cases, n_test_cases, &client, &morse_receiver, &events)) {
 		test_log_err("Test: failed at running test cases %s\n", "");
 		failure = true;
 		goto cleanup;

@@ -60,11 +60,6 @@
 
 
 
-events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
-
-
-
-
 typedef struct test_case_t {
 	const char * description;                /**< Tester-friendly description of test case. */
 	tty_pins_t server_tty_pins;              /**< Configuration of tty pins on cwdevice used by cwdaemon server. */
@@ -175,9 +170,10 @@ int main(void)
 		test_log_info("Test: starting test case %zd / %zd: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		bool failure = false;
-		server_t server = { 0 };
-		client_t client = { 0 };
-		morse_receiver_t morse_receiver = { 0 };
+		events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
+		server_t server = { .events = &events };
+		client_t client = { .events = &events };
+		morse_receiver_t morse_receiver = { .events = &events };
 
 		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case)) {
 			test_log_err("Test: failed at setting up of test case %zu / %zu\n", i + 1, n_test_cases);
@@ -185,7 +181,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &client, &morse_receiver, &g_events)) {
+		if (0 != testcase_run(test_case, &client, &morse_receiver, &events)) {
 			test_log_err("Test: failed at execution of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
