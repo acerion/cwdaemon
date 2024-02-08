@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_PROCESS_H
-#define CWDAEMON_TEST_LIB_PROCESS_H
+#ifndef CWDAEMON_TEST_LIB_SERVER_H
+#define CWDAEMON_TEST_LIB_SERVER_H
 
 
 
@@ -125,6 +125,6 @@ int local_server_stop(cwdaemon_server_t * server, client_t * client);
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_PROCESS_H */
+#endif /* #ifndef CWDAEMON_TEST_LIB_SERVER_H */
 
 

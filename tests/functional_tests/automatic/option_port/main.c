@@ -80,8 +80,8 @@
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/morse_receiver_utils.h"
-#include "tests/library/process.h"
 #include "tests/library/random.h"
+#include "tests/library/server.h"
 #include "tests/library/sleep.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
@@ -111,7 +111,7 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in process.c as "pass port 0 to cwdaemon". */
+	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon". */
 	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1  },
 	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
 	{ .description = "failure case: port MIN - 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },

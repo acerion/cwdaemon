@@ -54,8 +54,8 @@
 
 #include "log.h"
 #include "misc.h"
-#include "process.h"
 #include "random.h"
+#include "server.h"
 #include "sleep.h"
 #include "socket.h"
 #include "src/cwdaemon.h"

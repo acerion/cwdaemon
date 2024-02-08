@@ -16,8 +16,8 @@ check_HEADERS = client.h             \
                 misc.h               \
                 morse_receiver.h     \
                 morse_receiver_utils.h  \
-                process.h            \
                 random.h             \
+                server.h             \
                 sleep.h              \
                 socket.h             \
                 test_env.h           \
@@ -35,8 +35,8 @@ lib_tests_a_SOURCES = client.c             \
                       misc.c               \
                       morse_receiver.c     \
                       morse_receiver_utils.c \
-                      process.c            \
                       random.c             \
+                      server.c            \
                       sleep.c              \
                       socket.c             \
                       test_env.c           \
