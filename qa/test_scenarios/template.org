@@ -181,23 +181,6 @@ Test passes
 
 
 
-***** TODO tests/cwtest_esc5.pl
-
-*Notes*
-Start cwdamon with 'info' threshold for logs to see a log about exiting:
-
-./src/cwdaemon -n -x p -y i
-
-*Expected result*
-1. These logs are visible in console:
-  [INFO ] cwdaemon: escaped request: "<ESC>5"
-  [INFO ] cwdaemon: requested exit of daemon
-2. cwdaemon exits after receiving "<ESC>5" request.
-
-*Actual result*
-
-
-
 ***** TODO tests/cwtest_esc64.pl
 *Expected result*
 Test passes

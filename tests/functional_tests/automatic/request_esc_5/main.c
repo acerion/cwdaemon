@@ -27,8 +27,17 @@
 /**
    @file
 
-   Test of EXIT request (and of test code that starts a test instance of
-   cwdaemon).
+   Test of EXIT request.
+
+   The test only tests exit of cwdaemon in two cases:
+    - when cwdaemon was only started (without handling any request),
+    - when cwdaemon handled MESSAGE request before being asked to handle EXIT
+      request.
+
+   Other functional tests (tests in other dirs) also send EXIT request at the
+   end of test of at the end of test case. Those instances cover other
+   situations, where cwdaemon is asked to handle EXIT request after doing
+   misc actions, including handling different types of requests.
 */
 
 
