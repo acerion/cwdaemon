@@ -28,12 +28,12 @@ typedef struct child_exit_info_t {
 
 /* For now this structure doesn't allow for usage and tests of remote
    cwdaemon server. */
-typedef struct cwdaemon_server_t {
+typedef struct server_t {
 	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
 	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
 	int wstatus;  /**< Second argument to waitpid(). */
 	char ip_address[INET6_ADDRSTRLEN]; /**< String representation of server's IP address. */
-} cwdaemon_server_t;
+} server_t;
 
 
 
@@ -106,7 +106,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server);
+int server_start(const cwdaemon_opts_t * opts, server_t * server);
 
 
 
@@ -120,7 +120,7 @@ int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server);
    @return 0 on success
    @return -1 on failure
 */
-int local_server_stop(cwdaemon_server_t * server, client_t * client);
+int local_server_stop(server_t * server, client_t * client);
 
 
 

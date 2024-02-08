@@ -129,9 +129,9 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm, events_t * events);
-static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
-static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int server_setup(server_t * server, const test_case_t * test_case, int * wpm, events_t * events);
+static int testcase_setup(const server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
+static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
 
@@ -178,7 +178,7 @@ int main(void)
 		test_log_info("Test: starting test case %zu / %zu: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		bool failure = false;
-		cwdaemon_server_t server = { 0 };
+		server_t server = { 0 };
 		client_t client = { 0 };
 		morse_receiver_t morse_receiver = { 0 };
 
@@ -284,7 +284,7 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info, 
    @return 0 if starting of a server ended as expected
    @return -1 if starting of server ended not as expected
 */
-static int server_setup(cwdaemon_server_t * server, const test_case_t * test_case, int * wpm, events_t * events)
+static int server_setup(server_t * server, const test_case_t * test_case, int * wpm, events_t * events)
 {
 	/* Remember that some receive timeouts in tests were selected when the
 	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
@@ -325,7 +325,7 @@ static int server_setup(cwdaemon_server_t * server, const test_case_t * test_cas
 /**
    @brief Prepare resources used to execute single test case
 */
-static int testcase_setup(const cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm)
+static int testcase_setup(const server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm)
 {
 	bool failure = false;
 
@@ -349,7 +349,7 @@ static int testcase_setup(const cwdaemon_server_t * server, client_t * client, m
 
 
 
-static int testcase_run(const test_case_t * test_case, cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	if (0 != morse_receiver_start(morse_receiver)) {
 		test_log_err("Test: failed to start Morse receiver %s\n", "");

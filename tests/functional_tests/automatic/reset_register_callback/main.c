@@ -69,9 +69,9 @@ events_t g_events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
 
 
 static int evaluate_events(events_t * events, const char * message1, const char * message2);
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 
 
 
@@ -89,7 +89,7 @@ int main(void)
 	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	bool failure = false;
-	cwdaemon_server_t server = { 0 };
+	server_t server = { 0 };
 	client_t client = { 0 };
 	morse_receiver_t morse_receiver = { 0 };
 
@@ -126,7 +126,7 @@ int main(void)
 /**
    @brief Prepare resources used to execute single test case
 */
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 
@@ -223,7 +223,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, events
 /**
    @brief Clean up resources used to execute single test case
 */
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 

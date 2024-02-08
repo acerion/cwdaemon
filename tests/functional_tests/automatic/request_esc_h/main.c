@@ -105,8 +105,8 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int evaluate_events(events_t * events, const test_case_t * test_case);
 
@@ -127,7 +127,7 @@ int main(void)
 
 	bool failure = false;
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	cwdaemon_server_t server = { 0 };
+	server_t server = { 0 };
 	client_t client = { 0 };
 	morse_receiver_t morse_receiver = { 0 };
 
@@ -309,7 +309,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 /**
    @brief Prepare resources used to execute set of test cases
 */
-static int test_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 
@@ -361,7 +361,7 @@ static int test_setup(cwdaemon_server_t * server, client_t * client, morse_recei
 /**
    @brief Clean up resources used to execute set of test cases
 */
-static int test_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 

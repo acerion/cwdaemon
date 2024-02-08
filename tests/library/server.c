@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@
 
 
 
-static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server);
+static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 static char g_arg_tone[10] = { 0 };
@@ -197,7 +197,7 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
+int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * server)
 {
 	int l4_port = 0;
 
@@ -368,7 +368,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, cwdaemon_ser
 
 
 
-int server_start(const cwdaemon_opts_t * opts, cwdaemon_server_t * server)
+int server_start(const cwdaemon_opts_t * opts, server_t * server)
 {
 	const char * path = TEST_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, opts, server)) {
@@ -460,7 +460,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 
 
 
-int local_server_stop(cwdaemon_server_t * server, client_t * client)
+int local_server_stop(server_t * server, client_t * client)
 {
 	int retval = 0;
 

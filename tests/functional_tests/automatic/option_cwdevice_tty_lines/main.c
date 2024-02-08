@@ -146,9 +146,9 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case);
+static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case);
 static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int testcase_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int testcase_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int evaluate_events(const events_t * events, const test_case_t * test_case);
 
 
@@ -175,7 +175,7 @@ int main(void)
 		test_log_info("Test: starting test case %zd / %zd: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		bool failure = false;
-		cwdaemon_server_t server = { 0 };
+		server_t server = { 0 };
 		client_t client = { 0 };
 		morse_receiver_t morse_receiver = { 0 };
 
@@ -214,7 +214,7 @@ int main(void)
 /**
    @brief Prepare resources used to execute single test case
 */
-static int testcase_setup(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case)
+static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case)
 {
 	bool failure = false;
 
@@ -302,7 +302,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 /**
    @brief Clean up resources used to execute single test case
 */
-static int testcase_teardown(cwdaemon_server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int testcase_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
 	bool failure = false;
 
