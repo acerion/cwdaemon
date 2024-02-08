@@ -60,21 +60,21 @@
 
 /* For kill() on FreeBSD 13.2 */
 #include <signal.h>
-#include <sys/types.h>
+//#include <sys/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
-#include <time.h>
-#include <unistd.h>
+//#include <time.h>
+//#include <unistd.h>
 
 #include <errno.h>
 
 #include "src/cwdaemon.h"
 #include "tests/library/client.h"
-#include "tests/library/cwdevice_observer.h"
-#include "tests/library/cwdevice_observer_serial.h"
+//#include "tests/library/cwdevice_observer.h"
+//#include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
@@ -82,7 +82,7 @@
 #include "tests/library/morse_receiver_utils.h"
 #include "tests/library/random.h"
 #include "tests/library/server.h"
-#include "tests/library/sleep.h"
+//#include "tests/library/sleep.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
 #include "tests/library/time_utils.h"
