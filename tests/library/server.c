@@ -311,7 +311,7 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 		fprintf(stderr, "\n");
 
 		execve(path, (char * const *) argv, env);
-		test_log_err("Test: reurning after failed exec(): %s\n", strerror(errno));
+		test_log_err("Test: returning after failed exec(): %s\n", strerror(errno));
 		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
 		/*
