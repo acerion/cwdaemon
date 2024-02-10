@@ -323,7 +323,9 @@ Quality Assurance
 
     - See tests/unit_tests/README for more info.
 
-    - A very basic support for gcov/lcov is available. Relevant commands:
+    - A very basic support for gcov/lcov coverage for unit tests is
+      available. Relevant commands:
+
         - ./configure --enable-gcov
         - make gcov
         - < examine reports found in tests/coverage/unit_tests >
@@ -331,8 +333,8 @@ Quality Assurance
 
 - Functional tests
 
-    - Automatic (and unattended) tests that cover to some degree a small (but
-      growing) set of functionalities.
+    - Automatic (and unattended) tests written in C that cover to some degree
+      a small (but growing) set of functionalities.
 
       The tests are located in tests/functional_tests/automatic/ dir.
 
@@ -346,6 +348,17 @@ Quality Assurance
       name of /dev/ device can be configured at compile time with
       '--with-test-tty-cwdevice-name=<name>' flag passed to './configure'
       script.
+
+    - A very basic support for gcov/lcov coverage for functional tests
+      written in C is available. Relevant commands:
+
+        - ./configure --enable-gcov --enable-functional-tests
+        - make gcov
+        - < examine reports found in tests/coverage/functional_tests >
+        - make gcov-clean
+
+      Don't forget to connect TTY/USB converter before running the tests,
+      otherwise the functional tests fill all fail.
 
     - An array of tests written in Perl, to be executed manually and observed
       for results.
