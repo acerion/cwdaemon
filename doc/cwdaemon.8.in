@@ -12,22 +12,22 @@ simple transistor switch to output morse code to a transmitter from a text
 message sent to it via udp port 6789.
 
 .SH "OPTIONS"
-cwdaemon can be configured either through command line arguments on
+cwdaemon can be configured either through command line options on
 start of the daemon, or through requests (escaped requests) sent over
 network. Each escaped request starts with ASCII Escape character
 (decimal 27, hex 1B). The Escape character is represented in the list
 below by "<ESC>" string. Notice that there are no space characters
 between parts of escaped requests.
 
-Some of the arguments and requests require passing a value (e.g. Morse
+Some of the options and requests require passing a value (e.g. Morse
 speed [wpm], tone (frequency) [Hz] etc.). Call "cwdaemon -h" to see
-default values for these arguments/requests, and ranges of accepted
+default values for these options/requests, and ranges of accepted
 values.
 
-When handling command line arguments, cwdaemon does not accept
+When handling command line options, cwdaemon does not accept
 invalid, malformed, or out-of-range values passed through command
 line. It won't attempt to guess caller's intentions, it won't try to
-start with some fallback value of the argument. Instead it will just
+start with some fallback value of the option. Instead it will just
 print a debug message and exit. Rejection of bad values and exiting
 will happen before attempting to fork.
 
@@ -44,7 +44,7 @@ of PTT delay will be ignored.
 .TP
 \fBPrint help text to stdout and exit\fR
 .IP
-Command line argument: -h, --help
+Command line option: -h, --help
 
 .IP
 Escaped request: N/A
@@ -54,7 +54,7 @@ Escaped request: N/A
 .TP
 \fBPrint version information to stdout and exit\fR
 .IP
-Command line argument: -V, --version
+Command line option: -V, --version
 
 .IP
 Escaped request: N/A
@@ -64,7 +64,7 @@ Escaped request: N/A
 .TP
 \fBSet hardware keying device\fR
 .IP
-Command line argument: -d, --cwdevice <device>
+Command line option: -d, --cwdevice <device>
 
 .IP
 Example command line: cwdaemon --cwdevice ttyS0
@@ -82,7 +82,7 @@ See chapter "DEVICES" below for more information.
 .TP
 \fBDon't fork daemon, run in foreground\fR
 .IP
-Command line argument: -n, --nofork
+Command line option: -n, --nofork
 
 .IP
 Escaped request: N/A
@@ -96,7 +96,7 @@ Debug information will be printed to stdout (unless different debug output is se
 .TP
 \fBProvide device-specific options to keying device's driver\fR
 .IP
-Command line argument: -o, --options <option>
+Command line option: -o, --options <option>
 
 .IP
 Example command line: cwdaemon -d /dev/ttyUSB0 -o key=RTS -o ptt=none
@@ -135,7 +135,7 @@ Default is \fBRTS\fR.
 .TP
 \fBSet network UDP port\fR
 .IP
-Command line argument: -p, --port <port number>
+Command line option: -p, --port <port number>
 .IP
 Allowed values of port number are in range <1024 - 65535>, inclusive.
 .br
@@ -151,7 +151,7 @@ This escaped request is obsolete and has no effect.
 .TP
 \fBSet process priority (niceness)\fR
 .IP
-Command line argument: -P, --priority <priority>
+Command line option: -P, --priority <priority>
 
 .IP
 Escaped request: N/A
@@ -161,7 +161,7 @@ Escaped request: N/A
 .TP
 \fBSet Morse speed [wpm]\fR
 .IP
-Command line argument: -s, --wpm <speed>
+Command line option: -s, --wpm <speed>
 
 .IP
 Escaped request: <ESC>2<speed>
@@ -171,7 +171,7 @@ Escaped request: <ESC>2<speed>
 .TP
 \fBSet PTT delay [ms] (TOD, Turn On Delay)\fR
 .IP
-Command line argument: -t, --pttdelay <delay>
+Command line option: -t, --pttdelay <delay>
 
 .IP
 Escaped request: <ESC>d<delay>
@@ -181,7 +181,7 @@ Escaped request: <ESC>d<delay>
 .TP
 \fBTurn PTT keying on/off\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>a<{0|1}>
@@ -194,7 +194,7 @@ Escaped request: <ESC>a<{0|1}>
 .TP
 \fBSet sound system (sound backend)\fR
 .IP
-Command line argument: -x, --system <system>
+Command line option: -x, --system <system>
 
 .IP
 Escaped request: <ESC>f<system>
@@ -207,7 +207,7 @@ See chapter "SOUND SYSTEM" below for more information.
 .TP
 \fBSet sound volume for soundcard [%]\fR
 .IP
-Command line argument: -v, --volume <volume>
+Command line option: -v, --volume <volume>
 
 .IP
 Escaped request: <ESC>g<volume>
@@ -217,7 +217,7 @@ Escaped request: <ESC>g<volume>
 .TP
 \fBSet Morse weighting\fR
 .IP
-Command line argument: -w, --weighting <weighting>
+Command line option: -w, --weighting <weighting>
 
 .IP
 Escaped request: <ESC>7<weighting>
@@ -227,7 +227,7 @@ Escaped request: <ESC>7<weighting>
 .TP
 \fBSet tone (frequency) of sound [Hz]\fR
 .IP
-Command line argument: -T, --tone <tone>
+Command line option: -T, --tone <tone>
 
 .IP
 Escaped request: <ESC>3<tone>
@@ -239,13 +239,13 @@ Notice that sending escaped request with value '0' silences cwdaemon.
 .TP
 \fBIncrease verbosity of debug output\fR
 .IP
-Command line argument: -i
+Command line option: -i
 
 .IP
 Escaped request: N/A
 
 .IP
-The argument can be repeated up to four times (-iiii) to gradually
+The option can be repeated up to four times (-iiii) to gradually
 increase the verbosity.  Alternatively you can use -y/--verbosity
 option.
 
@@ -254,7 +254,7 @@ option.
 .TP
 \fBSet verbosity threshold for debug strings\fR
 .IP
-Command line argument: -y, --verbosity <threshold>
+Command line option: -y, --verbosity <threshold>
 
 .IP
 Escaped request: N/A
@@ -275,7 +275,7 @@ See chapter "DEBUGGING" below for more information.
 Specify value (as decimal number) of flags passed to libcw for purposes of debugging of the libcw library.
 
 .IP
-Command line argument: -I, --libcwflags <flags>
+Command line option: -I, --libcwflags <flags>
 
 .IP
 Escaped request: N/A
@@ -285,7 +285,7 @@ Escaped request: N/A
 .TP
 \fBSet debug output\fR
 .IP
-Command line argument: -f, --debugfile <output>
+Command line option: -f, --debugfile <output>
 
 .IP
 Escaped request: N/A
@@ -303,21 +303,21 @@ Passing path to disc file as value of <output> works in both situations: when fo
 .TP
 \fBReset some of cwdaemon parameters\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>0
 
 .IP
 The request resets program's parameters to cwdaemon default values,
-unless the defaults were overridden with command line arguments - then
+unless the defaults were overridden with command line options - then
 the values passed in command line are used.
 
 
 .TP
 \fBAbort currently sent message\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>4
@@ -327,7 +327,7 @@ Escaped request: <ESC>4
 .TP
 \fBExit (close) daemon\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>5
@@ -338,7 +338,7 @@ Escaped request: <ESC>5
 .TP
 \fBSet word mode\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>6
@@ -348,7 +348,7 @@ Escaped request: <ESC>6
 .TP
 \fBSet SSB way\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>b<{0|1}
@@ -361,7 +361,7 @@ Escaped request: <ESC>b<{0|1}
 .TP
 \fBTune for a number of seconds\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>c<seconds>
@@ -375,13 +375,13 @@ sound system, and by current hardware keying device.
 .TP
 \fBSet band switch output\fR
 .IP
-Command line argument: N/A
+Command line option: N/A
 
 .IP
 Escaped request: <ESC>e<value>
 
 .IP
-This argument sets band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB).
+This option sets band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB).
 
 
 
@@ -430,7 +430,7 @@ verbosity level value for each string can be changed in future
 versions of cwdaemon. Don't depend on current setup.
 
 The verbosity threshold can be specified through command line
-arguments: -i, -y, or --verbosity. -y and --verbosity accept
+options: -i, -y, or --verbosity. -y and --verbosity accept
 "threshold" value (single character) as specified below:
 
 .TP
@@ -454,16 +454,16 @@ Debug strings can be printed to stdout, stderr, or disc file. Printing
 to stdout or stderr is available only if cwdaemon has not forked.
 Printing to disc file is available regardless of whether cwdaemon has
 forked or not.  You can specify intended debug output using -f or
---debugfile command line argument. Values "stdout" and "stderr" passed
-to cwdaemon with these arguments are recognized as special file
+--debugfile command line option. Values "stdout" and "stderr" passed
+to cwdaemon with these options are recognized as special file
 names. "syslog" value is also treated as special value, but is not
 supported at the moment. Every other value will be treated as path to
 disc file.  "stdout" is a default debug output for non-forked
 cwdaemon. You don't have to specify this explicitly through command
-line arguments, but you can.
+line options, but you can.
 
 .P
-Regardless of values passed through -f or --debugfile arguments,
+Regardless of values passed through -f or --debugfile options,
 cwdaemon opens a syslog file and (when forked) prints some (few)
 messages to the syslog. There is no way to override this at the
 moment. Which messages are always printed to syslog, and which can be
