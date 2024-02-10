@@ -212,7 +212,7 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 		/* Key down. */
 		// fprintf(stdout, "[II] Easy receiver: key goes down:              %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 		if (!cw_start_receive_tone(&easy_rec->main_timer)) {
-			// TODO: Perhaps this should be counted as test error
+			// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
 			perror("cw_start_receive_tone");
 			return;
 		}
@@ -239,7 +239,7 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 				break;
 			default:
 				perror("cw_end_receive_tone");
-				// TODO: Perhaps this should be counted as test error
+				// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
 				return;
 			}
 		}
@@ -427,8 +427,8 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 
 
 
-// TODO: can we return true when a space has been successfully polled,
-// instead of returning it through erd?
+// TODO (acerion) 2024.02.09: can we return true when a space has been
+// successfully polled, instead of returning it through erd?
 bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd)
 {
 	/* We expect the receiver to contain a character, but we don't
