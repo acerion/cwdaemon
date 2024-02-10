@@ -53,6 +53,7 @@
 #include "log.h"
 #include "misc.h"
 #include "socket.h"
+#include "string_utils.h"
 #include "thread.h"
 
 #include "sleep.h"

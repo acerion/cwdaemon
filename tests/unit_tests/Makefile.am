@@ -66,7 +66,11 @@ tests_random_CPPFLAGS = -I$(top_srcdir)
 tests_morse_receiver_SOURCES = ../library/morse_receiver_utils.c ./tests_morse_receiver.c
 tests_morse_receiver_CPPFLAGS = -I$(top_srcdir)
 
-tests_events_SOURCES = ../library/events.c ../library/misc.c ../library/random.c ../library/time_utils.c ./tests_events.c
+tests_events_SOURCES = ../library/events.c        \
+                       ../library/random.c        \
+                       ../library/string_utils.c  \
+                       ../library/time_utils.c    \
+                       ./tests_events.c
 tests_events_CPPFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS)
 
 

@@ -52,6 +52,7 @@
 #include "tests/library/random.h"
 #include "tests/library/server.h"
 #include "tests/library/socket.h"
+#include "tests/library/string_utils.h"
 #include "tests/library/test_env.h"
 #include "tests/library/time_utils.h"
 

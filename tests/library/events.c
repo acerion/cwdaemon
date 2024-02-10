@@ -56,6 +56,7 @@
 #include "tests/library/events.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
+#include "tests/library/string_utils.h"
 #include "tests/library/time_utils.h"
 
 
