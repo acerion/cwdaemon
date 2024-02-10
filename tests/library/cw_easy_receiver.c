@@ -73,7 +73,10 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
 	   how straight key does not. Apparently the timer is used to
 	   recognize and distinguish dots from dashes. Maybe straight
 	   key could have such timer as well? */
-	gettimeofday(&easy_rec->main_timer, NULL);
+	struct timespec ts = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	easy_rec->main_timer.tv_sec  = ts.tv_sec;
+	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
 	//fprintf(stderr, "time on Skey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 
 	cw_notify_straight_key_event(is_down);
@@ -99,7 +102,10 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
 
 		   TODO: why libcw can't create such timestamp for
 		   first event for us? */
-		gettimeofday(&easy_rec->main_timer, NULL);
+		struct timespec ts = { 0 };
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		easy_rec->main_timer.tv_sec  = ts.tv_sec;
+		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
 		//fprintf(stderr, "time on Lkey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 	}
 
@@ -127,7 +133,10 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 		   In case of iambic keyer the timestamps for every
 		   next (non-initial) "paddle up" or "paddle down"
 		   event in a character will be created by libcw. */
-		gettimeofday(&easy_rec->main_timer, NULL);
+		struct timespec ts = { 0 };
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		easy_rec->main_timer.tv_sec  = ts.tv_sec;
+		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
 		//fprintf(stderr, "time on Rkey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 	}
 
@@ -253,7 +262,10 @@ void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
 	   receiver's timer to libcw. */
 	cw_iambic_keyer_register_timer(&easy_rec->main_timer);
 
-	gettimeofday(&easy_rec->main_timer, NULL);
+	struct timespec ts = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	easy_rec->main_timer.tv_sec  = ts.tv_sec;
+	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
 	//fprintf(stderr, "time on aux config: %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 }
 
@@ -349,8 +361,9 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 	   Additionally using reveiver.easy_rec->main_timer here would mess up time
 	   intervals measured by receiver.easy_rec->main_timer, and that would
 	   interfere with recognizing dots and dashes. */
-	struct timeval timer;
-	gettimeofday(&timer, NULL);
+	struct timespec ts = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
 	//fprintf(stderr, "poll_receive_char:  %10ld : %10ld\n", timer.tv_sec, timer.tv_usec);
 
 	errno = 0;
@@ -430,8 +443,9 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 	   Don't use receiver.easy_rec->main_timer - it is used eclusively for
 	   marking initial "key down" events. Use local throw-away
 	   timer. */
-	struct timeval timer;
-	gettimeofday(&timer, NULL);
+	struct timespec ts = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
 	//fprintf(stderr, "poll_space(): %10ld : %10ld\n", timer.tv_sec, timer.tv_usec);
 
 	cw_receive_character(&timer, &erd->character, &erd->is_iws, NULL);
