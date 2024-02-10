@@ -54,7 +54,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "cw_rec_utils.h"
+#include "cw_easy_receiver.h"
 #include "cwdevice_observer_serial.h"
 #include "log.h"
 

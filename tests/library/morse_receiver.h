@@ -4,7 +4,7 @@
 
 
 
-#include "cw_rec_utils.h"
+#include "cw_easy_receiver.h"
 #include "cwdevice_observer.h"
 #include "events.h"
 #include "misc.h"

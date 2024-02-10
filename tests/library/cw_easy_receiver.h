@@ -1,5 +1,5 @@
-#ifndef H_CW_REC_UTILS
-#define H_CW_REC_UTILS
+#ifndef H_CW_EASY_RECEIVER
+#define H_CW_EASY_RECEIVER
 
 
 
@@ -139,5 +139,5 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 
 
 
-#endif // #ifndef H_CW_REC_UTILS
+#endif // #ifndef H_CW_EASY_RECEIVER
 

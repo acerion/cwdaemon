@@ -29,7 +29,7 @@
 
 #include <libcw.h>
 
-#include "cw_rec_utils.h"
+#include "cw_easy_receiver.h"
 
 
 
