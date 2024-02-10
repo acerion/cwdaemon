@@ -104,6 +104,7 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
 		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+
 		// fprintf(stdout, "[II] Easy receiver: time on L-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
 
@@ -135,6 +136,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
 		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+
 		// fprintf(stdout, "[II] Easy receiver: time on R-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
 
@@ -264,6 +266,7 @@ void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
 	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+
 	// fprintf(stdout, "[II] Easy receiver: time on aux config: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 }
 
@@ -362,6 +365,7 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
+
 	// fprintf(stdout, "[II] Easy receiver: poll char:                  %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
 	errno = 0;
@@ -444,7 +448,8 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
-	// fprintf(stderr, "[II] Easy receiver: poll space:                 %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
+
+	// fprintf(stdout, "[II] Easy receiver: poll space:                 %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
 	cw_receive_character(&timer, &erd->character, &erd->is_iws, NULL);
 	if (erd->is_iws) {
