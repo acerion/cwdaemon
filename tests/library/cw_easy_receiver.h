@@ -32,7 +32,7 @@ struct cw_easy_receiver_t {
 	   events. Without, there's a chance that of a on-off event, one half
 	   will go to one application instance, and the other to another
 	   instance. */
-	volatile bool tracked_key_state;
+	volatile int tracked_key_state; /* CW_KEY_STATE_OPEN/CW_KEY_STATE_CLOSED */
 
 	/* Flag indicating if receive polling has received a character, and
 	   may need to augment it with a word space on a later poll. */
@@ -126,7 +126,12 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 
 
 
-/* CW library keying event handler. */
+/**
+   @brief CW library keying event handler
+
+   @param[in/out] easy_receiver Easy receiver structure
+   @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
+*/
 void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_state);
 
 

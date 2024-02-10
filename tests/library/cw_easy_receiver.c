@@ -61,9 +61,6 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
 	   libcw receiver will process the new state and we will later
 	   try to poll a character or space from it. */
 
-	//fprintf(stderr, "Callback function, key state = %d\n", key_state);
-
-
 	/* Prepare timestamp for libcw on both "key up" and "key down"
 	   events. There is no code in libcw that would generate
 	   updated consecutive timestamps for us (as it does in case
@@ -77,7 +74,8 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
 	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
-	//fprintf(stderr, "time on Skey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
+
+	// fprintf(stdout, "[II] Easy receiver: time on S-key [%s] event: %10ld.%09ld\n", is_down ? "down" : " up ", ts.tv_sec, ts.tv_nsec);
 
 	cw_notify_straight_key_event(is_down);
 
@@ -106,7 +104,7 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
 		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
-		//fprintf(stderr, "time on Lkey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
+		// fprintf(stdout, "[II] Easy receiver: time on L-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
 
 	/* Inform libcw about state of left paddle regardless of state
@@ -137,7 +135,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
 		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
-		//fprintf(stderr, "time on Rkey down:  %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
+		// fprintf(stdout, "[II] Easy receiver: time on R-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
 
 	/* Inform libcw about state of left paddle regardless of state
@@ -193,7 +191,7 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 
 	/* If this is a tone start and we're awaiting an inter-word
 	   space, cancel that wait and clear the receive buffer. */
-	if (key_state && easy_rec->is_pending_iws) {
+	if (key_state == CW_KEY_STATE_CLOSED && easy_rec->is_pending_iws) {
 		/* Tell receiver to prepare (to make space) for
 		   receiving new character. */
 		cw_clear_receive_buffer();
@@ -210,9 +208,9 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 
 	/* Pass tone state on to the library.  For tone end, check to
 	   see if the library has registered any receive error. */
-	if (key_state) {
+	if (key_state == CW_KEY_STATE_CLOSED) {
 		/* Key down. */
-		//fprintf(stderr, "start receive tone: %10ld . %10ld\n", easy_rec->main_timer->tv_sec, easy_rec->main_timer->tv_usec);
+		// fprintf(stdout, "[II] Easy receiver: key goes down:              %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 		if (!cw_start_receive_tone(&easy_rec->main_timer)) {
 			// TODO: Perhaps this should be counted as test error
 			perror("cw_start_receive_tone");
@@ -220,7 +218,7 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 		}
 	} else {
 		/* Key up. */
-		//fprintf(stderr, "end receive tone:   %10ld . %10ld\n", easy_rec->main_timer->tv_sec, easy_rec->main_timer->tv_usec);
+		// fprintf(stdout, "[II] Easy receiver: key goes up:                %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 		if (!cw_end_receive_tone(&easy_rec->main_timer)) {
 			/* Handle receive error detected on tone end.
 			   For ENOMEM and ENOENT we set the error in a
@@ -266,7 +264,7 @@ void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
 	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
-	//fprintf(stderr, "time on aux config: %10ld : %10ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
+	// fprintf(stdout, "[II] Easy receiver: time on aux config: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 }
 
 
@@ -364,7 +362,7 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
-	//fprintf(stderr, "poll_receive_char:  %10ld : %10ld\n", timer.tv_sec, timer.tv_usec);
+	// fprintf(stdout, "[II] Easy receiver: poll char:                  %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
 	errno = 0;
 	const bool received = cw_receive_character(&timer, &erd->character, &erd->is_iws, NULL);
@@ -446,7 +444,7 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
-	//fprintf(stderr, "poll_space(): %10ld : %10ld\n", timer.tv_sec, timer.tv_usec);
+	// fprintf(stderr, "[II] Easy receiver: poll space:                 %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
 	cw_receive_character(&timer, &erd->character, &erd->is_iws, NULL);
 	if (erd->is_iws) {
@@ -511,7 +509,7 @@ void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec)
 	cw_clear_receive_buffer();
 	easy_rec->is_pending_iws = false;
 	easy_rec->libcw_receive_errno = 0;
-	easy_rec->tracked_key_state = false;
+	easy_rec->tracked_key_state = CW_KEY_STATE_OPEN;
 }
 
 
