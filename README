@@ -331,7 +331,7 @@ Quality Assurance
 
 - Functional tests
 
-    - Automatic (unattended) tests that cover to some degree a small (but
+    - Automatic (and unattended) tests that cover to some degree a small (but
       growing) set of functionalities.
 
       The tests are located in tests/functional_tests/automatic/ dir.
@@ -346,6 +346,16 @@ Quality Assurance
       name of /dev/ device can be configured at compile time with
       '--with-test-tty-cwdevice-name=<name>' flag passed to './configure'
       script.
+
+    - An array of tests written in Perl, to be executed manually and observed
+      for results.
+
+      The tests are located in tests/ dir.
+
+      The tests are not executed automatically by build system.
+
+      The tests are slowly phased out in favour of automatic tests written in
+      C.
 
 
 Credits
