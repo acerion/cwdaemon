@@ -51,14 +51,20 @@ rpm: Makefile
 	rm $(PACKAGE)-$(VERSION).tar.gz
 
 
+
+
 if ENABLE_GCOV
+
 gcov:
 	make clean
-	make check
-	make gcov -C tests/unit_tests
+	make gcov-clean
+	make gcov -C tests
+
 
 gcov-clean:
-	make gcov-clean -C tests/unit_tests
+	make gcov-clean -C src
+	make gcov-clean -C tests
+
 endif
 
 

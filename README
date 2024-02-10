@@ -326,7 +326,7 @@ Quality Assurance
     - A very basic support for gcov/lcov is available. Relevant commands:
         - ./configure --enable-gcov
         - make gcov
-        - <web browser> tests/unit_tests/coverage/index.html
+        - < examine reports found in tests/coverage/unit_tests >
         - make gcov-clean
 
 - Functional tests

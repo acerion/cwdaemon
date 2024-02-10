@@ -339,15 +339,25 @@ top_srcdir = @top_srcdir@
 
 # Don't forget to use a relative directory path even for files in current
 # dir.
-@ENABLE_GCOV_TRUE@gcov_CFLAGS = --coverage
+@ENABLE_GCOV_TRUE@gcov_C_FLAGS = --coverage
+@ENABLE_GCOV_TRUE@gcov_LD_FLAGS = --coverage
+
+# POSIX-compliant "suffix rules" are SO MUCH FUN!
+#
+# This rule is doing following:
+# 1. clean unit test code
+# 2. rebuild unit test code
+# 3. run unit test
+# 4. generate coverage report with lcov+genhtml
+@ENABLE_GCOV_TRUE@SUFFIXES = .gcov .dummy
 
 # Below are unit tests for code used in daemon.
 daemon_utils_SOURCES = ../../src/utils.c ./daemon_utils.c
-daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_CFLAGS)
-@ENABLE_GCOV_TRUE@daemon_utils_LDFLAGS = --coverage
+daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
+daemon_utils_LDFLAGS = $(gcov_LD_FLAGS)
 daemon_options_SOURCES = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
-daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_CFLAGS)
-@ENABLE_GCOV_TRUE@daemon_options_LDFLAGS = --coverage
+daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
+daemon_options_LDFLAGS = $(gcov_LD_FLAGS)
 
 # Below are unit tests for code used in functional tests.
 tests_time_utils_SOURCES = ../library/time_utils.c ./tests_time_utils.c
@@ -366,7 +376,7 @@ tests_events_CPPFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
+.SUFFIXES: .gcov .dummy .c .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -1010,18 +1020,28 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-.PHONY: check
+.PHONY: check daemon_utils.dummy daemon_options.dummy
 
+# Target for building coverage report for unit tests. But only for those unit
+# tests that test code of main program (of cwdaemon). There is no report for
+# unit tests executed on testing code itself.
 @ENABLE_GCOV_TRUE@gcov:
-@ENABLE_GCOV_TRUE@	rm -rf coverage
-@ENABLE_GCOV_TRUE@	mkdir coverage
-@ENABLE_GCOV_TRUE@	lcov --compat-libtool -directory ../../src/ --capture --output-file coverage/utests.info
-@ENABLE_GCOV_TRUE@	genhtml -o coverage/ coverage/utests.info
+@ENABLE_GCOV_TRUE@	make daemon_utils.gcov
+@ENABLE_GCOV_TRUE@	make daemon_options.gcov
+@ENABLE_GCOV_TRUE@.dummy.gcov:
+@ENABLE_GCOV_TRUE@	make clean
+@ENABLE_GCOV_TRUE@	make clean -C $(abs_top_builddir)/src/
+@ENABLE_GCOV_TRUE@	make gcov-clean
+@ENABLE_GCOV_TRUE@	make gcov-clean -C $(abs_top_builddir)/src/
+@ENABLE_GCOV_TRUE@	rm -rf $(OUTPUT_DIR)/unit_tests/$*
+@ENABLE_GCOV_TRUE@	make $*
+@ENABLE_GCOV_TRUE@	./$*
+@ENABLE_GCOV_TRUE@	mkdir -p $(OUTPUT_DIR)/unit_tests/$*
+@ENABLE_GCOV_TRUE@	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
+@ENABLE_GCOV_TRUE@	genhtml -t $* -o $(OUTPUT_DIR)/unit_tests/$* $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
 
 @ENABLE_GCOV_TRUE@gcov-clean:
-@ENABLE_GCOV_TRUE@	rm -rf coverage
 @ENABLE_GCOV_TRUE@	rm -f *.gcda *.gcno
-@ENABLE_GCOV_TRUE@	rm -f ../../src/*.gcda ../../src/*.gcno
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

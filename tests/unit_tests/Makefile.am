@@ -1,4 +1,4 @@
-.PHONY: check
+.PHONY: check daemon_utils.dummy daemon_options.dummy
 
 
 # Programs to be built when "make check" target is built.
@@ -20,18 +20,43 @@ endif
 
 
 if ENABLE_GCOV
-gcov_CFLAGS = --coverage
 
+gcov_C_FLAGS  = --coverage
+gcov_LD_FLAGS = --coverage
+
+
+# Target for building coverage report for unit tests. But only for those unit
+# tests that test code of main program (of cwdaemon). There is no report for
+# unit tests executed on testing code itself.
 gcov:
-	rm -rf coverage
-	mkdir coverage
-	lcov --compat-libtool -directory ../../src/ --capture --output-file coverage/utests.info
-	genhtml -o coverage/ coverage/utests.info
+	make daemon_utils.gcov
+	make daemon_options.gcov
+
+
+# POSIX-compliant "suffix rules" are SO MUCH FUN!
+#
+# This rule is doing following:
+# 1. clean unit test code
+# 2. rebuild unit test code
+# 3. run unit test
+# 4. generate coverage report with lcov+genhtml
+SUFFIXES=.gcov .dummy
+.dummy.gcov:
+	make clean
+	make clean -C $(abs_top_builddir)/src/
+	make gcov-clean
+	make gcov-clean -C $(abs_top_builddir)/src/
+	rm -rf $(OUTPUT_DIR)/unit_tests/$*
+	make $*
+	./$*
+	mkdir -p $(OUTPUT_DIR)/unit_tests/$*
+	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
+	genhtml -t $* -o $(OUTPUT_DIR)/unit_tests/$* $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
+
 
 gcov-clean:
-	rm -rf coverage
 	rm -f *.gcda *.gcno
-	rm -f ../../src/*.gcda ../../src/*.gcno
+
 endif
 
 
@@ -40,17 +65,13 @@ endif
 # Below are unit tests for code used in daemon.
 
 daemon_utils_SOURCES  = ../../src/utils.c ./daemon_utils.c
-daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_CFLAGS)
-if ENABLE_GCOV
-daemon_utils_LDFLAGS  = --coverage
-endif
+daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
+daemon_utils_LDFLAGS  = $(gcov_LD_FLAGS)
 
 
 daemon_options_SOURCES  = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
-daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_CFLAGS)
-if ENABLE_GCOV
-daemon_options_LDFLAGS  = --coverage
-endif
+daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
+daemon_options_LDFLAGS  = $(gcov_LD_FLAGS)
 
 
 

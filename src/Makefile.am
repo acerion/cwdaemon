@@ -29,16 +29,21 @@ cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c null.c hel
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 
+
+
+
 if ENABLE_GCOV
 cwdaemon_LDFLAGS = --coverage
 cwdaemon_CFLAGS  = --coverage
-endif
 
-
-if ENABLE_GCOV
 gcov:
-	echo "Hello gcov"
+	echo "Empty gcov target in src/"
+
+gcov-clean:
+	rm -f *.gcda *.gcno
 endif
+
+
 
 
 # Target-specific linker flags (objects to link). Order is important: first

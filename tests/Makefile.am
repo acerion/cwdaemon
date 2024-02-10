@@ -30,3 +30,17 @@ TESTS += functional_tests/automatic/request_esc_h/test_program
 endif
 
 
+
+
+if ENABLE_GCOV
+
+gcov:
+	mkdir -p $(abs_top_builddir)/tests/coverage/
+	make gcov -C unit_tests OUTPUT_DIR=$(abs_top_builddir)/tests/coverage/
+
+gcov-clean:
+	rm -rf $(abs_top_builddir)/tests/coverage/
+	make gcov-clean -C unit_tests
+
+endif
+
