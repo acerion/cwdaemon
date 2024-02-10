@@ -126,8 +126,8 @@ static test_case_t g_test_cases[] = {
 
 static int server_setup(server_t * server, const test_case_t * test_case, int * wpm);
 static int testcase_setup(const server_t * server, client_t * client, morse_receiver_t * morse_receiver, int wpm);
-static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver);
+static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver);
+static int testcase_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int evaluate_events(events_t * events, const test_case_t * test_case);
 
 
@@ -200,7 +200,7 @@ int main(void)
 			goto cleanup;
 		}
 
-		if (0 != testcase_run(test_case, &server, &client, &morse_receiver, &events)) {
+		if (0 != testcase_run(test_case, &client, &morse_receiver)) {
 			test_log_err("Test: running test case %zu / %zu has failed\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -214,8 +214,7 @@ int main(void)
 		}
 
 	cleanup:
-		memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
-		if (0 != testcase_teardown(&client, &morse_receiver)) {
+		if (0 != testcase_teardown(&server, &client, &morse_receiver)) {
 			test_log_err("Test: failed at tear-down for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 		}
@@ -339,7 +338,7 @@ static int testcase_setup(const server_t * server, client_t * client, morse_rece
 
 
 
-static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int testcase_run(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver)
 {
 	if (0 != morse_receiver_start(morse_receiver)) {
 		test_log_err("Test: failed to start Morse receiver %s\n", "");
@@ -354,24 +353,29 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 	morse_receiver_wait(morse_receiver);
 
 
-	/* Terminate local test instance of cwdaemon. Being able to send EXIT
-	   request on specific, valid port is a part of test case. */
-	if (0 != local_server_stop(server, client)) {
-		test_log_err("Test: failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
-		return -1;
-	}
-	save_child_exit_to_events(&g_child_exit_info, events);
-
-
 	return 0;
 }
 
 
 
-static int testcase_teardown(client_t * client, morse_receiver_t * morse_receiver)
+
+static int testcase_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
-	/* cwdaemon server is being stopped as a part of test case, in
-	   testcase_run(). */
+	bool failure = false;
+
+	/* Terminate local test instance of cwdaemon server. Always do it first
+	   since the server is the main trigger of events in the test. */
+	if (0 != local_server_stop(server, client)) {
+		/*
+		  Stopping a server is not a main part of a test, but if a
+		  server can't be closed then it means that the main part of the
+		  code has left server in bad condition. The bad condition is an
+		  indication of an error in tested functionality. Therefore set
+		  failure to true.
+		*/
+		test_log_err("Test: failed to correctly stop local test instance of cwdaemon %s\n", "");
+		failure = true;
+	}
 
 	morse_receiver_dtor(morse_receiver);
 
@@ -379,7 +383,9 @@ static int testcase_teardown(client_t * client, morse_receiver_t * morse_receive
 	client_disconnect(client);
 	client_dtor(client);
 
-	return 0;
+	memset(&g_child_exit_info, 0, sizeof (g_child_exit_info));
+
+	return failure ? -1 : 0;
 }
 
 
@@ -393,17 +399,17 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	/* Expectation 1: count of events. */
 	if (test_case->expected_fail) {
-		/* We only expect "exit" event to be recorded. */
+		/* We expect "exit because of failed command line options" event
+		   to be recorded. */
 		if (1 != events->event_idx) {
 			test_log_err("Expectation 1: failure case: incorrect count of events: %d (expected 1)\n", events->event_idx);
 			return -1;
 		}
 	} else {
-		/* We expect two events: first a Morse receive event (because
-		   cwdaemon was running and listening on valid port), and then a
-		   clean "exit" event. */
-		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: success case: incorrect count of events: %d (expected 2)\n", events->event_idx);
+		/* We expect that correctly started cwdaemon can key Morse code on
+		   cwdevice, which is received by Morse Receiver .*/
+		if (1 != events->event_idx) {
+			test_log_err("Expectation 1: success case: incorrect count of events: %d (expected 1)\n", events->event_idx);
 			return -1;
 		}
 	}
@@ -430,23 +436,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 		morse_event = &events->events[i];
-
-		i++;
-
-		if (events->events[i].event_type != event_type_sigchld) {
-			test_log_err("Expectation 2: success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
-			return -1;
-		}
-		sigchld_event = &events->events[i];
 	}
 	test_log_info("Expectation 2: found expected types of events %s\n", "");
 
 
 
 
-	/* Expectation 3: cwdaemon terminated in expected way. */
-	const int wstatus = sigchld_event->u.sigchld.wstatus;
+	/* Expectation 3: when we use wrong port option, cwdaemon terminates in expected way. */
 	if (test_case->expected_fail) {
+		const int wstatus = sigchld_event->u.sigchld.wstatus;
 		/* cwdaemon should have exited when it detected invalid value of port
 		   option. */
 		if (!WIFEXITED(wstatus)) {
@@ -459,17 +457,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		}
 		test_log_info("Expectation 3: failure case: exit status is as expected (0x%04x)\n", wstatus);
 	} else {
-		/* cwdaemon should have exited when asked nicely (through request) at
-		   the end of testcase. */
-		if (!WIFEXITED(wstatus)) {
-			test_log_err("Expectation 3: success case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
-			return -1;
-		}
-		if (EXIT_SUCCESS != WEXITSTATUS(wstatus)) {
-			test_log_err("Expectation 3: success case: incorrect exit status (expected 0/EXIT_SUCCESS): 0x%04x\n", WEXITSTATUS(wstatus));
-			return -1;
-		}
-		test_log_info("Expectation 3: success case: exit status is as expected (0x%04x)\n", wstatus);
+		test_log_info("Expectation 3: evaluation of exit status was skipped for correctly started cwdaemon %s\n", "");
 	}
 
 
@@ -484,12 +472,14 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		}
 		test_log_info("Expectation 4: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
 		              morse_event->u.morse_receive.string, test_case->full_message);
+	} else {
+		test_log_info("Expectation 4: evaluation of Morse message was skipped for incorrectly started cwdaemon %s\n", "");
 	}
 
 
 
 
-	test_log_info("Test: Evaluation of test events was successful %s\n", "");
+	test_log_info("Test: evaluation of test events was successful %s\n", "");
 
 	return 0;
 }

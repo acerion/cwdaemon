@@ -347,6 +347,9 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 */
 static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver)
 {
+	/* We don't stop cwdaemon server here because the entire point of this
+	   test is to stop the server in main part of the test :) */
+
 	if (test_case->send_message_request) {
 		morse_receiver_dtor(morse_receiver);
 	}

@@ -297,9 +297,8 @@ static int testcase_teardown(server_t * server, client_t * client, morse_receive
 {
 	bool failure = false;
 
-	morse_receiver_dtor(morse_receiver);
-
-	/* Terminate local test instance of cwdaemon. */
+	/* Terminate local test instance of cwdaemon server. Always do it first
+	   since the server is the main trigger of events in the test. */
 	if (0 != local_server_stop(server, client)) {
 		/*
 		  Stopping a server is not a main part of a test, but if a
@@ -311,6 +310,8 @@ static int testcase_teardown(server_t * server, client_t * client, morse_receive
 		test_log_err("Test: failed to correctly stop local test instance of cwdaemon at end of test case %s\n", "");
 		failure = true;
 	}
+
+	morse_receiver_dtor(morse_receiver);
 
 	/* Close our socket to cwdaemon server. */
 	client_disconnect(client);

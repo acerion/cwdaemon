@@ -375,6 +375,10 @@ int server_start(const cwdaemon_opts_t * opts, server_t * server)
 		/* Some test cases may expect the server not to start (e.g. when
 		   testing values of options out-of-range. Therefore this is just a
 		   warning. */
+
+		/* TODO (acerion) 2024.02.09: get more info about why process failed.
+		   Maybe previous test run crashed and old instance of cwdaemon is
+		   already running and listening on given port? */
 		test_log_warn("Test: failed to start cwdaemon server %s\n", "");
 		return -1;
 	}
