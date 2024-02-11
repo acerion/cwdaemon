@@ -70,12 +70,20 @@ and procedures should be easy to use in repeatable manner.
 Use them at least once in this release. In this release we don't need to
 cover 100% of the network socket code, but let's make a start.
 
-*** STARTED R0012: Static code analysis with clang-tidy
+*** DONE R0012: Static code analysis with clang-tidy
 
 Port .clang-tidy and qa/lint_clang_tidy.sh from unixcw. Start using it
 instead of current qa/clang_tidy.sh script. Fix a bunch of issues reported by
 clang-tidy, but don't try to fix them all just yet. You can leave something
 for next release.
+
+DONE on 2024.02.11. I think that I addressed the most important issues. There
+are still some excluded tests in .clang-tidy, and there are still some
+warnings reported by clang-tidy (and by compiler), but I'm leaving the
+warnings for now (till next version of cwdaemon).
+
+Notice that ticket R0012 in README.dev.org is still open, to be revisited in
+future versions of cwdaemon.
 
 ** STARTED Nice-to-haves
 
