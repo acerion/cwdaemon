@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -906,6 +906,8 @@ int cwdaemon_receive(void)
 		; /* pass */
 	}
 
+	/* TODO acerion 2024.02.11: this duplicates an operation already done by
+	   cwdaemon_recvfrom(). */
 	request_buffer[recv_rc] = '\0';
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
@@ -918,8 +920,19 @@ int cwdaemon_receive(void)
 		   caret request (e.g. "some text^"), which does
 		   require sending a reply to client. Such request is
 		   correctly handled by cwdaemon_play_request(). */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "request: \"%s\"", request_buffer);
+		log_info("received request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
+			/*
+			  TODO acerion 2024.02.11: initial tests with
+			  tests/functional_tests/manual/feature_multiple_requests/ show
+			  that the 'request_queue' buffer never holds more than one
+			  request.
+
+			  At this point in code, before 'request_buffer' is copied into
+			  'request_queue', the 'request_queue' is empty, so we can
+			  eliminate it and just pass 'request_buffer' to
+			  cwdaemon_play_request().
+			*/
 			strcat(request_queue, request_buffer);
 			cwdaemon_play_request(request_queue);
 		} else {
@@ -934,7 +947,7 @@ int cwdaemon_receive(void)
 		   terminal makes funny things with the lines already
 		   printed to the terminal (tested in xfce4-terminal
 		   and xterm). */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "escaped request: \"<ESC>%s\"", request_buffer + 1);
+		log_info("received escaped request: \"<ESC>%s\"", request_buffer + 1);
 		cwdaemon_handle_escaped_request(request_buffer);
 		return 0;
 	}
@@ -1448,7 +1461,15 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
+		/* TODO acerion 2024.02.11: appending "\r\n" could/should be moved to
+		   cwdaemon_prepare_reply(). */
 		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
+
+		/*
+		  TODO acerion 2024.02.11: evaluate if this is a good idea to do a
+		  (potentially costly) network write operation inside of libcw's "low
+		  tone queue" callback.
+		*/
 		cwdaemon_sendto(&g_cwdaemon, reply_buffer);
 		/* If this line is uncommented, the callback erases a valid
 		   reply that should be sent back to client. Commenting the
