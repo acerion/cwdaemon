@@ -933,7 +933,8 @@ int cwdaemon_receive(void)
 			  eliminate it and just pass 'request_buffer' to
 			  cwdaemon_play_request().
 			*/
-			strcat(request_queue, request_buffer);
+			const size_t len = strlen(request_queue);
+			snprintf(request_queue + len, sizeof (request_queue) - len, "%s", request_buffer);
 			cwdaemon_play_request(request_queue);
 		} else {
 			; /* TODO: how to handle this case? */
@@ -1463,7 +1464,8 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
 		/* TODO acerion 2024.02.11: appending "\r\n" could/should be moved to
 		   cwdaemon_prepare_reply(). */
-		strcat(reply_buffer, "\r\n"); /* Ensure exactly one CRLF */
+		const size_t rbl = strlen(reply_buffer);
+		snprintf(reply_buffer + rbl, sizeof (reply_buffer) - rbl, "\r\n"); /* Ensure exactly one CRLF */
 
 		/*
 		  TODO acerion 2024.02.11: evaluate if this is a good idea to do a

@@ -4,7 +4,6 @@ Checks: >
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
-  -clang-analyzer-security.insecureAPI.strcpy,
   -concurrency-mt-unsafe,
   -llvm-else-after-return,
   -llvm-header-guard,
