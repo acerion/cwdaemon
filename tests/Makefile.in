@@ -90,6 +90,10 @@ host_triplet = @host@
 @FUNCTIONAL_TESTS_TRUE@am__append_1 = library functional_tests
 
 # These unit tests are for code that is used only in functional tests.
+
+# Notice that "functiona_tests/manual" tests are not included here. The
+# manual tests should be build on "make check", but not executed on "make
+# check".
 @FUNCTIONAL_TESTS_TRUE@am__append_2 = unit_tests/tests_random \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_time_utils \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_morse_receiver \

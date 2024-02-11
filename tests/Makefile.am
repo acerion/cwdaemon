@@ -20,6 +20,9 @@ TESTS += unit_tests/tests_time_utils
 TESTS += unit_tests/tests_morse_receiver
 TESTS += unit_tests/tests_events
 
+# Notice that tests from "functional_tests/manual" are not included here. The
+# manual tests should be built on "make check", but not executed on "make
+# check".
 TESTS += functional_tests/automatic/option_cwdevice_tty_lines/test_program
 TESTS += functional_tests/automatic/option_port/test_program
 TESTS += functional_tests/automatic/reset_register_callback/test_program

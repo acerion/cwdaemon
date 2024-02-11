@@ -7,7 +7,7 @@
 	automatic/reset_register_callback.dummy
 
 
-SUBDIRS = automatic
+SUBDIRS = automatic manual
 
 
 

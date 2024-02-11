@@ -229,6 +229,8 @@ if test "x$enable_functional_tests" = xyes ; then
    tests/functional_tests/automatic/request_esc_5/Makefile
    tests/functional_tests/automatic/request_esc_h/Makefile
    tests/functional_tests/automatic/reset_register_callback/Makefile
+   tests/functional_tests/manual/Makefile
+   tests/functional_tests/manual/feature_multiple_requests/Makefile
    ])
 fi
 
