@@ -183,6 +183,9 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	}
 
 
+	/* FIXME acerion 2024.09.11: the code that inserts received chars into
+	   the buffer doesn't check if there is enough space left in the
+	   buffer. */
 	char buffer[32] = { 0 };
 	int buffer_i = 0;
 
@@ -191,13 +194,14 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	  receiving any char or inter-word-space) before the loop decides that
 	  nothing more will be received.
 
-	  TODO acerion 2024.01.27: use a constant.
-
 	  This value depends on wpm: for lower speeds the time should be higher,
 	  for higher speeds it can be lower. TODO acerion 2024.01.27: calculate
 	  the time using duration of longest character/representation as input.
+
+	  For  4 WMP the safe value appears to be 9000 ms
+	  For 10 WPM the save value appears to be 7000 ms
 	*/
-	const int total_wait_ms = 5 * 1000;
+	const int total_wait_ms = 7 * 1000;
 
 	const int poll_interval_ms = 10; /* [milliseconds]. TODO acerion 2024.01.27: use a constant. */
 	int remaining_wait_ms = total_wait_ms;
@@ -222,11 +226,13 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 				fprintf(stdout, " ");
 				fflush(stdout);
 				buffer[buffer_i++] = ' ';
+				test_log_debug("Morse receiver thread: received ' ', remaining wait dropped to %d\n", remaining_wait_ms);
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 			} else if (erd.character) {
 				fprintf(stdout, "%c", erd.character);
 				fflush(stdout);
 				buffer[buffer_i++] = erd.character;
+				test_log_debug("Morse receiver thread: received '%c', remaining wait dropped to %d\n", erd.character, remaining_wait_ms);
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 				clock_gettime(CLOCK_MONOTONIC, &last_character_receive_tstamp);
 			} else {
@@ -239,7 +245,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		events_insert_morse_receive_event(morse_receiver->events, buffer, &last_character_receive_tstamp);
 	}
 
-	test_log_info("Morse receiver thread: received string [%s]\n", buffer);
+	test_log_info("Morse receiver thread: received string [%s], remaining wait time = %d\n", buffer, remaining_wait_ms);
 
 	/* Cleanup of test helpers. */
 	cw_receiver_desetup(&cw_receiver);
