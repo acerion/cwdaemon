@@ -31,6 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "log.h"
 #include "random.h"
 
 
@@ -94,7 +95,13 @@ int cwdaemon_random_uint(unsigned int lower, unsigned int upper, unsigned int * 
 {
 	unsigned int value = (unsigned int) random();
 
-	value %= ((upper + 1) - lower);
+	unsigned int div = ((upper + 1) - lower);
+	if (0 == div) {
+		/* This may happen if client passes INT_MIN and INT_MAX as lower/upper. */
+		test_log_err("Random: trying to divide by zero (calculated from lower = %u, upper = %u)\n", lower, upper);
+		return 0;
+	}
+	value %= div;
 	value += lower;
 
 	*result = value;
