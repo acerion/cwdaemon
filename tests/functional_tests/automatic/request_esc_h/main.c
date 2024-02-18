@@ -61,8 +61,9 @@
 
 typedef struct test_case_t {
 	const char * description;                /** Human-readable description of the test case. */
-	const char * full_message;               /** Full text of message to be played by cwdaemon. */
-	const char * requested_reply_value;      /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
+	const char full_message[128];            /** Full text of message to be played by cwdaemon. */
+	const char expected_morse_receive[128];  /**< What is expected to be received by Morse code receiver (without ending space). */
+	const char requested_reply_value[128];   /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
 } test_case_t;
 
 
@@ -73,6 +74,7 @@ static test_case_t g_test_cases[] = {
 	   string in reply. */
 	{ .description             = "success case, empty reply value",
 	  .full_message            = "paris",
+	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "",
 	},
 
@@ -80,6 +82,7 @@ static test_case_t g_test_cases[] = {
 	   single-letter string in reply. */
 	{ .description             = "success case, single-letter as a value of reply",
 	  .full_message            = "paris",
+	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "r",
 	},
 
@@ -87,6 +90,7 @@ static test_case_t g_test_cases[] = {
 	   single-word string in reply. */
 	{ .description             = "success case, a word as value of reply",
 	  .full_message            = "paris",
+	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "reply",
 	},
 
@@ -94,7 +98,40 @@ static test_case_t g_test_cases[] = {
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
 	  .full_message            = "paris",
+	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "This is a reply to your 27th request.",
+	},
+
+	/* This is a SUCCESS case which just skips keying a character with value (-1).
+
+	   Test case for testing how cwdaemon handles a bug in libcw.
+
+	   libcw 8.0.0 from unixcw 3.6.1 crashes when enqueued character has
+	   value ((char) -1) / ((unsigned char) 255). This has been fixed in
+	   unixcw commit c4fff9622c4e86c798703d637be7cf7e9ab84a06.
+
+	   Since cwdaemon has to still work with unfixed versions of library, it
+	   has to skip (not enqueue) the character.
+
+	   The problem is worked-around in cwdaemon by adding 'is_valid'
+	   condition before calling cw_send_character().
+
+	   TODO acerion 2024.02.18: this functional test doesn't display
+	   information that cwdaemon which doesn't have a workaround is
+	   experiencing a crash. It would be good to know in all functional tests
+	   that cwdaemon has crashed - it would give more info to tester.
+
+	   TODO acerion 2024.02.18: make sure that the description of <ESC>h
+	   request contains the information that socket reply includes all
+	   characters from requested string, including "invalid" characters.
+
+	   TODO acerion 2024.02.18: make sure that similar test is added for
+	   regular/plain message requests in the future.
+	*/
+	{ .description             = "message containing '-1' integer value",
+	  .full_message            = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' },  /* Notice inserted -1' */
+	  .expected_morse_receive  = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },  /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
+	  .requested_reply_value   = { 'l', -1,  'z', 'a', 'r', 'd', '\0' },                /* cwdaemon doesn't validate values of chars that are requested for socket reply. */
 	},
 };
 
@@ -263,14 +300,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	   While this is not THE feature that needs to be verified by this test,
 	   it's good to know that we received full and correct data. */
 	{
-		const char * received_string = morse_event->u.morse_receive.string;
-		if (!morse_receive_text_is_correct(received_string, test_case->full_message)) {
+		const char * received = morse_event->u.morse_receive.string;
+		const char * expected = test_case->expected_morse_receive;
+		if (!morse_receive_text_is_correct(received, expected)) {
 			test_log_err("Expectation 4: received Morse message [%s] doesn't match text from message request [%s]\n",
-			             morse_event->u.morse_receive.string, test_case->full_message);
+			             received, expected);
 			return -1;
 		}
-		test_log_info("Expectation 4: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
-		              morse_event->u.morse_receive.string, test_case->full_message);
+		test_log_info("Expectation 4: received Morse message [%s] matches expected Morse message [%s] (ignoring the first character)\n",
+		              received, expected);
 	}
 
 
@@ -295,7 +333,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 
-		test_log_info("Expectation 5: received expected message in socket reply: expected [%s], received [%s]\n",
+		test_log_info("Expectation 5: received correct message in socket reply: expected [%s], received [%s]\n",
 		              escaped_expected, escaped_actual);
 	}
 

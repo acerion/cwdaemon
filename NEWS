@@ -25,8 +25,8 @@ New release. Changes since previous release:
       still passed to cw_send_character().
 
       This change doesn't affect replies sent by cwdaemon to clients after
-      processing "caret" requests: the replies still contain verbatim copy of
-      string sent by the client.
+      processing "caret" requests or "<ESC>h": the replies still contain
+      verbatim copy of string sent by the client.
 
 
 * Quality Assurance
