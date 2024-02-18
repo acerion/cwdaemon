@@ -9,6 +9,25 @@ New release. Changes since previous release:
       "-p"/"--port". This has been now fixed: cwdaemon accepts values only in
       range <1024 - 65535> (inclusive).
 
+    * Adding a workaround for libcw issue where libcw can't handle correctly
+      value ((unsigned char) 255) passed to cw_send_character().
+
+      The issue was found in libcw 8.0.0 from unixcw 3.6.1. The issue was
+      fixed in unixcw commit c4fff9622c4e86c798703d637be7cf7e9ab84a06.
+
+      Until cwdaemon will start depending on a specific version of libcw that
+      has this fix included, cwdaemon must be able to work around this
+      problem.
+
+      The workaround is to notice if a string passed to cwdaemon contains a
+      character with the problematic, and simply not call cw_send_character()
+      for that one specific character. Other characters in the string are
+      still passed to cw_send_character().
+
+      This change doesn't affect replies sent by cwdaemon to clients after
+      processing "caret" requests: the replies still contain verbatim copy of
+      string sent by the client.
+
 
 * Quality Assurance
 

@@ -1329,9 +1329,22 @@ void cwdaemon_play_request(char *request)
 			/* PTT is now in AUTO. It will be turned off on low
 			   tone queue, in cwdaemon_tone_queue_low_callback(). */
 
-			cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
-			cw_send_character(*x);
-			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Morse character \"%c\" has been queued in libcw", *x);
+			/*
+			  libcw 8.0.0 from unixcw 3.6.1 contains an error which has been
+			  fixed in commit c4fff9622c4e86c798703d637be7cf7e9ab84a06.
+			  Signed value -1 (unsigned value 255) triggers SIGSEGV in libcw.
+			  Therefore don't allow passing the value to cw_send_character().
+
+			  TODO acerion 2024.02.18: remove this (is_valid) condition
+			  after cwdaemon starts to have a hard dependency on a library
+			  with a fix.
+			*/
+			const bool is_valid = 0xff != (unsigned char) *x;
+			if (is_valid) {
+				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
+				cw_send_character(*x);
+				cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Morse character \"%c\" has been queued in libcw", *x);
+			}
 
 			x++;
 			if (cw_get_gap() == 2) {

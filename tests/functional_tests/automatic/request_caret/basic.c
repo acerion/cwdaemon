@@ -86,6 +86,39 @@ typedef struct test_case_t {
 
 
 
+/*
+  Data for testing how cwdaemon handles a bug in libcw.
+
+  libcw 8.0.0 from unixcw 3.6.1 crashes when enqueued character has value
+  ((char) -1) / ((unsigned char) 255). This has been fixed in unixcw commit
+  c4fff9622c4e86c798703d637be7cf7e9ab84a06.
+
+  Since cwdaemon has to still work with unfixed versions of library, it has
+  to skip (not enqueue) the character.
+
+  The problem is worked-around in cwdaemon by adding 'is_valid' condition
+  before calling cw_send_character().
+
+  TODO acerion 2024.02.18: this functional test doesn't display information
+  that cwdaemon which doesn't have a workaround is experiencing a crash. It
+  would be good to know in all functional tests that cwdaemon has crashed -
+  it would give more info to tester.
+
+  TODO acerion 2024.02.18: make sure that the description of caret message
+  contains the information that socket reply includes all characters from
+  original message, including invalid characters that weren't keyed on
+  cwdevice.
+
+  TODO acerion 2024.02.18: make sure that similar test is added for
+  regular/plain message requests in the future.
+*/
+static const char err_case_1_message[]                = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', '\0' };         /* Notice inserted -1' */
+static const char err_case_1_socket_reply[]           = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n', '\0' };  /* cwdaemon sends verbatim text in socket reply. */
+static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' };              /* Morse message keyed on cwdevice must not contain the -1 char. */
+
+
+
+
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
 	  .full_message               = "22 crows, 1 stork?^",
@@ -154,6 +187,13 @@ static test_case_t g_test_cases[] = {
 	  .full_expected_socket_reply = "when, now = right: \r\n",
 	  .expected_morse_receive     = "when, now = right:",
 	},
+
+	{ .description                = "message containing '-1' integer value",
+	  .full_message               = err_case_1_message,
+	  .full_expected_socket_reply = err_case_1_socket_reply,
+	  .expected_morse_receive     = err_case_1_expected_morse_receive,
+	},
+
 };
 
 
