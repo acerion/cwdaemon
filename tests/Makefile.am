@@ -16,6 +16,7 @@ SUBDIRS += functional_tests
 
 # These unit tests are for code that is used only in functional tests.
 TESTS += unit_tests/tests_random
+TESTS += unit_tests/tests_string_utils
 TESTS += unit_tests/tests_time_utils
 TESTS += unit_tests/tests_morse_receiver
 TESTS += unit_tests/tests_events

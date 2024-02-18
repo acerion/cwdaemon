@@ -36,6 +36,9 @@
 
 
 
+
+#include <ctype.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "string_utils.h"
@@ -43,27 +46,40 @@
 
 
 
+/*
+  Function uses '{' and '}' characters to enclose escaped characters because
+  these two characters aren't in a set of Morse code characters. This means
+  that they can't be easily mistaken with valid characters processed during
+  regular tests.
+*/
 char * escape_string(const char * buffer, char * escaped, size_t size)
 {
+	/* TODO: acerion: add better control of indexes: check if printing to
+	   output buffer doesn't go beyond buffer boundary. */
 	size_t e_idx = 0;
 
 	for (size_t i = 0; i < strlen(buffer); i++) {
-		switch (buffer[i]) {
-		case '\r':
-			escaped[e_idx++] = '\'';
-			escaped[e_idx++] = 'C';
-			escaped[e_idx++] = 'R';
-			escaped[e_idx++] = '\'';
-			break;
-		case '\n':
-			escaped[e_idx++] = '\'';
-			escaped[e_idx++] = 'L';
-			escaped[e_idx++] = 'F';
-			escaped[e_idx++] = '\'';
-			break;
-		default:
-			escaped[e_idx++] = buffer[i];
-			break;
+		const char character = buffer[i];
+		if (isprint((unsigned char) character)) {
+			escaped[e_idx++] = character;
+		} else {
+			switch (character) {
+			case '\r':
+				escaped[e_idx++] = '{';
+				escaped[e_idx++] = 'C';
+				escaped[e_idx++] = 'R';
+				escaped[e_idx++] = '}';
+				break;
+			case '\n':
+				escaped[e_idx++] = '{';
+				escaped[e_idx++] = 'L';
+				escaped[e_idx++] = 'F';
+				escaped[e_idx++] = '}';
+				break;
+			default:
+				e_idx += snprintf(escaped + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);
+				break;
+			}
 		}
 	}
 

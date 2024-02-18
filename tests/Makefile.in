@@ -91,10 +91,11 @@ host_triplet = @host@
 
 # These unit tests are for code that is used only in functional tests.
 
-# Notice that "functiona_tests/manual" tests are not included here. The
-# manual tests should be build on "make check", but not executed on "make
+# Notice that tests from "functional_tests/manual" are not included here. The
+# manual tests should be built on "make check", but not executed on "make
 # check".
 @FUNCTIONAL_TESTS_TRUE@am__append_2 = unit_tests/tests_random \
+@FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_string_utils \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_time_utils \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_morse_receiver \
 @FUNCTIONAL_TESTS_TRUE@	unit_tests/tests_events \
@@ -807,6 +808,13 @@ unit_tests/daemon_options.log: unit_tests/daemon_options
 unit_tests/tests_random.log: unit_tests/tests_random
 	@p='unit_tests/tests_random'; \
 	b='unit_tests/tests_random'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unit_tests/tests_string_utils.log: unit_tests/tests_string_utils
+	@p='unit_tests/tests_string_utils'; \
+	b='unit_tests/tests_string_utils'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
