@@ -83,12 +83,17 @@ int client_send_request_va(client_t * client, int request, const char * format, 
 
 int client_send_request(client_t * client, int request, const char * value)
 {
-	char buf[80] = { 0 };
+	char buf[800] = { 0 };
 
+	int i = 0;
 	switch (request) {
 	case CWDAEMON_REQUEST_RESET:
-		buf[0] = 27;
-		sprintf(buf + 1, "0");
+		buf[i++] = 27;
+		buf[i++] = '0';
+		/* This request doesn't require a value, but we insert the value to
+		   network message to test cwdaemon's behaviour in unexpected
+		   situation. */
+		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
 	case CWDAEMON_REQUEST_MESSAGE:
 		/* Notice that we don't put Escape character in buf.
@@ -106,16 +111,28 @@ int client_send_request(client_t * client, int request, const char * value)
 		sprintf(buf + 2, "%s", value);
 		break;
 	case CWDAEMON_REQUEST_ABORT:
-		buf[0] = 27;
-		sprintf(buf + 1, "4");
+		buf[i++] = 27;
+		buf[i++] = '4';
+		/* This request doesn't require a value, but we insert the value to
+		   network message to test cwdaemon's behaviour in unexpected
+		   situation. */
+		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
 	case CWDAEMON_REQUEST_EXIT:
-		buf[0] = 27;
-		sprintf(buf + 1, "5");
+		buf[i++] = 27;
+		buf[i++] = '5';
+		/* This request doesn't require a value, but we insert the value to
+		   network message to test cwdaemon's behaviour in unexpected
+		   situation. */
+		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
 	case CWDAEMON_REQUEST_WORDMODE:
-		buf[0] = 27;
-		sprintf(buf + 1, "6");
+		buf[i++] = 27;
+		buf[i++] = '6';
+		/* This request doesn't require a value, but we insert the value to
+		   network message to test cwdaemon's behaviour in unexpected
+		   situation. */
+		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
 	case CWDAEMON_REQUEST_WEIGHT:
 		buf[0] = 27;
@@ -162,18 +179,22 @@ int client_send_request(client_t * client, int request, const char * value)
 		break;
 	}
 
-	ssize_t send_rc = -1;
-	errno = 0;
-	if (buf[0] != '\0') {
-		send_rc = send(client->sock, buf, sizeof (buf), 0);
-	}
+	/*
+	  Notice that this line doesn't check contents of buf, so the buf may be
+	  completely empty or it may contain garbage.
 
+	  TODO acerion 2024.02.14: we always send "sizeof (buf)" bytes. Sometimes
+	  we would want to vary the size, especially in fuzzing tests.
+	*/
+	errno = 0;
+	const ssize_t send_rc = send(client->sock, buf, sizeof (buf), 0);
 	if (send_rc == -1) {
 		test_log_err("cwdaemon client: failed to send request to server: %s.\n", strerror(errno));
 		return -1;
-	} else {
-		return 0;
 	}
+
+	test_log_info("cwdaemon client: sent %ld bytes\n", send_rc);
+	return 0;
 }
 
 
@@ -227,7 +248,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 			const ssize_t r = recv(descriptor.fd, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
 			if (-1 != r) {
 				char escaped[64] = { 0 };
-				test_log_info("cwdaemon client: received [%s] from cwdaemon server.\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
+				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
 				events_insert_socket_receive_event(client->events, client->reply_buffer);
 			}
 		} else {
