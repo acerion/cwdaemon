@@ -446,7 +446,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			             morse->u.morse_receive.string, test_case->full_message);
 			return -1;
 		}
-		test_log_info("Expectation 3: received Morse message [%s] matches test from message request [%s] (ignoring the first character)\n",
+		test_log_info("Expectation 3: received Morse message [%s] matches text from message request [%s] (ignoring the first character)\n",
 		              morse->u.morse_receive.string, test_case->full_message);
 	} else {
 		test_log_info("Expectation 3: skipping verification of Morse message, because this test doesn't play Morse code %s\n", "");
