@@ -113,8 +113,8 @@ typedef struct test_case_t {
   regular/plain message requests in the future.
 */
 static const char err_case_1_message[]                = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', '\0' };         /* Notice inserted -1' */
-static const char err_case_1_socket_reply[]           = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n', '\0' };  /* cwdaemon sends verbatim text in socket reply. */
-static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' };              /* Morse message keyed on cwdevice must not contain the -1 char. */
+static const char err_case_1_expected_socket_reply[]  = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n', '\0' };  /* cwdaemon sends verbatim text in socket reply. */
+static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' };              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 
 
 
@@ -190,7 +190,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description                = "message containing '-1' integer value",
 	  .full_message               = err_case_1_message,
-	  .full_expected_socket_reply = err_case_1_socket_reply,
+	  .full_expected_socket_reply = err_case_1_expected_socket_reply,
 	  .expected_morse_receive     = err_case_1_expected_morse_receive,
 	},
 
