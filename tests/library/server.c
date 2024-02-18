@@ -202,10 +202,10 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 	int l4_port = 0;
 
 	const char * argv[20] = { 0 };
-	int a = 0;
-	argv[a++] = path;
+	int argc = 0;
+	argv[argc++] = path;
 
-	if (0 != get_option_port(opts, argv, &a, &l4_port)) {
+	if (0 != get_option_port(opts, argv, &argc, &l4_port)) {
 		test_log_err("Test: failed to get 'port' option for command line %s\n", "");
 		return -1;
 	}
@@ -219,35 +219,35 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 		}
 
 		if (0 != opts->tone) {
-			argv[a++] = "-T";
+			argv[argc++] = "-T";
 			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", opts->tone);
-			argv[a++] = g_arg_tone;
+			argv[argc++] = g_arg_tone;
 		}
 
 		switch (opts->sound_system) {
 		case CW_AUDIO_CONSOLE:
-			argv[a++] = "-x";
-			argv[a++] = "c";
+			argv[argc++] = "-x";
+			argv[argc++] = "c";
 			break;
 		case CW_AUDIO_OSS:
-			argv[a++] = "-x";
-			argv[a++] = "o";
+			argv[argc++] = "-x";
+			argv[argc++] = "o";
 			break;
 		case CW_AUDIO_ALSA:
-			argv[a++] = "-x";
-			argv[a++] = "a";
+			argv[argc++] = "-x";
+			argv[argc++] = "a";
 			break;
 		case CW_AUDIO_PA:
-			argv[a++] = "-x";
-			argv[a++] = "p";
+			argv[argc++] = "-x";
+			argv[argc++] = "p";
 			break;
 		case CW_AUDIO_SOUNDCARD:
-			argv[a++] = "-x";
-			argv[a++] = "s";
+			argv[argc++] = "-x";
+			argv[argc++] = "s";
 			break;
 		case CW_AUDIO_NULL: /* It's not NONE, it's really NULL! */
-			argv[a++] = "-x";
-			argv[a++] = "n";
+			argv[argc++] = "-x";
+			argv[argc++] = "n";
 			break;
 		case CW_AUDIO_NONE:
 			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
@@ -258,29 +258,29 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 		};
 
 		if (opts->nofork) {
-			argv[a++] = "-n";
+			argv[argc++] = "-n";
 		}
 		if ('\0' != opts->cwdevice_name[0]) {
-			argv[a++] = "-d";
-			argv[a++] = opts->cwdevice_name;
+			argv[argc++] = "-d";
+			argv[argc++] = opts->cwdevice_name;
 		}
 		char wpm_buf[16] = { 0 };
 		if (opts->wpm) {
 			snprintf(wpm_buf, sizeof (wpm_buf), "%d", opts->wpm);
-			argv[a++] = "-s";
-			argv[a++] = wpm_buf;
+			argv[argc++] = "-s";
+			argv[argc++] = wpm_buf;
 		}
 		if (opts->tty_pins.explicit) {
 			/* tty options for cwdaemon server have been explicitly defined.
 			   Use them here. */
 			switch (opts->tty_pins.pin_keying) {
 			case TIOCM_DTR:
-				argv[a++] = "-o";
-				argv[a++] = "key=dtr";
+				argv[argc++] = "-o";
+				argv[argc++] = "key=dtr";
 				break;
 			case TIOCM_RTS:
-				argv[a++] = "-o";
-				argv[a++] = "key=rts";
+				argv[argc++] = "-o";
+				argv[argc++] = "key=rts";
 				break;
 			default:
 				break;
@@ -288,12 +288,12 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 
 			switch (opts->tty_pins.pin_ptt) {
 			case TIOCM_DTR:
-				argv[a++] = "-o";
-				argv[a++] = "ptt=dtr";
+				argv[argc++] = "-o";
+				argv[argc++] = "ptt=dtr";
 				break;
 			case TIOCM_RTS:
-				argv[a++] = "-o";
-				argv[a++] = "ptt=rts";
+				argv[argc++] = "-o";
+				argv[argc++] = "ptt=rts";
 				break;
 			default:
 				break;
