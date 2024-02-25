@@ -59,6 +59,7 @@
 #include "sleep.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
+#include "supervisor.h"
 
 
 
@@ -197,13 +198,28 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 
 
 
-int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * server)
+int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, server_t * server)
 {
 	int l4_port = 0;
 
-	const char * argv[20] = { 0 };
+	const char * argv[40] = { 0 };
 	int argc = 0;
-	argv[argc++] = path;
+	const char * top_level_exec_path = cwdaemon_path; /* First item in argv[] passed to execv(). */
+
+	switch (opts->supervisor_id) {
+	case supervisor_id_none:
+		break;
+	case supervisor_id_valgrind:
+		get_args_valgrind(argv, &argc);
+		top_level_exec_path = "/usr/bin/valgrind";
+		break;
+	case supervisor_id_gdb:
+		get_args_gdb(argv, &argc);
+		top_level_exec_path = "/usr/bin/gdb";
+		break;
+	}
+
+	argv[argc++] = cwdaemon_path;
 
 	if (0 != get_option_port(opts, argv, &argc, &l4_port)) {
 		test_log_err("Test: failed to get 'port' option for command line %s\n", "");
@@ -310,10 +326,12 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 		}
 		fprintf(stderr, "\n");
 
-		execve(path, (char * const *) argv, env);
+		execve(top_level_exec_path, (char * const *) argv, env);
 		test_log_err("Test: returning after failed exec(): %s\n", strerror(errno));
 		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
+		server->supervisor_id = opts->supervisor_id;
+
 		/*
 		  Wait for start of cwdaemon for two reasons:
 
@@ -330,8 +348,25 @@ int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * s
 		  Usually the tests are written in a way to expect and discard errors
 		  at the beginning of received text, but why add another factor that
 		  decreases quality of receiving?
+
+		  I haven't observed this in practice, but I think that when program
+		  is ran under supervisor, it may take longer for it to start and be
+		  responsive to test suite, compared to no supervisor. TODO acerion
+		  2024.02.19: check this somehow.
 		*/
-		const int sleep_retv = test_millisleep_nonintr(300);
+		unsigned int milli_sleep_duration = 300;
+		switch (server->supervisor_id) {
+		case supervisor_id_none:
+			milli_sleep_duration = 300;
+			break;
+		case supervisor_id_valgrind:
+			milli_sleep_duration = 3000;
+			break;
+		case supervisor_id_gdb:
+			milli_sleep_duration = 1000;
+			break;
+		}
+		const int sleep_retv = test_millisleep_nonintr(milli_sleep_duration);
 		if (sleep_retv) {
 			test_log_err("Test: error during sleep in parent: %s\n", strerror(errno));
 			return -1;
@@ -483,6 +518,13 @@ int local_server_stop(server_t * server, client_t * client)
 	const int sleep_retv = test_sleep_nonintr(2);
 	if (sleep_retv) {
 		test_log_notice("Test: error during sleep while waiting for local server to exit %s\n", "");
+	}
+
+	if (server->supervisor_id != supervisor_id_none) {
+		test_log_info("cwdaemon server: server was started inside of supervisor (e.g. valgrind or gdb). Not doing anything beyond sending EXIT request %s\n", "");
+		/* Return now. Don't try to send SIGKILL to process with server->pid,
+		   because that's the PID of supervisor. */
+		return 0;
 	}
 
 	/* Now check if test instance of cwdaemon is no longer present, as expected. */

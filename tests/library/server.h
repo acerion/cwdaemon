@@ -13,6 +13,7 @@
 #include "client.h"
 #include "cwdevice_observer.h"
 #include "events.h"
+#include "supervisor.h"
 
 
 
@@ -28,6 +29,10 @@ typedef struct server_t {
 	/** Reference to test's events container. Used to collect events
 	    registered during test that are relevant to cwdaemon server. */
 	events_t * events;
+
+	/** Type of supervisor the local instance of cwdaemon process is running
+	    under. */
+	supervisor_id_t supervisor_id;
 } server_t;
 
 
@@ -63,6 +68,10 @@ typedef struct {
 	   cwdaemon. 'in_port_t' type would not allow that value.
 	*/
 	int l4_port;
+
+	/** Type of supervisor the local instance of cwdaemon process is running
+	    under. */
+	supervisor_id_t supervisor_id;
 } cwdaemon_opts_t;
 
 

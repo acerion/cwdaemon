@@ -122,6 +122,7 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-random.$(OBJEXT) lib_tests_a-server.$(OBJEXT) \
 	lib_tests_a-sleep.$(OBJEXT) lib_tests_a-socket.$(OBJEXT) \
 	lib_tests_a-string_utils.$(OBJEXT) \
+	lib_tests_a-supervisor.$(OBJEXT) \
 	lib_tests_a-test_env.$(OBJEXT) \
 	lib_tests_a-time_utils.$(OBJEXT) lib_tests_a-thread.$(OBJEXT)
 lib_tests_a_OBJECTS = $(am_lib_tests_a_OBJECTS)
@@ -153,6 +154,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-sleep.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
 	./$(DEPDIR)/lib_tests_a-string_utils.Po \
+	./$(DEPDIR)/lib_tests_a-supervisor.Po \
 	./$(DEPDIR)/lib_tests_a-test_env.Po \
 	./$(DEPDIR)/lib_tests_a-thread.Po \
 	./$(DEPDIR)/lib_tests_a-time_utils.Po
@@ -328,6 +330,7 @@ check_HEADERS = client.h             \
                 sleep.h              \
                 socket.h             \
                 string_utils.h       \
+                supervisor.h         \
                 test_env.h           \
                 time_utils.h         \
                 thread.h
@@ -348,6 +351,7 @@ lib_tests_a_SOURCES = client.c             \
                       sleep.c              \
                       socket.c             \
                       string_utils.c       \
+                      supervisor.c         \
                       test_env.c           \
                       time_utils.c         \
                       thread.c
@@ -414,6 +418,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-sleep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-string_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-supervisor.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_env.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-thread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-time_utils.Po@am__quote@ # am--include-marker
@@ -622,6 +627,20 @@ lib_tests_a-string_utils.obj: string_utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-string_utils.obj `if test -f 'string_utils.c'; then $(CYGPATH_W) 'string_utils.c'; else $(CYGPATH_W) '$(srcdir)/string_utils.c'; fi`
 
+lib_tests_a-supervisor.o: supervisor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-supervisor.o -MD -MP -MF $(DEPDIR)/lib_tests_a-supervisor.Tpo -c -o lib_tests_a-supervisor.o `test -f 'supervisor.c' || echo '$(srcdir)/'`supervisor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-supervisor.Tpo $(DEPDIR)/lib_tests_a-supervisor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='supervisor.c' object='lib_tests_a-supervisor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-supervisor.o `test -f 'supervisor.c' || echo '$(srcdir)/'`supervisor.c
+
+lib_tests_a-supervisor.obj: supervisor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-supervisor.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-supervisor.Tpo -c -o lib_tests_a-supervisor.obj `if test -f 'supervisor.c'; then $(CYGPATH_W) 'supervisor.c'; else $(CYGPATH_W) '$(srcdir)/supervisor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-supervisor.Tpo $(DEPDIR)/lib_tests_a-supervisor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='supervisor.c' object='lib_tests_a-supervisor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-supervisor.obj `if test -f 'supervisor.c'; then $(CYGPATH_W) 'supervisor.c'; else $(CYGPATH_W) '$(srcdir)/supervisor.c'; fi`
+
 lib_tests_a-test_env.o: test_env.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-test_env.o -MD -MP -MF $(DEPDIR)/lib_tests_a-test_env.Tpo -c -o lib_tests_a-test_env.o `test -f 'test_env.c' || echo '$(srcdir)/'`test_env.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-test_env.Tpo $(DEPDIR)/lib_tests_a-test_env.Po
@@ -801,6 +820,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-sleep.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-string_utils.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-supervisor.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-time_utils.Po
@@ -862,6 +882,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-sleep.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-string_utils.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-supervisor.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-time_utils.Po
