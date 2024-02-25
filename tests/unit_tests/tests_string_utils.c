@@ -77,7 +77,7 @@ int main(void)
    function. */
 static int test_escape_string(void)
 {
-#define OUTPUT_SIZE 128
+#define OUTPUT_SIZE 55
 	/*
 	  All these cases are valid cases. Tested function should succeed in
 	  building *some* path. The path may represent a non-existing device, but
@@ -107,6 +107,18 @@ static int test_escape_string(void)
 
 		/* Mix of \r, \n, -1 and other non-printable chars. Plus some printable. */
 		{ .input = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' },  .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A"  },
+
+		/* Properly escaped input string would not fit into output buffer, so
+		   escaping function may add '#' at end of output. */
+		{ .input           = {     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  '\0' },
+		  .expected_output =   "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"
+		},
+		{ .input           = { 'a', -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1, '\0' },
+		  .expected_output =   "a{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}#####"
+		},
+		{ .input           = {   10, 13, 13, 13, 10, 13, 13, 13, 10, 13, 13, 13, 10,13, '\0' },
+		  .expected_output =   "{LF}{CR}{CR}{CR}{LF}{CR}{CR}{CR}{LF}{CR}{CR}{CR}{LF}##"
+		},
 	};
 
 	const size_t n_tests = sizeof (test_data) / sizeof (test_data[0]);

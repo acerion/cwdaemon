@@ -61,28 +61,51 @@ char * escape_string(const char * buffer, char * escaped, size_t size)
 	for (size_t i = 0; i < strlen(buffer); i++) {
 		const char character = buffer[i];
 		if (isprint((unsigned char) character)) {
-			escaped[e_idx++] = character;
+			if (e_idx < size - 1) {
+				escaped[e_idx++] = character;
+			} else {
+				goto L_NO_SPACE;
+			}
 		} else {
 			switch (character) {
 			case '\r':
-				escaped[e_idx++] = '{';
-				escaped[e_idx++] = 'C';
-				escaped[e_idx++] = 'R';
-				escaped[e_idx++] = '}';
+				if (e_idx < size - 4) {
+					escaped[e_idx++] = '{';
+					escaped[e_idx++] = 'C';
+					escaped[e_idx++] = 'R';
+					escaped[e_idx++] = '}';
+				} else {
+					goto L_NO_SPACE;
+				}
 				break;
 			case '\n':
-				escaped[e_idx++] = '{';
-				escaped[e_idx++] = 'L';
-				escaped[e_idx++] = 'F';
-				escaped[e_idx++] = '}';
+				if (e_idx < size - 4) {
+					escaped[e_idx++] = '{';
+					escaped[e_idx++] = 'L';
+					escaped[e_idx++] = 'F';
+					escaped[e_idx++] = '}';
+				} else {
+					goto L_NO_SPACE;
+				}
 				break;
 			default:
-				e_idx += snprintf(escaped + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);
+				if (e_idx < size - 6) {
+					e_idx += snprintf(escaped + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);
+				} else {
+					goto L_NO_SPACE;
+				}
 				break;
 			}
 		}
 	}
 
+	escaped[e_idx] = '\0';
+	return escaped;
+
+ L_NO_SPACE:
+	for (; e_idx < size - 1; e_idx++) {
+		escaped[e_idx] = '#';
+	}
 	escaped[size - 1] = '\0';
 	return escaped;
 }
