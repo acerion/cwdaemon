@@ -54,7 +54,23 @@ int client_dtor(client_t * client);
 
 
 
-int client_send_request(client_t * client, int request, const char * value);
+/**
+   Send request to cwdaemon server
+
+   Value of request is stored in opaque array @p bytes. There are @p n_bytes
+   bytes of data in @b bytes. All @p n_bytes bytes of data are to sent
+   through socket.
+
+   If data in @p bytes is representing a C string, it is up to caller of the
+   function to have it terminated with NUL and to pass correct value of @p
+   n_bytes. The value of @p n_bytes must include terminating NUL of the
+   string. Even if caller passes a string to the function, the function
+   treats @p bytes as opaque array of some bytes.
+
+   @return 0 on successful sending of data
+   @return -1 otherwise
+*/
+int client_send_request(client_t * client, int request, const char * bytes, size_t n_bytes);
 
 /* See comment inside of morse_receive_text_is_correct() to learn why this
    function is needed (in nutshell: cw receiver may mis-receive initial

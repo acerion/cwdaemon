@@ -348,7 +348,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 	/* Send the message to be played to double-check that a cwdaemon server
 	   is running, and that it's listening on a network socket on a port
 	   specified in test case.. */
-	client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
+	client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message, strlen(test_case->full_message) + 1);
 
 	morse_receiver_wait(morse_receiver);
 

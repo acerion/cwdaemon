@@ -75,119 +75,83 @@ int client_send_request_va(client_t * client, int request, const char * format, 
 	vsnprintf(buffer, sizeof (buffer), format, ap);
 	va_end(ap);
 
-	return client_send_request(client, request, buffer);
+	return client_send_request(client, request, buffer, sizeof (buffer));
 }
 
 
 
 
-int client_send_request(client_t * client, int request, const char * value)
+int client_send_request(client_t * client, int request, const char * bytes, size_t n_bytes)
 {
 	char buf[800] = { 0 };
 
+	size_t n_bytes_to_send = 0; /* Total count of bytes to send over network socket. */
 	int i = 0;
 	switch (request) {
-	case CWDAEMON_ESC_REQUEST_RESET:
-		buf[i++] = 27;
-		buf[i++] = '0';
-		/* This request doesn't require a value, but we insert the value to
-		   network message to test cwdaemon's behaviour in unexpected
-		   situation. */
-		snprintf(buf + i, sizeof (buf) - i, "%s", value);
-		break;
 	case CWDAEMON_REQUEST_MESSAGE:
-		/* Notice that we don't put Escape character in buf.
-		   Regular text message is not an escaped request. */
-		sprintf(buf, "%s", value);
+		if (n_bytes > sizeof (buf)) {
+			test_log_err("cwdaemon client: size of data to send to cwdaemon server is too large: %zu > %zu\n", n_bytes, sizeof (buf));
+			return -1;
+		}
+		/*
+		  Notice that we don't put Escape character in buf. Regular text
+		  message is not an escaped request.
+
+		  Test code may pass to the function any sequence of bytes to test
+		  server's response. The purpose of this function is to send the
+		  bytes verbatim over socket to cwdaemon.
+
+		  We use memcpy() because we don't care what caller has passed
+		  through @p bytes. We just send @p n_bytes of data through socket.
+		*/
+		memcpy(buf, bytes, n_bytes);
+		n_bytes_to_send = n_bytes;
 		break;
+	case CWDAEMON_ESC_REQUEST_RESET:
 	case CWDAEMON_ESC_REQUEST_SPEED:
-		buf[0] = 27;
-		sprintf(buf + 1, "2");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_TONE:
-		buf[0] = 27;
-		sprintf(buf + 1, "3");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_ABORT:
-		buf[i++] = 27;
-		buf[i++] = '4';
-		/* This request doesn't require a value, but we insert the value to
-		   network message to test cwdaemon's behaviour in unexpected
-		   situation. */
-		snprintf(buf + i, sizeof (buf) - i, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_EXIT:
-		buf[i++] = 27;
-		buf[i++] = '5';
-		/* This request doesn't require a value, but we insert the value to
-		   network message to test cwdaemon's behaviour in unexpected
-		   situation. */
-		snprintf(buf + i, sizeof (buf) - i, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_WORD_MODE:
-		buf[i++] = 27;
-		buf[i++] = '6';
-		/* This request doesn't require a value, but we insert the value to
-		   network message to test cwdaemon's behaviour in unexpected
-		   situation. */
-		snprintf(buf + i, sizeof (buf) - i, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_WEIGHTING:
-		buf[0] = 27;
-		sprintf(buf + 1, "7");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_CWDEVICE:
-		buf[0] = 27;
-		sprintf(buf + 1, "8");
-		sprintf(buf + 2, "%s", value);
-		break;
+	case CWDAEMON_ESC_REQUEST_PORT: /* Include it here even though it's not supported by cwdaemon anymore. */
 	case CWDAEMON_ESC_REQUEST_PTT_STATE:
-		buf[0] = 27;
-		sprintf(buf + 1, "a");
-		sprintf(buf + 2, "%s", value);
-		break;
+	case CWDAEMON_ESC_REQUEST_SSB_WAY:
 	case CWDAEMON_ESC_REQUEST_TUNE:
-		buf[0] = 27;
-		sprintf(buf + 1, "c");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_TX_DELAY:
-		buf[0] = 27;
-		sprintf(buf + 1, "d");
-		sprintf(buf + 2, "%s", value);
-		break;
+	case CWDAEMON_ESC_REQUEST_BAND_SWITCH:
 	case CWDAEMON_ESC_REQUEST_SOUND_SYSTEM:
-		buf[0] = 27;
-		sprintf(buf + 1, "f");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_VOLUME:
-		buf[0] = 27;
-		sprintf(buf + 1, "g");
-		sprintf(buf + 2, "%s", value);
-		break;
 	case CWDAEMON_ESC_REQUEST_REPLY:
-		buf[0] = 27;
-		sprintf(buf + 1, "h");
-		sprintf(buf + 2, "%s", value);
+		buf[i++] = 27;
+		buf[i++] = (char) request;
+		/*
+		  Some of the escaped requests don't require a value, but we always
+		  copy all bytes of value to network message to test cwdaemon's
+		  behaviour in unexpected situations.
+
+		  Test code may pass to the function any sequence of bytes to test
+		  server's response. The purpose of this function is to send the
+		  bytes verbatim over socket to cwdaemon.
+
+		  We use memcpy() because we don't care what caller has passed
+		  through @p bytes. We just send @p n_bytes of data through socket.
+		*/
+		if (n_bytes + i > sizeof (buf)) {
+			test_log_err("cwdaemon client: size of data to send to cwdaemon server as escaped request is too large: %zu + %d > %zu\n", n_bytes, i, sizeof (buf));
+			return -1;
+		}
+		memcpy(buf + i, bytes, n_bytes);
+		n_bytes_to_send = n_bytes + i;
 		break;
 	default:
-		buf[0] = '\0';
-		break;
+		test_log_err("cwdaemon client: unsupported escaped request 0x%02x / '%c' / %d\n", (unsigned char) request, (char) request, request);
+		return -1;
 	}
 
-	/*
-	  Notice that this line doesn't check contents of buf, so the buf may be
-	  completely empty or it may contain garbage.
-
-	  TODO acerion 2024.02.14: we always send "sizeof (buf)" bytes. Sometimes
-	  we would want to vary the size, especially in fuzzing tests.
-	*/
 	errno = 0;
-	const ssize_t send_rc = send(client->sock, buf, sizeof (buf), 0);
+	const ssize_t send_rc = send(client->sock, buf, n_bytes_to_send, 0);
 	if (send_rc == -1) {
 		test_log_err("cwdaemon client: failed to send request to server: %s.\n", strerror(errno));
 		return -1;

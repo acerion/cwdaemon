@@ -183,7 +183,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message1);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message1, strlen(message1) + 1);
 
 		morse_receiver_wait(morse_receiver);
 	}
@@ -191,7 +191,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	client_send_request(client, CWDAEMON_ESC_REQUEST_RESET, "");
+	client_send_request(client, CWDAEMON_ESC_REQUEST_RESET, "", 0);
 
 
 	/* This sends a text request to cwdaemon that works in "after reset"
@@ -202,7 +202,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message2);
+		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message2, strlen(message2) + 1);
 
 		morse_receiver_wait(morse_receiver);
 	}
