@@ -191,7 +191,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
-	client_send_request(client, CWDAEMON_ESC_REQUEST_RESET, "", 0);
+	client_send_esc_request(client, CWDAEMON_ESC_REQUEST_RESET, "", 0);
 
 
 	/* This sends a text request to cwdaemon that works in "after reset"

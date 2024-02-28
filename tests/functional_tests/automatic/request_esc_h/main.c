@@ -467,7 +467,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			*/
 
 			/* Ask cwdaemon to send us this reply back after playing a message. */
-			client_send_request(client, CWDAEMON_ESC_REQUEST_REPLY, test_case->requested_reply_value, strlen(test_case->requested_reply_value) + 1);
+			client_send_esc_request(client, CWDAEMON_ESC_REQUEST_REPLY, test_case->requested_reply_value, strlen(test_case->requested_reply_value) + 1);
 
 			/* Send the message to be played. */
 			client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);

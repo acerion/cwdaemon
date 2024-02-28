@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -510,7 +510,7 @@ int local_server_stop(server_t * server, client_t * client)
 	*/
 
 	/* First ask nicely for a clean exit. */
-	if (0 != client_send_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0)) {
+	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0)) {
 		test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
 	}
 

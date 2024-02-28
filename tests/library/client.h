@@ -56,15 +56,17 @@ int client_dtor(client_t * client);
    string. Even if caller passes a string to the function, the function
    treats @p bytes as opaque array of some bytes.
 
+   @param[in] request one of CWDAEMON_ESC_REQUEST_* values from src/cwdaemon.h
+
    @return 0 on successful sending of data
    @return -1 otherwise
 */
-int client_send_request(client_t * client, int request, const char * bytes, size_t n_bytes);
+int client_send_esc_request(client_t * client, int request, const char * bytes, size_t n_bytes);
 
 /* See comment inside of morse_receive_text_is_correct() to learn why this
    function is needed (in nutshell: cw receiver may mis-receive initial
    letters of message). */
-int client_send_request_va(client_t * client, int request, const char * format, ...) __attribute__ ((format (printf, 3, 4)));
+int client_send_esc_request_va(client_t * client, int request, const char * format, ...) __attribute__ ((format (printf, 3, 4)));
 
 
 

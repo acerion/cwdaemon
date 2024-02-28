@@ -66,7 +66,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg);
 
 
 
-int client_send_request_va(client_t * client, int request, const char * format, ...)
+int client_send_esc_request_va(client_t * client, int request, const char * format, ...)
 {
 	char buffer[1024] = { 0 };
 	va_list ap;
@@ -75,13 +75,13 @@ int client_send_request_va(client_t * client, int request, const char * format, 
 	vsnprintf(buffer, sizeof (buffer), format, ap);
 	va_end(ap);
 
-	return client_send_request(client, request, buffer, sizeof (buffer)); /* TODO acerion 2024.02.28: last arg should be a value returned by vsnmprintf(). */
+	return client_send_esc_request(client, request, buffer, sizeof (buffer)); /* TODO acerion 2024.02.28: last arg should be a value returned by vsnmprintf(). */
 }
 
 
 
 
-int client_send_request(client_t * client, int request, const char * bytes, size_t n_bytes)
+int client_send_esc_request(client_t * client, int request, const char * bytes, size_t n_bytes)
 {
 	/* This buffer will store opaque data, so we don't have to think whether there is space for terminating NUL. */
 	char buf[800] = { 0 };

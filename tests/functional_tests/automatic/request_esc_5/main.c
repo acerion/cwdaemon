@@ -289,7 +289,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 		// kill(server.pid, SIGKILL);
 
 		/* First ask nicely for a clean exit. */
-		client_send_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0);
+		client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0);
 		pthread_mutex_lock(&events->mutex);
 		{
 			clock_gettime(CLOCK_MONOTONIC, &events->events[events->event_idx].tstamp);
