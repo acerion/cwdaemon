@@ -543,7 +543,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			}
 
 			/* Send the message to be played. */
-			client_send_request(client, CWDAEMON_REQUEST_MESSAGE, test_case->full_message, strlen(test_case->full_message) + 1);
+			client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
 
 			morse_receiver_wait(morse_receiver);
 		}

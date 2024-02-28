@@ -183,7 +183,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message1, strlen(message1) + 1);
+		client_send_message(client, message1, strlen(message1) + 1);
 
 		morse_receiver_wait(morse_receiver);
 	}
@@ -202,7 +202,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_request(client, CWDAEMON_REQUEST_MESSAGE, message2, strlen(message2) + 1);
+		client_send_message(client, message2, strlen(message2) + 1);
 
 		morse_receiver_wait(morse_receiver);
 	}

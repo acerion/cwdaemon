@@ -75,7 +75,7 @@ int client_send_request_va(client_t * client, int request, const char * format, 
 	vsnprintf(buffer, sizeof (buffer), format, ap);
 	va_end(ap);
 
-	return client_send_request(client, request, buffer, sizeof (buffer));
+	return client_send_request(client, request, buffer, sizeof (buffer)); /* TODO acerion 2024.02.28: last arg should be a value returned by vsnmprintf(). */
 }
 
 
@@ -83,30 +83,12 @@ int client_send_request_va(client_t * client, int request, const char * format, 
 
 int client_send_request(client_t * client, int request, const char * bytes, size_t n_bytes)
 {
+	/* This buffer will store opaque data, so we don't have to think whether there is space for terminating NUL. */
 	char buf[800] = { 0 };
 
 	size_t n_bytes_to_send = 0; /* Total count of bytes to send over network socket. */
 	int i = 0;
 	switch (request) {
-	case CWDAEMON_REQUEST_MESSAGE:
-		if (n_bytes > sizeof (buf)) {
-			test_log_err("cwdaemon client: size of data to send to cwdaemon server is too large: %zu > %zu\n", n_bytes, sizeof (buf));
-			return -1;
-		}
-		/*
-		  Notice that we don't put Escape character in buf. Regular text
-		  message is not an escaped request.
-
-		  Test code may pass to the function any sequence of bytes to test
-		  server's response. The purpose of this function is to send the
-		  bytes verbatim over socket to cwdaemon.
-
-		  We use memcpy() because we don't care what caller has passed
-		  through @p bytes. We just send @p n_bytes of data through socket.
-		*/
-		memcpy(buf, bytes, n_bytes);
-		n_bytes_to_send = n_bytes;
-		break;
 	case CWDAEMON_ESC_REQUEST_RESET:
 	case CWDAEMON_ESC_REQUEST_SPEED:
 	case CWDAEMON_ESC_REQUEST_TONE:
@@ -144,16 +126,22 @@ int client_send_request(client_t * client, int request, const char * bytes, size
 		}
 		memcpy(buf + i, bytes, n_bytes);
 		n_bytes_to_send = n_bytes + i;
-		break;
+		return client_send_message(client, buf, n_bytes_to_send);
 	default:
 		test_log_err("cwdaemon client: unsupported escaped request 0x%02x / '%c' / %d\n", (unsigned char) request, (char) request, request);
 		return -1;
 	}
+}
 
+
+
+
+int client_send_message(client_t * client, const char * bytes, size_t n_bytes)
+{
 	errno = 0;
-	const ssize_t send_rc = send(client->sock, buf, n_bytes_to_send, 0);
-	if (send_rc == -1) {
-		test_log_err("cwdaemon client: failed to send request to server: %s.\n", strerror(errno));
+	const ssize_t send_rc = send(client->sock, bytes, n_bytes, 0);
+	if (send_rc == -1) { /* TODO acerion 2024.02.28: shouldn't we compare the value with n_bytes? */
+		test_log_err("cwdaemon client: failed to send data to server: %s\n", strerror(errno));
 		return -1;
 	}
 
