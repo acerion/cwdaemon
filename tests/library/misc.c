@@ -174,7 +174,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 	const char * requested_reply_value   = "t";
 
 	client_t client = { .sock = socket };
-	client_send_request(&client, CWDAEMON_REQUEST_REPLY, requested_message_value);
+	client_send_request(&client, CWDAEMON_ESC_REQUEST_REPLY, requested_message_value);
 	client_send_request(&client, CWDAEMON_REQUEST_MESSAGE, requested_reply_value);
 
 	/* Try receiving preconfigured reply. Receiving it means that there

@@ -510,7 +510,7 @@ int local_server_stop(server_t * server, client_t * client)
 	*/
 
 	/* First ask nicely for a clean exit. */
-	if (0 != client_send_request(client, CWDAEMON_REQUEST_EXIT, "")) {
+	if (0 != client_send_request(client, CWDAEMON_ESC_REQUEST_EXIT, "")) {
 		test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
 	}
 

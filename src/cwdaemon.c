@@ -1076,7 +1076,7 @@ void cwdaemon_handle_escaped_request(char *request)
 			       "obsolete request \"9\" (change network port), ignoring");
 		break;
 	case 'a':
-		/* PTT keying on or off */
+		/* Set state of PTT pin. */
 		cwdaemon_params_ptt_on_off(request + 2);
 
 		break;
@@ -1118,7 +1118,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		}
 	case 'd':
 		{
-			/* Set PTT delay (TOD, Turn On Delay).
+			/* Set PTT delay (TOD, Turn On Delay, TX delay).
 			   The value is milliseconds. */
 
 			int rv = cwdaemon_params_pttdelay(&g_current_ptt_delay_ms, request + 2);

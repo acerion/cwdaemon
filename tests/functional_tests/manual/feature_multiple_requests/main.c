@@ -323,7 +323,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 					client_send_request(&clients[c], CWDAEMON_REQUEST_MESSAGE, test_case->full_message);
 				} else {
 					/* Ask cwdaemon to send us this reply back after playing a message. */
-					client_send_request(&clients[c], CWDAEMON_REQUEST_REPLY, test_case->requested_reply_value);
+					client_send_request(&clients[c], CWDAEMON_ESC_REQUEST_REPLY, test_case->requested_reply_value);
 
 					/* Send the message to be played. */
 					test_log_info("Test: client %zu: sending non-caret request [%s]\n", c, test_case->full_message);

@@ -87,7 +87,7 @@ int client_send_request(client_t * client, int request, const char * value)
 
 	int i = 0;
 	switch (request) {
-	case CWDAEMON_REQUEST_RESET:
+	case CWDAEMON_ESC_REQUEST_RESET:
 		buf[i++] = 27;
 		buf[i++] = '0';
 		/* This request doesn't require a value, but we insert the value to
@@ -100,17 +100,17 @@ int client_send_request(client_t * client, int request, const char * value)
 		   Regular text message is not an escaped request. */
 		sprintf(buf, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_SPEED:
+	case CWDAEMON_ESC_REQUEST_SPEED:
 		buf[0] = 27;
 		sprintf(buf + 1, "2");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_TONE:
+	case CWDAEMON_ESC_REQUEST_TONE:
 		buf[0] = 27;
 		sprintf(buf + 1, "3");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_ABORT:
+	case CWDAEMON_ESC_REQUEST_ABORT:
 		buf[i++] = 27;
 		buf[i++] = '4';
 		/* This request doesn't require a value, but we insert the value to
@@ -118,7 +118,7 @@ int client_send_request(client_t * client, int request, const char * value)
 		   situation. */
 		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_EXIT:
+	case CWDAEMON_ESC_REQUEST_EXIT:
 		buf[i++] = 27;
 		buf[i++] = '5';
 		/* This request doesn't require a value, but we insert the value to
@@ -126,7 +126,7 @@ int client_send_request(client_t * client, int request, const char * value)
 		   situation. */
 		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_WORDMODE:
+	case CWDAEMON_ESC_REQUEST_WORD_MODE:
 		buf[i++] = 27;
 		buf[i++] = '6';
 		/* This request doesn't require a value, but we insert the value to
@@ -134,42 +134,42 @@ int client_send_request(client_t * client, int request, const char * value)
 		   situation. */
 		snprintf(buf + i, sizeof (buf) - i, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_WEIGHT:
+	case CWDAEMON_ESC_REQUEST_WEIGHTING:
 		buf[0] = 27;
 		sprintf(buf + 1, "7");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_DEVICE:
+	case CWDAEMON_ESC_REQUEST_CWDEVICE:
 		buf[0] = 27;
 		sprintf(buf + 1, "8");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_PTT:
+	case CWDAEMON_ESC_REQUEST_PTT_STATE:
 		buf[0] = 27;
 		sprintf(buf + 1, "a");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_TUNE:
+	case CWDAEMON_ESC_REQUEST_TUNE:
 		buf[0] = 27;
 		sprintf(buf + 1, "c");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_TOD:
+	case CWDAEMON_ESC_REQUEST_TX_DELAY:
 		buf[0] = 27;
 		sprintf(buf + 1, "d");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_SDEVICE:
+	case CWDAEMON_ESC_REQUEST_SOUND_SYSTEM:
 		buf[0] = 27;
 		sprintf(buf + 1, "f");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_VOLUME:
+	case CWDAEMON_ESC_REQUEST_VOLUME:
 		buf[0] = 27;
 		sprintf(buf + 1, "g");
 		sprintf(buf + 2, "%s", value);
 		break;
-	case CWDAEMON_REQUEST_REPLY:
+	case CWDAEMON_ESC_REQUEST_REPLY:
 		buf[0] = 27;
 		sprintf(buf + 1, "h");
 		sprintf(buf + 2, "%s", value);

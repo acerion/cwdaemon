@@ -13,8 +13,21 @@
 
 #include <netinet/in.h>
 
+#include <src/cwdaemon.h>
+
 #include "events.h"
 #include "thread.h"
+
+
+
+
+/*
+  Just text to play, without "<ESC>X" header.
+
+  This is an addition to CWDAEMON_ESC_REQUEST_* values defined in
+  src/cwdaemon.h.
+*/
+#define CWDAEMON_REQUEST_MESSAGE  0
 
 
 

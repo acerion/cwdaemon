@@ -85,6 +85,32 @@
 
 
 
+/*
+  Escaped requests supported by cwdaemon.
+
+  Values of the defines are treated by cwdaemon in case-sensitive way.
+*/
+#define CWDAEMON_ESC_REQUEST_RESET        '0' /**< ``'0'`` character == 0x30; reset some of parameters of cwdaemon. */
+#define CWDAEMON_ESC_REQUEST_SPEED        '2' /**< ``'2'`` character == 0x32; set Morse speed [wpm]. */
+#define CWDAEMON_ESC_REQUEST_TONE         '3' /**< ``'3'`` character == 0x33; set tone/frequency [Hz]. */
+#define CWDAEMON_ESC_REQUEST_ABORT        '4' /**< ``'4'`` character == 0x34; abort currently sent message. */
+#define CWDAEMON_ESC_REQUEST_EXIT         '5' /**< ``'5'`` character == 0x35; tell cwdaemon process to exit cleanly. Formerly known as STOP. */
+#define CWDAEMON_ESC_REQUEST_WORD_MODE    '6' /**< ``'6'`` character == 0x36; enter or leave word mode (uninterruptible mode). */
+#define CWDAEMON_ESC_REQUEST_WEIGHTING    '7' /**< ``'7'`` character == 0x37; set weighting of Morse code Dits and Dashes. */
+#define CWDAEMON_ESC_REQUEST_CWDEVICE     '8' /**< ``'8'`` character == 0x38; use hardware keying device (cw device) specified by device name. Formerly known as DEVICE. */
+#define CWDAEMON_ESC_REQUEST_PORT         '9' /**< ``'9'`` character == 0x39; set network port on which cwdaemon is listening. Obsolete. Formerly known as ADDRESS. */
+#define CWDAEMON_ESC_REQUEST_PTT_STATE    'a' /**< ``'a'`` character == 0x61; set state of PTT pin. */
+#define CWDAEMON_ESC_REQUEST_SSB_WAY      'b' /**< ``'b'`` character == 0x62; set pin 14 on lpt (set SSB way). Formerly known as SET14. */
+#define CWDAEMON_ESC_REQUEST_TUNE         'c' /**< ``'c'`` character == 0x63; tune (send continuous wave) for a given number of seconds. */
+#define CWDAEMON_ESC_REQUEST_TX_DELAY     'd' /**< ``'d'`` character == 0x64; set TX delay / PTT delay / Turn On Delay [ms]. Formerly known as TOD (Turn On Delay). */
+#define CWDAEMON_ESC_REQUEST_BAND_SWITCH  'e' /**< ``'e'`` character == 0x65; set band switch output pins 2,7,8,9 on lpt. Formerly known as SWITCH. */
+#define CWDAEMON_ESC_REQUEST_SOUND_SYSTEM 'f' /**< ``'f'`` character == 0x66; set sound system (Null/OSS/ALSA/PulseAudio). Formerly known as SDEVICE. */
+#define CWDAEMON_ESC_REQUEST_VOLUME       'g' /**< ``'g'`` character == 0x67; set volume of sound [%]. */
+#define CWDAEMON_ESC_REQUEST_REPLY        'h' /**< ``'h'`` character == 0x68; specify reply to be sent by cwdaemon after playing text. */
+
+
+
+
 typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);

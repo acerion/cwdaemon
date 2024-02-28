@@ -62,9 +62,10 @@ Escaped request: N/A
 
 
 .TP
-\fBSet hardware keying device\fR
+\fBUse hardware keying device (cw device) specified by device's name\fR
+
 .IP
-Command line option: -d, --cwdevice <device>
+Command line option: -d, --cwdevice <device name>
 
 .IP
 Example command line: cwdaemon --cwdevice ttyS0
@@ -72,12 +73,14 @@ Example command line: cwdaemon --cwdevice ttyS0
 Example command line: cwdaemon -d /dev/ttyUSB0
 
 .IP
-Escaped request: <ESC>8<device>
+Escaped request: <ESC>8<device name>
 
 .IP
-See chapter "DEVICES" below for more information.
+You can specify the device either by device's name (then cwdaemon will look
+for the device in /dev dir) or by full path to the device.
 
-
+.IP
+See chapter "KEYING DEVICES" below for more information.
 
 .TP
 \fBDon't fork daemon, run in foreground\fR
@@ -169,7 +172,7 @@ Escaped request: <ESC>2<speed>
 
 
 .TP
-\fBSet PTT delay [ms] (TOD, Turn On Delay)\fR
+\fBSet PTT delay [ms] (TOD, Turn On Delay, TX delay)\fR
 .IP
 Command line option: -t, --pttdelay <delay>
 
@@ -179,7 +182,7 @@ Escaped request: <ESC>d<delay>
 
 
 .TP
-\fBTurn PTT keying on/off\fR
+\fBSet state of PTT pin\fR
 .IP
 Command line option: N/A
 
@@ -325,7 +328,7 @@ Escaped request: <ESC>4
 
 
 .TP
-\fBExit (close) daemon\fR
+\fBExit (close) cwdaemon\fR
 .IP
 Command line option: N/A
 
@@ -367,8 +370,9 @@ Command line option: N/A
 Escaped request: <ESC>c<seconds>
 
 .IP
-Tune for <seconds> seconds. The tuning is performed by both selected
-sound system, and by current hardware keying device.
+Tune for <seconds> seconds. This function does two things: plays continuous
+wave using current sound system, and holds down (closed / 1) the 'key' pin of
+keying device.
 
 
 
@@ -381,12 +385,12 @@ Command line option: N/A
 Escaped request: <ESC>e<value>
 
 .IP
-This option sets band switch output on parport bits 9 (MSB), 8, 7, 2 (LSB).
+This option sets state of pins of lpt port: pin 9 (MSB), 8, 7, 2 (LSB).
 
 
 
 
-.SH DEVICES
+.SH KEYING DEVICES
 Any serial device that supports getting and setting the modem
 control lines can be used.  On Linux, ttyS0, ttyS1, etc. will
 work.  On FreeBSD these devices are known as ttyd0, ttyd1, etc.
