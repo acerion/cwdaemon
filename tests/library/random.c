@@ -1,6 +1,6 @@
 /*
  * random.c - randomization functions for cwdaemon
- * Copyright (C) 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2023 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -122,6 +122,19 @@ int cwdaemon_random_bool(bool * result)
 	}
 
 	*result = uint % 2;
+	return 0;
+}
+
+
+
+
+int cwdaemon_random_biased_bool(unsigned int bias, bool * result)
+{
+	unsigned int b = 0;
+	if (0 != cwdaemon_random_uint(0, bias, &b)) {
+		return -1;
+	}
+	*result = 0 == b;
 	return 0;
 }
 

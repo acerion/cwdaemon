@@ -13,6 +13,7 @@ if FUNCTIONAL_TESTS
 
 SUBDIRS += library
 SUBDIRS += functional_tests
+SUBDIRS += fuzzing
 
 # These unit tests are for code that is used only in functional tests.
 TESTS += unit_tests/tests_random
@@ -30,6 +31,9 @@ TESTS += functional_tests/automatic/reset_register_callback/test_program
 TESTS += functional_tests/automatic/request_caret/test_program
 TESTS += functional_tests/automatic/request_esc_5/test_program
 TESTS += functional_tests/automatic/request_esc_h/test_program
+
+# We don't run fuzzing tests on "make check".
+# TESTS += fuzzing/simple/test_program
 
 endif
 

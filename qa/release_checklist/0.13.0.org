@@ -61,7 +61,7 @@ easy to use in repeatable manner.
 Use them at least once in this release. In this release we don't need to
 cover 100% of code, but let's make a start.
 
-*** TODO Basic tests with fuzzing of network socket
+*** STARTED Basic tests with fuzzing of network socket
 
 Define scenarios, scripts, procedures needed to cover with fuzzing - in the
 long run - all code paths related to network socket. The scenarios, scripts

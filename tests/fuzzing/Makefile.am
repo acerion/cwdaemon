@@ -1,0 +1,3 @@
+.PHONY: check
+
+SUBDIRS = simple

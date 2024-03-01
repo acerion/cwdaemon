@@ -87,7 +87,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@FUNCTIONAL_TESTS_TRUE@am__append_1 = library functional_tests
+@FUNCTIONAL_TESTS_TRUE@am__append_1 = library functional_tests fuzzing
 
 # These unit tests are for code that is used only in functional tests.
 
@@ -371,7 +371,7 @@ TEST_LOGS = $(am__test_logs2:.test.log=.log)
 TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
-DIST_SUBDIRS = unit_tests library functional_tests
+DIST_SUBDIRS = unit_tests library functional_tests fuzzing
 am__DIST_COMMON = $(srcdir)/Makefile.in $(top_srcdir)/mkinstalldirs \
 	$(top_srcdir)/test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -1077,6 +1077,9 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 .PHONY: check
+
+# We don't run fuzzing tests on "make check".
+# TESTS += fuzzing/simple/test_program
 
 @ENABLE_GCOV_TRUE@gcov:
 @ENABLE_GCOV_TRUE@	@echo "Coverage: creating dir for reports"
