@@ -183,7 +183,7 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 		return -1;
 	}
 
-	static char port_buf[16] = { 0 };
+	static char port_buf[PORT_BUF_SIZE] = { 0 }; /* This must be static because the string will be shared with caller. */
 	snprintf(port_buf, sizeof (port_buf), "%d", *port);
 	if (use_long_opt) {
 		argv[(*argc)++] = "--port";
@@ -280,7 +280,7 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 			argv[argc++] = "-d";
 			argv[argc++] = opts->cwdevice_name;
 		}
-		char wpm_buf[16] = { 0 };
+		char wpm_buf[WPM_BUF_SIZE] = { 0 };
 		if (opts->wpm) {
 			snprintf(wpm_buf, sizeof (wpm_buf), "%d", opts->wpm);
 			argv[argc++] = "-s";

@@ -57,6 +57,7 @@
 #include "cw_easy_receiver.h"
 #include "cwdevice_observer_serial.h"
 #include "log.h"
+#include "test_defines.h"
 
 
 
@@ -99,7 +100,7 @@ bool cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 	errno = 0;
 	int fd = open(observer->source_path, O_RDONLY);
 	if (fd == -1) {
-		char buf[32] = { 0 };
+		char buf[ERRNO_BUF_SIZE] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
 		test_log_err("cwdevice observer: open(%s): %s / %d\n", observer->source_path, b, errno);
 		return false;
@@ -128,7 +129,7 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 	unsigned int value = 0;
 	int status = ioctl(fd, TIOCMGET, &value);
 	if (status != 0) {
-		char buf[32] = { 0 };
+		char buf[ERRNO_BUF_SIZE] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
 		test_log_err("cwdevice observer: ioctl(TIOCMGET): %s / %d\n", b, errno);
 		return false;

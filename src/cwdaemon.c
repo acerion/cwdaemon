@@ -188,7 +188,6 @@
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
 #define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
 
-#define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
 #define CWDAEMON_TUNE_SECONDS_MAX  10 /* Maximal time of tuning. TODO: why the limitation to 10 s? Is it enough? */
@@ -911,8 +910,7 @@ int cwdaemon_receive(void)
 	request_buffer[recv_rc] = '\0';
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
-	/* TODO: replace the magic number 27 with constant. */
-	if (request_buffer[0] != 27) {
+	if (request_buffer[0] != ASCII_ESC) {
 		/* No ESCAPE. All received data should be treated
 		   as text to be sent using Morse code.
 

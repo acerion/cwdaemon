@@ -70,8 +70,6 @@ void events_print(const events_t * events)
 	const size_t n_events = sizeof (events->events) / sizeof (events->events[0]);
 	for (size_t e = 0; e < n_events; e++) {
 
-		char escaped[64] = { 0 };
-
 		const event_t * event = &events->events[e];
 
 		if (event->event_type == event_type_none) {
@@ -92,10 +90,13 @@ void events_print(const events_t * events)
 			               event->u.morse_receive.string);
 			break;
 		case event_type_client_socket_receive:
-			test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
-			               e,
-			               diff.tv_sec, diff.tv_nsec,
-			               escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
+			{
+				char escaped[ESCAPED_BUFFER_SIZE(sizeof (event->u.socket_receive.string))] = { 0 };
+				test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
+				               e,
+				               diff.tv_sec, diff.tv_nsec,
+				               escape_string(event->u.socket_receive.string, escaped, sizeof (escaped)));
+			}
 			break;
 		case event_type_sigchld:
 			test_log_debug("Test: event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",

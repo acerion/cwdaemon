@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include "misc.h"
+#include "test_defines.h"
 
 
 
@@ -24,14 +25,14 @@ typedef enum {
 
 
 typedef struct {
-	char string[64];
+	char string[MORSE_RECV_BUFFER_SIZE];
 } event_morse_receive_t;
 
 
 
 
 typedef struct {
-	char string[64];
+	char string[CLIENT_RECV_BUFFER_SIZE];
 } event_client_socket_receive_t;
 
 
@@ -58,8 +59,9 @@ typedef struct {
 
 
 
+#define EVENTS_MAX 20
 typedef struct {
-	event_t events[20];
+	event_t events[EVENTS_MAX];
 	int event_idx;          /**< Indicates first non-occupied slot in events[]. */
 	pthread_mutex_t mutex;
 } events_t;

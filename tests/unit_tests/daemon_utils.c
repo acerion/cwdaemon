@@ -36,6 +36,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/param.h>
 
 #include "src/utils.h"
 
@@ -86,7 +87,7 @@ int main(void)
 */
 static int test_build_full_device_path_success(void)
 {
-	char buffer[128] = { 0 };
+	char buffer[MAXPATHLEN] = { 0 };
 
 	/*
 	  All these cases are valid cases. Tested function should succeed in

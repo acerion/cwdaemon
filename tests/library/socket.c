@@ -55,6 +55,7 @@
 
 #include "log.h"
 #include "socket.h"
+#include "test_defines.h"
 
 
 
@@ -71,7 +72,7 @@ int open_socket_to_server(const char * server_ip_address, in_port_t server_in_po
 	hints.ai_protocol = IPPROTO_UDP;
 
 	struct addrinfo * result = NULL;
-	char port_buf[16] = { 0 };
+	char port_buf[PORT_BUF_SIZE] = { 0 };
 	snprintf(port_buf, sizeof (port_buf), "%d", server_in_port);
 	int rv = getaddrinfo(server_ip_address, port_buf, &hints, &result);
 	if (rv) {

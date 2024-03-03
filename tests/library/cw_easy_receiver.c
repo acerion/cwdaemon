@@ -34,6 +34,11 @@
 
 
 
+#define NANOSECS_PER_MICROSEC 1000
+
+
+
+
 cw_easy_receiver_t * cw_easy_receiver_new(void)
 {
 	return (cw_easy_receiver_t *) calloc(1, sizeof (cw_easy_receiver_t));
@@ -73,7 +78,7 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
-	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+	easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
 
 	// fprintf(stdout, "[II] Easy receiver: time on S-key [%s] event: %10ld.%09ld\n", is_down ? "down" : " up ", ts.tv_sec, ts.tv_nsec);
 
@@ -103,7 +108,7 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
 		struct timespec ts = { 0 };
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
-		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+		easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
 
 		// fprintf(stdout, "[II] Easy receiver: time on L-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
@@ -135,7 +140,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 		struct timespec ts = { 0 };
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		easy_rec->main_timer.tv_sec  = ts.tv_sec;
-		easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+		easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
 
 		// fprintf(stdout, "[II] Easy receiver: time on R-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 	}
@@ -265,7 +270,7 @@ void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
-	easy_rec->main_timer.tv_usec = ts.tv_nsec / 1000;
+	easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
 
 	// fprintf(stdout, "[II] Easy receiver: time on aux config: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 }
@@ -364,7 +369,7 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 	   interfere with recognizing dots and dashes. */
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
+	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC };
 
 	// fprintf(stdout, "[II] Easy receiver: poll char:                  %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 
@@ -447,7 +452,7 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 	   timer. */
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / 1000 };
+	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC };
 
 	// fprintf(stdout, "[II] Easy receiver: poll space:                 %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 

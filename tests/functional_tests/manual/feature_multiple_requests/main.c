@@ -70,8 +70,18 @@
 typedef struct test_case_t {
 	const char * description;            /** Human-readable description of the test. */
 	bool caret;                          /**< Whether client should send caret request. If not, then client should send <ESC>h request. */
-	char full_message[64];               /** Full text of message to be played by cwdaemon. */
-	char requested_reply_value[64];      /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
+
+	/**
+	   Full text of message to be played by cwdaemon.
+	*/
+	char full_message[CLIENT_SEND_BUFFER_SIZE];
+
+
+	/**
+	   What is being sent to cwdaemon server as expected value of reply.
+	   (without leading 'h').
+	*/
+	char requested_reply_value[CLIENT_SEND_BUFFER_SIZE - 1];
 } test_case_t;
 
 
@@ -182,7 +192,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 {
 	bool failure = false;
 
-	int wpm = 10;
+	int wpm = TEST_WPM_DEFAULT;
 
 	int c = 0;
 	g_test_cases[c].caret = false;
@@ -223,7 +233,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 		failure = true;
 	}
 #endif
-	server->l4_port = 6789;
+	server->l4_port = CWDAEMON_NETWORK_PORT_DEFAULT;
 	snprintf(server->ip_address, sizeof (server->ip_address), "127.0.0.1");
 
 

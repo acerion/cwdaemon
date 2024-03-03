@@ -16,6 +16,7 @@
 #include <src/cwdaemon.h>
 
 #include "events.h"
+#include "test_defines.h"
 #include "thread.h"
 
 
@@ -23,7 +24,7 @@
 
 typedef struct client_t {
 	int sock;                 /**< Network socket used by client to communicate with server. */
-	char reply_buffer[64];    /**< Buffer for receiving replies from server. */
+	char reply_buffer[CLIENT_RECV_BUFFER_SIZE];    /**< Buffer for receiving replies from server. */
 
 	thread_t socket_receiver_thread;
 

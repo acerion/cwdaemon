@@ -180,7 +180,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 	/* Try receiving preconfigured reply. Receiving it means that there
 	   is a process on the other side of socket that behaves like
 	   cwdaemon. */
-	char recv_buf[32] = { 0 };
+	char recv_buf[CLIENT_RECV_BUFFER_SIZE] = { 0 };
 	const ssize_t r = recv(socket, recv_buf, sizeof (recv_buf), 0);
 	close(socket);
 

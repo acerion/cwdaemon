@@ -58,7 +58,10 @@
 #define MICROPHONE 0
 #define SOUNDCARD 1
 
-#define MAX_DEVICE 20
+
+/** ASCII character ESC (escape). */
+#define ASCII_ESC 27
+
 
 /* Notice that the range accepted by cwdaemon is different than that
    accepted by libcw. */
@@ -83,6 +86,7 @@
 #define CWDAEMON_PTT_DELAY_MAX                 50 /* [ms] */
 
 
+#define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
 
 
 /*

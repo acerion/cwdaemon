@@ -70,7 +70,20 @@
 
 
 
-#define VALUE_BUFFER_SIZE 400
+/**
+   A value of escaped request is an array that does not include <ESC>, or
+   escaped request code.
+*/
+#define ESC_REQ_VALUE_BUFFER_SIZE (CLIENT_SEND_BUFFER_SIZE - 1 - 1)
+
+
+
+
+/**
+   Size of buffer for a value of plain message or caret message.
+*/
+#define MESSAGE_VALUE_BUFFER_SIZE (CLIENT_SEND_BUFFER_SIZE)
+
 
 
 
@@ -112,7 +125,7 @@ static const test_case_t g_test_cases[] = {
 	{ .description = "esc request - speed",           .fn = test_fn_esc_speed           }, // CWDAEMON_ESC_REQUEST_SPEED
 	{ .description = "esc request - tone",            .fn = test_fn_esc_tone            }, // CWDAEMON_ESC_REQUEST_TONE
 	{ .description = "esc request - abort",           .fn = test_fn_esc_abort           }, // CWDAEMON_ESC_REQUEST_ABORT
-	{ .description = "esc request - exit",            /* .fn = test_fn_esc_exit */      }, // CWDAEMON_ESC_REQUEST_EXIT 
+	{ .description = "esc request - exit",            /* .fn = test_fn_esc_exit */      }, // CWDAEMON_ESC_REQUEST_EXIT
 	{ .description = "esc request - word mode",       .fn = test_fn_esc_word_mode       }, // CWDAEMON_ESC_REQUEST_WORD_MODE
 	{ .description = "esc request - weighting",       .fn = test_fn_esc_weight          }, // CWDAEMON_ESC_REQUEST_WEIGHTING
 	{ .description = "esc request - cwdevice",        .fn = test_fn_esc_cwdevice        }, // CWDAEMON_ESC_REQUEST_CWDEVICE
@@ -521,7 +534,7 @@ static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_re
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -544,7 +557,7 @@ static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_re
 
 static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), CW_SPEED_MIN, CW_SPEED_MAX);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -567,7 +580,7 @@ static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_re
 
 static int test_fn_esc_tone(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -595,7 +608,7 @@ static int test_fn_esc_abort(client_t * client, __attribute__((unused)) morse_re
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -624,7 +637,7 @@ __attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribu
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -647,7 +660,7 @@ __attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribu
 
 static int test_fn_esc_word_mode(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_boolean(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -670,7 +683,7 @@ static int test_fn_esc_word_mode(client_t * client, __attribute__((unused)) mors
 
 static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), 0, CWDAEMON_MORSE_WEIGHTING_MAX); /* TODO: lower range (the 3rd arg) should be CWDAEMON_MORSE_WEIGHTING_MIN. */
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -697,7 +710,7 @@ static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_r
  */
 static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -719,7 +732,7 @@ static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) morse
 
 static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -742,7 +755,7 @@ static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_rec
 
 static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_boolean(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -765,7 +778,7 @@ static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) mors
 
 static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), 0, 1);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -788,7 +801,7 @@ static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_
 
 static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -811,7 +824,7 @@ static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse
 
 static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), 0, 10); /* TODO acerion 2024.03.01: replace magic values with constants. */
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -834,7 +847,7 @@ static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_rec
 
 static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), 0, INT_MAX); /* TODO acerion 2024.03.01: use correct values to specify range of valid values. */
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -861,7 +874,7 @@ static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) mo
  */
 static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -884,7 +897,7 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) m
 
 static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_int(value, sizeof (value), CW_VOLUME_MIN, CW_VOLUME_MAX);
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");
@@ -907,7 +920,7 @@ static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_r
 static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	{
-		char requested_reply[VALUE_BUFFER_SIZE] = { 0 };
+		char requested_reply[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
 		const int value_size = get_value_string_string(requested_reply, sizeof (requested_reply));
 		if (value_size < 0) {
 			test_log_err("Test: failed to generate value string %s\n", "");
@@ -922,7 +935,7 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_re
 	}
 
 	{
-		char message[VALUE_BUFFER_SIZE] = { 0 };
+		char message[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
 		const int value_size = get_value_string_string(message, sizeof (message));
 		if (value_size < 0) {
 			test_log_err("Test: failed to generate value string %s\n", "");
@@ -950,7 +963,7 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_re
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
 static int test_fn_plain_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to generate value string %s\n", "");
@@ -975,7 +988,7 @@ static int test_fn_plain_message(client_t * client, __attribute__((unused)) mors
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
 static int test_fn_caret_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[VALUE_BUFFER_SIZE] = { 0 };
+	char value[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
 	const int value_size = get_value_string_string(value, sizeof (value));
 	if (value_size < 0) {
 		test_log_err("Test: failed to get generate value string %s\n", "");

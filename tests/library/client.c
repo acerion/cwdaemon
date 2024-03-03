@@ -68,7 +68,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg);
 
 int client_send_esc_request_va(client_t * client, int request, const char * format, ...)
 {
-	char buffer[1024] = { 0 };
+	char buffer[CLIENT_SEND_BUFFER_SIZE] = { 0 };
 	va_list ap;
 
 	va_start(ap, format);
@@ -84,7 +84,7 @@ int client_send_esc_request_va(client_t * client, int request, const char * form
 int client_send_esc_request(client_t * client, int request, const char * bytes, size_t n_bytes)
 {
 	/* This buffer will store opaque data, so we don't have to think whether there is space for terminating NUL. */
-	char buf[800] = { 0 };
+	char buf[CLIENT_SEND_BUFFER_SIZE] = { 0 };
 
 	size_t n_bytes_to_send = 0; /* Total count of bytes to send over network socket. */
 	int i = 0;
@@ -106,7 +106,7 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 	case CWDAEMON_ESC_REQUEST_SOUND_SYSTEM:
 	case CWDAEMON_ESC_REQUEST_VOLUME:
 	case CWDAEMON_ESC_REQUEST_REPLY:
-		buf[i++] = 27;
+		buf[i++] = ASCII_ESC;
 		buf[i++] = (char) request;
 		/*
 		  Some of the escaped requests don't require a value, but we always
@@ -199,7 +199,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 			}
 			const ssize_t r = recv(descriptor.fd, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
 			if (-1 != r) {
-				char escaped[64] = { 0 };
+				char escaped[ESCAPED_BUFFER_SIZE(sizeof (client->reply_buffer))] = { 0 };
 				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
 				events_insert_socket_receive_event(client->events, client->reply_buffer);
 			}

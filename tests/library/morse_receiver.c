@@ -186,7 +186,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	/* FIXME acerion 2024.09.11: the code that inserts received chars into
 	   the buffer doesn't check if there is enough space left in the
 	   buffer. */
-	char buffer[32] = { 0 };
+	char buffer[MORSE_RECV_BUFFER_SIZE] = { 0 };
 	int buffer_i = 0;
 
 	/*
