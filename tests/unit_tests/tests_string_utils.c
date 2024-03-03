@@ -41,13 +41,13 @@
 
 
 
-static int test_escape_string(void);
+static int test_get_printable_string(void);
 
 
 
 
 static int (*tests[])(void) = {
-	test_escape_string,
+	test_get_printable_string,
 	NULL
 };
 
@@ -72,10 +72,10 @@ int main(void)
 
 
 
-/* TODO acerion 2024.02.18: add test cases that would result in escaped
+/* TODO acerion 2024.02.18: add test cases that would result in printable
    string that is larger than output buffer passes as an arg to tested
    function. */
-static int test_escape_string(void)
+static int test_get_printable_string(void)
 {
 #define OUTPUT_SIZE 55
 	/*
@@ -87,7 +87,7 @@ static int test_escape_string(void)
 		const char input[32];
 		const char expected_output[OUTPUT_SIZE];
 	} test_data[] = {
-		/* String that doesn't need escaping. */
+		/* String that doesn't contain non-printable characters. */
 		{ .input = "",            .expected_output = ""            },
 		{ .input = "Hello_WORLD", .expected_output = "Hello_WORLD" },
 
@@ -108,8 +108,9 @@ static int test_escape_string(void)
 		/* Mix of \r, \n, -1 and other non-printable chars. Plus some printable. */
 		{ .input = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' },  .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A"  },
 
-		/* Properly escaped input string would not fit into output buffer, so
-		   escaping function may add '#' at end of output. */
+		/* Input string fully converted into printable form would not fit
+		   into output buffer, so "get printable" function may add '#' at end
+		   of output. */
 		{ .input           = {     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,  '\0' },
 		  .expected_output =   "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"
 		},
@@ -124,15 +125,15 @@ static int test_escape_string(void)
 	const size_t n_tests = sizeof (test_data) / sizeof (test_data[0]);
 	for (size_t i = 0; i < n_tests; i++) {
 		char output[OUTPUT_SIZE] = { 0 };
-		escape_string(test_data[i].input, output, sizeof (output));
+		get_printable_string(test_data[i].input, output, sizeof (output));
 		if (0 != memcmp(test_data[i].expected_output, output, OUTPUT_SIZE)) {
-			test_log_err("Test: test case #%02zu / %02zu fails, escape_string() gives wrong return value [%s], expected [%s]\n",
+			test_log_err("Test: test case #%02zu / %02zu fails, get_printable_string() gives wrong return value [%s], expected [%s]\n",
 			             i + 1, n_tests,
 			             output,
 			             test_data[i].expected_output);
 			return -1;
 		}
-		test_log_debug("Test: test case #%02zu / %02zu passes, escaped string is [%s]\n",
+		test_log_debug("Test: test case #%02zu / %02zu passes, printable string is [%s]\n",
 		               i + 1, n_tests, output);
 	}
 

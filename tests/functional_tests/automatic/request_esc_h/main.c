@@ -322,19 +322,19 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		char expected_raw[64] = { 0 };
 		snprintf(expected_raw, sizeof (expected_raw), "h%s\r\n", test_case->requested_reply_value);
 
-		char escaped_expected[64] = { 0 };
-		char escaped_actual[64] = { 0 };
-		escape_string(expected_raw, escaped_expected, sizeof (escaped_expected));
-		escape_string(actual_raw, escaped_actual, sizeof (escaped_actual));
+		char printable_expected[64] = { 0 };
+		char printable_actual[64] = { 0 };
+		get_printable_string(expected_raw, printable_expected, sizeof (printable_expected));
+		get_printable_string(actual_raw, printable_actual, sizeof (printable_actual));
 
 		if (0 != strcmp(expected_raw, actual_raw)) {
 			test_log_err("Expectation 5: received incorrect message in socket reply: expected [%s], received [%s]\n",
-			             escaped_expected, escaped_actual);
+			             printable_expected, printable_actual);
 			return -1;
 		}
 
 		test_log_info("Expectation 5: received correct message in socket reply: expected [%s], received [%s]\n",
-		              escaped_expected, escaped_actual);
+		              printable_expected, printable_actual);
 	}
 
 

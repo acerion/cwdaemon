@@ -33,14 +33,14 @@
    non-printable bytes are represented by printable representations.
 
    The argument to this macro is the size of buffer containing the binary
-   data, for which you want to get escaped representation.
+   data, for which you want to get printable representation.
 
    Most of non-printable bytes are represented by "{0xXY}" string, i.e. by 6
    bytes.
 
-   '\r' and '\n' are represented by "{CR}" and "{LF}, respectively.
+   '\r' and '\n' are represented by "{CR}" and "{LF}", respectively.
 */
-#define ESCAPED_BUFFER_SIZE(_non_escaped_size_)  (1 + (6 * (_non_escaped_size_)))
+#define PRINTABLE_BUFFER_SIZE(_input_buffer_size_)  (1 + (6 * (_input_buffer_size_)))
 
 
 

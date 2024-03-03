@@ -47,12 +47,12 @@
 
 
 /*
-  Function uses '{' and '}' characters to enclose escaped characters because
-  these two characters aren't in a set of Morse code characters. This means
-  that they can't be easily mistaken with valid characters processed during
-  regular tests.
+  Function uses '{' and '}' characters to enclose printable representations
+  of characters because these two characters aren't in a set of Morse code
+  characters. This means that they can't be easily mistaken with valid
+  characters processed during regular tests.
 */
-char * escape_string(const char * buffer, char * escaped, size_t size)
+char * get_printable_string(const char * buffer, char * printable, size_t size)
 {
 	/* TODO: acerion: add better control of indexes: check if printing to
 	   output buffer doesn't go beyond buffer boundary. */
@@ -62,7 +62,7 @@ char * escape_string(const char * buffer, char * escaped, size_t size)
 		const char character = buffer[i];
 		if (isprint((unsigned char) character)) {
 			if (e_idx < size - 1) {
-				escaped[e_idx++] = character;
+				printable[e_idx++] = character;
 			} else {
 				goto L_NO_SPACE;
 			}
@@ -70,27 +70,27 @@ char * escape_string(const char * buffer, char * escaped, size_t size)
 			switch (character) {
 			case '\r':
 				if (e_idx < size - 4) {
-					escaped[e_idx++] = '{';
-					escaped[e_idx++] = 'C';
-					escaped[e_idx++] = 'R';
-					escaped[e_idx++] = '}';
+					printable[e_idx++] = '{';
+					printable[e_idx++] = 'C';
+					printable[e_idx++] = 'R';
+					printable[e_idx++] = '}';
 				} else {
 					goto L_NO_SPACE;
 				}
 				break;
 			case '\n':
 				if (e_idx < size - 4) {
-					escaped[e_idx++] = '{';
-					escaped[e_idx++] = 'L';
-					escaped[e_idx++] = 'F';
-					escaped[e_idx++] = '}';
+					printable[e_idx++] = '{';
+					printable[e_idx++] = 'L';
+					printable[e_idx++] = 'F';
+					printable[e_idx++] = '}';
 				} else {
 					goto L_NO_SPACE;
 				}
 				break;
 			default:
 				if (e_idx < size - 6) {
-					e_idx += snprintf(escaped + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);
+					e_idx += snprintf(printable + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);
 				} else {
 					goto L_NO_SPACE;
 				}
@@ -99,15 +99,15 @@ char * escape_string(const char * buffer, char * escaped, size_t size)
 		}
 	}
 
-	escaped[e_idx] = '\0';
-	return escaped;
+	printable[e_idx] = '\0';
+	return printable;
 
  L_NO_SPACE:
 	for (; e_idx < size - 1; e_idx++) {
-		escaped[e_idx] = '#';
+		printable[e_idx] = '#';
 	}
-	escaped[size - 1] = '\0';
-	return escaped;
+	printable[size - 1] = '\0';
+	return printable;
 }
 
 

@@ -10,17 +10,17 @@
 
 
 /**
-   Replace escaped characters with their un-escaped representations
+   Replace non-printable characters with their printable representations
 
-   A copy of @buffer with expanded characters is placed in @p escaped
+   A copy of @buffer with printable characters is placed in @p printable
 
    @param[in] buffer Input string
-   @param[out] escaped Preallocated output string
-   @param[in] size Size of @p escaped buffer
+   @param[out] printable Preallocated output string
+   @param[in] size Size of @p printable buffer
 
-   @return @p escaped
+   @return @p printable
 */
-char * escape_string(const char * buffer, char * escaped, size_t size);
+char * get_printable_string(const char * buffer, char * printable, size_t size);
 
 
 

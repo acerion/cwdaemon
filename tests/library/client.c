@@ -199,8 +199,8 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 			}
 			const ssize_t r = recv(descriptor.fd, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
 			if (-1 != r) {
-				char escaped[ESCAPED_BUFFER_SIZE(sizeof (client->reply_buffer))] = { 0 };
-				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", escape_string(client->reply_buffer, escaped, sizeof (escaped)));
+				char printable[PRINTABLE_BUFFER_SIZE(sizeof (client->reply_buffer))] = { 0 };
+				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", get_printable_string(client->reply_buffer, printable, sizeof (printable)));
 				events_insert_socket_receive_event(client->events, client->reply_buffer);
 			}
 		} else {

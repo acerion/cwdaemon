@@ -363,18 +363,18 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	  reply.
 	*/
 	const char * full_expected = test_case->full_expected_socket_reply;
-	char escaped_expected[64] = { 0 };
-	escape_string(full_expected, escaped_expected, sizeof (escaped_expected));
+	char printable_expected[64] = { 0 };
+	get_printable_string(full_expected, printable_expected, sizeof (printable_expected));
 
 	const char * full_received = socket_event->u.socket_receive.string;
-	char escaped_received[64] = { 0 };
-	escape_string(full_received, escaped_received, sizeof (escaped_received));
+	char printable_received[64] = { 0 };
+	get_printable_string(full_received, printable_received, sizeof (printable_received));
 
 	if (0 != strcmp(full_received, full_expected)) {
-		test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", escaped_received, escaped_expected);
+		test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", printable_received, printable_expected);
 		return -1;
 	}
-	test_log_info("Expectation 4: received socket reply [%s] matches expected reply [%s]\n", escaped_received, escaped_expected);
+	test_log_info("Expectation 4: received socket reply [%s] matches expected reply [%s]\n", printable_received, printable_expected);
 
 
 
