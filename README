@@ -282,9 +282,8 @@ Cwdaemon parallel and serial port circuitry
 See the examples in the schematics directory.
 
 
-Tests and examples
+Examples
 ------------------
-Test scripts in Perl are located in tests/ directory.
 Example programs are located in examples/ directory.
 
 
