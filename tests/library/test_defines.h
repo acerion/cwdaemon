@@ -96,8 +96,15 @@
 
 /* Lower and upper limit of Morse code speeds used in functional tests. */
 #define TEST_WPM_MIN 10
-#define TEST_WPM_MAX 15
+#define TEST_WPM_MAX 20 /* At 25 we start to have receive errors. */
 #define TEST_WPM_DEFAULT 10
+
+
+
+
+/* For long-running tests select a tone that is easy on ears, i.e. not too
+   high. */
+#define TEST_TONE_EASY 600
 
 
 

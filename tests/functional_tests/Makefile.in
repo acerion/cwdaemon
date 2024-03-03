@@ -606,6 +606,7 @@ uninstall-am:
 	automatic/request_caret.dummy                 \
 	automatic/request_esc_5.dummy                 \
 	automatic/request_esc_h.dummy                 \
+	automatic/request_plain.dummy                 \
 	automatic/reset_register_callback.dummy
 
 # Target for building coverage report for functional tests.
@@ -615,6 +616,7 @@ uninstall-am:
 @ENABLE_GCOV_TRUE@	make automatic/request_caret.gcov
 @ENABLE_GCOV_TRUE@	make automatic/request_esc_5.gcov
 @ENABLE_GCOV_TRUE@	make automatic/request_esc_h.gcov
+@ENABLE_GCOV_TRUE@	make automatic/request_plain.gcov
 @ENABLE_GCOV_TRUE@	make automatic/reset_register_callback.gcov
 @ENABLE_GCOV_TRUE@.dummy.gcov: gcov_clean_old_artifacts
 # Be careful to not remove entire OUTPUT_DIR, in which reports of other tests

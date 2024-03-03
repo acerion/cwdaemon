@@ -33,7 +33,8 @@ void cwdaemon_debug_close(void);
 */
 void log_message(int priority, const char * format, ...) __attribute__ ((format (printf, 2, 3)));
 
-#define log_info(format, ...)      log_message(LOG_INFO, format, __VA_ARGS__)
+#define log_info(format, ...)       log_message(LOG_INFO, format, __VA_ARGS__)
+#define log_debug(format, ...)      log_message(LOG_DEBUG, format, __VA_ARGS__)
 
 
 

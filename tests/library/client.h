@@ -88,6 +88,10 @@ int client_send_esc_request_va(client_t * client, int request, const char * form
    string. Even if caller passes a string to the function, the function
    treats @p bytes as opaque array of some bytes.
 
+   @param client cwdaemon client
+   @param[in] bytes Array of bytes to be sent over socket
+   @param[in] n_bytes Count of bytes in @p bytes to be sent over socket
+
    @return 0 on successful sending of data
    @return -1 otherwise
 */

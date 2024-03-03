@@ -146,14 +146,14 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 
    \param cwdaemon cwdaemon instance
    \param request buffer for received request
-   \param size size of the buffer
+   \param[in] size size of the buffer
 
    \return -2 if peer has performed an orderly shutdown
    \return -1 if an error occurred during call to recvfrom
    \return  0 if no request has been received
    \return length of received request otherwise
  */
-ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
+ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, size_t size)
 {
 	ssize_t recv_rc = recvfrom(cwdaemon->socket_descriptor,
 				   request,
@@ -183,6 +183,16 @@ ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, int size)
 	} else {
 		; /* pass */
 	}
+
+#if 1 /* Just for debug. */
+	/* Potential lack of terminating NUL is not an error of client, this is
+	   just a fact that we have to deal with. cwdaemon should be able to
+	   safely handle array of arbitrary bytes that is not terminated with
+	   NUL. */
+	const bool terminating_nul = request[recv_rc - 1] == '\0';
+	log_debug("received %zd / %zu bytes, terminating NUL %s found",
+	          recv_rc, size, terminating_nul ? "is" : "is not");
+#endif
 
 	/* Remove CRLF if present. TCP buffer may end with '\n', so make
 	   sure that every request is consistently ended with NUL only.
