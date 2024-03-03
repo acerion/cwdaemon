@@ -275,14 +275,10 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info, 
 */
 static int server_setup(server_t * server, const test_case_t * test_case, int * wpm)
 {
-	/* Remember that some receive timeouts in tests were selected when the
-	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
-	   overrunning the timeouts. */
-	cwdaemon_random_uint(10, 15, (unsigned int *) wpm);
-
+	*wpm = test_get_test_wpm();
 
 	const cwdaemon_opts_t cwdaemon_opts = {
-		.tone           = 640,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

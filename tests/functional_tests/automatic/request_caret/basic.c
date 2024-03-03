@@ -363,11 +363,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	  reply.
 	*/
 	const char * full_expected = test_case->full_expected_socket_reply;
-	char printable_expected[64] = { 0 };
+	char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (full_expected))] = { 0 };
 	get_printable_string(full_expected, printable_expected, sizeof (printable_expected));
 
 	const char * full_received = socket_event->u.socket_receive.string;
-	char printable_received[64] = { 0 };
+	char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (full_received))] = { 0 };
 	get_printable_string(full_received, printable_received, sizeof (printable_received));
 
 	if (0 != strcmp(full_received, full_expected)) {
@@ -448,7 +448,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	/* Prepare local test instance of cwdaemon server. */
 	const cwdaemon_opts_t cwdaemon_opts = {
 		//.supervisor_id =  supervisor_id_valgrind,
-		.tone           = 640,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

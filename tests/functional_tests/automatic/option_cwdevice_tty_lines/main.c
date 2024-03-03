@@ -223,7 +223,7 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 
 	/* Prepare local test instance of cwdaemon server. */
 	const cwdaemon_opts_t server_opts = {
-		.tone           = 660,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

@@ -51,9 +51,33 @@ int find_unused_random_biased_local_udp_port(in_port_t * port);
 
    The value is slightly random.
 
+   This function should be used to get a value of speed in tests that DO NOT
+   test cwdaemon's "speed" parameter - in those tests we want to have some
+   valid speed that perhaps varies between tests runs. For tests that do test
+   the speed, you should use more specialized code.
+
    @return Value of Morse code speed to be used in a test
 */
 int test_get_test_wpm(void);
+
+
+
+
+/**
+   Get value of tone (frequency) of sound to be used by tests
+
+   On errors, as a fallback, the function returns some sane default value.
+
+   The value is slightly random.
+
+   This function should be used to get a value of tone in tests that DO NOT
+   test cwdaemon's "tone" parameter - in those tests we want to have some
+   valid tone that perhaps varies between tests runs. For tests that do test
+   the tone, you should use more specialized code.
+
+   @return Value of frequency of sound to be used in a test
+*/
+int test_get_test_tone(void);
 
 
 

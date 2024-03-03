@@ -142,14 +142,16 @@ static int netkeyer_close(int fd)
 
 
 
+#define BUF_SIZE 80
+#define CHAR_ESC 27
 
 static int netkeyer(int fd, int request, const char * value)
 {
-	char buf[80] = { 0 };
+	char buf[BUF_SIZE] = { 0 };
 
 	switch (request) {
 		case K_RESET:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "0");
 			break;
 		case K_MESSAGE:
@@ -158,64 +160,64 @@ static int netkeyer(int fd, int request, const char * value)
 			sprintf(buf, "%s", value);
 			break;
 		case K_SPEED:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "2");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_TONE:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "3");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_ABORT:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "4");
 			break;
 		case K_STOP:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "5");
 			break;
 		case K_WORDMODE:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "6");
 			break;
 		case K_WEIGHT:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "7");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_DEVICE:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "8");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_PTT:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "a");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_TUNE:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "c");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_TOD:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "d");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_SDEVICE:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "f");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_VOLUME:
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "g");
 			sprintf(buf + 2, "%s", value);
 			break;
 		case K_REPLY: /* TODO 2022.01.26: test this. */
-			buf[0] = 27;
+			buf[0] = CHAR_ESC;
 			sprintf(buf + 1, "h");
 			sprintf(buf + 2, "%s", value);
 			break;

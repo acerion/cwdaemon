@@ -319,11 +319,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	{
 		const char * actual_raw = socket_event->u.socket_receive.string;
 
-		char expected_raw[64] = { 0 };
+		char expected_raw[1 + (sizeof (test_case->requested_reply_value)) + 1 + 1] = { 0 };
 		snprintf(expected_raw, sizeof (expected_raw), "h%s\r\n", test_case->requested_reply_value);
 
-		char printable_expected[64] = { 0 };
-		char printable_actual[64] = { 0 };
+		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected_raw))] = { 0 };
+		char printable_actual[PRINTABLE_BUFFER_SIZE(sizeof (actual_raw))] = { 0 };
 		get_printable_string(expected_raw, printable_expected, sizeof (printable_expected));
 		get_printable_string(actual_raw, printable_actual, sizeof (printable_actual));
 
@@ -359,7 +359,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 	/* Prepare local test instance of cwdaemon server. */
 	cwdaemon_opts_t server_opts = {
-		.tone           = 700,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

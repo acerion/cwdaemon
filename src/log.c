@@ -37,6 +37,11 @@
 
 
 
+#define LOG_BUF_SIZE (1024 + 1)
+
+
+
+
 extern bool g_forking;
 extern FILE *cwdaemon_debug_f;
 extern char *cwdaemon_debug_f_path;
@@ -83,10 +88,10 @@ const char * log_get_priority_label(int priority)
 void cwdaemon_errmsg(const char *format, ...)
 {
 	va_list ap;
-	char s[1025];
+	char s[LOG_BUF_SIZE] = { 0 };
 
 	va_start(ap, format);
-	vsnprintf(s, 1024, format, ap);
+	vsnprintf(s, sizeof (s), format, ap);
 	va_end(ap);
 
 	if (g_forking) {
@@ -132,7 +137,7 @@ void log_message(int priority, const char * format, ...)
 	}
 
 	va_list ap;
-	char buf[1024] = { 0 };
+	char buf[LOG_BUF_SIZE] = { 0 };
 	va_start(ap, format);
 	vsnprintf(buf, sizeof (buf), format, ap);
 	va_end(ap);
@@ -178,9 +183,9 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 		 && verbosity <= current_verbosity) {
 
 		va_list ap;
-		char s[1024 + 1];
+		char s[LOG_BUF_SIZE];
 		va_start(ap, format);
-		vsnprintf(s, 1024, format, ap);
+		vsnprintf(s, sizeof (s), format, ap);
 		va_end(ap);
 
 		fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);

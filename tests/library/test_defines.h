@@ -84,6 +84,16 @@
 
 
 
+/**
+   Size of buffer for string representation of tone (frequency).
+
+   Must be big enough to store invalid values
+ */
+#define TONE_BUF_SIZE (sizeof ("some totally invalid value of tone (frequency)"))
+
+
+
+
 /* Lower and upper limit of Morse code speeds used in functional tests. */
 #define TEST_WPM_MIN 10
 #define TEST_WPM_MAX 15

@@ -73,7 +73,7 @@
 static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
-static char g_arg_tone[10] = { 0 };
+static char g_arg_tone[TONE_BUF_SIZE] = { 0 };
 
 
 

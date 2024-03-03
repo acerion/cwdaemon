@@ -222,7 +222,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 #if 0
 	/* Prepare local test instance of cwdaemon server. */
 	cwdaemon_opts_t server_opts = {
-		.tone           = 700,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

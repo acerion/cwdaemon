@@ -215,7 +215,7 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 	const int wpm = test_get_test_wpm();
 
 	const cwdaemon_opts_t cwdaemon_opts = {
-		.tone           = 640,
+		.tone           = test_get_test_tone(),
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,

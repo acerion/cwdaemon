@@ -208,3 +208,22 @@ int test_get_test_wpm(void)
 	return wpm;
 }
 
+
+
+
+int test_get_test_tone(void)
+{
+	/* Set of frequencies with identifiable differences. Values are not too
+	   low, and not to high. */
+	const int frequencies[] = { 600, 630, 660, 690, 720, 750, 780, 810 };
+	const unsigned int lower = 0;
+	const unsigned int upper = (sizeof (frequencies) / sizeof (frequencies[0])) - 1;
+
+	int index = 0;
+	if (0 != cwdaemon_random_uint(lower, upper, (unsigned int *) &index)) {
+		index = 0;
+	}
+
+	return frequencies[index];
+}
+
