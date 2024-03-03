@@ -136,12 +136,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 {
 	bool failure = false;
 
-	int wpm = TEST_WPM_DEFAULT;
-	/* Remember that some receive timeouts in tests were selected when the
-	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
-	   overrunning the timeouts. */
-	cwdaemon_random_uint(TEST_WPM_MIN, TEST_WPM_MAX, (unsigned int *) &wpm);
-
+	const int wpm = test_get_test_wpm();
 
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone               = 630,

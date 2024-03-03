@@ -44,5 +44,19 @@ int find_unused_random_biased_local_udp_port(in_port_t * port);
 
 
 
+/**
+   Get value of Morse code speed to be used by tests
+
+   On errors, as a fallback, the function returns some sane default value.
+
+   The value is slightly random.
+
+   @return Value of Morse code speed to be used in a test
+*/
+int test_get_test_wpm(void);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_MISC_H */
 

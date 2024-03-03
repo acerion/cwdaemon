@@ -36,6 +36,7 @@
 
 
 #include "config.h"
+#include "test_defines.h"
 
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h> /* "struct sockaddr_in" in FreeBSD 13.2 */
@@ -194,4 +195,16 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 
 
 
+int test_get_test_wpm(void)
+{
+	int wpm = 0;
+	/* Remember that some receive timeouts in tests were selected when the
+	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	   overrunning the timeouts. */
+	if (0 != cwdaemon_random_uint(TEST_WPM_MIN, TEST_WPM_MAX, (unsigned int *) &wpm)) {
+		wpm = TEST_WPM_DEFAULT;
+	}
+
+	return wpm;
+}
 

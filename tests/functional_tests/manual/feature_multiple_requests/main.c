@@ -192,7 +192,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 {
 	bool failure = false;
 
-	int wpm = TEST_WPM_DEFAULT;
+	const int wpm = test_get_test_wpm();
 
 	int c = 0;
 	g_test_cases[c].caret = false;

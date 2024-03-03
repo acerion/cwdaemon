@@ -99,7 +99,7 @@ int cwdaemon_random_uint(unsigned int lower, unsigned int upper, unsigned int * 
 	if (0 == div) {
 		/* This may happen if client passes INT_MIN and INT_MAX as lower/upper. */
 		test_log_err("Random: trying to divide by zero (calculated from lower = %u, upper = %u)\n", lower, upper);
-		return 0;
+		return -1;
 	}
 	value %= div;
 	value += lower;
