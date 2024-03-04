@@ -226,13 +226,13 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 				fprintf(stdout, " ");
 				fflush(stdout);
 				buffer[buffer_i++] = ' ';
-				test_log_debug("Morse receiver thread: received ' ', remaining wait dropped to %d\n", remaining_wait_ms);
+				test_log_debug("Morse receiver thread: received char %3d: ' ', remaining wait dropped to %d\n", buffer_i, remaining_wait_ms); /* Log shows 1-based char counter. */
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 			} else if (erd.character) {
 				fprintf(stdout, "%c", erd.character);
 				fflush(stdout);
 				buffer[buffer_i++] = erd.character;
-				test_log_debug("Morse receiver thread: received '%c', remaining wait dropped to %d\n", erd.character, remaining_wait_ms);
+				test_log_debug("Morse receiver thread: received char %3d: '%c', remaining wait dropped to %d\n", buffer_i, erd.character, remaining_wait_ms); /* Log shows 1-based char counter. */
 				remaining_wait_ms = total_wait_ms; /* Reset remaining time. */
 				clock_gettime(CLOCK_MONOTONIC, &last_character_receive_tstamp);
 			} else {
