@@ -46,6 +46,7 @@
 #include <unistd.h>
 
 #include "basic.h"
+#include "request_size.h"
 
 #include "tests/library/log.h"
 #include "tests/library/random.h"
@@ -55,6 +56,7 @@
 
 static int (*g_tests[])(void) = {
 	basic_caret_test,
+	//request_size_caret_test,
 };
 
 
