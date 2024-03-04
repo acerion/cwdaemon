@@ -64,6 +64,7 @@ typedef struct test_case_t {
 	const char full_message[128];            /** Full text of message to be played by cwdaemon. */
 	const char expected_morse_receive[128];  /**< What is expected to be received by Morse code receiver (without ending space). */
 	const char requested_reply_value[128];   /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
+	const socket_receive_data_t expected_socket_reply;
 } test_case_t;
 
 
@@ -76,6 +77,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "",
+	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -84,6 +86,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "r",
+	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hr\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -92,6 +95,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "reply",
+	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -100,6 +104,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "This is a reply to your 27th request.",
+	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case which just skips keying a character with value (-1).
@@ -132,6 +137,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' },  /* Notice inserted -1' */
 	  .expected_morse_receive  = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },  /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 	  .requested_reply_value   = { 'l', -1,  'z', 'a', 'r', 'd', '\0' },                /* cwdaemon doesn't validate values of chars that are requested for socket reply. */
+	  .expected_socket_reply   = { .n_bytes = 9, .bytes = { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 };
 
@@ -317,24 +323,22 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation 5: text received in socket message must match text sent in <ESC>h
 	   request. */
 	{
-		const char * actual_raw = socket_event->u.socket_receive.string;
+		const socket_receive_data_t * received = &socket_event->u.socket_receive;
+		const socket_receive_data_t * expected = &test_case->expected_socket_reply;
 
-		char expected_raw[1 + (sizeof (test_case->requested_reply_value)) + 1 + 1] = { 0 };
-		snprintf(expected_raw, sizeof (expected_raw), "h%s\r\n", test_case->requested_reply_value);
+		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
+		char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
+		get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
+		get_printable_string(received->bytes, printable_received, sizeof (printable_received));
 
-		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected_raw))] = { 0 };
-		char printable_actual[PRINTABLE_BUFFER_SIZE(sizeof (actual_raw))] = { 0 };
-		get_printable_string(expected_raw, printable_expected, sizeof (printable_expected));
-		get_printable_string(actual_raw, printable_actual, sizeof (printable_actual));
-
-		if (0 != strcmp(expected_raw, actual_raw)) {
+		if (!socket_receive_bytes_is_correct(expected, received)) {
 			test_log_err("Expectation 5: received incorrect message in socket reply: expected [%s], received [%s]\n",
-			             printable_expected, printable_actual);
+			             printable_expected, printable_received);
 			return -1;
 		}
 
 		test_log_info("Expectation 5: received correct message in socket reply: expected [%s], received [%s]\n",
-		              printable_expected, printable_actual);
+		              printable_expected, printable_received);
 	}
 
 

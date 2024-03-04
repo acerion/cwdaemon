@@ -80,7 +80,7 @@ static int test_events_sort(void)
 	events_t events = {
 		.events = {
 			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
-			{ .event_type = event_type_client_socket_receive, .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .string = "Four" }, },
+			{ .event_type = event_type_client_socket_receive, .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
 			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
 			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
@@ -95,7 +95,7 @@ static int test_events_sort(void)
 			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
 			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
 			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
-			{ .event_type = event_type_client_socket_receive, .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .string = "Four" }, },
+			{ .event_type = event_type_client_socket_receive, .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
 		},
 		.event_idx = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -133,7 +133,7 @@ static int test_events_sort(void)
 			}
 			break;
 		case event_type_client_socket_receive:
-			if (0 != memcmp(&sorted.events[i].u.socket_receive, &events.events[i].u.socket_receive, sizeof (event_client_socket_receive_t))) {
+			if (0 != memcmp(&sorted.events[i].u.socket_receive, &events.events[i].u.socket_receive, sizeof (socket_receive_data_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'socket receive' member in event %d\n", i);
 				return -1;
 			}

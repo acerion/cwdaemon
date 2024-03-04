@@ -24,7 +24,7 @@
 
 typedef struct client_t {
 	int sock;                 /**< Network socket used by client to communicate with server. */
-	char reply_buffer[CLIENT_RECV_BUFFER_SIZE];    /**< Buffer for receiving replies from server. */
+	socket_receive_data_t received_data;    /**< Buffer for receiving replies from server. */
 
 	thread_t socket_receiver_thread;
 
@@ -122,6 +122,34 @@ int client_socket_receive_enable(client_t * client);
 int client_socket_receive_start(client_t * client);
 int client_socket_receive_stop(client_t * client);
 
+
+
+
+/**
+   @brief Check if bytes received over socket match expected value
+
+   @param[in] expected What is expected
+   @param[in] received What has been received over network
+
+   @return true if received data matches expected data
+   @return false otherwise
+*/
+bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, const socket_receive_data_t * received);
+
+
+
+
+/**
+   The argument to the macro should be a string literal.
+
+   "NO_NUL" in macro's name means that count of bytes to send is set by the
+   macro to value that doesn't include string's implicit terminating NUL
+   character.
+
+   cwdaemon server should be able to handle requests that don't end with NUL.
+   This macro makes it easy to prepare such request.
+*/
+#define SOCKET_REPLY_INIT_NO_NUL(_str_) { .n_bytes = ((sizeof (_str_)) - 1), .bytes = {_str_} }
 
 
 

@@ -68,9 +68,9 @@
 typedef struct test_case_t {
 	const char * description;                 /**< Tester-friendly description of test case. */
 	const char * caret_request;               /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
-	const size_t n_bytes;                     /**< How many bytes of plain requests to send? */
+	const size_t n_bytes_to_send;             /**< How many bytes of plain requests to send? */
 	const char * expected_morse_receive;      /**< What is expected to be received by Morse code receiver (without ending space). */
-	const char * expected_socket_reply;       /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
+	const socket_receive_data_t expected_socket_reply;       /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
 } test_case_t;
 
 
@@ -89,27 +89,27 @@ typedef struct test_case_t {
 
 static test_case_t g_test_cases[] = {
 	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 chars, not including NUL",
-	  .caret_request          =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^",
-	  .n_bytes                = sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234",
-	  .expected_socket_reply  =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234\r\n",
+	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^",
+	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^") - 1, /* -1 to avoid sending terminating NUL. */
+	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234",
+	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234\r\n"),
 	},
 
 	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 chars, not including NUL",
-	  .caret_request          =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^",
-	  .n_bytes                = sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345",
-	  .expected_socket_reply  =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345\r\n",
+	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^",
+	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^") - 1, /* -1 to avoid sending terminating NUL. */
+	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345",
+	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345\r\n"),
 	},
 
 	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 chars, not including NUL",
-	  .caret_request          =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^",
-	  .n_bytes                = sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =         "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456",
-	  /* '^' was at position 257, so it will be dropped by cwdaemon's receive code.
-	     cwdaemon won't interpret this request as caret request, and won't send
-	     anything over socket. */
-	  .expected_socket_reply  =         "",
+	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^",
+	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^") - 1, /* -1 to avoid sending terminating NUL. */
+	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456",
+	  /* '^' was at position 257, so it will be dropped by cwdaemon's receive
+	     code. cwdaemon won't interpret this request as caret request, and
+	     won't send anything over socket. */
+	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL(""),
 	},
 };
 
@@ -185,7 +185,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	   - Receiving some Morse code on cwdevice.
 	  In other cases there should be one event: just the Morse event.
 	*/
-	const bool expecting_socket_reply_event = 0 != strlen(test_case->expected_socket_reply);
+	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
 	if (expecting_socket_reply_event) {
 		if (2 != events->event_idx) {
 			test_log_err("Expectation 1: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
@@ -270,15 +270,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	  reply.
 	*/
 	if (expecting_socket_reply_event) {
-		const char * full_expected = test_case->expected_socket_reply;
-		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (full_expected))] = { 0 };
-		get_printable_string(full_expected, printable_expected, sizeof (printable_expected));
+		const socket_receive_data_t * expected = &test_case->expected_socket_reply;
+		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
+		get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
 
-		const char * full_received = socket_event->u.socket_receive.string;
-		char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (full_received))] = { 0 };
-		get_printable_string(full_received, printable_received, sizeof (printable_received));
+		const socket_receive_data_t * received = &socket_event->u.socket_receive;
+		char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
+		get_printable_string(received->bytes, printable_received, sizeof (printable_received));
 
-		if (0 != strcmp(full_received, full_expected)) {
+		if (!socket_receive_bytes_is_correct(expected, received)) {
 			test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", printable_received, printable_expected);
 			return -1;
 		}
@@ -453,8 +453,8 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			}
 
 			/* Send the message to be played. Notice that we use
-			   test_case->n_bytes to specify count of bytes to be sent. */
-			client_send_message(client, test_case->caret_request, test_case->n_bytes);
+			   test_case->n_bytes_to_send to specify count of bytes to be sent. */
+			client_send_message(client, test_case->caret_request, test_case->n_bytes_to_send);
 
 			morse_receiver_wait(morse_receiver);
 		}

@@ -182,7 +182,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 
 	while (thread->thread_loop_continue) {
 
-		memset(client->reply_buffer, 0, sizeof (client->reply_buffer));
+		memset(&client->received_data, 0, sizeof (client->received_data));
 
 		struct pollfd descriptor = { .fd = client->sock, .events = POLLIN };
 		const nfds_t n_descriptors = 1;
@@ -197,11 +197,13 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 				test_log_err("cwdaemon client: Unexpected event on poll socket: %02x\n", descriptor.revents);
 				break;
 			}
-			const ssize_t r = recv(descriptor.fd, client->reply_buffer, sizeof (client->reply_buffer), MSG_DONTWAIT);
+			const ssize_t r = recv(descriptor.fd, client->received_data.bytes, sizeof (client->received_data.bytes), MSG_DONTWAIT);
+			client->received_data.n_bytes = (size_t) -1;
 			if (-1 != r) {
-				char printable[PRINTABLE_BUFFER_SIZE(sizeof (client->reply_buffer))] = { 0 };
-				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", get_printable_string(client->reply_buffer, printable, sizeof (printable)));
-				events_insert_socket_receive_event(client->events, client->reply_buffer);
+				client->received_data.n_bytes = (size_t) r;
+				char printable[PRINTABLE_BUFFER_SIZE(sizeof (client->received_data.bytes))] = { 0 };
+				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", get_printable_string(client->received_data.bytes, printable, sizeof (printable)));
+				events_insert_socket_receive_event(client->events, &client->received_data);
 			}
 		} else {
 			test_log_err("cwdaemon client: poll() error %s\n", "");
@@ -284,5 +286,41 @@ int client_dtor(client_t * client)
 	}
 
 	return success ? 0 : -1;
+}
+
+
+
+
+bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, const socket_receive_data_t * received)
+{
+	/*
+	  This function is more than just simple memcmp() or strcmp() because I
+	  want to validate here that "expected" data is valid too.
+
+	  If I ever forget to end the "expected" value with CR+LF, then I may
+	  miss a situation when cwdaemon server also doesn't insert CR+LF at the
+	  end of its reply.
+
+	  Facts to validate about "expected":
+	  1. It ends with CR+LF (and perhaps with NUL),
+	  2. It holds no more bytes than cwdaemon's "reply" buffer; TODO acerion 2024.03.03 - add this test here.
+
+	  Therefore one of the tests done here is looking for CR+LF in
+	  "expected".
+	*/
+
+	if (expected->n_bytes > 0) {
+		const size_t n = expected->n_bytes;
+		if (expected->bytes[n - 2] != '\r' || expected->bytes[n - 1] != '\n') {
+			test_log_err("Test: 'expected' data doesn't include terminating CR+LF. Fix your testcase data. %s\n", "");
+			return false;
+		}
+	} else {
+		/* Pass. If a test says "we don't expect any socket reply in this
+		   test case", it may use empty "expected" string to indicate
+		   this. */
+	}
+
+	return expected->n_bytes == received->n_bytes && 0 == memcmp(expected->bytes, received->bytes, expected->n_bytes); /* TODO: better logging on errors. */
 }
 

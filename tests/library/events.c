@@ -91,11 +91,11 @@ void events_print(const events_t * events)
 			break;
 		case event_type_client_socket_receive:
 			{
-				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.string))] = { 0 };
+				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.bytes))] = { 0 };
 				test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
 				               e,
 				               diff.tv_sec, diff.tv_nsec,
-				               get_printable_string(event->u.socket_receive.string, printable, sizeof (printable)));
+				               get_printable_string(event->u.socket_receive.bytes, printable, sizeof (printable)));
 			}
 			break;
 		case event_type_sigchld:
@@ -154,8 +154,7 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 
 
-
-int events_insert_socket_receive_event(events_t * events, const char * receive_buffer)
+int events_insert_socket_receive_event(events_t * events, const socket_receive_data_t * received)
 {
 	struct timespec spec = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &spec);
@@ -166,10 +165,7 @@ int events_insert_socket_receive_event(events_t * events, const char * receive_b
 		event->event_type = event_type_client_socket_receive;
 		event->tstamp = spec;
 
-		event_client_socket_receive_t * socket = &event->u.socket_receive;
-		const size_t n = sizeof (socket->string);
-		strncpy(socket->string, receive_buffer, n);
-		socket->string[n - 1] = '\0';
+		memcpy(&event->u.socket_receive, received, sizeof (socket_receive_data_t));
 
 		events->event_idx++;
 	}

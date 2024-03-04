@@ -31,9 +31,16 @@ typedef struct {
 
 
 
-typedef struct {
-	char string[CLIENT_RECV_BUFFER_SIZE];
-} event_client_socket_receive_t;
+/*
+  This structe doesn't store a string. It stores an array of bytes with explicit count of bytes.
+
+  Bytes are received through recv().
+  Count of bytes is a value returned by recv().
+*/
+typedef struct socket_receive_data_t {
+	size_t n_bytes;
+	char bytes[CLIENT_RECV_BUFFER_SIZE];
+} socket_receive_data_t;
 
 
 
@@ -51,7 +58,7 @@ typedef struct {
 
 	union {
 		event_morse_receive_t morse_receive;          /**< Morse code received by observer of cwdevice. */
-		event_client_socket_receive_t socket_receive; /**< Data received over socket by cwdaemon client. */
+		socket_receive_data_t socket_receive; /**< Data received over socket by cwdaemon client. */
 		event_sigchld_t sigchld;                     /**< Data collected by waitpid() in signal handler for SIGCHLD. */
 	} u;
 } event_t;
@@ -127,7 +134,7 @@ int events_sort(events_t * events);
 
 
 int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp);
-int events_insert_socket_receive_event(events_t * events, const char * receive_buffer);
+int events_insert_socket_receive_event(events_t * events, const socket_receive_data_t * received);
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);
 
 

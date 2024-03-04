@@ -79,7 +79,7 @@
 typedef struct test_case_t {
 	const char * description;                 /**< Tester-friendly description of test case. */
 	const char * full_message;                /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
-	const char * full_expected_socket_reply;  /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
+	socket_receive_data_t expected_socket_reply;  /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
 	const char * expected_morse_receive;      /**< What is expected to be received by Morse code receiver (without ending space). */
 } test_case_t;
 
@@ -113,8 +113,8 @@ typedef struct test_case_t {
   regular/plain message requests in the future.
 */
 static const char err_case_1_message[]                = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', '\0' };         /* Notice inserted -1' */
-static const char err_case_1_expected_socket_reply[]  = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n', '\0' };  /* cwdaemon sends verbatim text in socket reply. */
 static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' };              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
+
 
 
 
@@ -122,7 +122,7 @@ static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
 	  .full_message               = "22 crows, 1 stork?^",
-	  .full_expected_socket_reply = "22 crows, 1 stork?\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("22 crows, 1 stork?\r\n"),
 	  .expected_morse_receive     = "22 crows, 1 stork?",
 	},
 
@@ -137,12 +137,12 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description = "additional message after caret",
 	  .full_message               = "Fun^Joy^",
-	  .full_expected_socket_reply = "Fun\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Fun\r\n"),
 	  .expected_morse_receive     = "Fun",
 	},
 	{ .description = "message with two carets",
 	  .full_message               = "Monday^^",
-	  .full_expected_socket_reply = "Monday\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Monday\r\n"),
 	  .expected_morse_receive     = "Monday",
 	},
 
@@ -150,7 +150,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "two words",
 	  .full_message               = "Hello world!^",
-	  .full_expected_socket_reply = "Hello world!\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Hello world!\r\n"),
 	  .expected_morse_receive     = "Hello world!",
 	},
 
@@ -158,39 +158,39 @@ static test_case_t g_test_cases[] = {
 	   reply. */
 	{ .description = "empty text",
 	  .full_message               = "^",
-	  .full_expected_socket_reply = "",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL(""),
 	  .expected_morse_receive     = "",
 	},
 
 	{ .description = "single character",
 	  .full_message               = "f^",
-	  .full_expected_socket_reply = "f\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("f\r\n"),
 	  .expected_morse_receive     = "f",
 	},
 
 	{ .description = "single word",
 	  .full_message               = "Paris^",
-	  .full_expected_socket_reply = "Paris\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Paris\r\n"),
 	  .expected_morse_receive     = "Paris",
 	},
 
 	/* Notice how the leading space from message is preserved in socket reply. */
 	{ .description = "single word with leading space",
 	  .full_message               = " London^",
-	  .full_expected_socket_reply = " London\r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL(" London\r\n"),
 	  .expected_morse_receive     = "London",
 	},
 
 	/* Notice how the trailing space from message is preserved in socket reply. */
 	{ .description = "mixed characters with trailing space",
 	  .full_message               = "when, now = right: ^",
-	  .full_expected_socket_reply = "when, now = right: \r\n",
+	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("when, now = right: \r\n"),
 	  .expected_morse_receive     = "when, now = right:",
 	},
 
 	{ .description                = "message containing '-1' integer value",
 	  .full_message               = err_case_1_message,
-	  .full_expected_socket_reply = err_case_1_expected_socket_reply,
+	  .expected_socket_reply      = { .n_bytes = 11, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n' } },      /* cwdaemon sends verbatim text in socket reply. */
 	  .expected_morse_receive     = err_case_1_expected_morse_receive,
 	},
 
@@ -272,7 +272,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	  If one is not expected to occur, the other is not expected either.
 	*/
 	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
-	const bool expecting_socket_reply_event = 0 != strlen(test_case->full_expected_socket_reply);
+	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
 	if (!expecting_morse_event && !expecting_socket_reply_event) {
 		if (0 != events->event_idx) {
 			test_log_err("Expectation 1: incorrect count of events recorded. Expected 0 events, got %d\n", events->event_idx);
@@ -362,15 +362,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	  Expectation 4: cwdaemon client has received over socket a correct
 	  reply.
 	*/
-	const char * full_expected = test_case->full_expected_socket_reply;
-	char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (full_expected))] = { 0 };
-	get_printable_string(full_expected, printable_expected, sizeof (printable_expected));
+	const socket_receive_data_t * expected = &test_case->expected_socket_reply;
+	char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
+	get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
 
-	const char * full_received = socket_event->u.socket_receive.string;
-	char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (full_received))] = { 0 };
-	get_printable_string(full_received, printable_received, sizeof (printable_received));
+	const socket_receive_data_t * received = &socket_event->u.socket_receive;
+	char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
+	get_printable_string(received->bytes, printable_received, sizeof (printable_received));
 
-	if (0 != strcmp(full_received, full_expected)) {
+	if (!socket_receive_bytes_is_correct(expected, received)) {
 		test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", printable_received, printable_expected);
 		return -1;
 	}
