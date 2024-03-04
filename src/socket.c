@@ -105,22 +105,21 @@ void cwdaemon_close_socket(cwdaemon_t * cwdaemon)
 
 
 
-/**
-   \brief Wrapper around sendto()
-
-   Wrapper around sendto(), sending a \p reply to client.
-   Client is specified by reply_* network variables.
-
-   \param cwdaemon cwdaemon instance
-   \param reply - reply to be sent
-
-   \return -1 on failure
-   \return number of characters sent on success
-*/
 ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 {
 	size_t len = strlen(reply);
-	/* TODO: Do we *really* need to end replies with CRLF? */
+
+#if 0 /* For debugs only. */
+	char printable[PRINTABLE_BUFFER_SIZE(CWDAEMON_MESSAGE_SIZE_MAX)] = { 0 };
+	get_printable_string(reply, printable, sizeof (printable));
+
+	if (reply[len - 2] != '\r' || reply[len - 1] != '\n') {
+		log_error("assertion about reply's tail is about to fail for reply with %zu bytes: [%s]", len, printable);
+		log_error("reply[n - 2] = 0x%02x / '%c'", reply[len - 2], reply[len - 2]);
+		log_error("reply[n - 1] = 0x%02x / '%c'", reply[len - 1], reply[len - 1]);
+	}
+#endif
+
 	assert(reply[len - 2] == '\r' && reply[len - 1] == '\n');
 
 	ssize_t rv = sendto(cwdaemon->socket_descriptor, reply, len, 0,
