@@ -226,7 +226,7 @@ if test "x$enable_functional_tests" = xyes ; then
    tests/functional_tests/automatic/option_cwdevice_tty_lines/Makefile
    tests/functional_tests/automatic/option_port/Makefile
    tests/functional_tests/automatic/request_caret/Makefile
-   tests/functional_tests/automatic/request_esc_5/Makefile
+   tests/functional_tests/automatic/request_esc_exit/Makefile
    tests/functional_tests/automatic/request_esc_reply/Makefile
    tests/functional_tests/automatic/request_plain/Makefile
    tests/functional_tests/automatic/reset_register_callback/Makefile

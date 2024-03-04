@@ -2,7 +2,7 @@
 	automatic/option_cwdevice_tty_lines.dummy     \
 	automatic/option_port.dummy                   \
 	automatic/request_caret.dummy                 \
-	automatic/request_esc_5.dummy                 \
+	automatic/request_esc_exit.dummy              \
 	automatic/request_esc_reply.dummy             \
 	automatic/request_plain.dummy                 \
 	automatic/reset_register_callback.dummy
@@ -20,7 +20,7 @@ gcov:
 	make automatic/option_cwdevice_tty_lines.gcov
 	make automatic/option_port.gcov
 	make automatic/request_caret.gcov
-	make automatic/request_esc_5.gcov
+	make automatic/request_esc_exit.gcov
 	make automatic/request_esc_reply.gcov
 	make automatic/request_plain.gcov
 	make automatic/reset_register_callback.gcov
