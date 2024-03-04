@@ -3,7 +3,7 @@
 	automatic/option_port.dummy                   \
 	automatic/request_caret.dummy                 \
 	automatic/request_esc_5.dummy                 \
-	automatic/request_esc_h.dummy                 \
+	automatic/request_esc_reply.dummy             \
 	automatic/request_plain.dummy                 \
 	automatic/reset_register_callback.dummy
 
@@ -21,7 +21,7 @@ gcov:
 	make automatic/option_port.gcov
 	make automatic/request_caret.gcov
 	make automatic/request_esc_5.gcov
-	make automatic/request_esc_h.gcov
+	make automatic/request_esc_reply.gcov
 	make automatic/request_plain.gcov
 	make automatic/reset_register_callback.gcov
 

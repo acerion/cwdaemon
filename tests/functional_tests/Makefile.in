@@ -605,7 +605,7 @@ uninstall-am:
 	automatic/option_port.dummy                   \
 	automatic/request_caret.dummy                 \
 	automatic/request_esc_5.dummy                 \
-	automatic/request_esc_h.dummy                 \
+	automatic/request_esc_reply.dummy             \
 	automatic/request_plain.dummy                 \
 	automatic/reset_register_callback.dummy
 
@@ -615,7 +615,7 @@ uninstall-am:
 @ENABLE_GCOV_TRUE@	make automatic/option_port.gcov
 @ENABLE_GCOV_TRUE@	make automatic/request_caret.gcov
 @ENABLE_GCOV_TRUE@	make automatic/request_esc_5.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_esc_h.gcov
+@ENABLE_GCOV_TRUE@	make automatic/request_esc_reply.gcov
 @ENABLE_GCOV_TRUE@	make automatic/request_plain.gcov
 @ENABLE_GCOV_TRUE@	make automatic/reset_register_callback.gcov
 @ENABLE_GCOV_TRUE@.dummy.gcov: gcov_clean_old_artifacts

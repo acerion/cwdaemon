@@ -5,7 +5,7 @@ SUBDIRS += option_port
 SUBDIRS += reset_register_callback
 SUBDIRS += request_caret
 SUBDIRS += request_esc_5
-SUBDIRS += request_esc_h
+SUBDIRS += request_esc_reply
 SUBDIRS += request_plain
 
 

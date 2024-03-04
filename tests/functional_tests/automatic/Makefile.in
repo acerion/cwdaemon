@@ -291,7 +291,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = option_cwdevice_tty_lines option_port \
 	reset_register_callback request_caret request_esc_5 \
-	request_esc_h request_plain
+	request_esc_reply request_plain
 all: all-recursive
 
 .SUFFIXES:

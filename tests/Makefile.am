@@ -30,7 +30,7 @@ TESTS += functional_tests/automatic/option_port/test_program
 TESTS += functional_tests/automatic/reset_register_callback/test_program
 TESTS += functional_tests/automatic/request_caret/test_program
 TESTS += functional_tests/automatic/request_esc_5/test_program
-TESTS += functional_tests/automatic/request_esc_h/test_program
+TESTS += functional_tests/automatic/request_esc_reply/test_program
 TESTS += functional_tests/automatic/request_plain/test_program
 
 # We don't run fuzzing tests on "make check".
