@@ -66,19 +66,19 @@
 
 
 typedef struct test_case_t {
-	const char * description;                 /**< Tester-friendly description of test case. */
-	const char * caret_request;               /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
-	const size_t n_bytes_to_send;             /**< How many bytes of plain requests to send? */
-	const char * expected_morse_receive;      /**< What is expected to be received by Morse code receiver (without ending space). */
-	const socket_receive_data_t expected_socket_reply;       /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
+	const char * description;                            /**< Tester-friendly description of test case. */
+	socket_send_data_t caret_request;                    /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
+	const char * expected_morse_receive;                 /**< What is expected to be received by Morse code receiver (without ending space). */
+	const socket_receive_data_t expected_socket_reply;   /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
 } test_case_t;
 
 
 
 
-/* Helper definition to shorten strings in test cases. Chars at position 51
+/* Helper definition to shorten strings in test cases. Chars at position 21
    till 250, inclusive. */
-#define CHARS_51_250 \
+#define CHARS_21_250 \
+	                    "kukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -88,28 +88,25 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 chars, not including NUL",
-	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^",
-	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234",
-	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "1234\r\n"),
+	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
+	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234^"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
+	  .expected_socket_reply  = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234\r\n"),
 	},
 
-	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 chars, not including NUL",
-	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^",
-	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345",
-	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "12345\r\n"),
+	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
+	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345^"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	  .expected_socket_reply  = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345\r\n"),
 	},
 
-	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 chars, not including NUL",
-	  .caret_request          =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^",
-	  .n_bytes_to_send        =                  sizeof ("paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456^") - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive =                          "paris kukukukukukukukukukukukukukukukukukukukukuku" CHARS_51_250 "123456",
-	  /* '^' was at position 257, so it will be dropped by cwdaemon's receive
-	     code. cwdaemon won't interpret this request as caret request, and
-	     won't send anything over socket. */
-	  .expected_socket_reply  = SOCKET_REPLY_INIT_NO_NUL(""),
+	/* '^' it at position 257, so it will be dropped by cwdaemon's receive
+	   code. cwdaemon won't interpret this request as caret request, and
+	   won't send anything over socket (reply is empty). */
+	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
+	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456^"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .expected_socket_reply  = SOCKET_BUF_SET(""),
 	},
 };
 
@@ -453,8 +450,9 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			}
 
 			/* Send the message to be played. Notice that we use
-			   test_case->n_bytes_to_send to specify count of bytes to be sent. */
-			client_send_message(client, test_case->caret_request, test_case->n_bytes_to_send);
+			   test_case->caret_request.n_bytes_to_send to specify count of
+			   bytes to be sent. */
+			client_send_message(client, test_case->caret_request.bytes, test_case->caret_request.n_bytes);
 
 			morse_receiver_wait(morse_receiver);
 		}

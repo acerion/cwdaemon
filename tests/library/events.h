@@ -32,14 +32,29 @@ typedef struct {
 
 
 /*
+  This structe doesn't store a string. It stores an array of bytes with
+  explicit count of bytes.
+
+  Bytes will be sent through send().
+  Count of bytes will be passed to send().
+*/
+typedef struct socket_send_data_t {
+	size_t n_bytes;                         /**< How many bytes to send? */
+	char bytes[CLIENT_SEND_BUFFER_SIZE];    /**< What exactly bytes do we want to send? */
+} socket_send_data_t;
+
+
+
+
+/*
   This structe doesn't store a string. It stores an array of bytes with explicit count of bytes.
 
   Bytes are received through recv().
   Count of bytes is a value returned by recv().
 */
 typedef struct socket_receive_data_t {
-	size_t n_bytes;
-	char bytes[CLIENT_RECV_BUFFER_SIZE];
+	size_t n_bytes;                        /**< How many bytes we expect to receive send? */
+	char bytes[CLIENT_RECV_BUFFER_SIZE];   /**< What exactly bytes do we expect to receive? */
 } socket_receive_data_t;
 
 
