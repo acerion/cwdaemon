@@ -69,70 +69,21 @@
 
 typedef struct test_case_t {
 	const char * description;             /**< Tester-friendly description of test case. */
-	const char * plain_request;           /**< Text to be sent to cwdaemon server in the MESSAGE request. */
-	const size_t n_bytes;                 /**< How many bytes of plain requests to send? */
+	socket_send_data_t plain_request;     /**< Bytes to be sent to cwdaemon server in the plain MESSAGE request. */
 	const char * expected_morse_receive;  /**< What is expected to be received by Morse code receiver (without ending space). */
 } test_case_t;
 
 
-/*
-  The sizes of the data allow me to send requests with sizes smaller than,
-  equal to or larger than CWDAEMON_MESSAGE_SIZE_MAX==256.
-*/
-
-/* 254 characters + NUL. */
-static const char g_254_chars_request[254 + 1] =
-	"paris kukukukukukukukukukukukukukukukukukukukukuku"    /*   1 -  50 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /*  51 - 100 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 101 - 150 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 151 - 200 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 201 - 250 */
-	"1234";                                                 /* 251 - 254 + terminating NUL. */
-static const char * const g_254_chars_expected_morse = g_254_chars_request;
 
 
-/* 255 characters + NUL. */
-static const char g_255_chars_request[255 + 1] =
-	"paris kukukukukukukukukukukukukukukukukukukukukuku"    /*   1 -  50 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /*  51 - 100 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 101 - 150 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 151 - 200 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 201 - 250 */
-	"12345";                                                /* 251 - 255 + terminating NUL. */
-static const char * const g_255_chars_expected_morse = g_255_chars_request;
-
-
-/* 256 characters + NUL. */
-static const char g_256_chars_request[256 + 1] =
-	"paris kukukukukukukukukukukukukukukukukukukukukuku"    /*   1 -  50 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /*  51 - 100 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 101 - 150 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 151 - 200 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 201 - 250 */
-	"123456";                                               /* 251 - 256 + terminating NUL. */
-static const char * const g_256_chars_expected_morse = g_256_chars_request;
-
-
-/* 257 characters + NUL. */
-static const char g_257_chars_request[257 + 1] =
-	"paris kukukukukukukukukukukukukukukukukukukukukuku"    /*   1 -  50 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /*  51 - 100 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 101 - 150 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 151 - 200 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 201 - 250 */
-	"1234567";                                              /* 251 - 257 + terminating NUL. */
-/* Morse receiver will receive only first 256 chars. This is what Morse code
-   receiver will receive when this test tries to play a message with count of
-   chars that is larger than cwdaemon's receive buffer (the receive buffer
-   has space for 256 chars). The last character from request will be dropped
-   by cwdaemon's receive code. */
-static const char g_257_chars_expected_morse[257 + 1] =
-	"paris kukukukukukukukukukukukukukukukukukukukukuku"    /*   1 -  50 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /*  51 - 100 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 101 - 150 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 151 - 200 */
-	"kukukukukukukukukukukukukukukukukukukukukukukukuku"    /* 201 - 250 */
-	"123456";                                               /* 251 - 256 + terminating NUL. */
+/* Helper definition to shorten strings in test cases. Chars at position 21
+   till 250, inclusive. */
+#define CHARS_21_250 \
+	                    "kukukukukukukukukukukukukukuku" \
+	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
+	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
+	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
+	"kukukukukukukukukukukukukukukukukukukukukukukukuku"
 
 
 
@@ -142,39 +93,17 @@ static test_case_t g_test_cases[] = {
 	  In this case a full plain request is keyed on cwdevice and received by
 	  Morse code receiver.
 	*/
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254 chars, NUL not included",
-	  .plain_request          = g_254_chars_request,
-	  .n_bytes                = sizeof (g_254_chars_request) - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive = g_254_chars_expected_morse,
+	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
 	},
-
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
 	  Morse code receiver.
 	*/
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254+1 chars, including NUL",
-	  .plain_request          = g_254_chars_request,
-	  .n_bytes                = sizeof (g_254_chars_request), /* The count of bytes includes terminating NUL. */
-	  .expected_morse_receive = g_254_chars_expected_morse,
-	},
-
-
-
-	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
-	*/
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 255 chars, NUL not included",
-	  .plain_request          = g_255_chars_request,
-	  .n_bytes                = sizeof (g_255_chars_request) - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive = g_255_chars_expected_morse,
-	},
-
-	/* In this case a full plain request is keyed on cwdevice and received by Morse code receiver. */
-	{ .description = "plain request with size equal to cwdaemon's receive buffer - 255+1 chars, including NUL",
-	  .plain_request          = g_255_chars_request,
-	  .n_bytes                = sizeof (g_255_chars_request), /* The count of bytes includes terminating NUL. */
-	  .expected_morse_receive = g_255_chars_expected_morse,
+	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234\0"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
 	},
 
 
@@ -183,12 +112,29 @@ static test_case_t g_test_cases[] = {
 	  In this case a full plain request is keyed on cwdevice and received by
 	  Morse code receiver.
 	*/
-	{ .description = "plain request with size equal to cwdaemon's receive buffer - 256 chars, NUL not included",
-	  .plain_request          = g_256_chars_request,
-	  .n_bytes                = sizeof (g_256_chars_request) - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive = g_256_chars_expected_morse,
+	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	},
+	/*
+	  In this case a full plain request is keyed on cwdevice and received by
+	  Morse code receiver.
+	*/
+	{ .description = "plain request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345\0"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
 	},
 
+
+
+	/*
+	  In this case a full plain request is keyed on cwdevice and received by
+	  Morse code receiver.
+	*/
+	{ .description = "plain request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	},
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
 	  Morse code receiver.
@@ -197,10 +143,9 @@ static test_case_t g_test_cases[] = {
 	  terminating NUL. The non-present NUL will have no impact on further
 	  actions of cwdaemon or on contents of keyed Morse message.
 	*/
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 256+1 chars, including NUL",
-	  .plain_request          = g_256_chars_request,
-	  .n_bytes                = sizeof (g_256_chars_request), /* The count of bytes includes terminating NUL. */
-	  .expected_morse_receive = g_256_chars_expected_morse,
+	{ .description = "plain request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456\0"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
 	},
 
 
@@ -217,13 +162,19 @@ static test_case_t g_test_cases[] = {
 	  the plain request, and we know what cwdaemon server will key on
 	  cwdevice. And this test case is expecting and testing exactly this
 	  behaviour.
-	*/
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257 chars, NUL not included; TRUNCATION of Morse receive",
-	  .plain_request          = g_257_chars_request,
-	  .n_bytes                = sizeof (g_257_chars_request) - 1, /* -1 to avoid sending terminating NUL. */
-	  .expected_morse_receive = g_257_chars_expected_morse,
-	},
 
+	  Morse receiver will receive only first 256 chars. This is what Morse
+	  code receiver will receive when this test tries to play a message with
+	  count of chars that is larger than cwdaemon's receive buffer (the
+	  receive buffer has space for 256 chars). The last character from
+	  request will be dropped by cwdaemon's receive code.
+
+	  Count of bytes in the sent request doesn't include terminating NUL.
+	*/
+	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL); TRUNCATION of Morse receive",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	},
 	/*
 	  In this case only a truncated plain request is keyed on cwdevice and
 	  received by Morse code receiver. Request's characters that won't fit
@@ -236,11 +187,18 @@ static test_case_t g_test_cases[] = {
 	  the plain request, and we know what cwdaemon server will key on
 	  cwdevice. And this test case is expecting and testing exactly this
 	  behaviour.
+
+	  Morse receiver will receive only first 256 chars. This is what Morse
+	  code receiver will receive when this test tries to play a message with
+	  count of chars that is larger than cwdaemon's receive buffer (the
+	  receive buffer has space for 256 chars). The last character from
+	  request will be dropped by cwdaemon's receive code.
+
+	  The count of bytes in the sent request includes terminating NUL.
 	*/
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257+1 chars, including NUL; TRUNCATION of Morse receive",
-	  .plain_request          = g_257_chars_request,
-	  .n_bytes                = sizeof (g_257_chars_request), /* The count of bytes includes terminating NUL. */
-	  .expected_morse_receive = g_257_chars_expected_morse,
+	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL); TRUNCATION of Morse receive",
+	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567\0"),
+	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
 	},
 };
 
@@ -463,8 +421,9 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			}
 
 			/* Send the message to be played. Notice that we use
-			   test_case->n_bytes to specify count of bytes to be sent. */
-			client_send_message(client, test_case->plain_request, test_case->n_bytes);
+			   test_case->plain_request.n_bytes to specify count of bytes to
+			   be sent. */
+			client_send_message(client, test_case->plain_request.bytes, test_case->plain_request.n_bytes);
 
 			morse_receiver_wait(morse_receiver);
 		}
