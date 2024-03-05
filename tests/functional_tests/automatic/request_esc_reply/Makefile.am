@@ -2,7 +2,8 @@
 check_PROGRAMS = test_program
 
 # source code files used to build cwdaemon program
-test_program_SOURCES = main.c
+test_program_SOURCES  = main.c
+test_program_SOURCES += basic.c basic.h
 
 # target-specific preprocessor flags (#defs and include dirs)
 test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
