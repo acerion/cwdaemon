@@ -79,7 +79,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "",
-	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	  .expected_socket_reply   = SOCKET_BUF_SET("h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -88,7 +88,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "r",
-	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hr\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	  .expected_socket_reply   = SOCKET_BUF_SET("hr\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -97,7 +97,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "reply",
-	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	  .expected_socket_reply   = SOCKET_BUF_SET("hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -106,7 +106,7 @@ static test_case_t g_test_cases[] = {
 	  .full_message            = "paris",
 	  .expected_morse_receive  = "paris",
 	  .requested_reply_value   = "This is a reply to your 27th request.",
-	  .expected_socket_reply   = SOCKET_REPLY_INIT_NO_NUL("hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	  .expected_socket_reply   = SOCKET_BUF_SET("hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
 	},
 
 	/* This is a SUCCESS case which just skips keying a character with value (-1).

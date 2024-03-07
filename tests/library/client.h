@@ -140,21 +140,6 @@ bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, con
 
 
 /**
-   The argument to the macro should be a string literal.
-
-   "NO_NUL" in macro's name means that expected count of received bytes is
-   set by the macro to value that doesn't include string's implicit
-   terminating NUL character.
-
-   cwdaemon server may be sending replies that don't end with NUL. This macro
-   makes it easy to declare such reply.
-*/
-#define SOCKET_REPLY_INIT_NO_NUL(_str_) { .n_bytes = ((sizeof (_str_)) - 1), .bytes = {_str_} }
-
-
-
-
-/**
    @brief Set "bytes" and "count" of bytes in socket data buffer
 
    The macro can be used to set contents of socket_send_data_t or

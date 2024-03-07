@@ -122,7 +122,7 @@ static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
 	  .full_message               = "22 crows, 1 stork?^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("22 crows, 1 stork?\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("22 crows, 1 stork?\r\n"),
 	  .expected_morse_receive     = "22 crows, 1 stork?",
 	},
 
@@ -137,12 +137,12 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description = "additional message after caret",
 	  .full_message               = "Fun^Joy^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Fun\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("Fun\r\n"),
 	  .expected_morse_receive     = "Fun",
 	},
 	{ .description = "message with two carets",
 	  .full_message               = "Monday^^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Monday\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("Monday\r\n"),
 	  .expected_morse_receive     = "Monday",
 	},
 
@@ -150,7 +150,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "two words",
 	  .full_message               = "Hello world!^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Hello world!\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("Hello world!\r\n"),
 	  .expected_morse_receive     = "Hello world!",
 	},
 
@@ -158,33 +158,33 @@ static test_case_t g_test_cases[] = {
 	   reply. */
 	{ .description = "empty text",
 	  .full_message               = "^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL(""),
+	  .expected_socket_reply      = SOCKET_BUF_SET(""),
 	  .expected_morse_receive     = "",
 	},
 
 	{ .description = "single character",
 	  .full_message               = "f^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("f\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("f\r\n"),
 	  .expected_morse_receive     = "f",
 	},
 
 	{ .description = "single word",
 	  .full_message               = "Paris^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("Paris\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("Paris\r\n"),
 	  .expected_morse_receive     = "Paris",
 	},
 
 	/* Notice how the leading space from message is preserved in socket reply. */
 	{ .description = "single word with leading space",
 	  .full_message               = " London^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL(" London\r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET(" London\r\n"),
 	  .expected_morse_receive     = "London",
 	},
 
 	/* Notice how the trailing space from message is preserved in socket reply. */
 	{ .description = "mixed characters with trailing space",
 	  .full_message               = "when, now = right: ^",
-	  .expected_socket_reply      = SOCKET_REPLY_INIT_NO_NUL("when, now = right: \r\n"),
+	  .expected_socket_reply      = SOCKET_BUF_SET("when, now = right: \r\n"),
 	  .expected_morse_receive     = "when, now = right:",
 	},
 
