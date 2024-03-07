@@ -119,6 +119,7 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 		log_error("reply[n - 1] = 0x%02x / '%c'", reply[len - 1], reply[len - 1]);
 	}
 #endif
+	log_info("sending back %zu bytes", len);
 
 	assert(reply[len - 2] == '\r' && reply[len - 1] == '\n');
 
