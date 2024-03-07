@@ -202,7 +202,9 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 			if (-1 != r) {
 				client->received_data.n_bytes = (size_t) r;
 				char printable[PRINTABLE_BUFFER_SIZE(sizeof (client->received_data.bytes))] = { 0 };
-				test_log_info("cwdaemon client: received [%s] from cwdaemon server\n", get_printable_string(client->received_data.bytes, printable, sizeof (printable)));
+				get_printable_string(client->received_data.bytes, printable, sizeof (printable));
+				test_log_info("cwdaemon client: received %zu/[%s] from cwdaemon server\n",
+				              client->received_data.n_bytes, printable);
 				events_insert_socket_receive_event(client->events, &client->received_data);
 			}
 		} else {

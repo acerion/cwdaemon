@@ -279,7 +279,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", printable_received, printable_expected);
 			return -1;
 		}
-		test_log_info("Expectation 4: received socket reply [%s] matches expected reply [%s]\n", printable_received, printable_expected);
+		test_log_info("Expectation 4: received socket reply %zu/[%s] matches expected reply %zu/[%s]\n",
+		              received->n_bytes, printable_received,
+		              expected->n_bytes, printable_expected);
 	} else {
 		test_log_info("Expectation 4: skipping checking contents of socket reply because there is no socket event %s\n", "");
 	}
