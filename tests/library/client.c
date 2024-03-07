@@ -323,6 +323,16 @@ bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, con
 		   this. */
 	}
 
-	return expected->n_bytes == received->n_bytes && 0 == memcmp(expected->bytes, received->bytes, expected->n_bytes); /* TODO: better logging on errors. */
+	if (received->n_bytes != expected->n_bytes) {
+		test_log_err("Test: count of bytes in received and expected data doesn't match: %zu != %zu\n", received->n_bytes, expected->n_bytes);
+		return false;
+	}
+
+	if (0 != memcmp(expected->bytes, received->bytes, expected->n_bytes)) {
+		test_log_err("Test: contents of bytes in received and expected data doesn't match %s\n", "");
+		return false;
+	}
+
+	return true;
 }
 
