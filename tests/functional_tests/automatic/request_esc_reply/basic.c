@@ -221,58 +221,36 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	const event_t * event_0 = &events->events[0];
-	const event_t * event_1 = &events->events[1];
-	const event_t * morse_event = NULL;
-	const event_t * socket_event = NULL;
-
-
-
-
-	/* Expectation 1: there should be only two events. */
+	/* Expectation: there should be only two events. */
 	expectation_idx++;
-	{
-		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events: %d (expected 2)\n", events->event_idx);
-			return -1;
-		}
+	if (2 != events->event_idx) {
+		test_log_err("Expectation %d: unexpected count of events: %d (expected 2)\n", expectation_idx, events->event_idx);
+		return -1;
 	}
-	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
+	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
 
 
 
 
+	/* Expectation: events are of correct type. */
+	expectation_idx++;
 	int morse_idx = -1;
-	int socket_idx = -1;
-	/* Expectation 2: first event should be Morse receive, second event should be reply on socket. */
-	expectation_idx++;
-	{
-		if (event_0->event_type == event_type_morse_receive
-		    && event_1->event_type != event_type_client_socket_receive) {
-
-			morse_event = event_0;
-			socket_event = event_1;
-			morse_idx = 0;
-			socket_idx = 1;
-			; /* Pass. */
-		} else {
-			if (event_0->event_type == event_type_client_socket_receive
-			    && event_1->event_type == event_type_morse_receive) {
-
-				socket_event = event_0;
-				morse_event = event_1;
-				socket_idx = 0;
-				morse_idx = 1;
-				; /* Pass. */
-			} else {
-				test_log_err("Expectation 2: completely incorrect order of events: %d -> %d\n",
-				             event_0->event_type, event_1->event_type);
-				return -1;
-			}
-		}
+	const int morse_cnt  = events_find_by_type(events, event_type_morse_receive, &morse_idx);
+	if (1 != morse_cnt) {
+		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
+		return -1;
 	}
-	test_log_info("Expectation 2: types of events are correct %s\n", "");
+	const event_t * morse_event = &events->events[morse_idx];
 
+	int socket_idx = -1;
+	const int socket_cnt = events_find_by_type(events, event_type_client_socket_receive, &socket_idx);
+	if (1 != socket_cnt) {
+		test_log_err("Expectation %d: incorrect count of socket receive events: expected 1, got %d\n", expectation_idx, socket_cnt);
+		return -1;
+	}
+	const event_t * socket_event = &events->events[socket_idx];
+
+	test_log_info("Expectation %d: found expected events\n", expectation_idx);
 
 
 

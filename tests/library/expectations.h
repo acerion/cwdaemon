@@ -79,5 +79,17 @@ int expect_morse_and_socket_event_order(int expectation_idx, int morse_idx, int 
 
 
 
+
+/**
+   @brief Count of recorded events must match count of expected events
+
+   @return 0 if expectation is met
+   @return -1 otherwise
+*/
+int expect_count_of_events(int expectation_idx, int n_recorded, int n_expected);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_EXPECTATIONS_H */
 

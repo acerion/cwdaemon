@@ -387,62 +387,63 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 1: there should be N events:
-	    - Morse receive (if test_case::message is empty then we don't expect this event to occur),
-	    - us sending EXIT request to cwdaemon server,
-	    - cwdaemon cleanly exits which is signalled by SIGCHLD signal received by this test program.
-	*/
-	expectation_idx++;
-	{
-		const int expected = test_case->send_message_request ? 3 : 2;
-		if (expected != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events: %d (expected %d)\n", events->event_idx, expected);
-			return -1;
-		}
+	/* Define set of expected events. */
+	event_type_t expected_events[EVENTS_MAX] = { 0 };
+	int n_expected = 0; /* Count of expected events. */
+	if (test_case->send_message_request) {
+		expected_events[n_expected++] = event_type_morse_receive;
 	}
-	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
+	expected_events[n_expected++] = event_type_request_exit;
+	expected_events[n_expected++] = event_type_sigchld;
 
 
 
 
-	/* Expectation 2: events in proper order. */
-	expectation_idx++;
-	const event_t * morse = NULL;
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+		return -1;
+	}
+
+
+
+
+	/* Expectation: correct types and order of events. */
+	expectation_idx = 2;
+	const event_t * morse_event = NULL;
 	const event_t * exit_request = NULL;
-	const event_t * sigchld = NULL;
-	int i = 0;
-
-	if (test_case->send_message_request) {
-		if (events->events[i].event_type != event_type_morse_receive) {
-			test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
+	const event_t * sigchld_event = NULL;
+	for (int i = 0; i < n_expected; i++) {
+		if (expected_events[i] != events->events[i].event_type) {
+			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
-		morse = &events->events[i];
-		i++;
+
+		/* Get references to specific events in array of events. */
+		switch (events->events[i].event_type) {
+		case event_type_morse_receive:
+			morse_event = &events->events[i];
+			break;
+		case event_type_sigchld:
+			sigchld_event = &events->events[i];
+			break;
+		case event_type_request_exit:
+			exit_request = &events->events[i];
+			break;
+		case event_type_none:
+		case event_type_client_socket_receive:
+		default:
+			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			return -1;
+		}
 	}
-
-
-	if (events->events[i].event_type != event_type_request_exit) {
-		test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
-		return -1;
-	}
-	exit_request = &events->events[i];
-	i++;
-
-	if (events->events[i].event_type != event_type_sigchld) {
-		test_log_err("Expectation 2: unexpected type of event %d: %d\n", i, events->events[i].event_type);
-		return -1;
-	}
-	sigchld = &events->events[i];
-	i++;
-	test_log_info("Expectation 2: types of events are correct %s\n", "");
+	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
 
 
 
 
-	expectation_idx++;
+	expectation_idx = 3;
 	if (test_case->send_message_request) {
-		if (0 != expect_morse_receive_match(expectation_idx, morse->u.morse_receive.string, test_case->full_message)) {
+		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
 			return -1;
 		}
 	} else {
@@ -452,9 +453,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 4: cwdaemon exited cleanly. */
-	expectation_idx++;
-	const int wstatus = sigchld->u.sigchld.wstatus;
+	/* Expectation: cwdaemon exited cleanly. */
+	expectation_idx = 4;
+	const int wstatus = sigchld_event->u.sigchld.wstatus;
 	const bool clean_exit = WIFEXITED(wstatus) && 0 == WEXITSTATUS(wstatus);
 	if (!clean_exit) {
 		test_log_err("Expectation 4: cwdaemon server didn't exit cleanly, wstatus = %d\n", wstatus);
@@ -465,11 +466,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 5: time span between request to exit and the actual exit
+	/* Expectation: time span between request to exit and the actual exit
 	   was short (definition of "short" is not precise). */
-	expectation_idx++;
+	expectation_idx = 5;
 	struct timespec diff = { 0 };
-	timespec_diff(&exit_request->tstamp, &sigchld->tstamp, &diff);
+	timespec_diff(&exit_request->tstamp, &sigchld_event->tstamp, &diff);
 	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
 		test_log_err("Expectation 5: duration of exit was longer than expected: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
 		return -1;

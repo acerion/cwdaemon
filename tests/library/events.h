@@ -155,5 +155,23 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
 
 
 
+/**
+   @brief Find event(s) of given type
+
+   @p first_idx is updated by the function only if some event(s) of type @p
+   type are found.
+
+   @param[in] events Events array in which to look for events of given type
+   @param[in] type Type of event(s) to find in @p events
+   @param[out] first_idx Index of first event of given type (if function returns value greater than zero)
+
+   @return count of events of given type (may be zero)
+   @return -1 on errors
+*/
+int events_find_by_type(const events_t * events, event_type_t type, int * first_idx);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_EVENTS_H */
 

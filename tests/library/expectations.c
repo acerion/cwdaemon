@@ -101,3 +101,19 @@ int expect_morse_and_socket_event_order(int expectation_idx, int morse_idx, int 
 	return 0;
 }
 
+
+
+
+int expect_count_of_events(int expectation_idx, int n_recorded, int n_expected)
+{
+	if (n_recorded != n_expected) {
+		test_log_err("Expectation %d: unexpected count of events: recorded %d events, expected %d events\n",
+		             expectation_idx, n_recorded, n_expected);
+		return -1;
+	}
+	test_log_info("Expectation %d: found expected count of events: %d\n", expectation_idx, n_recorded);
+
+	return 0;
+}
+
+

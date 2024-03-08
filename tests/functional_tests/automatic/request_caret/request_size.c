@@ -207,34 +207,24 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/*
 	  Expectation 2: events are of correct type.
 	*/
-	expectation_idx++;
-	const event_t * morse_event = NULL;
-	const event_t * socket_event = NULL;
 	int morse_idx = -1;
+	const int morse_cnt  = events_find_by_type(events, event_type_morse_receive, &morse_idx);
+	if (1 != morse_cnt) {
+		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
+		return -1;
+	}
+	const event_t * morse_event = &events->events[morse_idx];
+
 	int socket_idx = -1;
-
-	if (events->events[0].event_type == events->events[1].event_type) {
-		test_log_err("Expectation 2: both events have the same type %s\n", "");
+	const int socket_cnt = events_find_by_type(events, event_type_client_socket_receive, &socket_idx);
+	const int expected_socket_cnt = expecting_socket_reply_event ? 1 : 0;
+	if (expected_socket_cnt != socket_cnt) {
+		test_log_err("Expectation %d: incorrect count of socket receive events: expected %d, got %d\n", expectation_idx, expected_socket_cnt, socket_cnt);
 		return -1;
 	}
+	const event_t * socket_event = &events->events[socket_idx];
 
-	for (int i = 0; i < events->event_idx; i++) {
-		if (events->events[i].event_type == event_type_client_socket_receive) {
-			socket_event = &events->events[i];
-			socket_idx = i;
-		} else if (events->events[i].event_type == event_type_morse_receive) {
-			morse_event = &events->events[i];
-			morse_idx = i;
-		} else {
-			test_log_err("Expectation 2: found unexpected event type at position %d: %d\n", i, events->events[i].event_type);
-			return -1;
-		}
-	}
-	if (expecting_socket_reply_event != (NULL != socket_event)) {
-		test_log_err("Expectation 2: invalid condition for socket reply event: expected = %d, is present = %d\n", expecting_socket_reply_event, (NULL != socket_event));
-		return -1;
-	}
-	test_log_info("Expectation 2: found expected event types %s\n", "");
+	test_log_info("Expectation %d: types of events are correct\n", expectation_idx);
 
 
 

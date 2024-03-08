@@ -337,22 +337,28 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 1: correct count of events. */
-	expectation_idx++;
+	test_log_info("A test case with expected %s receive\n",
+	              test_case->expected_failed_receive ? "unsuccessful" : "successful");
+
+
+
+
+	/* Define set of expected events. */
+	event_type_t expected_events[EVENTS_MAX] = { 0 };
+	int n_expected = 0; /* Count of expected events. */
 	if (test_case->expected_failed_receive) {
-		if (0 != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events (expected failed receive): %d\n", events->event_idx);
-			return -1;
-		}
+		; /* Pass. */
 	} else {
-		if (1 != events->event_idx) {
-			test_log_err("Expectation 1: unexpected count of events (expected successful receive): %d\n", events->event_idx);
-			return -1;
-		}
+		expected_events[n_expected++] = event_type_morse_receive;
 	}
-	test_log_info("Expectation 1: found expected count of events (expected %s receive): %d\n",
-	              test_case->expected_failed_receive ? "unsuccessful" : "successful",
-	              events->event_idx);
+
+
+
+
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+		return -1;
+	}
 
 
 
@@ -366,21 +372,36 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 2: our event is a Morse receive event. */
-	expectation_idx++;
-	const event_t * event_morse = NULL;
-	if (events->events[0].event_type != event_type_morse_receive) {
-		test_log_err("Expectation 2: unexpected type of event: %d\n", events->events[0].event_type);
-		return -1;
+	/* Expectation: correct types and order of events. */
+	expectation_idx = 2;
+	const event_t * morse_event = NULL;
+	for (int i = 0; i < n_expected; i++) {
+		if (expected_events[i] != events->events[i].event_type) {
+			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			return -1;
+		}
+
+		/* Get references to specific events in array of events. */
+		switch (events->events[i].event_type) {
+		case event_type_morse_receive:
+			morse_event = &events->events[i];
+			break;
+		case event_type_none:
+		case event_type_client_socket_receive:
+		case event_type_request_exit:
+		case event_type_sigchld:
+		default:
+			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			return -1;
+		}
 	}
-	test_log_info("Expectation 2: found expected Morse event %s\n", "");
-	event_morse = &events->events[0];
+	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
 
 
 
 
-	expectation_idx++;
-	if (0 != expect_morse_receive_match(expectation_idx, event_morse->u.morse_receive.string, test_case->full_message)) {
+	expectation_idx = 3;
+	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
 		return -1;
 	}
 

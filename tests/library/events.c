@@ -240,3 +240,22 @@ int events_sort(events_t * events)
 	return 0;
 }
 
+
+
+
+int events_find_by_type(const events_t * events, event_type_t type, int * first_idx)
+{
+	int found_cnt = 0;
+	for (int i = 0; i < events->event_idx; i++) {
+		if (events->events[i].event_type == type) {
+			found_cnt++;
+			if (1 == found_cnt) {
+				*first_idx = i;
+			}
+		}
+	}
+
+	return found_cnt;
+}
+
+

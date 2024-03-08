@@ -397,55 +397,60 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 1: count of events. */
-	expectation_idx++;
+	/* Define set of expected events. */
+	event_type_t expected_events[EVENTS_MAX] = { 0 };
+	int n_expected = 0; /* Count of expected events. */
 	if (test_case->expected_fail) {
-		/* We expect "exit because of failed command line options" event
-		   to be recorded. */
-		if (1 != events->event_idx) {
-			test_log_err("Expectation 1: failure case: incorrect count of events: %d (expected 1)\n", events->event_idx);
-			return -1;
-		}
+		expected_events[n_expected++] = event_type_sigchld;
 	} else {
-		/* We expect that correctly started cwdaemon can key Morse code on
-		   cwdevice, which is received by Morse Receiver .*/
-		if (1 != events->event_idx) {
-			test_log_err("Expectation 1: success case: incorrect count of events: %d (expected 1)\n", events->event_idx);
-			return -1;
-		}
+		expected_events[n_expected++] = event_type_morse_receive;
 	}
-	test_log_info("Expectation 1: found expected count of events: %d\n", events->event_idx);
 
 
 
 
-	/* Expectation 2: correct event types. */
-	expectation_idx++;
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+		return -1;
+	}
+
+
+
+
+	/* Expectation: correct types and order of events. */
+	expectation_idx = 2;
 	const event_t * morse_event = NULL;
 	const event_t * sigchld_event = NULL;
+	for (int i = 0; i < n_expected; i++) {
+		if (expected_events[i] != events->events[i].event_type) {
+			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			return -1;
+		}
 
-	if (test_case->expected_fail) {
-		int i = 0;
-		if (events->events[i].event_type != event_type_sigchld) {
-			test_log_err("Expectation 2: failure case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
+		/* Get references to specific events in array of events. */
+		switch (events->events[i].event_type) {
+		case event_type_morse_receive:
+			morse_event = &events->events[i];
+			break;
+		case event_type_sigchld:
+			sigchld_event = &events->events[i];
+			break;
+		case event_type_none:
+		case event_type_client_socket_receive:
+		case event_type_request_exit:
+		default:
+			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
-		sigchld_event = &events->events[i];
-	} else {
-		int i = 0;
-		if (events->events[i].event_type != event_type_morse_receive) {
-			test_log_err("Expectation 2: success case: event #%d has unexpected type: %d\n", i, events->events[i].event_type);
-			return -1;
-		}
-		morse_event = &events->events[i];
 	}
-	test_log_info("Expectation 2: found expected types of events %s\n", "");
+	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
 
 
 
 
-	/* Expectation 3: when we use wrong port option, cwdaemon terminates in expected way. */
-	expectation_idx++;
+
+	/* Expectation: when we use wrong port option, cwdaemon terminates in expected way. */
+	expectation_idx = 3;
 	if (test_case->expected_fail) {
 		const int wstatus = sigchld_event->u.sigchld.wstatus;
 		/* cwdaemon should have exited when it detected invalid value of port
@@ -466,7 +471,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	expectation_idx++;
+	expectation_idx = 4;
 	if (!test_case->expected_fail) {
 		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
 			return -1;
