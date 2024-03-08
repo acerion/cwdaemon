@@ -116,7 +116,8 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cw_easy_receiver.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
-	lib_tests_a-events.$(OBJEXT) lib_tests_a-misc.$(OBJEXT) \
+	lib_tests_a-events.$(OBJEXT) \
+	lib_tests_a-expectations.$(OBJEXT) lib_tests_a-misc.$(OBJEXT) \
 	lib_tests_a-morse_receiver.$(OBJEXT) \
 	lib_tests_a-morse_receiver_utils.$(OBJEXT) \
 	lib_tests_a-random.$(OBJEXT) lib_tests_a-server.$(OBJEXT) \
@@ -146,6 +147,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po \
 	./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po \
 	./$(DEPDIR)/lib_tests_a-events.Po \
+	./$(DEPDIR)/lib_tests_a-expectations.Po \
 	./$(DEPDIR)/lib_tests_a-misc.Po \
 	./$(DEPDIR)/lib_tests_a-morse_receiver.Po \
 	./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po \
@@ -321,6 +323,7 @@ check_HEADERS = client.h             \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
                 events.h             \
+                expectations.h       \
                 log.h                \
                 misc.h               \
                 morse_receiver.h     \
@@ -343,6 +346,7 @@ lib_tests_a_SOURCES = client.c             \
                       cwdevice_observer.c  \
                       cwdevice_observer_serial.c  \
                       events.c             \
+                      expectations.c       \
                       misc.c               \
                       morse_receiver.c     \
                       morse_receiver_utils.c \
@@ -410,6 +414,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-events.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-expectations.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-misc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po@am__quote@ # am--include-marker
@@ -514,6 +519,20 @@ lib_tests_a-events.obj: events.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='events.c' object='lib_tests_a-events.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-events.obj `if test -f 'events.c'; then $(CYGPATH_W) 'events.c'; else $(CYGPATH_W) '$(srcdir)/events.c'; fi`
+
+lib_tests_a-expectations.o: expectations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-expectations.o -MD -MP -MF $(DEPDIR)/lib_tests_a-expectations.Tpo -c -o lib_tests_a-expectations.o `test -f 'expectations.c' || echo '$(srcdir)/'`expectations.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-expectations.Tpo $(DEPDIR)/lib_tests_a-expectations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='expectations.c' object='lib_tests_a-expectations.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-expectations.o `test -f 'expectations.c' || echo '$(srcdir)/'`expectations.c
+
+lib_tests_a-expectations.obj: expectations.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-expectations.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-expectations.Tpo -c -o lib_tests_a-expectations.obj `if test -f 'expectations.c'; then $(CYGPATH_W) 'expectations.c'; else $(CYGPATH_W) '$(srcdir)/expectations.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-expectations.Tpo $(DEPDIR)/lib_tests_a-expectations.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='expectations.c' object='lib_tests_a-expectations.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-expectations.obj `if test -f 'expectations.c'; then $(CYGPATH_W) 'expectations.c'; else $(CYGPATH_W) '$(srcdir)/expectations.c'; fi`
 
 lib_tests_a-misc.o: misc.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-misc.o -MD -MP -MF $(DEPDIR)/lib_tests_a-misc.Tpo -c -o lib_tests_a-misc.o `test -f 'misc.c' || echo '$(srcdir)/'`misc.c
@@ -812,6 +831,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-expectations.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po
@@ -874,6 +894,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-expectations.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-misc.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po

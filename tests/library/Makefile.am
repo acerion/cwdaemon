@@ -12,6 +12,7 @@ check_HEADERS = client.h             \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
                 events.h             \
+                expectations.h       \
                 log.h                \
                 misc.h               \
                 morse_receiver.h     \
@@ -34,6 +35,7 @@ lib_tests_a_SOURCES = client.c             \
                       cwdevice_observer.c  \
                       cwdevice_observer_serial.c  \
                       events.c             \
+                      expectations.c       \
                       misc.c               \
                       morse_receiver.c     \
                       morse_receiver_utils.c \

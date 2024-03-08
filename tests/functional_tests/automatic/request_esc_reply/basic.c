@@ -45,6 +45,7 @@
 
 #include "tests/library/client.h"
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
@@ -215,6 +216,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	const event_t * event_0 = &events->events[0];
@@ -226,6 +230,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	/* Expectation 1: there should be only two events. */
+	expectation_idx++;
 	{
 		if (2 != events->event_idx) {
 			test_log_err("Expectation 1: unexpected count of events: %d (expected 2)\n", events->event_idx);
@@ -237,33 +242,27 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
+	int morse_idx = -1;
+	int socket_idx = -1;
 	/* Expectation 2: first event should be Morse receive, second event should be reply on socket. */
+	expectation_idx++;
 	{
 		if (event_0->event_type == event_type_morse_receive
 		    && event_1->event_type != event_type_client_socket_receive) {
 
-			/*
-			  This would be the correct order of events, but currently
-			  (cwdaemon 0.11.0, 0.12.0) this is not the case: the order of
-			  events is reverse. Right now I'm not willing to fix it yet.
-
-			  TODO acerion 2023.12.30: fix the order of the two events in
-			  cwdaemon. At the very least decrease the time difference
-			  between the events from current ~300ms to few ms.
-			*/
 			morse_event = event_0;
 			socket_event = event_1;
+			morse_idx = 0;
+			socket_idx = 1;
 			; /* Pass. */
 		} else {
 			if (event_0->event_type == event_type_client_socket_receive
 			    && event_1->event_type == event_type_morse_receive) {
 
-				// This is the current incorrect behaviour that is accepted
-				// for now.
-				test_log_warn("Expectation 2: incorrect (but currently expected) order of events: %d -> %d\n",
-				              event_0->event_type, event_1->event_type);
 				socket_event = event_0;
 				morse_event = event_1;
+				socket_idx = 0;
+				morse_idx = 1;
 				; /* Pass. */
 			} else {
 				test_log_err("Expectation 2: completely incorrect order of events: %d -> %d\n",
@@ -277,62 +276,38 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 3: the events should be separated by close time span. */
-	/* Maximal allowed time span between the two events. Currently (0.12.0)
-	   the time span is ~300ms.
-	   TODO acerion 2023.12.31: shorten the time span. */
-	const long int threshold = (long) 500 * 1000 * 1000;
-	struct timespec diff = { 0 };
-	timespec_diff(&event_0->tstamp, &event_1->tstamp, &diff);
-	if (diff.tv_sec > 0 || diff.tv_nsec > threshold) {
-		test_log_err("Expectation 3: time difference between end of 'Morse receive' and receiving socket reply is too large: %ld.%09ld seconds\n",
-		             diff.tv_sec, diff.tv_nsec);
+
+	expectation_idx++;
+	if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
 		return -1;
 	}
-	test_log_info("Expectation 3: time difference between end of 'Morse receive' and receiving socket reply is ok: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 
 
 
 
-	/* Expectation 4: text received by Morse receiver must match input text from test case.
+	expectation_idx++;
+	if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
+		return -1;
+	}
 
-	   While this is not THE feature that needs to be verified by this test,
+
+
+
+	/* While this is not THE feature that needs to be verified by this test,
 	   it's good to know that we received full and correct data. */
-	{
-		const char * received = morse_event->u.morse_receive.string;
-		const char * expected = test_case->expected_morse_receive;
-		if (!morse_receive_text_is_correct(received, expected)) {
-			test_log_err("Expectation 4: received Morse message [%s] doesn't match text from message request [%s]\n",
-			             received, expected);
-			return -1;
-		}
-		test_log_info("Expectation 4: received Morse message [%s] matches expected Morse message [%s] (ignoring the first character)\n",
-		              received, expected);
+	expectation_idx++;
+	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
+		return -1;
 	}
 
 
 
 
-	/* Expectation 5: text received in socket message must match text sent in <ESC>h
-	   request. */
-	{
-		const socket_receive_data_t * received = &socket_event->u.socket_receive;
-		const socket_receive_data_t * expected = &test_case->expected_socket_reply;
-
-		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
-		char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
-		get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
-		get_printable_string(received->bytes, printable_received, sizeof (printable_received));
-
-		if (!socket_receive_bytes_is_correct(expected, received)) {
-			test_log_err("Expectation 5: received incorrect message in socket reply: expected [%s], received [%s]\n",
-			             printable_expected, printable_received);
-			return -1;
-		}
-
-		test_log_info("Expectation 5: received correct message in socket reply: expected [%s], received [%s]\n",
-		              printable_expected, printable_received);
+	expectation_idx++;
+	if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.socket_receive, &test_case->expected_socket_reply)) {
+		return -1;
 	}
+
 
 
 

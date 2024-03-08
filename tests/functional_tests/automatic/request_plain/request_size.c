@@ -53,6 +53,7 @@
 #include "request_size.h"
 
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/morse_receiver_utils.h"
@@ -266,12 +267,16 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	/*
 	  Expectation 1: there should be 1 event:
 	   - Receiving some Morse code on cwdevice.
 	*/
+	expectation_idx++;
 	if (1 != events->event_idx) {
 		test_log_err("Expectation 1: incorrect count of events recorded. Expected 1 event, got %d\n", events->event_idx);
 		return -1;
@@ -284,6 +289,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/*
 	  Expectation 2: events are of correct type.
 	*/
+	expectation_idx++;
 	const event_t * morse_event = NULL;
 	if (events->events[0].event_type != event_type_morse_receive) {
 		test_log_err("Expectation 2: can't find Morse receive event in events table; events[0] = %d\n", events->events[0].event_type);
@@ -295,16 +301,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/*
-	  Expectation 3: cwdaemon keyed a proper Morse message on cwdevice.
-	*/
-	if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
-		test_log_err("Expectation 3: received Morse message [%s] doesn't match expected receive [%s]\n",
-		             morse_event->u.morse_receive.string, test_case->expected_morse_receive);
+	expectation_idx++;
+	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
 		return -1;
 	}
-	test_log_info("Expectation 5: received Morse message [%s] matches expected receive [%s] (ignoring the first character)\n",
-	              morse_event->u.morse_receive.string, test_case->expected_morse_receive);
 
 
 

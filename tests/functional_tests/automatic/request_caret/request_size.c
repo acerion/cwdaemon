@@ -52,6 +52,7 @@
 #include "request_size.h"
 
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/morse_receiver.h"
 #include "tests/library/morse_receiver_utils.h"
@@ -174,6 +175,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	/*
@@ -182,6 +186,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	   - Receiving some Morse code on cwdevice.
 	  In other cases there should be one event: just the Morse event.
 	*/
+	expectation_idx++;
 	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
 	if (expecting_socket_reply_event) {
 		if (2 != events->event_idx) {
@@ -202,6 +207,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/*
 	  Expectation 2: events are of correct type.
 	*/
+	expectation_idx++;
 	const event_t * morse_event = NULL;
 	const event_t * socket_event = NULL;
 	int morse_idx = -1;
@@ -233,108 +239,46 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/*
-	  Expectation 3: events in proper order.
-
-	  I'm not 100% sure what the correct order should be in perfect
-	  implementation of cwdaemon. In 0.12.0 it is "socket receive" first, and
-	  then "morse receive" second, unless a message sent to server ends with
-	  space.
-
-	  TODO acerion 2024.01.28: check what SHOULD be the correct order of the
-	  two events. Some comments in cwdaemon indicate that reply should be
-	  sent after end of playing Morse.
-
-	  TODO acerion 2024.01.26: Double check the corner case with space at the
-	  end of message.
-	*/
+	expectation_idx++;
 	if (expecting_socket_reply_event) {
-		if (morse_idx < socket_idx) {
-			test_log_warn("Expectation 3: unexpected order of events: Morse first (idx = %d), socket second (idx = %d)\n", morse_idx, socket_idx);
-			//return -1; /* TODO acerion 2024.01.26: uncomment after your are certain of correct order of events. */
-		} else {
-			test_log_info("Expectation 3: expected order of events: socket first (idx = %d), Morse second (idx = %d)\n", socket_idx, morse_idx);
-		}
-	} else {
-		test_log_info("Expectation 3: skipping checking order of events if there is only one event %s\n", "");
-	}
-
-
-
-
-	/*
-	  Expectation 4: cwdaemon client has received over socket a correct
-	  reply.
-	*/
-	if (expecting_socket_reply_event) {
-		const socket_receive_data_t * expected = &test_case->expected_socket_reply;
-		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
-		get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
-
-		const socket_receive_data_t * received = &socket_event->u.socket_receive;
-		char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
-		get_printable_string(received->bytes, printable_received, sizeof (printable_received));
-
-		if (!socket_receive_bytes_is_correct(expected, received)) {
-			test_log_err("Expectation 4: received socket reply [%s] doesn't match expected socket reply [%s]\n", printable_received, printable_expected);
+		if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
 			return -1;
 		}
-		test_log_info("Expectation 4: received socket reply %zu/[%s] matches expected reply %zu/[%s]\n",
-		              received->n_bytes, printable_received,
-		              expected->n_bytes, printable_expected);
 	} else {
-		test_log_info("Expectation 4: skipping checking contents of socket reply because there is no socket event %s\n", "");
+		test_log_info("Expectation %d: skipping checking order of events if there is only one event\n", expectation_idx);
 	}
 
 
 
 
+	expectation_idx++;
+	if (expecting_socket_reply_event) {
+		if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.socket_receive, &test_case->expected_socket_reply)) {
+			return -1;
+		}
+	} else {
+		test_log_info("Expectation %d: skipping checking contents of socket reply because there is no socket event\n", expectation_idx);
+	}
 
-	/*
-	  Expectation 5: cwdaemon keyed a proper Morse message on cwdevice.
 
-	  Receiving of message by Morse receiver should not be verified if the
-	  expected message is too short (the problem with "warm-up" of receiver).
-	  TOOO acerion 2024.01.28: remove "do_morse_test" flag after fixing
-	  receiver.
-	*/
-	if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
-		test_log_err("Expectation 5: received Morse message [%s] doesn't match expected receive [%s]\n",
-		             morse_event->u.morse_receive.string, test_case->expected_morse_receive);
+
+
+	expectation_idx++;
+	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
 		return -1;
 	}
-	test_log_info("Expectation 5: received Morse message [%s] matches expected receive [%s] (ignoring the first character)\n",
-	              morse_event->u.morse_receive.string, test_case->expected_morse_receive);
 
 
 
 
-	/*
-	  Expectation 6: "Morse receive" event and "socket receive" event are
-	  close to each other.
-
-	  TODO acerion 2024.01.26: the threshold is still 0.5 seconds. That's a
-	  lot. Try to bring it down. Notice that the time diff may depend on
-	  Morse code speed (wpm).
-	*/
+	expectation_idx++;
 	if (expecting_socket_reply_event) {
-		struct timespec diff = { 0 };
-		if (morse_idx < socket_idx) {
-			timespec_diff(&morse_event->tstamp, &socket_event->tstamp, &diff);
-		} else {
-			timespec_diff(&socket_event->tstamp, &morse_event->tstamp, &diff);
-		}
-
-		const int threshold = 500L * 1000 * 1000; /* [nanoseconds] */
-		if (diff.tv_sec > 0 || diff.tv_nsec > threshold) {
-			test_log_err("Expectation 6: time difference between end of 'Morse receive' and receiving socket reply is too large: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
+		if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
 			return -1;
 		}
-		test_log_info("Expectation 6: time difference between end of 'Morse receive' and receiving socket reply is ok: %ld.%09ld seconds\n", diff.tv_sec, diff.tv_nsec);
 	} else {
-		test_log_info("Expectation 6: skipping checking of the expectation because socket event is not present %s\n", "");
+		test_log_info("Expectation %d: skipping checking of the expectation because socket event is not present\n", expectation_idx);
 	}
-
 
 
 

@@ -76,6 +76,7 @@
 //#include "tests/library/cwdevice_observer.h"
 //#include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
@@ -391,9 +392,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	/* Expectation 1: count of events. */
+	expectation_idx++;
 	if (test_case->expected_fail) {
 		/* We expect "exit because of failed command line options" event
 		   to be recorded. */
@@ -415,6 +420,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	/* Expectation 2: correct event types. */
+	expectation_idx++;
 	const event_t * morse_event = NULL;
 	const event_t * sigchld_event = NULL;
 
@@ -439,6 +445,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	/* Expectation 3: when we use wrong port option, cwdaemon terminates in expected way. */
+	expectation_idx++;
 	if (test_case->expected_fail) {
 		const int wstatus = sigchld_event->u.sigchld.wstatus;
 		/* cwdaemon should have exited when it detected invalid value of port
@@ -459,17 +466,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 4: the Morse event contains correct received text. */
+	expectation_idx++;
 	if (!test_case->expected_fail) {
-		if (!morse_receive_text_is_correct(morse_event->u.morse_receive.string, test_case->full_message)) {
-			test_log_err("Expectation 4: success case: received Morse message [%s] doesn't match text from message request [%s]\n",
-			             morse_event->u.morse_receive.string, test_case->full_message);
+		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
 			return -1;
 		}
-		test_log_info("Expectation 4: received Morse message [%s] matches text from message request [%s] (ignoring the first character)\n",
-		              morse_event->u.morse_receive.string, test_case->full_message);
 	} else {
-		test_log_info("Expectation 4: evaluation of Morse message was skipped for incorrectly started cwdaemon %s\n", "");
+		test_log_info("Expectation %d: evaluation of Morse message was skipped for incorrectly started cwdaemon\n", expectation_idx);
 	}
 
 

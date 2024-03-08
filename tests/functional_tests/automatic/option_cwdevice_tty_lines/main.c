@@ -47,6 +47,7 @@
 //#include "tests/library/cwdevice_observer.h"
 #include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
@@ -331,9 +332,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	/* Expectation 1: correct count of events. */
+	expectation_idx++;
 	if (test_case->expected_failed_receive) {
 		if (0 != events->event_idx) {
 			test_log_err("Expectation 1: unexpected count of events (expected failed receive): %d\n", events->event_idx);
@@ -362,6 +367,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	/* Expectation 2: our event is a Morse receive event. */
+	expectation_idx++;
 	const event_t * event_morse = NULL;
 	if (events->events[0].event_type != event_type_morse_receive) {
 		test_log_err("Expectation 2: unexpected type of event: %d\n", events->events[0].event_type);
@@ -373,14 +379,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 3: the Morse event contains correct received text. */
-	if (!morse_receive_text_is_correct(event_morse->u.morse_receive.string, test_case->full_message)) {
-		test_log_err("Expectation 3: received Morse message [%s] doesn't match text from message request [%s]\n",
-		             event_morse->u.morse_receive.string, test_case->full_message);
+	expectation_idx++;
+	if (0 != expect_morse_receive_match(expectation_idx, event_morse->u.morse_receive.string, test_case->full_message)) {
 		return -1;
 	}
-	test_log_info("Expectation 3: received Morse message [%s] matches text from message request [%s] (ignoring the first character)\n",
-	              event_morse->u.morse_receive.string, test_case->full_message);
 
 
 

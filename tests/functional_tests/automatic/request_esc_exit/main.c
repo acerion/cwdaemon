@@ -67,6 +67,7 @@
 //#include "tests/library/cwdevice_observer.h"
 //#include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 //#include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
@@ -381,6 +382,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+
+
 
 
 	/* Expectation 1: there should be N events:
@@ -388,6 +392,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	    - us sending EXIT request to cwdaemon server,
 	    - cwdaemon cleanly exits which is signalled by SIGCHLD signal received by this test program.
 	*/
+	expectation_idx++;
 	{
 		const int expected = test_case->send_message_request ? 3 : 2;
 		if (expected != events->event_idx) {
@@ -401,6 +406,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	/* Expectation 2: events in proper order. */
+	expectation_idx++;
 	const event_t * morse = NULL;
 	const event_t * exit_request = NULL;
 	const event_t * sigchld = NULL;
@@ -434,23 +440,20 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Expectation 3: cwdaemon keyed a proper Morse message on cwdevice. */
+	expectation_idx++;
 	if (test_case->send_message_request) {
-		if (!morse_receive_text_is_correct(morse->u.morse_receive.string, test_case->full_message)) {
-			test_log_err("Expectation 3: received Morse message [%s] doesn't match text from message request [%s]\n",
-			             morse->u.morse_receive.string, test_case->full_message);
+		if (0 != expect_morse_receive_match(expectation_idx, morse->u.morse_receive.string, test_case->full_message)) {
 			return -1;
 		}
-		test_log_info("Expectation 3: received Morse message [%s] matches text from message request [%s] (ignoring the first character)\n",
-		              morse->u.morse_receive.string, test_case->full_message);
 	} else {
-		test_log_info("Expectation 3: skipping verification of Morse message, because this test doesn't play Morse code %s\n", "");
+		test_log_info("Expectation %d: skipping verification of Morse message, because this test doesn't play Morse code\n", expectation_idx);
 	}
 
 
 
 
 	/* Expectation 4: cwdaemon exited cleanly. */
+	expectation_idx++;
 	const int wstatus = sigchld->u.sigchld.wstatus;
 	const bool clean_exit = WIFEXITED(wstatus) && 0 == WEXITSTATUS(wstatus);
 	if (!clean_exit) {
@@ -464,6 +467,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	/* Expectation 5: time span between request to exit and the actual exit
 	   was short (definition of "short" is not precise). */
+	expectation_idx++;
 	struct timespec diff = { 0 };
 	timespec_diff(&exit_request->tstamp, &sigchld->tstamp, &diff);
 	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
