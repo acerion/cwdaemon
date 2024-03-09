@@ -31,6 +31,8 @@
 
 
 
+#include "config.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -49,7 +51,9 @@
 
 static int (*g_tests[])(void) = {
 	basic_tests,
+#if RUN_LONG_FUNCTIONAL_TESTS
 	request_size_tests,
+#endif
 };
 
 

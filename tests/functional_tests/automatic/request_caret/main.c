@@ -31,11 +31,6 @@
 
 
 
-#define _DEFAULT_SOURCE
-
-
-
-
 #include "config.h"
 
 #include <stdbool.h>
@@ -56,7 +51,9 @@
 
 static int (*g_tests[])(void) = {
 	basic_caret_test,
+#if RUN_LONG_FUNCTIONAL_TESTS
 	//request_size_caret_test,
+#endif
 };
 
 

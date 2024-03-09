@@ -340,7 +340,12 @@ Quality Assurance
       The tests are disabled by default. They can be enabled at compile time
       by passing '--enable-functional-tests' flag to './configure'.
 
-      The tests are executed with "make check".
+      Some of the functional test take a very long time to complete. Such
+      tests are disabled by default, even if functional tests are enabled. To
+      enable the long-running functional tests, an additional flag must be
+      passed to ./configure: '--enable-long-functional-tests'.
+
+      The functional tests are executed by running "make check" command.
 
       The tests require presence of USB-TTY converter, which is visible as
       /dev/ttyUSB0 (on other OSes the default name may be different). The

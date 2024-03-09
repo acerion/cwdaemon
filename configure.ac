@@ -98,6 +98,7 @@ if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings"
   CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
+  CFLAGS="${CFLAGS} -Wundef"
 
   # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
   CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
@@ -123,6 +124,25 @@ else
 fi
 AM_CONDITIONAL([FUNCTIONAL_TESTS], [test x$enable_functional_tests = xyes])
 AC_SUBST(FUNCTIONAL_TESTS)
+
+
+
+
+# Run long functional tests? No by default.
+AC_ARG_ENABLE(long_functional_tests,
+    AS_HELP_STRING([--enable-long-functional-tests], [run long functional tests of cwdaemon]),
+    [],
+    [enable_long_functional_tests=no])
+
+AC_MSG_CHECKING([whether to run cwdaemon's long functional tests])
+if test x$enable_long_functional_tests = xyes ; then
+    AC_MSG_RESULT(yes)
+	AC_DEFINE([RUN_LONG_FUNCTIONAL_TESTS], [1], [Whether to run long functional tests.])
+else
+    AC_MSG_RESULT(no)
+	AC_DEFINE([RUN_LONG_FUNCTIONAL_TESTS], [0], [Whether to run long functional tests.])
+fi
+
 
 
 
@@ -246,17 +266,18 @@ AC_OUTPUT
 # console.
 AC_MSG_NOTICE([----------------------------------------------------------])
 AC_MSG_NOTICE([---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------])
-AC_MSG_NOTICE([  operating system: ...............  $host_os])
-AC_MSG_NOTICE([  libcw library path: .............  $LIBCW_LIBDIR])
-AC_MSG_NOTICE([  libcw library version: ..........  $(pkg-config --modversion libcw)])
-AC_MSG_NOTICE([  LIBCW_LIBS: .....................  $LIBCW_LIBS])
-AC_MSG_NOTICE([  LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS])
-AC_MSG_NOTICE([  CFLAGS: .........................  $CFLAGS])
-AC_MSG_NOTICE([  enable unit tests: ..............  yes])
-AC_MSG_NOTICE([  enable gcov: ....................  $enable_gcov])
-AC_MSG_NOTICE([  enable functional tests: ........  $enable_functional_tests])
+AC_MSG_NOTICE([  operating system: .....................  $host_os])
+AC_MSG_NOTICE([  libcw library path: ...................  $LIBCW_LIBDIR])
+AC_MSG_NOTICE([  libcw library version: ................  $(pkg-config --modversion libcw)])
+AC_MSG_NOTICE([  LIBCW_LIBS: ...........................  $LIBCW_LIBS])
+AC_MSG_NOTICE([  LIBCW_CFLAGS: .........................  $LIBCW_CFLAGS])
+AC_MSG_NOTICE([  CFLAGS: ...............................  $CFLAGS])
+AC_MSG_NOTICE([  enable unit tests: ....................  yes])
+AC_MSG_NOTICE([  enable gcov: ..........................  $enable_gcov])
+AC_MSG_NOTICE([  enable functional tests: ..............  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
-    AC_MSG_NOTICE([      test tty cwdevice name: ...... $test_tty_cwdevice_name])
-    AC_MSG_NOTICE([      path to cwdaemon binary: ..... $test_cwdaemon_path])
+    AC_MSG_NOTICE([      run long functional tests: ........  $enable_long_functional_tests])
+    AC_MSG_NOTICE([      test tty cwdevice name: ...........  $test_tty_cwdevice_name])
+    AC_MSG_NOTICE([      path to cwdaemon binary: ..........  $test_cwdaemon_path])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

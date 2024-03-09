@@ -777,6 +777,7 @@ enable_silent_rules
 enable_maintainer_mode
 enable_dependency_tracking
 enable_functional_tests
+enable_long_functional_tests
 with_test_cwdaemon_path
 with_test_tty_cwdevice_name
 enable_gcov
@@ -1431,6 +1432,8 @@ Optional Features:
                           speeds up one-time build
   --enable-functional-tests
                           enable functional tests of cwdaemon
+  --enable-long-functional-tests
+                          run long functional tests of cwdaemon
   --enable-gcov           enable gcov code coverage report for unit tests of
                           cwdaemon
 
@@ -6673,6 +6676,7 @@ if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings"
   CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
+  CFLAGS="${CFLAGS} -Wundef"
 
   # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
   CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
@@ -6711,6 +6715,36 @@ else
   FUNCTIONAL_TESTS_FALSE=
 fi
 
+
+
+
+
+
+# Run long functional tests? No by default.
+# Check whether --enable-long_functional_tests was given.
+if test ${enable_long_functional_tests+y}
+then :
+  enableval=$enable_long_functional_tests;
+else $as_nop
+  enable_long_functional_tests=no
+fi
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to run cwdaemon's long functional tests" >&5
+printf %s "checking whether to run cwdaemon's long functional tests... " >&6; }
+if test x$enable_long_functional_tests = xyes ; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define RUN_LONG_FUNCTIONAL_TESTS 1" >>confdefs.h
+
+else
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+printf "%s\n" "#define RUN_LONG_FUNCTIONAL_TESTS 0" >>confdefs.h
+
+fi
 
 
 
@@ -8329,29 +8363,31 @@ fi
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&5
 printf "%s\n" "$as_me: ---------- $PACKAGE_NAME $PACKAGE_VERSION build configuration -----------" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system: ...............  $host_os" >&5
-printf "%s\n" "$as_me:   operating system: ...............  $host_os" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path: .............  $LIBCW_LIBDIR" >&5
-printf "%s\n" "$as_me:   libcw library path: .............  $LIBCW_LIBDIR" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&5
-printf "%s\n" "$as_me:   libcw library version: ..........  $(pkg-config --modversion libcw)" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS: .....................  $LIBCW_LIBS" >&5
-printf "%s\n" "$as_me:   LIBCW_LIBS: .....................  $LIBCW_LIBS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&5
-printf "%s\n" "$as_me:   LIBCW_CFLAGS: ...................  $LIBCW_CFLAGS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS: .........................  $CFLAGS" >&5
-printf "%s\n" "$as_me:   CFLAGS: .........................  $CFLAGS" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ..............  yes" >&5
-printf "%s\n" "$as_me:   enable unit tests: ..............  yes" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable gcov: ....................  $enable_gcov" >&5
-printf "%s\n" "$as_me:   enable gcov: ....................  $enable_gcov" >&6;}
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ........  $enable_functional_tests" >&5
-printf "%s\n" "$as_me:   enable functional tests: ........  $enable_functional_tests" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   operating system: .....................  $host_os" >&5
+printf "%s\n" "$as_me:   operating system: .....................  $host_os" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library path: ...................  $LIBCW_LIBDIR" >&5
+printf "%s\n" "$as_me:   libcw library path: ...................  $LIBCW_LIBDIR" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   libcw library version: ................  $(pkg-config --modversion libcw)" >&5
+printf "%s\n" "$as_me:   libcw library version: ................  $(pkg-config --modversion libcw)" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_LIBS: ...........................  $LIBCW_LIBS" >&5
+printf "%s\n" "$as_me:   LIBCW_LIBS: ...........................  $LIBCW_LIBS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   LIBCW_CFLAGS: .........................  $LIBCW_CFLAGS" >&5
+printf "%s\n" "$as_me:   LIBCW_CFLAGS: .........................  $LIBCW_CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   CFLAGS: ...............................  $CFLAGS" >&5
+printf "%s\n" "$as_me:   CFLAGS: ...............................  $CFLAGS" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable unit tests: ....................  yes" >&5
+printf "%s\n" "$as_me:   enable unit tests: ....................  yes" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable gcov: ..........................  $enable_gcov" >&5
+printf "%s\n" "$as_me:   enable gcov: ..........................  $enable_gcov" >&6;}
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}:   enable functional tests: ..............  $enable_functional_tests" >&5
+printf "%s\n" "$as_me:   enable functional tests: ..............  $enable_functional_tests" >&6;}
 if test x$enable_functional_tests = xyes ; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test tty cwdevice name: ...... $test_tty_cwdevice_name" >&5
-printf "%s\n" "$as_me:       test tty cwdevice name: ...... $test_tty_cwdevice_name" >&6;}
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&5
-printf "%s\n" "$as_me:       path to cwdaemon binary: ..... $test_cwdaemon_path" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       run long functional tests: ........  $enable_long_functional_tests" >&5
+printf "%s\n" "$as_me:       run long functional tests: ........  $enable_long_functional_tests" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test tty cwdevice name: ...........  $test_tty_cwdevice_name" >&5
+printf "%s\n" "$as_me:       test tty cwdevice name: ...........  $test_tty_cwdevice_name" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..........  $test_cwdaemon_path" >&5
+printf "%s\n" "$as_me:       path to cwdaemon binary: ..........  $test_cwdaemon_path" >&6;}
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}
