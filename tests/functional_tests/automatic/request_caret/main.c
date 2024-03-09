@@ -52,7 +52,7 @@
 static int (*g_tests[])(void) = {
 	basic_caret_test,
 #if RUN_LONG_FUNCTIONAL_TESTS
-	//request_size_caret_test,
+	request_size_caret_test,
 #endif
 };
 
