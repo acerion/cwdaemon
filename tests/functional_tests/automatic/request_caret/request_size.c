@@ -180,36 +180,38 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/*
-	  Expectation 1: in most cases there should be 2 events:
-	   - Receiving some reply over socket from cwdaemon server,
-	   - Receiving some Morse code on cwdevice.
-	  In other cases there should be one event: just the Morse event.
-	*/
-	expectation_idx++;
+	/* Expectation: correct count of events. */
+	expectation_idx = 1;
+	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
 	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
-	if (expecting_socket_reply_event) {
-		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
-			return -1;
-		}
-	} else {
-		if (1 != events->event_idx) {
-			test_log_err("Expectation 1: incorrect count of events recorded. Expected 1 event, got %d\n", events->event_idx);
-			return -1;
-		}
+	int expected_cnt = 0;
+	if (expecting_morse_event) {
+		expected_cnt++;
 	}
-	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
+	if (expecting_socket_reply_event) {
+		expected_cnt++;
+	}
+	if (expected_cnt != events->event_idx) {
+		test_log_err("Expectation %d: incorrect count of events recorded. Expected %d events, got %d\n", expectation_idx, expected_cnt, events->event_idx);
+		return -1;
+	}
+	if (0 == events->event_idx) {
+		test_log_info("Expectation %d: there are zero events (as expected), so evaluation of events is now completed\n", expectation_idx);
+		return 0;
+	}
+	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
 
 
 
 
 	/*
-	  Expectation 2: events are of correct type.
+	  Expectation: events are of correct type.
 	*/
+	expectation_idx = 2;
 	int morse_idx = -1;
+	const int expected_morse_cnt = expecting_morse_event ? 1 : 0;
 	const int morse_cnt  = events_find_by_type(events, event_type_morse_receive, &morse_idx);
-	if (1 != morse_cnt) {
+	if (expected_morse_cnt != morse_cnt) {
 		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
 		return -1;
 	}
@@ -229,7 +231,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	expectation_idx++;
+	expectation_idx = 3;
 	if (expecting_socket_reply_event) {
 		if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
 			return -1;
@@ -241,7 +243,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	expectation_idx++;
+	expectation_idx = 4;
 	if (expecting_socket_reply_event) {
 		if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.socket_receive, &test_case->expected_socket_reply)) {
 			return -1;
@@ -253,15 +255,19 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	expectation_idx++;
-	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
-		return -1;
+	expectation_idx = 5;
+	if (expecting_morse_event) {
+		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
+			return -1;
+		}
+	} else {
+		test_log_notice("Expectation %d: skipping verification of message received by Morse receiver due to short expected string\n", expectation_idx);
 	}
 
 
 
 
-	expectation_idx++;
+	expectation_idx = 6;
 	if (expecting_socket_reply_event) {
 		if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
 			return -1;
@@ -288,7 +294,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 {
 	bool failure = false;
 
-	/* There is a lot of characters in test cases. Let's play them quickly to
+	/* There may be a lot of characters in test cases. Let's play them quickly to
 	   make the test short. Using "25" because at "30" there are too many
 	   errors. */
 	const int wpm = 25;

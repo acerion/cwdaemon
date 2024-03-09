@@ -78,16 +78,18 @@
 
 
 typedef struct test_case_t {
-	const char * description;                 /**< Tester-friendly description of test case. */
-	const char * full_message;                /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
+	const char * description;                            /**< Tester-friendly description of test case. */
+	socket_send_data_t caret_request;                    /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
 	socket_receive_data_t expected_socket_reply;  /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
-	const char * expected_morse_receive;      /**< What is expected to be received by Morse code receiver (without ending space). */
+	const char expected_morse_receive[400];      /**< What is expected to be received by Morse code receiver (without ending space). */
 } test_case_t;
 
 
 
 
 /*
+  Info for test case with '-1' byte.
+
   Data for testing how cwdaemon handles a bug in libcw.
 
   libcw 8.0.0 from unixcw 3.6.1 crashes when enqueued character has value
@@ -113,8 +115,6 @@ typedef struct test_case_t {
   TODO acerion 2024.02.18: make sure that similar test is added for
   regular/plain message requests in the future.
 */
-static const char err_case_1_message[]                = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', '\0' };         /* Notice inserted -1' */
-static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' };              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 
 
 
@@ -122,9 +122,9 @@ static const char err_case_1_expected_morse_receive[] = { 'p', 'a', 's', 's', 'e
 
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
-	  .full_message               = "22 crows, 1 stork?^",
+	  .caret_request              = SOCKET_BUF_SET("22 crows, 1 stork?^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("22 crows, 1 stork?\r\n"),
-	  .expected_morse_receive     = "22 crows, 1 stork?",
+	  .expected_morse_receive     =                "22 crows, 1 stork?",
 	},
 
 
@@ -137,64 +137,79 @@ static test_case_t g_test_cases[] = {
 	          *x = '\0';     // Remove '^' and possible trailing garbage.
 	*/
 	{ .description = "additional message after caret",
-	  .full_message               = "Fun^Joy^",
+	  .caret_request              = SOCKET_BUF_SET("Fun^Joy^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("Fun\r\n"),
-	  .expected_morse_receive     = "Fun",
+	  .expected_morse_receive     =                "Fun",
 	},
 	{ .description = "message with two carets",
-	  .full_message               = "Monday^^",
+	  .caret_request              = SOCKET_BUF_SET("Monday^^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("Monday\r\n"),
-	  .expected_morse_receive     = "Monday",
+	  .expected_morse_receive     =                "Monday",
 	},
 
 
 
 	{ .description = "two words",
-	  .full_message               = "Hello world!^",
+	  .caret_request              = SOCKET_BUF_SET("Hello world!^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("Hello world!\r\n"),
-	  .expected_morse_receive     = "Hello world!",
+	  .expected_morse_receive     =                "Hello world!",
 	},
 
 	/* There should be no action from cwdaemon: neither keying nor socket
 	   reply. */
-	{ .description = "empty text",
-	  .full_message               = "^",
+	{ .description = "empty text - no terminating NUL in request",
+	  .caret_request              = SOCKET_BUF_SET("^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET(""),
-	  .expected_morse_receive     = "",
+	  .expected_morse_receive     =                "",
+	},
+
+	/* There should be no action from cwdaemon: neither keying nor socket
+	   reply. */
+	{ .description = "empty text - with terminating NUL in request",
+	  .caret_request              = SOCKET_BUF_SET("^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
+	  .expected_socket_reply      = SOCKET_BUF_SET(""),
+	  .expected_morse_receive     =                "",
 	},
 
 	{ .description = "single character",
-	  .full_message               = "f^",
+	  .caret_request              = SOCKET_BUF_SET("f^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("f\r\n"),
-	  .expected_morse_receive     = "f",
+	  .expected_morse_receive     =                "f",
 	},
 
-	{ .description = "single word",
-	  .full_message               = "Paris^",
+	{ .description = "single word - no terminating NUL in request",
+	  .caret_request              = SOCKET_BUF_SET("Paris^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("Paris\r\n"),
-	  .expected_morse_receive     = "Paris",
+	  .expected_morse_receive     =                "Paris",
+	},
+
+	{ .description = "single word - with terminating NUL in request",
+	  .caret_request              = SOCKET_BUF_SET("Paris^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
+	  .expected_socket_reply      = SOCKET_BUF_SET("Paris\r\n"),
+	  .expected_morse_receive     =                "Paris",
 	},
 
 	/* Notice how the leading space from message is preserved in socket reply. */
 	{ .description = "single word with leading space",
-	  .full_message               = " London^",
+	  .caret_request              = SOCKET_BUF_SET(" London^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET(" London\r\n"),
-	  .expected_morse_receive     = "London",
+	  .expected_morse_receive     =                 "London",
 	},
 
 	/* Notice how the trailing space from message is preserved in socket reply. */
 	{ .description = "mixed characters with trailing space",
-	  .full_message               = "when, now = right: ^",
+	  .caret_request              = SOCKET_BUF_SET("when, now = right: ^"),
 	  .expected_socket_reply      = SOCKET_BUF_SET("when, now = right: \r\n"),
-	  .expected_morse_receive     = "when, now = right:",
+	  .expected_morse_receive     =                "when, now = right:",
 	},
 
+	/* Refer to comment starting with "Info for test case with '-1' byte."
+	   above for more info. */
 	{ .description                = "message containing '-1' integer value",
-	  .full_message               = err_case_1_message,
+	  .caret_request              = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', } },
 	  .expected_socket_reply      = { .n_bytes = 11, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n' } },      /* cwdaemon sends verbatim text in socket reply. */
-	  .expected_morse_receive     = err_case_1_expected_morse_receive,
+	  .expected_morse_receive     =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 	},
-
 };
 
 
@@ -266,89 +281,83 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/*
-	  Expectation 1: in most cases there should be 2 events:
-	   - Receiving some reply over socket from cwdaemon server,
-	   - Receiving some Morse code on cwdevice.
-	  In other cases there should be zero events.
-
-	  The two events go hand in hand: if one is expected, the other is too.
-	  If one is not expected to occur, the other is not expected either.
-	*/
-	expectation_idx++;
+	/* Expectation: correct count of events. */
+	expectation_idx = 1;
 	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
 	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
-	if (!expecting_morse_event && !expecting_socket_reply_event) {
-		if (0 != events->event_idx) {
-			test_log_err("Expectation 1: incorrect count of events recorded. Expected 0 events, got %d\n", events->event_idx);
-			return -1;
-		}
-		test_log_info("Expectation 1: there are zero events (as expected), so evaluation of events is now completed %s\n", "");
-		return 0;
-	} else if (expecting_morse_event && expecting_socket_reply_event) {
-		if (2 != events->event_idx) {
-			test_log_err("Expectation 1: incorrect count of events recorded. Expected 2 events, got %d\n", events->event_idx);
-			return -1;
-		}
-	} else {
-		test_log_err("Expectation 1: Incorrect situation when checking 'expecting' flags: %d != %d\n", expecting_morse_event, expecting_socket_reply_event);
+	int expected_cnt = 0;
+	if (expecting_morse_event) {
+		expected_cnt++;
+	}
+	if (expecting_socket_reply_event) {
+		expected_cnt++;
+	}
+	if (expected_cnt != events->event_idx) {
+		test_log_err("Expectation %d: incorrect count of events recorded. Expected %d events, got %d\n", expectation_idx, expected_cnt, events->event_idx);
 		return -1;
 	}
-	test_log_info("Expectation 1: count of events is correct: %d\n", events->event_idx);
+	if (0 == events->event_idx) {
+		test_log_info("Expectation %d: there are zero events (as expected), so evaluation of events is now completed\n", expectation_idx);
+		return 0;
+	}
+	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
 
 
 
 
 	/*
-	  Expectation 2: events are of correct type.
+	  Expectation: events are of correct type.
 	*/
-	expectation_idx++;
+	expectation_idx = 2;
 	int morse_idx = -1;
+	const int expected_morse_cnt = expecting_morse_event ? 1 : 0;
 	const int morse_cnt  = events_find_by_type(events, event_type_morse_receive, &morse_idx);
-	if (1 != morse_cnt) {
-		test_log_err("Expectation 2: incorrect count of Morse receive events: expected 1, got %d\n", morse_cnt);
+	if (expected_morse_cnt != morse_cnt) {
+		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
 		return -1;
 	}
 	const event_t * morse_event = &events->events[morse_idx];
 
 	int socket_idx = -1;
 	const int socket_cnt = events_find_by_type(events, event_type_client_socket_receive, &socket_idx);
-	if (1 != socket_cnt) {
-		test_log_err("Expectation 2: incorrect count of socket receive events: expected 1, got %d\n", socket_cnt);
+	const int expected_socket_cnt = expecting_socket_reply_event ? 1 : 0;
+	if (expected_socket_cnt != socket_cnt) {
+		test_log_err("Expectation %d: incorrect count of socket receive events: expected %d, got %d\n", expectation_idx, expected_socket_cnt, socket_cnt);
 		return -1;
 	}
 	const event_t * socket_event = &events->events[socket_idx];
 
-	test_log_info("Expectation 2: types of events are correct %s\n", "");
+	test_log_info("Expectation %d: types of events are correct\n", expectation_idx);
 
 
 
 
-	expectation_idx++;
-	if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
-		return -1;
+	expectation_idx = 3;
+	if (expecting_socket_reply_event) {
+		if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
+			return -1;
+		}
+	} else {
+		test_log_info("Expectation %d: skipping checking order of events if there is only one event\n", expectation_idx);
 	}
 
 
 
 
-	expectation_idx++;
-	if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.socket_receive, &test_case->expected_socket_reply)) {
-		return -1;
+	expectation_idx = 4;
+	if (expecting_socket_reply_event) {
+		if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.socket_receive, &test_case->expected_socket_reply)) {
+			return -1;
+		}
+	} else {
+		test_log_info("Expectation %d: skipping checking contents of socket reply because there is no socket event\n", expectation_idx);
 	}
 
 
 
 
-	/*
-	  Receiving of message by Morse receiver should not be verified if the
-	  expected message is too short (the problem with "warm-up" of receiver).
-	  TOOO acerion 2024.01.28: remove "do_morse_test" flag after fixing
-	  receiver.
-	*/
-	expectation_idx++;
-	const bool do_morse_test = strlen(test_case->expected_morse_receive) > 1;
-	if (do_morse_test) {
+	expectation_idx = 5;
+	if (expecting_morse_event) {
 		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
 			return -1;
 		}
@@ -359,9 +368,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	expectation_idx++;
-	if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
-		return -1;
+	expectation_idx = 6;
+	if (expecting_socket_reply_event) {
+		if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
+			return -1;
+		}
+	} else {
+		test_log_info("Expectation %d: skipping checking of the expectation because socket event is not present\n", expectation_idx);
 	}
 
 
@@ -382,12 +395,15 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 {
 	bool failure = false;
 
-	const int wpm = test_get_test_wpm();
+	/* There may be a lot of characters in test cases. Let's play them quickly to
+	   make the test short. Using "25" because at "30" there are too many
+	   errors. */
+	const int wpm = 25;
 
 	/* Prepare local test instance of cwdaemon server. */
 	const cwdaemon_opts_t cwdaemon_opts = {
 		//.supervisor_id =  supervisor_id_valgrind,
-		.tone           = test_get_test_tone(),
+		.tone           = TEST_TONE_EASY,
 		.sound_system   = CW_AUDIO_SOUNDCARD,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
@@ -476,8 +492,10 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 				break;
 			}
 
-			/* Send the message to be played. */
-			client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
+			/* Send the message to be played. Notice that we use
+			   test_case->caret_request.n_bytes_to_send to specify count of
+			   bytes to be sent. */
+			client_send_message(client, test_case->caret_request.bytes, test_case->caret_request.n_bytes);
 
 			morse_receiver_wait(morse_receiver);
 		}
