@@ -147,7 +147,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			morse_event = &events->events[i];
 			break;
 		case event_type_none:
-		case event_type_client_socket_receive:
+		case event_type_socket_receive:
 		case event_type_request_exit:
 		case event_type_sigchld:
 		default:

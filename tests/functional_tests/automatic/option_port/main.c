@@ -436,7 +436,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			sigchld_event = &events->events[i];
 			break;
 		case event_type_none:
-		case event_type_client_socket_receive:
+		case event_type_socket_receive:
 		case event_type_request_exit:
 		default:
 			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);

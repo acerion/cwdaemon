@@ -159,7 +159,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * morse_event = &events->events[morse_idx];
 
 	int socket_idx = -1;
-	const int socket_cnt = events_find_by_type(events, event_type_client_socket_receive, &socket_idx);
+	const int socket_cnt = events_find_by_type(events, event_type_socket_receive, &socket_idx);
 	const int expected_socket_cnt = expecting_socket_reply_event ? 1 : 0;
 	if (expected_socket_cnt != socket_cnt) {
 		test_log_err("Expectation %d: incorrect count of socket receive events: expected %d, got %d\n", expectation_idx, expected_socket_cnt, socket_cnt);

@@ -89,7 +89,7 @@ void events_print(const events_t * events)
 			               diff.tv_sec, diff.tv_nsec,
 			               event->u.morse_receive.string);
 			break;
-		case event_type_client_socket_receive:
+		case event_type_socket_receive:
 			{
 				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.bytes))] = { 0 };
 				test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
@@ -162,7 +162,7 @@ int events_insert_socket_receive_event(events_t * events, const socket_receive_d
 	pthread_mutex_lock(&events->mutex);
 	{
 		event_t * event = &events->events[events->event_idx];
-		event->event_type = event_type_client_socket_receive;
+		event->event_type = event_type_socket_receive;
 		event->tstamp = spec;
 
 		memcpy(&event->u.socket_receive, received, sizeof (socket_receive_data_t));
