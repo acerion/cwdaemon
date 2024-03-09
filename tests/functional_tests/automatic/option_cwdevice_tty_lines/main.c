@@ -67,6 +67,7 @@ typedef struct test_case_t {
 	const char * full_message;               /**< Text to be sent to cwdaemon server in the MESSAGE request. */
 	bool expected_failed_receive;            /**< Is a failure of Morse-receiving process expected in this testcase? */
 	tty_pins_t observer_tty_pins;            /**< Which tty pins on cwdevice should be treated by cwdevice as keying or ptt pins. */
+	event_t expected_events[EVENTS_MAX];     /**< Events that we expect to happen in this test case. */
 } test_case_t;
 
 
@@ -84,6 +85,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
 	  .full_message            = "paris",
+	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
 
 	/*
@@ -99,6 +101,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .full_message            = "paris",
+	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a FAILURE case.
@@ -117,7 +120,8 @@ static test_case_t g_test_cases[] = {
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .full_message            = "paris",
 	  .expected_failed_receive = true,
-	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR }
+	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
+	  .expected_events         = { { 0 } },
 	},
 
 	/* This is a SUCCESS case.
@@ -136,6 +140,7 @@ static test_case_t g_test_cases[] = {
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .full_message            = "paris",
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
+	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
 };
 
@@ -337,26 +342,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
 	test_log_info("A test case with expected %s receive\n",
 	              test_case->expected_failed_receive ? "unsuccessful" : "successful");
 
 
 
 
-	/* Define set of expected events. */
-	event_type_t expected_events[EVENTS_MAX] = { 0 };
-	int n_expected = 0; /* Count of expected events. */
-	if (test_case->expected_failed_receive) {
-		; /* Pass. */
-	} else {
-		expected_events[n_expected++] = event_type_morse_receive;
-	}
-
-
-
-
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
 
@@ -375,8 +369,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation: correct types and order of events. */
 	expectation_idx = 2;
 	const event_t * morse_event = NULL;
-	for (int i = 0; i < n_expected; i++) {
-		if (expected_events[i] != events->events[i].event_type) {
+	for (int i = 0; i < expected_events_cnt; i++) {
+		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
 			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}

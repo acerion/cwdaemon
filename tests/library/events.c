@@ -259,3 +259,17 @@ int events_find_by_type(const events_t * events, event_type_t type, int * first_
 }
 
 
+
+
+int events_get_count(const event_t events[EVENTS_MAX])
+{
+	int i = 0;
+	for (i = 0; i < EVENTS_MAX; i++) {
+		if (events[i].event_type == event_type_none) {
+			break;
+		}
+	}
+
+	return i;
+}
+

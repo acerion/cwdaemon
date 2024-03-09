@@ -173,5 +173,19 @@ int events_find_by_type(const events_t * events, event_type_t type, int * first_
 
 
 
+/**
+   @brief Get count of events with event type other than "none"
+
+   Function stops counting after finding a first "none" event, or after reaching end of array.
+
+   @param[in] events Events array in which to count the events
+
+   @return count of non-"none" events in @p events
+*/
+int events_get_count(const event_t events[EVENTS_MAX]);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_EVENTS_H */
 

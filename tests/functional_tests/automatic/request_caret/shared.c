@@ -120,27 +120,21 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-
-	/* Expectation: correct count of events. */
-	expectation_idx = 1;
 	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
 	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
-	int expected_cnt = 0;
-	if (expecting_morse_event) {
-		expected_cnt++;
-	}
-	if (expecting_socket_reply_event) {
-		expected_cnt++;
-	}
-	if (expected_cnt != events->event_idx) {
-		test_log_err("Expectation %d: incorrect count of events recorded. Expected %d events, got %d\n", expectation_idx, expected_cnt, events->event_idx);
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
+
+
+
+
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
 	if (0 == events->event_idx) {
 		test_log_info("Expectation %d: there are zero events (as expected), so evaluation of events is now completed\n", expectation_idx);
 		return 0;
 	}
-	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
 
 
 

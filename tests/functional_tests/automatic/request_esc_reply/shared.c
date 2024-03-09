@@ -121,24 +121,15 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/*
-	  Expectation: in most cases there should be 2 events:
-	   - Receiving some reply over socket from cwdaemon server,
-	   - Receiving some Morse code on cwdevice.
-	  In other cases there should be one event: just the Morse event.
-	*/
-	expectation_idx = 1;
 	const bool expecting_socket_reply_event = 0 != test_case->expected_socket_reply.n_bytes;
-	if (expecting_socket_reply_event) {
-		if (2 != events->event_idx) {
-			test_log_err("Expectation %d: incorrect count of events recorded. Expected 2 events, got %d\n", expectation_idx, events->event_idx);
-			return -1;
-		}
-	} else {
-		if (1 != events->event_idx) {
-			test_log_err("Expectation %d: incorrect count of events recorded. Expected 1 event, got %d\n", expectation_idx, events->event_idx);
-			return -1;
-		}
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
+
+
+
+
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
+		return -1;
 	}
 	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
 

@@ -50,6 +50,9 @@ static test_case_t g_test_cases[] = {
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
 
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
+
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us empty
@@ -63,6 +66,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
 
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -74,6 +79,9 @@ static test_case_t g_test_cases[] = {
 
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
+
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -85,6 +93,9 @@ static test_case_t g_test_cases[] = {
 
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
+
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -97,6 +108,9 @@ static test_case_t g_test_cases[] = {
 
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
+
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
@@ -107,6 +121,9 @@ static test_case_t g_test_cases[] = {
 
 	  .plain_request           = SOCKET_BUF_SET("paris"),
 	  .expected_morse_receive  =                "paris",
+
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 
 	/* This is a SUCCESS case which just skips keying a character with value (-1).
@@ -142,6 +159,9 @@ static test_case_t g_test_cases[] = {
 
 	  .plain_request           = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' } },  /* Notice inserted -1' */
 	  .expected_morse_receive  =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },  /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
+
+	  .expected_events         = { { .event_type = event_type_socket_receive },
+	                               { .event_type = event_type_morse_receive  }, },
 	},
 };
 

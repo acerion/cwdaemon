@@ -101,25 +101,34 @@ typedef struct test_case_t {
 	const char * full_message; /** Full text of message to be played by cwdaemon. */
 	bool expected_fail;        /** Whether we expect cwdaemon to fail to start correctly due to invalid port number. */
 	int port;                  /** Value of port passed to cwdaemon. */
+	event_t expected_events[EVENTS_MAX];   /**< Events that we expect to happen in this test case. */
 } test_case_t;
 
 
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1 }, /* port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon". */
-	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1  },
-	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2 },
-	{ .description = "failure case: port MIN - 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1 },
+	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1, /* port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon". */
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1,
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	{ .description = "failure case: port MIN - 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 
 	/* All valid ports between MIN and MAX are indirectly tested by other
 	   functional tests that use random valid port. Here we just explicitly
 	   test the MIN and MAX itself */
-	{ .description = "success case: port MIN",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN     },
-	{ .description = "success case: port MAX",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX     },
+	{ .description = "success case: port MIN",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
+	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
+	{ .description = "success case: port MAX",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
+	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
 
-	{ .description = "failure case: port MAX + 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1 },
-	{ .description = "failure case: port MAX + 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2 },
+	{ .description = "failure case: port MAX + 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	{ .description = "failure case: port MAX + 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
+	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 };
 
 
@@ -397,20 +406,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Define set of expected events. */
-	event_type_t expected_events[EVENTS_MAX] = { 0 };
-	int n_expected = 0; /* Count of expected events. */
-	if (test_case->expected_fail) {
-		expected_events[n_expected++] = event_type_sigchld;
-	} else {
-		expected_events[n_expected++] = event_type_morse_receive;
-	}
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
 
 
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
 
@@ -421,8 +423,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	expectation_idx = 2;
 	const event_t * morse_event = NULL;
 	const event_t * sigchld_event = NULL;
-	for (int i = 0; i < n_expected; i++) {
-		if (expected_events[i] != events->events[i].event_type) {
+	for (int i = 0; i < expected_events_cnt; i++) {
+		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
 			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}

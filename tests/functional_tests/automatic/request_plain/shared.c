@@ -116,16 +116,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Define set of expected events. */
-	event_type_t expected_events[EVENTS_MAX] = { 0 };
-	int n_expected = 0; /* Count of expected events. */
-	expected_events[n_expected++] = event_type_morse_receive;
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
 
 
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
 
@@ -135,8 +132,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation: correct types and order of events. */
 	expectation_idx = 2;
 	const event_t * morse_event = NULL;
-	for (int i = 0; i < n_expected; i++) {
-		if (expected_events[i] != events->events[i].event_type) {
+	for (int i = 0; i < expected_events_cnt; i++) {
+		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
 			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}

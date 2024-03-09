@@ -69,6 +69,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
@@ -77,6 +78,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234\0"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 
 
@@ -88,6 +90,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
@@ -96,6 +99,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345\0"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 
 
@@ -107,6 +111,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
@@ -119,6 +124,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456\0"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 
 
@@ -147,6 +153,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL); TRUNCATION of Morse receive",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 	/*
 	  In this case only a truncated plain request is keyed on cwdevice and
@@ -172,6 +179,7 @@ static test_case_t g_test_cases[] = {
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL); TRUNCATION of Morse receive",
 	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567\0"),
 	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 };
 

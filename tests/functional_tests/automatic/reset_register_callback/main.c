@@ -52,6 +52,7 @@
 #include "tests/library/client.h"
 //#include "tests/library/cwdevice_observer_serial.h"
 #include "tests/library/events.h"
+#include "tests/library/expectations.h"
 #include "tests/library/log.h"
 #include "tests/library/misc.h"
 #include "tests/library/morse_receiver.h"
@@ -64,7 +65,23 @@
 
 
 
-static int evaluate_events(events_t * events, const char * message1, const char * message2);
+typedef struct test_case_t {
+	event_t expected_events[EVENTS_MAX];
+} test_case_t;
+
+
+
+
+static test_case_t g_test_cases[] = {
+	{ .expected_events = { { .event_type = event_type_morse_receive, },
+	                       { .event_type = event_type_morse_receive, }, },
+	}
+};
+
+
+
+
+static int evaluate_events(events_t * events, const test_case_t * test_case, const char * message1, const char * message2);
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(client_t * client, morse_receiver_t * morse_receiver, const char * message1, const char * message2);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
@@ -105,7 +122,7 @@ int main(void)
 		goto cleanup;
 	}
 
-	if (0 != evaluate_events(&events, message1, message2)) {
+	if (0 != evaluate_events(&events, &g_test_cases[0], message1, message2)) {
 		test_log_err("Test: evaluation of events has failed %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -244,48 +261,61 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 
 
-static int evaluate_events(events_t * events, const char * message1, const char * message2)
+static int evaluate_events(events_t * events, const test_case_t * test_case, const char * message1, const char * message2)
 {
 	events_sort(events);
 	events_print(events);
+	int expectation_idx = 0; /* To recognize failing expectations more easily. */
 
 
-	/* Expectation 1: there are two events: Morse code was keyed (and received) on cwdevice twice. */
-	if (2  != events->event_idx) {
-		test_log_err("Expectation 1: incorrect count of events: %d\n", events->event_idx);
+
+
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
+
+
+
+
+	expectation_idx = 1;
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
-	test_log_info("Expectation 1: correct count of test events: %d\n", events->event_idx);
 
 
 
 
-	/* Expectation 2: both events are of type "Morse receive". */
+
+	/* Expectation: correct types of events. */
+	expectation_idx = 2;
+	for (int i = 0; i < expected_events_cnt; i++) {
+		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
+			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			return -1;
+		}
+	}
+	test_log_info("Expectation %d: found expected types of events\n", expectation_idx);
+
+
+
+
+	/* Get references to specific events in array of events. */
 	event_t * morse1 = &events->events[0];
 	event_t * morse2 = &events->events[1];
-	if (morse1->event_type != event_type_morse_receive
-	    || morse2->event_type != event_type_morse_receive) {
 
-		test_log_err("Expectation 2: incorrect type of event(s): %d, %d\n", morse1->event_type, morse2->event_type);
+
+
+
+	expectation_idx = 3;
+	if (0 != expect_morse_receive_match(expectation_idx, morse1->u.morse_receive.string, message1)) {
 		return -1;
 	}
-	test_log_info("Expectation 2: correct types of test events: %d, %d\n", morse1->event_type, morse2->event_type);
 
 
 
 
-	/* Expectation 3: both Morse receive events contain correct received text. */
-	const char * received_string1 = morse1->u.morse_receive.string;
-	const char * received_string2 = morse2->u.morse_receive.string;
-	if (!morse_receive_text_is_correct(received_string1, message1)
-	    || !morse_receive_text_is_correct(received_string2, message2)) {
-
-		test_log_err("Expectation 3: incorrect text in Morse receive event(s): [%s], [%s]\n",
-		             received_string1, received_string2);
+	expectation_idx = 4;
+	if (0 != expect_morse_receive_match(expectation_idx, morse2->u.morse_receive.string, message2)) {
 		return -1;
 	}
-	test_log_info("Expectation 3: correct text in Morse receive events: [%s], [%s]\n",
-	              received_string1, received_string2);
 
 
 

@@ -91,6 +91,7 @@ typedef struct test_case_t {
 	const char * description;    /**< Human-readable description of the test case. */
 	bool send_message_request;   /**< Whether in this test case we should send MESSAGE request. */
 	const char * full_message;   /**< Full text of message to be played by cwdaemon. */
+	event_t expected_events[EVENTS_MAX]; /**< Events that we expect to happen in this test case. */
 } test_case_t;
 
 
@@ -109,8 +110,21 @@ typedef struct test_case_t {
   situations.
 */
 static test_case_t g_test_cases[] = {
-	{ .description = "exiting a cwdaemon server that has just started",      .send_message_request = false                            },
-	{ .description = "exiting a cwdaemon server that played some message",   .send_message_request = true,  .full_message = "paris"   },
+	{ .description          = "exiting a cwdaemon server that has just started",
+	  .send_message_request = false,
+	  .expected_events      = { { .event_type = event_type_request_exit   },
+	                            { .event_type = event_type_sigchld        }, },
+
+
+	},
+
+	{ .description          = "exiting a cwdaemon server that played some message",
+	  .send_message_request = true,
+	  .full_message         = "paris",
+	  .expected_events      = { { .event_type = event_type_morse_receive  },
+	                            { .event_type = event_type_request_exit   },
+	                            { .event_type = event_type_sigchld        }, },
+	},
 };
 
 
@@ -387,20 +401,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	/* Define set of expected events. */
-	event_type_t expected_events[EVENTS_MAX] = { 0 };
-	int n_expected = 0; /* Count of expected events. */
-	if (test_case->send_message_request) {
-		expected_events[n_expected++] = event_type_morse_receive;
-	}
-	expected_events[n_expected++] = event_type_request_exit;
-	expected_events[n_expected++] = event_type_sigchld;
+	const int expected_events_cnt = events_get_count(test_case->expected_events);
 
 
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, n_expected)) {
+	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
 		return -1;
 	}
 
@@ -412,8 +419,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * morse_event = NULL;
 	const event_t * exit_request = NULL;
 	const event_t * sigchld_event = NULL;
-	for (int i = 0; i < n_expected; i++) {
-		if (expected_events[i] != events->events[i].event_type) {
+	for (int i = 0; i < expected_events_cnt; i++) {
+		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
 			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
