@@ -5,6 +5,7 @@ check_PROGRAMS = test_program
 test_program_SOURCES  = main.c
 test_program_SOURCES += basic.c basic.h
 test_program_SOURCES += request_size.c request_size.h
+test_program_SOURCES += shared.c shared.h
 
 # target-specific preprocessor flags (#defs and include dirs)
 test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}

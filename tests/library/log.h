@@ -4,6 +4,11 @@
 
 
 
+#include <stdio.h>
+
+
+
+
 #define test_log_newline()           fprintf(stderr, "\n")
 #define test_log_debug(format, ...)  fprintf(stderr, "[DD] " format, __VA_ARGS__)
 #define test_log_info(format, ...)   fprintf(stderr, "[II] " format, __VA_ARGS__)

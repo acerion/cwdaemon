@@ -100,7 +100,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am_test_program_OBJECTS = test_program-main.$(OBJEXT) \
 	test_program-basic.$(OBJEXT) \
-	test_program-request_size.$(OBJEXT)
+	test_program-request_size.$(OBJEXT) \
+	test_program-shared.$(OBJEXT)
 test_program_OBJECTS = $(am_test_program_OBJECTS)
 am__DEPENDENCIES_1 =
 test_program_DEPENDENCIES = $(top_builddir)/tests/library/lib_tests.a \
@@ -124,7 +125,8 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/test_program-basic.Po \
 	./$(DEPDIR)/test_program-main.Po \
-	./$(DEPDIR)/test_program-request_size.Po
+	./$(DEPDIR)/test_program-request_size.Po \
+	./$(DEPDIR)/test_program-shared.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -284,7 +286,7 @@ top_srcdir = @top_srcdir@
 
 # source code files used to build cwdaemon program
 test_program_SOURCES = main.c basic.c basic.h request_size.c \
-	request_size.h
+	request_size.h shared.c shared.h
 
 # target-specific preprocessor flags (#defs and include dirs)
 test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
@@ -342,6 +344,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-basic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-main.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-request_size.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-shared.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -406,6 +409,20 @@ test_program-request_size.obj: request_size.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='request_size.c' object='test_program-request_size.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-request_size.obj `if test -f 'request_size.c'; then $(CYGPATH_W) 'request_size.c'; else $(CYGPATH_W) '$(srcdir)/request_size.c'; fi`
+
+test_program-shared.o: shared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-shared.o -MD -MP -MF $(DEPDIR)/test_program-shared.Tpo -c -o test_program-shared.o `test -f 'shared.c' || echo '$(srcdir)/'`shared.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-shared.Tpo $(DEPDIR)/test_program-shared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='shared.c' object='test_program-shared.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-shared.o `test -f 'shared.c' || echo '$(srcdir)/'`shared.c
+
+test_program-shared.obj: shared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-shared.obj -MD -MP -MF $(DEPDIR)/test_program-shared.Tpo -c -o test_program-shared.obj `if test -f 'shared.c'; then $(CYGPATH_W) 'shared.c'; else $(CYGPATH_W) '$(srcdir)/shared.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-shared.Tpo $(DEPDIR)/test_program-shared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='shared.c' object='test_program-shared.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-shared.obj `if test -f 'shared.c'; then $(CYGPATH_W) 'shared.c'; else $(CYGPATH_W) '$(srcdir)/shared.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -534,6 +551,7 @@ distclean: distclean-am
 		-rm -f ./$(DEPDIR)/test_program-basic.Po
 	-rm -f ./$(DEPDIR)/test_program-main.Po
 	-rm -f ./$(DEPDIR)/test_program-request_size.Po
+	-rm -f ./$(DEPDIR)/test_program-shared.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -582,6 +600,7 @@ maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/test_program-basic.Po
 	-rm -f ./$(DEPDIR)/test_program-main.Po
 	-rm -f ./$(DEPDIR)/test_program-request_size.Po
+	-rm -f ./$(DEPDIR)/test_program-shared.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
