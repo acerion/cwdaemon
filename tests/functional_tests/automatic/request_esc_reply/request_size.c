@@ -484,10 +484,19 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 				break;
 			}
 
-			/* Send the message to be played. Notice that we use
-			   test_case->esc_request.n_bytes_to_send to specify count of
-			   bytes to be sent. */
-			fprintf(stderr, "==== esc_request.n_bytes = %zu, expected.n_bytes = %zu\n", test_case->esc_request.n_bytes, test_case->expected_socket_reply.n_bytes);
+			/*
+			  First we ask cwdaemon to remember a reply that should be sent back
+			  to us after a message is played.
+
+			  Then we send the message itself.
+
+			  Then we wait for completion of job by:
+			  - Morse receiver thread that decodes a Morse code on cwdevice,
+			  - socket receiver that receives the remembered reply - this is the
+			    most important part of this test.
+			*/
+
+			/* Ask cwdaemon to send us this reply back after playing a message. */
 			client_send_message(client, test_case->esc_request.bytes, test_case->esc_request.n_bytes);
 
 			/* Send the message to be played. Notice that we use
@@ -496,8 +505,12 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			client_send_message(client, test_case->plain_request.bytes, test_case->plain_request.n_bytes);
 
 			morse_receiver_wait(morse_receiver);
+
+			/* FIXME: shouldn't we wait here also for receipt of socket reply? Maybe some sleep here? */
 		}
 
+
+		/* Validation of test run. */
 		if (0 != evaluate_events(events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;

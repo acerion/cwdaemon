@@ -64,10 +64,12 @@
 
 typedef struct test_case_t {
 	const char * description;                /** Human-readable description of the test case. */
-	const char full_message[128];            /** Full text of message to be played by cwdaemon. */
-	const char expected_morse_receive[128];  /**< What is expected to be received by Morse code receiver (without ending space). */
-	const char requested_reply_value[128];   /**< What is being sent to cwdaemon server as expected value of reply (without leading 'h'). */
+
+	socket_send_data_t esc_request;          /**< What is being sent to cwdaemon server as "esc reply" request. */
 	const socket_receive_data_t expected_socket_reply;
+
+	socket_send_data_t plain_request;        /** Full text of message to be played by cwdaemon. */
+	const char expected_morse_receive[400];     /**< What is expected to be received by Morse code receiver (without ending space). */
 } test_case_t;
 
 
@@ -76,38 +78,71 @@ typedef struct test_case_t {
 static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. We request cwdaemon server to send us empty
 	   string in reply. */
-	{ .description             = "success case, empty reply value",
-	  .full_message            = "paris",
-	  .expected_morse_receive  = "paris",
-	  .requested_reply_value   = "",
-	  .expected_socket_reply   = SOCKET_BUF_SET("h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	{ .description             = "success case, empty reply value - no terminating NUL in esc request",
+
+	  .esc_request             = SOCKET_BUF_SET("\033h"),
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
+
+	},
+
+	/* This is a SUCCESS case. We request cwdaemon server to send us empty
+	   string in reply. This time we add explicit NUL to end of esc
+	   request. */
+	{ .description             = "success case, empty reply value - with terminating NUL in esc request",
+
+	  .esc_request             = SOCKET_BUF_SET("\033h\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "h\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
+
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   single-letter string in reply. */
 	{ .description             = "success case, single-letter as a value of reply",
-	  .full_message            = "paris",
-	  .expected_morse_receive  = "paris",
-	  .requested_reply_value   = "r",
-	  .expected_socket_reply   = SOCKET_BUF_SET("hr\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .esc_request             = SOCKET_BUF_SET("\033hX"),
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "hX\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   single-word string in reply. */
-	{ .description             = "success case, a word as value of reply",
-	  .full_message            = "paris",
-	  .expected_morse_receive  = "paris",
-	  .requested_reply_value   = "reply",
-	  .expected_socket_reply   = SOCKET_BUF_SET("hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	{ .description             = "success case, a word as value of reply, no terminating NUL in esc request",
+
+	  .esc_request             = SOCKET_BUF_SET("\033hreply"),
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
+	},
+
+	/* This is a SUCCESS case. We request cwdaemon server to send us
+	   single-word string in reply. This time we add explicit NUL to end of
+	   esc request. */
+	{ .description             = "success case, a word as value of reply, with terminating NUL in esc request",
+
+	  .esc_request             = SOCKET_BUF_SET("\033hreply\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "hreply\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
 	},
 
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
-	  .full_message            = "paris",
-	  .expected_morse_receive  = "paris",
-	  .requested_reply_value   = "This is a reply to your 27th request.",
-	  .expected_socket_reply   = SOCKET_BUF_SET("hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+	  .esc_request             = SOCKET_BUF_SET("\033hThis is a reply to your 27th request."),
+	  .expected_socket_reply   = SOCKET_BUF_SET(    "hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = SOCKET_BUF_SET("paris"),
+	  .expected_morse_receive  =                "paris",
 	},
 
 	/* This is a SUCCESS case which just skips keying a character with value (-1).
@@ -137,10 +172,12 @@ static test_case_t g_test_cases[] = {
 	   regular/plain message requests in the future.
 	*/
 	{ .description             = "message containing '-1' integer value",
-	  .full_message            = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' },  /* Notice inserted -1' */
-	  .expected_morse_receive  = { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },  /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
-	  .requested_reply_value   = { 'l', -1,  'z', 'a', 'r', 'd', '\0' },                /* cwdaemon doesn't validate values of chars that are requested for socket reply. */
-	  .expected_socket_reply   = { .n_bytes = 9, .bytes = { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .esc_request             = { .n_bytes =  8, .bytes = { 27, 'h', 'l', -1,  'z', 'a', 'r', 'd' } },                /* cwdaemon doesn't validate values of chars that are requested for socket reply. */
+	  .expected_socket_reply   = { .n_bytes =  9, .bytes =     { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char prepended to a string from "requested reply". */
+
+	  .plain_request           = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' } },  /* Notice inserted -1' */
+	  .expected_morse_receive  =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },  /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 	},
 };
 
@@ -386,10 +423,10 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 	bool failure = false;
 
 	for (size_t i = 0; i < n_test_cases; i++) {
-		test_case_t * test_case = &test_cases[i];
+		const test_case_t * test_case = &test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
-		test_log_info("Test: starting test case %zd/%zd: [%s]\n", i + 1, n_test_cases, test_case->description);
+		test_log_info("Test: starting test case %zu / %zu: [%s]\n", i + 1, n_test_cases, test_case->description);
 
 		/* This is the actual test. */
 		{
@@ -412,13 +449,16 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			*/
 
 			/* Ask cwdaemon to send us this reply back after playing a message. */
-			client_send_esc_request(client, CWDAEMON_ESC_REQUEST_REPLY, test_case->requested_reply_value, strlen(test_case->requested_reply_value) + 1);
+			client_send_message(client, test_case->esc_request.bytes, test_case->esc_request.n_bytes);
 
-			/* Send the message to be played. */
-			client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
-
+			/* Send the message to be played. Notice that we use
+			   test_case->esc_request.n_bytes_to_send to specify count of
+			   bytes to be sent. */
+			client_send_message(client, test_case->plain_request.bytes, test_case->plain_request.n_bytes);
 
 			morse_receiver_wait(morse_receiver);
+
+			/* FIXME: shouldn't we wait here also for receipt of socket reply? Maybe some sleep here? */
 		}
 
 
@@ -431,10 +471,12 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 		/* Clear stuff before running next test case. */
 		events_clear(events);
 
-
-		test_log_info("Test: test case %zd/%zd succeeded\n\n", i + 1, n_test_cases);
+		test_log_info("Test: test case %zu / %zu has succeeded\n\n", i + 1, n_test_cases);
 	}
 
 	return failure ? -1 : 0;
 }
+
+
+
 
