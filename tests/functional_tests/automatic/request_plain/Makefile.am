@@ -3,6 +3,8 @@ check_PROGRAMS = test_program
 
 # source code files used to build cwdaemon program
 test_program_SOURCES  = main.c
+test_program_SOURCES += shared.c shared.h
+test_program_SOURCES += basic.c basic.h
 test_program_SOURCES += request_size.c request_size.h
 
 # target-specific preprocessor flags (#defs and include dirs)

@@ -31,13 +31,6 @@
 
 
 
-#define _DEFAULT_SOURCE
-
-
-
-
-#include "config.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -45,6 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "basic.h"
 #include "request_size.h"
 
 #include "tests/library/log.h"
@@ -54,8 +48,10 @@
 
 
 static int (*g_tests[])(void) = {
-	request_size_test,
+	basic_tests,
+	request_size_tests,
 };
+
 
 
 
@@ -85,11 +81,11 @@ int main(void)
 
 	test_log_newline(); /* Visual separator. */
 	if (failure) {
-		test_log_err("Test: the tests have failed %s\n", "");
+		test_log_err("Test: final result: FAIL %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 
-	test_log_info("Test: the tests have passed %s\n", "");
+	test_log_info("Test: final result: PASS %s\n", "");
 	exit(EXIT_SUCCESS);
 }
 
