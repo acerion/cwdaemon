@@ -59,6 +59,8 @@ static int (*g_tests[])(void) = {
 	//request_size_tests,
 };
 
+static const char * g_test_name = "esc reply";
+
 
 
 
@@ -86,14 +88,13 @@ int main(void)
 		}
 	}
 
-	test_log_newline(); /* Visual separator. */
-
 	if (failure) {
-		test_log_err("Test: final result: FAIL %s\n", "");
+		test_log_err("Test: final result of [%s] test: FAIL\n", g_test_name);
+		test_log_newline(); /* Visual separator. */
 		exit(EXIT_FAILURE);
 	}
-
-	test_log_info("Test: final result: PASS %s\n", "");
+	test_log_info("Test: final result of [%s] test: PASS\n", g_test_name);
+	test_log_newline(); /* Visual separator. */
 	exit(EXIT_SUCCESS);
 }
 

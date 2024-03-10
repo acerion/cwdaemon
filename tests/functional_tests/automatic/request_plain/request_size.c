@@ -26,9 +26,9 @@
 
 /**
    Test cases that send to cwdaemon plain requests that have size (count of
-   characters) close to cwdaemon's maximum size of requests. The requests are
+   bytes) close to cwdaemon's maximum size of requests. The requests are
    slightly smaller, equal to and slightly larger than the size of cwdaemon's
-   buffer..
+   receive buffer.
 
    cwdaemon's buffer used to receive network messages has
    CWDAEMON_MESSAGE_SIZE_MAX==256 bytes. If a plain request sent to cwdaemon
@@ -44,15 +44,18 @@
 
 #include <libcw.h>
 
+#include "tests/library/log.h"
+
 #include "request_size.h"
 #include "shared.h"
 
 
 
-/* Helper definition to shorten strings in test cases. Chars at position 21
+
+/* Helper definition to shorten strings in test cases. Bytes at position 21
    till 250, inclusive. */
-#define CHARS_21_250 \
-	                    "kukukukukukukukukukukukukukuku" \
+#define BYTES_11_250 \
+	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -63,122 +66,87 @@
 
 static test_case_t g_test_cases[] = {
 	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
+	  In these cases a full plain request is keyed on cwdevice and received
+	  by Morse code receiver.
 	*/
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
-	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "1234",
+	  .expected_events        = { { .event_type = event_type_morse_receive, }, },
 	},
-	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
-	*/
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234\0"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234\0"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "1234",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
-
-
-
-	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
-	*/
 	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "12345"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "12345",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
+
+
+
 	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
+	  In these cases a full plain request is keyed on cwdevice and received
+	  by Morse code receiver.
 	*/
 	{ .description = "plain request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345\0"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "12345\0"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "12345",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
-
-
-
-	/*
-	  In this case a full plain request is keyed on cwdevice and received by
-	  Morse code receiver.
-	*/
 	{ .description = "plain request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "123456"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
+
+
+
 	/*
 	  In this case a full plain request is keyed on cwdevice and received by
 	  Morse code receiver.
 
-	  Notice that in this case cwdaemon's receive code will drop only the
-	  terminating NUL. The non-present NUL will have no impact on further
-	  actions of cwdaemon or on contents of keyed Morse message.
+	  In this case cwdaemon's receive code will drop only the terminating
+	  NUL. The non-present NUL will have no impact on further actions of
+	  cwdaemon or on contents of keyed Morse message.
 	*/
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456\0"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "123456\0"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 
 
 
 	/*
-	  In this case only a truncated plain request is keyed on cwdevice and
-	  received by Morse code receiver. Request's characters that won't fit
-	  into cwdaemon's receive buffer will be dropped by cwdaemon's receive
-	  code and won't be keyed on cwdevice.
+	  In these cases only a truncated plain request is keyed on cwdevice and
+	  received by Morse code receiver. Request's bytes that won't fit into
+	  cwdaemon's receive buffer will be dropped by cwdaemon's receive code
+	  and won't be keyed on cwdevice.
 
-	  This case could be described as "failure case" because Morse receiver
-	  will return something else than what client has sent to cwdaemon
-	  server. But we know that cwdaemon server will drop extra char(s) from
-	  the plain request, and we know what cwdaemon server will key on
-	  cwdevice. And this test case is expecting and testing exactly this
-	  behaviour.
+	  These cases could be described as "failure cases" because Morse
+	  receiver will return something else than what client has sent to
+	  cwdaemon server. But we know that cwdaemon server will drop extra
+	  byte(s) from the plain request, and we know what cwdaemon server will
+	  key on cwdevice. And these test cases are expecting and testing exactly
+	  this behaviour.
 
-	  Morse receiver will receive only first 256 chars. This is what Morse
+	  Morse receiver will receive only first 256 bytes. This is what Morse
 	  code receiver will receive when this test tries to play a message with
-	  count of chars that is larger than cwdaemon's receive buffer (the
-	  receive buffer has space for 256 chars). The last character from
-	  request will be dropped by cwdaemon's receive code.
-
-	  Count of bytes in the sent request doesn't include terminating NUL.
+	  count of bytes that is larger than cwdaemon's receive buffer (the
+	  receive buffer has space for 256 bytes). The last byte(s) from request
+	  will be dropped by cwdaemon's receive code.
 	*/
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL); TRUNCATION of Morse receive",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234567"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
-	/*
-	  In this case only a truncated plain request is keyed on cwdevice and
-	  received by Morse code receiver. Request's characters that won't fit
-	  into cwdaemon's receive buffer will be dropped by cwdaemon's receive
-	  code and won't be keyed on cwdevice.
-
-	  This case could be described as "failure case" because Morse receiver
-	  will return something else than what client has sent to cwdaemon
-	  server. But we know that cwdaemon server will drop extra char(s) from
-	  the plain request, and we know what cwdaemon server will key on
-	  cwdevice. And this test case is expecting and testing exactly this
-	  behaviour.
-
-	  Morse receiver will receive only first 256 chars. This is what Morse
-	  code receiver will receive when this test tries to play a message with
-	  count of chars that is larger than cwdaemon's receive buffer (the
-	  receive buffer has space for 256 chars). The last character from
-	  request will be dropped by cwdaemon's receive code.
-
-	  The count of bytes in the sent request includes terminating NUL.
-	*/
 	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL); TRUNCATION of Morse receive",
-	  .plain_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234567\0"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234567\0"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
 };
@@ -189,6 +157,15 @@ static test_case_t g_test_cases[] = {
 int request_size_tests(void)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	return run_test_cases(g_test_cases, n_test_cases);
+	const int rv = run_test_cases(g_test_cases, n_test_cases);
+
+	if (0 != rv) {
+		test_log_err("Test: result of the 'request size' test: FAIL %s\n", "");
+		test_log_newline(); /* Visual separator. */
+		return -1;
+	}
+	test_log_info("Test: result of the 'request size' test: PASS %s\n", "");
+	test_log_newline(); /* Visual separator. */
+	return 0;
 }
 

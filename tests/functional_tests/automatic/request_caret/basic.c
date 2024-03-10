@@ -40,7 +40,6 @@
 
 
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "tests/library/events.h"
@@ -80,7 +79,6 @@
   TODO acerion 2024.02.18: make sure that similar test is added for
   regular/plain message requests in the future.
 */
-
 
 
 

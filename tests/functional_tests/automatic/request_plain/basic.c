@@ -31,11 +31,6 @@
 
 
 
-
-#include <stdio.h>
-
-#include <libcw.h>
-
 #include "basic.h"
 #include "shared.h"
 
@@ -59,6 +54,16 @@ static test_case_t g_test_cases[] = {
 int basic_tests(void)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	return run_test_cases(g_test_cases, n_test_cases);
+	const int rv = run_test_cases(g_test_cases, n_test_cases);
+
+	if (0 != rv) {
+		test_log_err("Test: result of the 'basic' test: FAIL %s\n", "");
+		test_log_newline(); /* Visual separator. */
+		return -1;
+	}
+	test_log_info("Test: result of the 'basic' test: PASS %s\n", "");
+	test_log_newline(); /* Visual separator. */
+	return 0;
+
 }
 

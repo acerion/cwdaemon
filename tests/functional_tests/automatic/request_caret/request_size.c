@@ -26,22 +26,22 @@
 
 /**
    Test cases that send to cwdaemon caret requests that have size (count of
-   characters) close to cwdaemon's maximum size of requests. The requests are
+   bytes) close to cwdaemon's maximum size of requests. The requests are
    slightly smaller, equal to and slightly larger than the size of cwdaemon's
    buffer.
 
    cwdaemon's buffer used to receive network messages has
    CWDAEMON_MESSAGE_SIZE_MAX bytes. If a caret request sent to cwdaemon is
-   larger than that, it will be truncated.
+   larger than that, it will be truncated in receive code and the caret may
+   be dropped.
 */
 
 
 
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
+#include "tests/library/events.h"
 #include "tests/library/log.h"
 
 #include "request_size.h"
@@ -50,10 +50,10 @@
 
 
 
-/* Helper definition to shorten strings in test cases. Chars at position 21
+/* Helper definition to shorten strings in test cases. Bytes at position 21
    till 250, inclusive. */
-#define CHARS_21_250 \
-	                    "kukukukukukukukukukukukukukuku" \
+#define BYTES_11_250 \
+	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -64,27 +64,27 @@
 
 static test_case_t g_test_cases[] = {
 	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
-	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234^"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "1234",
-	  .expected_socket_reply  = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "1234\r\n"),
+	  .caret_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234^"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "1234",
+	  .expected_socket_reply  = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "1234\r\n"),
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
 
 	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
-	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345^"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "12345",
-	  .expected_socket_reply  = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "12345\r\n"),
+	  .caret_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "12345^"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "12345",
+	  .expected_socket_reply  = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "12345\r\n"),
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
 
-	/* '^' it at position 257, so it will be dropped by cwdaemon's receive
+	/* '^' is a byte no. 257, so it will be dropped by cwdaemon's receive
 	   code. cwdaemon won't interpret this request as caret request, and
 	   won't send anything over socket (reply is empty). */
 	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
-	  .caret_request          = SOCKET_BUF_SET("paris kukukukukukuku" CHARS_21_250 "123456^"),
-	  .expected_morse_receive =                "paris kukukukukukuku" CHARS_21_250 "123456",
+	  .caret_request          = SOCKET_BUF_SET("paris 7890" BYTES_11_250 "123456^"),
+	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_socket_reply  = SOCKET_BUF_SET(""),
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
@@ -96,7 +96,7 @@ static test_case_t g_test_cases[] = {
 int request_size_caret_test(void)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	int rv = run_test_cases(g_test_cases, n_test_cases);
+	const int rv = run_test_cases(g_test_cases, n_test_cases);
 
 	if (0 != rv) {
 		test_log_err("Test: result of the 'request size' test: FAIL %s\n", "");

@@ -56,6 +56,9 @@ static int (*g_tests[])(void) = {
 #endif
 };
 
+static const char * g_test_name = "caret request";
+
+
 
 
 int main(void)
@@ -74,22 +77,22 @@ int main(void)
 	const size_t n_tests = sizeof (g_tests) / sizeof (g_tests[0]);
 
 	for (size_t i = 0; i < n_tests; i++) {
-		test_log_info("Test: running caret test %zu / %zu\n", i + 1, n_tests);
+		test_log_info("Test: running test %zu / %zu\n", i + 1, n_tests);
 		if (0 != g_tests[i]()) {
-			test_log_err("Test: caret test %zu / %zu has failed\n", i + 1, n_tests);
+			test_log_err("Test: test %zu / %zu has failed\n", i + 1, n_tests);
 			failure = true;
 			break;
 		}
 	}
 
-	test_log_newline(); /* Visual separator. */
 	if (failure) {
-		test_log_err("Test: the caret tests have failed %s\n", "");
+		test_log_err("Test: final result of [%s] test: FAIL\n", g_test_name);
+		test_log_newline(); /* Visual separator. */
 		exit(EXIT_FAILURE);
-	} else {
-		test_log_info("Test: the caret tests have passed %s\n", "");
-		exit(EXIT_SUCCESS);
 	}
+	test_log_info("Test: final result of [%s] test: PASS\n", g_test_name);
+	test_log_newline(); /* Visual separator. */
+	exit(EXIT_SUCCESS);
 }
 
 

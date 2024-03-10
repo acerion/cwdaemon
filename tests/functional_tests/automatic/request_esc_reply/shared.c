@@ -172,7 +172,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 	} else {
-		test_log_info("Expectation %d: skipping checking order of events if there is only one event\n", expectation_idx);
+		test_log_info("Expectation %d: skipping checking order of events since there is only one event\n", expectation_idx);
 	}
 
 

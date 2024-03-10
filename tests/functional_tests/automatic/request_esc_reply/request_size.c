@@ -45,23 +45,31 @@
 
 
 
-/* Chars from X to 240 in escape request. */
-#define ESC_CHARS_240 \
-     "kukukukuku" "kukukukuku" "kukukukuku" "kukukukuku" \
+/* Bytes from X to 240 in escape request. */
+#define ESC_BYTES_240 \
+              "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku"
 
+
+/*
+  Bytes from X to 250 in plain request.
+
+  There may be no good reason to send all 256 bytes in play request, so this
+  set of bytes may be defined as empty. Long plain requests are tested in
+  other functional test.
+*/
 #if 0
-#define PLAIN_CHARS_250 \
-	 "kukukukuku" "kukukukuku" "kukukukuku" "kukukukuku" \
+#define PLAIN_BYTES_250                                  \
+	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku"
 #else
-#define PLAIN_CHARS_250 ""
+#define PLAIN_BYTES_250 ""
 #endif
 
 
@@ -70,11 +78,11 @@
 static test_case_t g_test_cases[] = {
 	{ .description = "esc REPLY request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
 
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "1234"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "1234\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "1234"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "1234\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
@@ -82,11 +90,11 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "esc REPLY request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
 
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "1234\0"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "1234\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "1234\0"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "1234\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
@@ -94,11 +102,11 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "esc REPLY request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
 
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "12345"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "12345\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "12345"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "12345\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
@@ -106,11 +114,11 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "esc REPLY request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
 
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "12345\0"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "12345\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "12345\0"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "12345\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
@@ -118,11 +126,11 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "esc REPLY request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
 
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "123456"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "123456"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
@@ -132,67 +140,70 @@ static test_case_t g_test_cases[] = {
 
 	  /* The '\0' char from esc request will be dropped in daemon during
 	     receive - it won't fit into receive buffer. */
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "123456\0"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "123456\0"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
 
-	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
+
+
+
+	/* In the following test cases a truncation of request will occur. First
+	   cwdaemon will drop the last non-NULL char(s), and then the daemon will
+	   send back truncated reply. */
+	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL) - TRUNCATION of reply",
 
 	  /* The '7' char from esc request will be dropped in daemon during
 	     receive - it won't fit into receive buffer. */
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "1234567"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "1234567"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
-
-	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL)",
+	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL) - TRUNCATION of reply",
 
 	  /* The '7' and '\0' chars from esc request will be dropped in daemon
 	     during receive - they won't fit into receive buffer. */
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "1234567\0"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "1234567\0"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
-
-	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258 bytes (without NUL)",
+	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258 bytes (without NUL) - TRUNCATION of reply",
 
 	  /* The '7' and '8' chars from esc request will be dropped in daemon
 	     during receive - they won't fit into receive buffer. */
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "12345678"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "12345678"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
 	},
-
-	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258+1 bytes (with NUL)",
+	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258+1 bytes (with NUL) - TRUNCATION of reply",
 
 	  /* The '7', '8' and '\0' chars from esc request will be dropped in
 	     daemon during receive - they won't fit into receive buffer. */
-	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_CHARS_240 "12345678\0"),
-	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_CHARS_240 "123456\r\n"),
+	  .esc_request            = SOCKET_BUF_SET("\033hparis 90" ESC_BYTES_240 "12345678\0"),
+	  .expected_socket_reply  = SOCKET_BUF_SET(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_CHARS_250 "123456"),
-	  .expected_morse_receive =                "liverpool0" PLAIN_CHARS_250 "123456",
+	  .plain_request          = SOCKET_BUF_SET("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .event_type = event_type_socket_receive },
 	                              { .event_type = event_type_morse_receive  }, },
