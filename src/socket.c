@@ -141,11 +141,12 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
    \brief Receive request sent through socket
 
    Received request is returned through \p request.
-   Possible trailing '\r' and '\n' characters are stripped.
-   Request is ended with '\0'.
+
+   Possible trailing '\r' and '\n' characters are replaced with '\0'. Other
+   than that, the function doesn't add terminating NUL.
 
    \param cwdaemon cwdaemon instance
-   \param request buffer for received request
+   \param[out] request buffer for received request
    \param[in] size size of the buffer
 
    \return -2 if peer has performed an orderly shutdown
