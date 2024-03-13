@@ -302,7 +302,7 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 	bool failure = false;
 
 
-	const size_t n_iters = 40;
+	const size_t n_iters = 100;
 	for (size_t iter = 0; iter < n_iters; ) {
 
 		unsigned int lower = 0;

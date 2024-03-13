@@ -30,8 +30,8 @@
    slightly smaller, equal to and slightly larger than the size of cwdaemon's
    receive buffer.
 
-   cwdaemon's buffer used to receive network messages has
-   CWDAEMON_MESSAGE_SIZE_MAX==256 bytes. If a plain request sent to cwdaemon
+   cwdaemon's buffer that is used to receive requests has
+   CWDAEMON_REQUEST_SIZE_MAX==256 bytes. If a plain request sent to cwdaemon
    is larger than that, it will be truncated.
 */
 

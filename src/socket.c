@@ -110,7 +110,7 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 	size_t len = strlen(reply);
 
 #if 0 /* For debugs only. */
-	char printable[PRINTABLE_BUFFER_SIZE(CWDAEMON_MESSAGE_SIZE_MAX)] = { 0 };
+	char printable[PRINTABLE_BUFFER_SIZE(CWDAEMON_REPLY_SIZE_MAX + 1)] = { 0 };
 	get_printable_string(reply, printable, sizeof (printable));
 
 	if (reply[len - 2] != '\r' || reply[len - 1] != '\n') {

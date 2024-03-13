@@ -56,7 +56,7 @@
 
 static int (*g_tests[])(void) = {
 	basic_tests,
-	//request_size_tests,
+	request_size_tests,
 };
 
 static const char * g_test_name = "esc reply";

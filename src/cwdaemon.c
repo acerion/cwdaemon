@@ -129,8 +129,8 @@
        - request
        - reply
 
-   Size of a message is not constant.
-   Maximal size of a message is CWDAEMON_MESSAGE_SIZE_MAX.
+   Maximal size of a request is CWDAEMON_REQUEST_SIZE_MAX.
+   Maximal size of a reply is CWDAEMON_REPLY_SIZE_MAX.
 
 
 
@@ -245,7 +245,14 @@ static const int tq_low_watermark = 1;
 static bool has_audio_output = false;
 
 
-static char reply_buffer[CWDAEMON_MESSAGE_SIZE_MAX];
+/*
+  Internally (but outside sendto() code) cwdaemon treats contents of reply
+  buffer as C string, therefore we need +1 for terminating NUL.
+
+  TODO acerion 2024.03.10: start treating the reply buffer always (in entire
+  code) as array of bytes with explicit count of bytes.
+*/
+static char reply_buffer[CWDAEMON_REPLY_SIZE_MAX + 1];
 
 
 static cwdaemon_t g_cwdaemon = {
@@ -885,11 +892,16 @@ void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *requ
 */
 int cwdaemon_receive(void)
 {
-	/* The request may be a printable string, so +1 for ending NUL
-	   added somewhere below is necessary. */
-	char request_buffer[CWDAEMON_MESSAGE_SIZE_MAX + 1]; /* TODO 2022.03.06: verify if we really need the +1. */
+	/*
+	  Internally (but outside of recvfrom() code) cwdaemon treats contents of
+	  request buffer as C string, therefore we need +1 for terminating NUL.
 
-	ssize_t recv_rc = cwdaemon_recvfrom(&g_cwdaemon, request_buffer, CWDAEMON_MESSAGE_SIZE_MAX);
+	  TODO acerion 2024.03.10: start treating the request buffer always (in
+	  entire code) as array of bytes with explicit count of bytes.
+	*/
+	char request_buffer[CWDAEMON_REQUEST_SIZE_MAX + 1] = { 0 };
+
+	ssize_t recv_rc = cwdaemon_recvfrom(&g_cwdaemon, request_buffer, CWDAEMON_REQUEST_SIZE_MAX);
 
 	if (recv_rc == -2) {
 		/* Sender has closed connection. */

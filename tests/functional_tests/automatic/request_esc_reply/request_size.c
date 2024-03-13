@@ -28,10 +28,10 @@
    Test cases that send to cwdaemon REPLY escape requests that have size
    (count of characters) close to cwdaemon's maximum size of requests. The
    requests are slightly smaller, equal to and slightly larger than the size
-   of cwdaemon's buffer..
+   of cwdaemon's buffer.
 
-   cwdaemon's buffer used to receive network messages has
-   CWDAEMON_MESSAGE_SIZE_MAX bytes.
+   cwdaemon's buffer that is used to receive requests has
+   CWDAEMON_REQUEST_SIZE_MAX==256 bytes.
 */
 
 

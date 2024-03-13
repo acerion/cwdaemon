@@ -86,7 +86,30 @@
 #define CWDAEMON_PTT_DELAY_MAX                 50 /* [ms] */
 
 
-#define CWDAEMON_MESSAGE_SIZE_MAX        256 /* Maximal size of single message. */
+
+
+/*
+  Each message sent as a reply to a request is longer than the request by one
+  byte. The replies are sent in response to either caret request or "esc
+  reply" request.
+
+  Caret request:       "ABCDE^"              -> 6 bytes (5 chars + caret)
+  Reply:               "ABCDE\r\n            -> 7 bytes (5 chars + '\r' + '\n')
+
+  esc reply request:   "\033hABCDE"          -> 7 bytes (ESC + code + 5 chars)
+  Reply:                   "hABCDE\r\n"      -> 8 bytes (code + 5 chars + '\r' + '\n')
+
+  In order to correctly store and send replies, the buffer for the replies
+  must be larger by one byte than the buffer for requests.
+
+  The socket send or receive code in cwdaemon doesn't treat the data in
+  requests or replies as C string, so the size constants defined below don't
+  include space for terminating NUL.
+*/
+#define CWDAEMON_REQUEST_SIZE_MAX                                256 /**< Size of cwdaemon's buffer for a request. */
+#define CWDAEMON_REPLY_SIZE_MAX      (CWDAEMON_REQUEST_SIZE_MAX + 1) /**< Size of cwdaemon's buffer for a reply. */
+
+
 
 
 /*

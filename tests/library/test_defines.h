@@ -14,16 +14,16 @@
    cwdaemon. The additional integer is for unexpected bytes received from
    cwdaemon.
 */
-#define CLIENT_RECV_BUFFER_SIZE (CWDAEMON_MESSAGE_SIZE_MAX + 64)
+#define CLIENT_RECV_BUFFER_SIZE (CWDAEMON_REPLY_SIZE_MAX + 64)
 
 
 
 
 /**
    This buffer must be large enough to contain extraordinary amount of data
-   that is sent to stress-test cwdaemon.
+   that is sent as request to cwdaemon to stress-test it.
 */
-#define CLIENT_SEND_BUFFER_SIZE (4 * CWDAEMON_MESSAGE_SIZE_MAX)
+#define CLIENT_SEND_BUFFER_SIZE (4 * CWDAEMON_REQUEST_SIZE_MAX)
 
 
 
