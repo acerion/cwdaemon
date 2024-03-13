@@ -465,10 +465,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const int wstatus = sigchld_event->u.sigchld.wstatus;
 	const bool clean_exit = WIFEXITED(wstatus) && 0 == WEXITSTATUS(wstatus);
 	if (!clean_exit) {
-		test_log_err("Expectation 4: cwdaemon server didn't exit cleanly, wstatus = %d\n", wstatus);
+		test_log_err("Expectation %d: cwdaemon server didn't exit cleanly, wstatus = %d\n", expectation_idx, wstatus);
 		return -1;
 	}
-	test_log_info("Expectation 4: exit status of cwdaemon server is correct (expecting 0 / EXIT_SUCCESS): %d\n", wstatus);
+	test_log_info("Expectation %d: exit status of cwdaemon server is correct (expecting 0 / EXIT_SUCCESS): %d\n", expectation_idx, wstatus);
 
 
 
@@ -479,10 +479,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	struct timespec diff = { 0 };
 	timespec_diff(&exit_request->tstamp, &sigchld_event->tstamp, &diff);
 	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
-		test_log_err("Expectation 5: duration of exit was longer than expected: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
+		test_log_err("Expectation %d: duration of exit was longer than expected: %ld.%09ld [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec);
 		return -1;
 	}
-	test_log_info("Expectation 5: cwdaemon server exited in expected amount of time: %ld.%09ld [seconds]\n", diff.tv_sec, diff.tv_nsec);
+	test_log_info("Expectation %d: cwdaemon server exited in expected amount of time: %ld.%09ld [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec);
 
 
 

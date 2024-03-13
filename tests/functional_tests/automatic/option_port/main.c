@@ -458,16 +458,16 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		/* cwdaemon should have exited when it detected invalid value of port
 		   option. */
 		if (!WIFEXITED(wstatus)) {
-			test_log_err("Expectation 3: failure case: cwdaemon did not exit, wstatus = 0x%04x\n", wstatus);
+			test_log_err("Expectation %d: failure case: cwdaemon did not exit, wstatus = 0x%04x\n", expectation_idx, wstatus);
 			return -1;
 		}
 		if (EXIT_FAILURE != WEXITSTATUS(wstatus)) {
-			test_log_err("Expectation 3: failure case: incorrect exit status (expected %04x/EXIT_FAILURE): 0x%04x\n", EXIT_FAILURE, WEXITSTATUS(wstatus));
+			test_log_err("Expectation %d: failure case: incorrect exit status (expected %04x/EXIT_FAILURE): 0x%04x\n", expectation_idx, EXIT_FAILURE, WEXITSTATUS(wstatus));
 			return -1;
 		}
-		test_log_info("Expectation 3: failure case: exit status is as expected (0x%04x)\n", wstatus);
+		test_log_info("Expectation %d: failure case: exit status is as expected (0x%04x)\n", expectation_idx, wstatus);
 	} else {
-		test_log_info("Expectation 3: evaluation of exit status was skipped for correctly started cwdaemon %s\n", "");
+		test_log_info("Expectation %d: evaluation of exit status was skipped for correctly started cwdaemon\n", expectation_idx);
 	}
 
 
