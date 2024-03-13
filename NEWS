@@ -28,6 +28,15 @@ New release. Changes since previous release:
       processing "caret" requests or "<ESC>h": the replies still contain
       verbatim copy of string sent by the client.
 
+    * Proper definition of cwdaemon's reply buffer size fixes a problem with
+      too small buffer. Depending on which version of recent code
+      (post-0.12.0 code currently in development), the incorrect size of the
+      buffer resulted either in writing one byte beyond the buffer, or in
+      truncation of reply. Both cases happened only for very long requests,
+      so it was rather a corner-case.
+
+      The problem with size of the buffer was found thanks to fuzzing tests.
+
 
 * Quality Assurance
 
@@ -155,6 +164,8 @@ New release. Changes since previous release:
       - man page ("man cwdaemon")
       - help text (cwdaemon --help)
 
+    * man page now has separate chapters with generic description of network
+      requests and replies.
 
 
 ----
