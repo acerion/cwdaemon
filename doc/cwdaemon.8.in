@@ -11,18 +11,75 @@ Cwdaemon is a small daemon which uses the pc parallel or serial port and a
 simple transistor switch to output morse code to a transmitter from a text
 message sent to it via udp port 6789.
 
-.SH "OPTIONS"
-cwdaemon can be configured either through command line options on
-start of the daemon, or through requests (escaped requests) sent over
-network. Each escaped request starts with ASCII Escape character
-(decimal 27, hex 1B). The Escape character is represented in the list
-below by "<ESC>" string. Notice that there are no space characters
-between parts of escaped requests.
 
-Some of the options and requests require passing a value (e.g. Morse
-speed [wpm], tone (frequency) [Hz] etc.). Call "cwdaemon -h" to see
-default values for these options/requests, and ranges of accepted
-values.
+
+
+.SH "REQUESTS"
+You can interact with running instance of cwdaemon through network messages
+exchanged between cwdaemon and your program.
+
+cwdaemon accepts requests with size of up to 256 bytes. Any data in a request
+beyond that size is dropped by cwdaemon.
+
+There are three types of requests that can be sent to cwdaemon:
+
+.IP "plain request"
+.br
+Plain requests consist only of characters that should be keyed by cwdaemon on
+cwdevice.
+
+.IP "caret request"
+.br
+Caret requests aret similar to plain requests, but the last character in the
+request is \'^\'. See "REPLIES" section below for more info.
+
+.IP "escape request"
+.br
+Escape requests start with ASCII Escape character (decimal 27, hex 1B)
+followed by character specifying exact request type. Escape requests are used
+to control and configure a running instance of cwdaemon.
+
+The Escape character is represented in the "OPTIONS" section below by "<ESC>"
+string. Notice that there are no space characters between parts of escape
+requests.
+
+Some of the escape requests require passing a value (e.g. Morse speed [wpm],
+tone (frequency) [Hz] etc.).
+
+When handling escape requests, cwdaemon usually does not accept invalid,
+malformed or out-of-range vales. Upon receiving request with such value, it
+prints debug message, ignores the request containing such value, and waits
+for next request. One exception to the rule is PTT delay: requested delay
+values that are too large will be clipped to maximal allowed value and then
+will be used by cwdaemon. Requested negative or malformed values of PTT delay
+will be ignored.
+
+
+
+
+.SH "REPLIES"
+
+Some types of requests are followed by replies sent back from cwdaemon to a
+program issuing the original request. These requests are:
+
+.IP \[bu]
+escape request \'h\' (\'reply\' escape request) 
+.IP \[bu]
+caret request
+
+.P
+Each reply is terminated with '\\r' + '\\n' characters.
+
+
+
+
+.SH "OPTIONS"
+cwdaemon can be configured through command line options on start of the
+daemon
+
+Some of the options require passing a value (e.g. Morse speed [wpm], tone
+(frequency) [Hz] etc.). Call "cwdaemon -h" to see default values for these
+options/requests, and ranges of accepted values.
 
 When handling command line options, cwdaemon does not accept
 invalid, malformed, or out-of-range values passed through command
@@ -31,14 +88,6 @@ start with some fallback value of the option. Instead it will just
 print a debug message and exit. Rejection of bad values and exiting
 will happen before attempting to fork.
 
-When handling escaped requests, cwdaemon usually does not accept
-invalid, malformed or out-of-range vales either. But instead of
-exiting upon receiving request with such value, it simply prints debug
-message, ignores the request containing such value, and waits for next
-request. One exception to the rule is PTT delay: requested delay
-values that are too large will be clipped to maximal allowed value and
-then will be used by cwdaemon. Requested negative or malformed values
-of PTT delay will be ignored.
 
 
 .TP
