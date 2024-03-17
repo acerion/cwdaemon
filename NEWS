@@ -119,6 +119,8 @@ New release. Changes since previous release:
 
     * Adding "-D_FORTIFY_SOURCE=2" to list of arguments passed to C compiler.
 
+    * Adding -Wundef to CFLAGS.
+
     * Adding most basic support for gcov/lcov to find holes in unit-tested
       code. Four releavnt commands are:
 
@@ -136,6 +138,12 @@ New release. Changes since previous release:
       tests written in C. In each such test the test instance of cwdaemon is
       asked to EXIT at the end of test or test case, and proper exiting is
       monitored and verified in the tests.
+
+    * Adding simple fuzzing test
+
+      A simple fuzzing test is sending random requests to cwdaemon's network
+      socket. The test is located in tests/fuzzing/simple/. The test has
+      helped uncovering small problems in cwdaemon and one problem in libcw.
 
 
 * Debugging of libcw

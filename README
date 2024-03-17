@@ -295,10 +295,12 @@ cwdaemon 0.12.0 has been compiled and tested on following platforms:
  - FreeBSD 13.2-RELEASE, amd64, gcc 12.2.0, libcw 7.0.0 (unixcw 3.6.0)
 
 
+
+
 Quality Assurance
 -----------------
 
-- Compiler flags
+- Compile-time flags
 
     - -D_FORTIFY_SOURCE=2
 
@@ -373,6 +375,13 @@ Quality Assurance
 
       The tests are slowly phased out in favour of automatic tests written in
       C.
+
+- Fuzzing test
+
+      A simple fuzzing test is sending random requests to cwdaemon's network
+      socket. The test is located in tests/fuzzing/simple/.
+
+
 
 
 Credits
