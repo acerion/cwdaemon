@@ -112,6 +112,7 @@ static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) mo
 static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
 static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
 static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
+static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
 
 static int test_fn_plain_message(client_t * client, morse_receiver_t * morse_receiver);
 static int test_fn_caret_message(client_t * client, morse_receiver_t * morse_receiver);
@@ -142,6 +143,9 @@ static const test_case_t g_test_cases[] = {
 	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
 	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
 	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
+#endif
+#if 1
+	{ .description = "esc request - almost all",      .fn = test_fn_esc_almost_all      },
 #endif
 #if 1
 	{ .description = "plain message",                 .fn = test_fn_plain_message },
@@ -302,7 +306,7 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 	bool failure = false;
 
 
-	const size_t n_iters = 100;
+	const size_t n_iters = 40;
 	for (size_t iter = 0; iter < n_iters; ) {
 
 		unsigned int lower = 0;
@@ -953,6 +957,56 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_re
 	}
 
 	/* TODO acerion 2024.03.01: add here receiving of reply. */
+
+	return 0;
+}
+
+
+
+
+/**
+   @brief Send escape requests with (almost) all values of escape codes
+
+   Function sends escape requests that contain code values from full range of
+   'char' type. The function is meant to test behaviour of cwdaaemon when
+   unsupported escape requests are being sent.
+
+   Of course I could wait for some other "random" functions to generate all
+   possible (valid and invalid) escape requests, but that would take
+   bazillion of iterations. Instead of that I'm using this function that is
+   designed to test just that one aspect.
+
+   Each call of the function sends 255 escape requests with 255 values of
+   escape code - with exception of EXIT escape request.
+*/
+static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+{
+	/* Don't use 'unsigned char' type for 'code'. With this range of values the
+	   usage of 'unsigned char' would result in infinite loop. */
+	for (unsigned int code = 0; code <= UCHAR_MAX; code++) {
+		if ((char) code == CWDAEMON_ESC_REQUEST_EXIT) {
+			/* Don't tell cwdaemon to exit in the middle of a test :) */
+			continue;
+		}
+
+		/* Full message, including leading <ESC> and escape code. */
+		char full_request[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
+		const int head = snprintf(full_request, sizeof (full_request), "%c%c", ASCII_ESC, (char) code);
+
+		const int value_size = get_value_string_string(full_request + head, sizeof (full_request) - head);
+		if (value_size < 0) {
+			test_log_err("Test: failed to generate value for esc request string %s\n", "");
+			return -1;
+		}
+
+		const size_t n_bytes_to_send = sizeof (full_request);
+		if (0 != client_send_message(client, full_request, n_bytes_to_send)) {
+			test_log_err("Test: failed to send escape request with code %d / 0x%02x\n", code, (unsigned char) code);
+			return -1;
+		}
+
+		test_millisleep_nonintr(200);
+	}
 
 	return 0;
 }
