@@ -943,14 +943,6 @@ int cwdaemon_receive(void)
 		}
 		return 1;
 	} else {
-		/* Don't print literal escape value, use <ESC>
-		   symbol. First reason is that the literal value
-		   doesn't look good in console (some non-printable
-		   glyph), second reason is that printing <ESC>c to
-		   terminal makes funny things with the lines already
-		   printed to the terminal (tested in xfce4-terminal
-		   and xterm). */
-		log_info("received escaped request: \"<ESC>%s\"", request_buffer + 1);
 		cwdaemon_handle_escaped_request(request_buffer);
 		return 0;
 	}
@@ -968,8 +960,16 @@ void cwdaemon_handle_escaped_request(char *request)
 	cwdevice * dev = global_cwdevice;
 	long lv = 0;
 
+	/* Don't print literal escape value, use <ESC> symbol. First reason is
+	   that the literal value doesn't look good in console (some
+	   non-printable glyph), second reason is that printing <ESC>c to
+	   terminal makes funny things with the lines already printed to the
+	   terminal (tested in xfce4-terminal and xterm). */
+	const char escape_code = request[1];
+	log_debug("received escaped request: \"<ESC>%c\" / \"<ESC>0x%02x\"", escape_code, (unsigned char) escape_code);
+
 	/* Take action depending on Escape code. */
-	switch ((int) request[1]) {
+	switch ((int) escape_code) { /* TODO acerion 2024.03.17: remove casting. */
 	case '0':
 		/* Reset all values. */
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
@@ -1259,7 +1259,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
 		break;
-	} /* switch ((int) request[1]) */
+	} /* switch (escape_code) */
 
 	return;
 }
