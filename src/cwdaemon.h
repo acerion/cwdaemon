@@ -34,9 +34,6 @@
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
-#if HAVE_NETDB
-# include <netdb.h>
-#endif
 #if HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif

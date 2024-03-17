@@ -20,12 +20,10 @@ AM_PROG_CC_C_O # per-target flags in src/Makefile.am
 # Checks for libraries.
 
 # Checks for header files.
-AC_CHECK_HEADERS([errno.h arpa/inet.h netinet/in.h fcntl.h netdb.h netinet/in.h \
+AC_CHECK_HEADERS([errno.h arpa/inet.h netinet/in.h fcntl.h netinet/in.h \
 stdlib.h string.h strings.h sys/ioctl.h sys/socket.h syslog.h unistd.h \
 sys/time.h time.h linux/ppdev.h stdio.h signal.h stdarg.h termios.h sys/resource.h \
 dev/ppbus/ppi.h sys/stat.h])
-
-# AC_HEADER_TIME
 
 # getopt_long()
 AC_CHECK_HEADERS([getopt.h])
