@@ -101,7 +101,7 @@ DONE: options addressed in this release:
  - 'p'/"port" (network port on which cwdaemon listens)
  - 'I'/"libcwflags" (libcw debug flags)
 
-*** STARTED Unit tests
+*** DONE Unit tests
 
 Try to find some nice small function or two that is easy to unit-test. Add
 unit tests for the function(s) to cwdaemon test suite.

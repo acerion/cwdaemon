@@ -215,3 +215,17 @@ Code from src/log.c should be refactored to provide the following features:
    relies on LOG_ERR and friends.
 
 
+** TODO [#A] R0016: Unit tests for cwdaemon_recvfrom()
+
+Write proper unit tests of cwdaemon_recvfrom(), including mocking of libc's
+recvfrom().
+
+
+** TODO [#B] R0017: Continue writing unit tests for cwdaemon code
+
+Find next functions (existing or to-be-written) in cwdaemon that should be
+unit-tested.
+
+Ticket R0016 is for specific function that needs special attention. Ticket
+R0017 is for unit testing in general.
+
