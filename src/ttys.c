@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,14 +120,15 @@ out:
 }
 
 /**
-   Use cwdevice::free() to de-init device.
+   Use cwdevice::free() to de-init device that was initialized with this
+   function.
 */
 int ttys_init(cwdevice * dev, int fd)
 {
-	/* TODO acerion 2024.03.17: this only prevents memory leak. Should we
-	   call any other cwdaemon/tty function here? Perhaps reset and close
-	   dev->fd? Should we move this call to cwdevice's de-init and make sure
-	   that de-init is called on "cwdevice" escape request, i.e. in
+	/* TODO acerion 2024.03.17: this only prevents a specific memory leak.
+	   Should we call any other cwdaemon/tty function here? Perhaps reset and
+	   close dev->fd? Should we move this call to cwdevice's de-init and make
+	   sure that de-init is called on "cwdevice" escape request, i.e. in
 	   cwdaemon_cwdevice_set()? */
 	if (dev->cookie) {
 		free(dev->cookie);
