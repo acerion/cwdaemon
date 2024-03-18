@@ -217,6 +217,9 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 		get_args_gdb(argv, &argc);
 		top_level_exec_path = "/usr/bin/gdb";
 		break;
+	default:
+		test_log_err("Test: can't get top level exec path: unhandled supervisor id %d\n", opts->supervisor_id);
+		return -1;
 	}
 
 	argv[argc++] = cwdaemon_path;
@@ -365,6 +368,9 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 		case supervisor_id_gdb:
 			milli_sleep_duration = 1000;
 			break;
+		default:
+			test_log_err("Test: can't get start delay value, unhandled supervisor id %d\n", opts->supervisor_id);
+			return -1;
 		}
 		const int sleep_retv = test_millisleep_nonintr(milli_sleep_duration);
 		if (sleep_retv) {
