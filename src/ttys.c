@@ -119,12 +119,24 @@ out:
 
 }
 
-int
-ttys_init (cwdevice * dev, int fd)
+/**
+   Use cwdevice::free() to de-init device.
+*/
+int ttys_init(cwdevice * dev, int fd)
 {
+	/* TODO acerion 2024.03.17: this only prevents memory leak. Should we
+	   call any other cwdaemon/tty function here? Perhaps reset and close
+	   dev->fd? Should we move this call to cwdevice's de-init and make sure
+	   that de-init is called on "cwdevice" escape request, i.e. in
+	   cwdaemon_cwdevice_set()? */
+	if (dev->cookie) {
+		free(dev->cookie);
+		dev->cookie = NULL;
+	}
+
 	dev->cookie = calloc(1, sizeof(struct driveroptions));
 	if (dev->cookie == NULL) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "calloc() failed");
+		log_error("Can't allocate memory for tty driver options %s", "");
 		exit(EXIT_FAILURE);
 	}
 	dev->fd = fd;
@@ -138,8 +150,11 @@ ttys_init (cwdevice * dev, int fd)
 	return 0;
 }
 
-int
-ttys_free (cwdevice * dev)
+/**
+   Use this function to de-initialize a device that was initialized with
+   cwdevice::init().
+*/
+int ttys_free(cwdevice * dev)
 {
 	dev->reset (dev);
 	close (dev->fd);

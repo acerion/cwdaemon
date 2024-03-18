@@ -37,6 +37,22 @@ New release. Changes since previous release:
 
       The problem with size of the buffer was found thanks to fuzzing tests.
 
+    * Fixing minor memory leak in code handling re-configuration of tty
+      cwdevices.
+
+      The leak fixed in this release is small but in specific circumstances
+      could grow. The leak could be triggered by constant changes of cwdevice
+      through Escape request.
+
+      A related memory leak that does not grow over time is still present in
+      cwdaemon's code. Fixing it requires deeper changes to management of
+      cwdevice. Since the leak is small and constant, I'm postponing this fix
+      till next version of cwdaemon. See ticket R0018 in README.dev.org for
+      more details.
+
+      This leak was found by running fuzzing tests. It could have been found
+      also by using appropriately crafted functional test.
+
 
 * Quality Assurance
 

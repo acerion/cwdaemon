@@ -218,12 +218,10 @@ Code from src/log.c should be refactored to provide the following features:
  - verbosity/severity of log messages doesn't use custom VERBOSITY enums, but
    relies on LOG_ERR and friends.
 
-
 ** TODO [#A] R0016: Unit tests for cwdaemon_recvfrom()
 
 Write proper unit tests of cwdaemon_recvfrom(), including mocking of libc's
 recvfrom().
-
 
 ** TODO [#B] R0017: Continue writing unit tests for cwdaemon code
 
@@ -232,4 +230,38 @@ unit-tested.
 
 Ticket R0016 is for specific function that needs special attention. Ticket
 R0017 is for unit testing in general.
+
+** TODO [#B] R0018: Review cooperation of cwdevice::init() and cwdevice::free()
+
+Review a "TODO acerion 2024.03.17" comment added to ttys_init(). Evaluate how
+cwdevice::init() and cwdevice::free() should be called in
+cwdaemon_cwdevice_set() to properly de-init old device and to init new
+device.
+
+Use the following code to trigger a valgrind error shown below:
+
+#!/bin/bash
+
+declare -a commands=("\x1b8/dev/ttyUSB0"
+					 "\x1b8/dev/ttyUSB1"
+					 "\x1b8/dev/ttyUSB0"
+					 "\x1b8/dev/ttyUSB1"
+					 "\x1b5"
+					)
+
+for i in "${commands[@]}"
+do
+	echo -ne $i | nc -u -q 0 127.0.0.1 6789
+	sleep 1
+done
+
+
+==17385== 8 bytes in 1 blocks are still reachable in loss record 1 of 1
+==17385==    at 0x48455EF: calloc (vg_replace_malloc.c:1328)
+==17385==    by 0x10DDF0: ttys_init (ttys.c:136)
+==17385==    by 0x10C382: cwdaemon_cwdevice_set (cwdaemon.c:2549)
+==17385==    by 0x10C7DC: cwdaemon_params_cwdevice (cwdaemon.c:1768)
+==17385==    by 0x10C7DC: cwdaemon_handle_escaped_request (cwdaemon.c:1070)
+==17385==    by 0x10CF77: cwdaemon_receive (cwdaemon.c:946)
+==17385==    by 0x10AD94: main (cwdaemon.c:2374)
 
