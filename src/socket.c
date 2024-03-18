@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,7 +166,8 @@ ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, size_t size)
 
 	if (recv_rc == -1) { /* No requests available? */
 
-		if (errno == EAGAIN || errno == EWOULDBLOCK) { /* "a portable application should check for both possibilities" */
+		if (errno == EAGAIN ||
+		    ((EAGAIN != EWOULDBLOCK) && (errno == EWOULDBLOCK))) { /* "a portable application should check for both possibilities" */
 			/* Yup, no requests available from non-blocking socket. Good luck next time. */
 			/* TODO: how much CPU time does it cost to loop waiting for a request?
 			   Would it be reasonable to configure the socket as blocking?
