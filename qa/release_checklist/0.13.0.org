@@ -61,7 +61,7 @@ easy to use in repeatable manner.
 Use them at least once in this release. In this release we don't need to
 cover 100% of code, but let's make a start.
 
-*** STARTED Basic tests with fuzzing of network socket
+*** DONE Basic tests with fuzzing of network socket
 
 Define scenarios, scripts, procedures needed to cover with fuzzing - in the
 long run - all code paths related to network socket. The scenarios, scripts
@@ -69,6 +69,15 @@ and procedures should be easy to use in repeatable manner.
 
 Use them at least once in this release. In this release we don't need to
 cover 100% of the network socket code, but let's make a start.
+
+DONE: tests/fuzzing/simple/test_program has been created, and it has already
+proved to be useful.
+
+DONE: test scenarios document in qa/test_scenarios/ has been updated with
+instruction to run fuzzing tests.
+
+DONE: created ticket R0019 and R0020 to continue working on fuzzing in the
+future.
 
 *** DONE R0012: Static code analysis with clang-tidy
 
@@ -317,7 +326,7 @@ phase.
 
 * TODO Review the opened tickets, find fixed ones
 
-Review the list of opened tickets from README.dev.org -> "Buts, feature
+Review the list of opened tickets from README.dev.org -> "Bugs, feature
 requests". It may happen that some of them have been fixed during your work
 in this development cycle, but you didn't notice it.
 

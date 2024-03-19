@@ -279,4 +279,33 @@ done
 ==13591==    by 0x10CF77: cwdaemon_receive (cwdaemon.c:946)
 ==13591==    by 0x10AD94: main (cwdaemon.c:2374)
 
+** TODO [#B] R0019: Further work on simple fuzzing test
+
+We have a simple fuzzing test in tests/fuzzing/simple/. The test needs
+further work:
+
+1. Decrease sleep times in test functions.
+
+   Currently the sleep time is 1 or 2 seconds, which makes the test execution
+   longer.
+
+   This will shorten the time needed to complete the test.
+
+2. Use actual receiver in tests of requests that trigger keying of Morse code
+   on cwdevice.
+
+   This will demonstrate that even a fuzzed cwdaemon can key a proper message
+   on cwdevice.
+
+3. Observe CPU usage of fuzzed cwdaemon.
+
+   This will demonstrate that fuzzed cwdaemon doesn't fall into some
+   unexpected state.
+
+** TODO [#C] R0020: Add non-simple fuzzing test
+
+Come up with non-simple, non-naive fuzzing test.
+
+Maybe American Fuzzy Loop?
+
 
