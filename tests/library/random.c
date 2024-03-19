@@ -139,3 +139,19 @@ int cwdaemon_random_biased_bool(unsigned int bias, bool * result)
 }
 
 
+
+
+int cwdaemon_random_bytes(char * buffer, size_t size)
+{
+	for (size_t i = 0; i < size; i++) {
+		unsigned int a = 0x00;
+		unsigned int b = 0xff;
+		unsigned int val = 0;
+		if (0 != cwdaemon_random_uint(a, b, &val)) {
+			return -1;
+		}
+		buffer[i] = (char) val;
+	}
+	return 0;
+}
+

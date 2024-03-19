@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 
 
@@ -71,6 +72,23 @@ int cwdaemon_random_bool(bool * result);
    @return -1 on failure
 */
 int cwdaemon_random_biased_bool(unsigned int bias, bool * result);
+
+
+
+
+/**
+   @brief Get an array of random bytes
+
+   Put @p size random bytes into @p buffer
+
+
+   @param[out] buffer Buffer into which to put random bytes
+   @param[out] size Size of the buffer, count of bytes to put into buffer
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdaemon_random_bytes(char * buffer, size_t size);
 
 
 
