@@ -94,8 +94,8 @@ Distribution archive is created correctly.
 
 *Actual result*
 
-
 *** TODO unit tests
+
 Tests implemented in tests/unit_tests.
 
 *Steps*
@@ -114,6 +114,41 @@ PASS: unit_tests/tests_time_utils
 
 Count of unit tests depends on whether you pass "--enable-functional-tests"
 to ./configure or not. Test both cases.
+
+*Actual result*
+
+*** TODO fuzzing tests
+**** TODO simple fuzzing test
+
+Run simple fuzzing test: tests/fuzzing/simple/test_program.
+
+Run the test early in testing phase, certainly before doing manual tests. Let
+an automatic test detect problems early.
+
+
+
+*Preconditions*
+
+1. Be sure to use large count of iterations in the test: set value of
+   "n_iters" in test_run() to high value.
+
+2. Be sure to run the test under valgrind: set "supervisor_id" to
+   "supervisor_id_valgrind" in options passed to server_start().
+
+3. Be sure to have all tests enabled in "g_test_cases[]".
+
+
+
+*Expected result*
+
+1. valgrind reports no memory leaks (with possible exception of memory leak
+   described in ticket R0018.
+
+2. valgrind reports no memory errors of other types.
+
+3. cwdaemon's test framework doesn't report any errors on its own
+
+
 
 *Actual result*
 
@@ -265,9 +300,6 @@ Test passes
 Test passes
 
 *Actual result*
-
-
-
 
 **** TODO Tests written in C
 
