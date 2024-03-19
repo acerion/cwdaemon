@@ -413,8 +413,8 @@ static size_t get_n_bytes_to_send(int value_size, size_t buf_size)
 		n_bytes_to_send = (size_t) val;
 	}
 
-	test_log_debug("Test: size of value = %d bytes, n bytes to send = %zu (used %s)\n",
-	               value_size, n_bytes_to_send, use_value_size ? "value size" : "random size");
+	test_log_debug("Test: size of value = %d bytes, n bytes to send = %zu (%s)\n",
+	               value_size, n_bytes_to_send, use_value_size ? "used value size" : "used random size");
 
 	return n_bytes_to_send;
 }
@@ -429,13 +429,20 @@ static size_t get_n_bytes_to_send(int value_size, size_t buf_size)
 static int get_value_string_boolean(char * buffer, size_t size)
 {
 	bool value_in_range = false;
+	bool truly_empty = true;
 
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
 	switch (value_mode) {
 	case value_mode_empty:
-		buffer[0] = '\0';
-		return 1; /* One byte. TODO acerion 2024.03.01: this means that we never send zero bytes. That's not good. */
+		cwdaemon_random_bool(&truly_empty);
+		if (truly_empty) {
+			memset(buffer, 0, size);
+			return 0;
+		} else {
+			buffer[0] = '\0';
+			return 1; /* One byte. */
+		}
 	case value_mode_in_range:
 		cwdaemon_random_bool(&value_in_range);
 		snprintf(buffer, size, "%d", (int) value_in_range);
@@ -462,13 +469,20 @@ static int get_value_string_boolean(char * buffer, size_t size)
 static int get_value_string_int(char * buffer, size_t size, int range_low, int range_high)
 {
 	unsigned int value_in_range = 0;
+	bool truly_empty = true;
 
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
 	switch (value_mode) {
 	case value_mode_empty:
-		buffer[0] = '\0';
-		return 1; /* One byte. TODO acerion 2024.03.01: this means that we never send zero bytes. That's not good. */
+		cwdaemon_random_bool(&truly_empty);
+		if (truly_empty) {
+			memset(buffer, 0, size);
+			return 0;
+		} else {
+			buffer[0] = '\0';
+			return 1; /* One byte. */
+		}
 	case value_mode_in_range:
 		cwdaemon_random_uint((unsigned int) range_low, (unsigned int) range_high, &value_in_range);
 		snprintf(buffer, size, "%u", value_in_range);
@@ -494,13 +508,20 @@ static int get_value_string_int(char * buffer, size_t size, int range_low, int r
 */
 static int get_value_string_string(char * buffer, size_t size)
 {
+	bool truly_empty = true;
+
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
-
 	switch (value_mode) {
 	case value_mode_empty:
-		buffer[0] = '\0';
-		return 1; /* One byte. TODO acerion 2024.03.01: this means that we never send zero bytes. That's not good. */
+		cwdaemon_random_bool(&truly_empty);
+		if (truly_empty) {
+			memset(buffer, 0, size);
+			return 0;
+		} else {
+			buffer[0] = '\0';
+			return 1; /* One byte. */
+		}
 	case value_mode_in_range:
 		snprintf(buffer, size, "%s", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_abcdefghijklmnopqrstuvw");
 		return (int) (strlen(buffer) + 1);
