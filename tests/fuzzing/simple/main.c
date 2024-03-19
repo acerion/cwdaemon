@@ -272,12 +272,19 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 {
 	bool failure = false;
 
-	/* Terminate local test instance of cwdaemon server. Always do it first
-	   since the server is the main trigger of events in the test. */
-	if (0 != local_server_stop(server, client)) {
+	/*
+	  Terminate local test instance of cwdaemon server. Always do it first
+	  since the server is the main trigger of events in the test.
+
+	  The third arg to the 'stop' function is 'true' because we want to fuzz
+	  the daemon till the very end.
+
+	  This entire test is sending many requests multiple times, but EXIT esc
+	  request is sent only once.
+	*/
+	if (0 != local_server_stop_fuzz(server, client, true)) {
 		/*
-		  Stopping a server is not a main part of a test, but if a
-		  server can't be closed then it means that the main part of the
+		  If a server can't be closed then it means that the main part of the
 		  code has left server in bad condition. The bad condition is an
 		  indication of an error in tested functionality. Therefore set
 		  failure to true.
@@ -926,6 +933,7 @@ static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_r
 
 	return 0;
 }
+
 
 
 

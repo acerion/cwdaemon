@@ -106,6 +106,24 @@ int local_server_stop(server_t * server, client_t * client);
 
 
 
+/**
+   @brief Stop the local test instance of cwdaemon - a variant that allows fuzzing
+
+   Set @p do_fuzz to true if you want to fuzz cwdaemon while sending EXIT
+   escape request.
+
+   @param server Local server to be stopped
+   @param client Client instance to use to communicate with the server
+   @param[in] do_fuzz Whether to try to fuzz cwdaemon by sending random bytes together with the EXIT escape request
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TEST_LIB_SERVER_H */
 
 

@@ -507,6 +507,15 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 
 int local_server_stop(server_t * server, client_t * client)
 {
+	/* This is a non-fuzzing variant of 'stop' function, so the third arg is 'false'. */
+	return local_server_stop_fuzz(server, client, false);
+}
+
+
+
+
+int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz)
+{
 	int retval = 0;
 
 	/*
@@ -516,8 +525,24 @@ int local_server_stop(server_t * server, client_t * client)
 	*/
 
 	/* First ask nicely for a clean exit. */
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0)) {
-		test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
+	if (do_fuzz) {
+		test_log_debug("cwdaemon server: will try to fuzz cwdaemon while sending EXIT escape request %s\n", "");
+		char value[CLIENT_SEND_BUFFER_SIZE] = { 0 };
+		int pos = 0;
+		value[pos++] = ASCII_ESC;
+		value[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
+		if (0 != cwdaemon_random_bytes(value + pos, sizeof (value) - pos)) {
+			test_log_warn("cwdaemon server: failed to get random bytes when preparing EXIT esc request %s\n", "");
+			/* Don't do anything more. We have to send the message, even if
+			   we can't prepare random value. */
+		}
+		if (0 != client_send_message(client, value, sizeof (value))) {
+			test_log_err("cwdaemon server: failed to send fuzzing EXIT request to server %s\n", "");
+		}
+	} else {
+		if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0)) {
+			test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
+		}
 	}
 
 	/* Give the server some time to exit. */
