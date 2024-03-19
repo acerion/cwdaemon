@@ -242,12 +242,21 @@ Use the following code to trigger a valgrind error shown below:
 
 #!/bin/bash
 
-declare -a commands=("\x1b8/dev/ttyUSB0"
-					 "\x1b8/dev/ttyUSB1"
-					 "\x1b8/dev/ttyUSB0"
-					 "\x1b8/dev/ttyUSB1"
+valid="ttyUSB0"
+invalid="hello"
+
+declare -a commands=("\x1b8/dev/"$valid
+					 "\x1b8/dev/"$invalid
+					 "\x1b8/dev/"$valid
+					 "\x1b8/dev/"$valid
+					 "\x1b8/dev/"$valid
+					 "\x1b8/dev/"$invalid
+					 "\x1b8/dev/"$valid
+					 "\x1b8/dev/"$invalid
 					 "\x1b5"
 					)
+
+sleep 2
 
 for i in "${commands[@]}"
 do
@@ -256,12 +265,18 @@ do
 done
 
 
-==17385== 8 bytes in 1 blocks are still reachable in loss record 1 of 1
-==17385==    at 0x48455EF: calloc (vg_replace_malloc.c:1328)
-==17385==    by 0x10DDF0: ttys_init (ttys.c:136)
-==17385==    by 0x10C382: cwdaemon_cwdevice_set (cwdaemon.c:2549)
-==17385==    by 0x10C7DC: cwdaemon_params_cwdevice (cwdaemon.c:1768)
-==17385==    by 0x10C7DC: cwdaemon_handle_escaped_request (cwdaemon.c:1070)
-==17385==    by 0x10CF77: cwdaemon_receive (cwdaemon.c:946)
-==17385==    by 0x10AD94: main (cwdaemon.c:2374)
+
+==13591== HEAP SUMMARY:
+==13591==     in use at exit: 8 bytes in 1 blocks
+==13591==   total heap usage: 23 allocs, 22 frees, 147,158 bytes allocated
+==13591==
+==13591== 8 bytes in 1 blocks are still reachable in loss record 1 of 1
+==13591==    at 0x48455EF: calloc (vg_replace_malloc.c:1328)
+==13591==    by 0x10DDC7: ttys_init (ttys.c:137)
+==13591==    by 0x10C382: cwdaemon_cwdevice_set (cwdaemon.c:2549)
+==13591==    by 0x10C7DC: cwdaemon_params_cwdevice (cwdaemon.c:1768)
+==13591==    by 0x10C7DC: cwdaemon_handle_escaped_request (cwdaemon.c:1070)
+==13591==    by 0x10CF77: cwdaemon_receive (cwdaemon.c:946)
+==13591==    by 0x10AD94: main (cwdaemon.c:2374)
+
 
