@@ -429,7 +429,6 @@ static size_t get_n_bytes_to_send(int value_size, size_t buf_size)
 static int get_value_string_boolean(char * buffer, size_t size)
 {
 	bool value_in_range = false;
-	size_t i = 0;
 
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
@@ -442,14 +441,11 @@ static int get_value_string_boolean(char * buffer, size_t size)
 		snprintf(buffer, size, "%d", (int) value_in_range);
 		return (int) (strlen(buffer) + 1);
 	case value_mode_random_bytes:
-		for (i = 0; i < size; i++) {
-			unsigned int a = 0x00;
-			unsigned int b = 0xff;
-			unsigned int val = 0;
-			cwdaemon_random_uint(a, b, &val);
-			buffer[i] = (char) val;
+		if (0 != cwdaemon_random_bytes(buffer, size)) {
+			test_log_err("Test: failed to get random bytes in %s\n", __func__);
+			return -1;
 		}
-		return (int) i;
+		return (int) size;
 	default:
 		test_log_err("Test: uhandled value mode %d in %s\n", (int) value_mode, __func__);
 		return -1;
@@ -466,7 +462,6 @@ static int get_value_string_boolean(char * buffer, size_t size)
 static int get_value_string_int(char * buffer, size_t size, int range_low, int range_high)
 {
 	unsigned int value_in_range = 0;
-	size_t i = 0;
 
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
@@ -479,14 +474,11 @@ static int get_value_string_int(char * buffer, size_t size, int range_low, int r
 		snprintf(buffer, size, "%u", value_in_range);
 		return (int) (strlen(buffer) + 1);
 	case value_mode_random_bytes:
-		for (i = 0; i < size; i++) {
-			unsigned int a = 0x00;
-			unsigned int b = 0xff;
-			unsigned int val = 0;
-			cwdaemon_random_uint(a, b, &val);
-			buffer[i] = (char) val;
+		if (0 != cwdaemon_random_bytes(buffer, size)) {
+			test_log_err("Test: failed to get random bytes in %s\n", __func__);
+			return -1;
 		}
-		return (int) i;
+		return (int) size;
 	default:
 		test_log_err("Test: unhandled value mode %d in %s\n", (int) value_mode, __func__);
 		return -1;
@@ -502,8 +494,6 @@ static int get_value_string_int(char * buffer, size_t size, int range_low, int r
 */
 static int get_value_string_string(char * buffer, size_t size)
 {
-	size_t i = 0;
-
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
 
@@ -515,14 +505,11 @@ static int get_value_string_string(char * buffer, size_t size)
 		snprintf(buffer, size, "%s", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_abcdefghijklmnopqrstuvw");
 		return (int) (strlen(buffer) + 1);
 	case value_mode_random_bytes:
-		for (i = 0; i < size; i++) {
-			unsigned int a = 0x00;
-			unsigned int b = 0xff;
-			unsigned int val = 0;
-			cwdaemon_random_uint(a, b, &val);
-			buffer[i] = (char) val;
+		if (0 != cwdaemon_random_bytes(buffer, size)) {
+			test_log_err("Test: failed to get random bytes in %s\n", __func__);
+			return -1;
 		}
-		return (int) i;
+		return (int) size;
 	default:
 		test_log_err("Test: unhandled value mode %d in %s\n", (int) value_mode, __func__);
 		return -1;
