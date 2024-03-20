@@ -1,21 +1,57 @@
 .TH CWDAEMON 8 "Morse daemon" "ver. @PACKAGE_VERSION@"
 
+
+
 .SH NAME
-cwdaemon \- morse daemon for the serial or parallel port
+cwdaemon \- Morse daemon for the serial or parallel port
+
+
 
 .SH SYNOPSIS
 .B cwdaemon [options]
 
-.SH "DESCRIPTION"
-Cwdaemon is a small daemon which uses the pc parallel or serial port and a
-simple transistor switch to output morse code to a transmitter from a text
-message sent to it via udp port 6789.
 
+
+.SH "DESCRIPTION"
+cwdaemon is a small daemon which uses an USB/TTY converter or PC parallel or
+serial port (so called "cwdevice") to output Morse code to a transmitter from
+a text message sent to it via UDP port 6789.
+
+
+
+.SH "QUICK START"
+
+.IP 1.
+Make sure that cwdaemon has not been already started by your OS.
+
+.br
+If cwdaemon is already running, you can start another instance. Just add
+"--port <value>" option in step 2 and use the port's value instead of "6789"
+in step 3.
+
+.IP 2.
+Start your instance of cwdaemon. Without "-n" option the program will start
+running in the background.
+
+.br
+cwdaemon -x s -n
+
+.IP 3.
+In another terminal, start "nc" program with which you will send text to
+cwdaemon.
+
+.br
+nc -u 127.0.0.1 6789
+
+.IP 4.
+With "nc" running, type any text, press Enter. "nc" will send the text to
+cwdaemon listening on specified UDP port, cwdaemon will play the text on
+sound card ("-x s").
 
 
 
 .SH "REQUESTS"
-You can interact with running instance of cwdaemon through network messages
+You can interact with a running instance of cwdaemon through UDP messages
 exchanged between cwdaemon and your program.
 
 cwdaemon accepts requests with size of up to 256 bytes. Any data in a request
@@ -30,23 +66,25 @@ cwdevice.
 
 .IP "caret request"
 .br
-Caret requests aret similar to plain requests, but the last character in the
+Caret requests are similar to plain requests, but the last character in the
 request is \'^\'. See "REPLIES" section below for more info.
 
-.IP "escape request"
+.IP "Escape request"
 .br
 Escape requests start with ASCII Escape character (decimal 27, hex 1B)
-followed by character specifying exact request type. Escape requests are used
-to control and configure a running instance of cwdaemon.
+followed by an Escape code: a character specifying exact request type. Escape
+requests are used to control and configure a running instance of cwdaemon.
 
 The Escape character is represented in the "OPTIONS" section below by "<ESC>"
-string. Notice that there are no space characters between parts of escape
+string. Notice that there are no space characters between parts of Escape
 requests.
 
-Some of the escape requests require passing a value (e.g. Morse speed [wpm],
-tone (frequency) [Hz] etc.).
+Some of the Escape requests require passing a value (e.g. Morse speed [wpm],
+tone (frequency) [Hz] etc.). The values should be string representations of
+parameters. E.g. "20" string should be used as a value of Escape request to
+request 20 wpm Morse speed.
 
-When handling escape requests, cwdaemon usually does not accept invalid,
+When handling Escape requests, cwdaemon usually does not accept invalid,
 malformed or out-of-range vales. Upon receiving request with such value, it
 prints debug message, ignores the request containing such value, and waits
 for next request. One exception to the rule is PTT delay: requested delay
@@ -56,14 +94,13 @@ will be ignored.
 
 
 
-
 .SH "REPLIES"
 
 Some types of requests are followed by replies sent back from cwdaemon to a
 program issuing the original request. These requests are:
 
 .IP \[bu]
-escape request \'h\' (\'reply\' escape request) 
+\'reply\' Escape request (Escape request \'h\')
 .IP \[bu]
 caret request
 
@@ -72,10 +109,9 @@ Each reply is terminated with '\\r' + '\\n' characters.
 
 
 
-
 .SH "OPTIONS"
 cwdaemon can be configured through command line options on start of the
-daemon
+daemon.
 
 Some of the options require passing a value (e.g. Morse speed [wpm], tone
 (frequency) [Hz] etc.). Call "cwdaemon -h" to see default values for these
@@ -111,7 +147,7 @@ Escaped request: N/A
 
 
 .TP
-\fBUse hardware keying device (cw device) specified by device's name\fR
+\fBUse hardware keying device (cwdevice) specified by device's name or path\fR
 
 .IP
 Command line option: -d, --cwdevice <device name>
@@ -126,7 +162,7 @@ Escaped request: <ESC>8<device name>
 
 .IP
 You can specify the device either by device's name (then cwdaemon will look
-for the device in /dev dir) or by full path to the device.
+for the device in /dev directory) or by full path to the device.
 
 .IP
 See chapter "KEYING DEVICES" below for more information.
@@ -140,8 +176,8 @@ Command line option: -n, --nofork
 Escaped request: N/A
 
 .IP
-Debug information will be printed to stdout (unless different debug output is selected, or debug output is silenced by setting debug output verbosity).
-
+Debug information will be printed to stdout (unless different debug output is
+selected, or debug output is silenced by setting debug output verbosity).
 
 
 
@@ -196,7 +232,7 @@ If this option is not used, cwdaemon will listen on UDP port 6789 by default.
 .IP
 Escaped request: <ESC>9<port number>
 .IP
-This escaped request is obsolete and has no effect.
+This Escape request is obsolete and has no effect.
 
 
 
@@ -285,7 +321,7 @@ Command line option: -T, --tone <tone>
 Escaped request: <ESC>3<tone>
 
 .IP
-Notice that sending escaped request with value '0' silences cwdaemon.
+Notice that sending Escape request with value '0' silences cwdaemon.
 
 
 .TP
@@ -304,7 +340,7 @@ option.
 
 
 .TP
-\fBSet verbosity threshold for debug strings\fR
+\fBSet verbosity threshold for debug messages\fR
 .IP
 Command line option: -y, --verbosity <threshold>
 
@@ -450,6 +486,8 @@ For parallel ports on Linux try parport0 (default) or parport1, and on
 FreeBSD, ppi0 (default), ppi1, etc.  OpenBSD does not support parallel
 port operation, and defaults to 'tty00'.
 
+cwdaemon can also be used with USB/TTY converters.
+
 You can also specify a full path to the device in /dev/ dir,
 e.g. '/dev/ttyUSB0'.
 
@@ -476,13 +514,13 @@ exactly nothing (no rig keying, no ssb keying, etc.).
 
 
 .SH "DEBUGGING"
-cwdaemon can print debug strings. Each debug string in cwdaemon has
-specified verbosity (verbosity level), and can be printed (or not)
-depending on current verbosity threshold specified for cwdaemon.  The
-verbosity level value for each string can be changed in future
+cwdaemon can print debug messages. Each debug message in cwdaemon has
+specified priority (severity), and can be printed (or not)
+depending on current priority threshold specified for cwdaemon.  The
+priority level value for each message can be changed in future
 versions of cwdaemon. Don't depend on current setup.
 
-The verbosity threshold can be specified through command line
+The priority threshold can be specified through command line
 options: -i, -y, or --verbosity. -y and --verbosity accept
 "threshold" value (single character) as specified below:
 
@@ -495,7 +533,7 @@ options: -i, -y, or --verbosity. -y and --verbosity accept
 .TP
 \'i\' - information
 .TP
-\'d\' - details
+\'d\' - debug
 
 .P
 By default the threshold is set to "warnings" - cwdaemon will print
@@ -503,7 +541,7 @@ all errors and warnings. Changing the threshold to "information" will
 make the cwdaemon print errors, warnings, and information.
 
 .P
-Debug strings can be printed to stdout, stderr, or disc file. Printing
+Debug messages can be printed to stdout, stderr, or disc file. Printing
 to stdout or stderr is available only if cwdaemon has not forked.
 Printing to disc file is available regardless of whether cwdaemon has
 forked or not.  You can specify intended debug output using -f or
@@ -516,17 +554,16 @@ cwdaemon. You don't have to specify this explicitly through command
 line options, but you can.
 
 .P
-Regardless of values passed through -f or --debugfile options,
-cwdaemon opens a syslog file and (when forked) prints some (few)
-messages to the syslog. There is no way to override this at the
-moment. Which messages are always printed to syslog, and which can be
-printed to other file, is settled for now, but may be changed in the
-future. Don't depend too much on current setup.
+Regardless of values passed through -f or --debugfile options, cwdaemon opens
+a syslog output and (when forked) prints some messages to the syslog. There
+is no way to override this at the moment. Which messages are always printed
+to syslog, and which can be printed to other file, is settled for now, but
+may be changed in the future. Don't depend too much on current setup.
 
 
 
 .SH BUGS
-When an escaped request "f" (change sound system) is sent asking for
+When an Escape request "f" (change sound system) is sent asking for
 switching to sound system that is generally supported by libcw, but
 not available on given machine, cwdaemon will not recognize that the
 sound system is not available. It will close current audio system, and
@@ -545,10 +582,10 @@ of cwdaemon.
 
 
 .SH AUTHOR
-Cwdaemon was written by Joop Stakenborg <pg4i at amsat.org>,
+cwdaemon was written by Joop Stakenborg <pg4i at amsat.org>,
 Rein Couperus <pa0r at amsat.org>, Wolf-Ruediger Juergens,
 DL2WRJ <WJuergens at t-online.de> and Ladislav Vaiz, OK1ZIA
-<ok1zia at nagano.cz>. Cwlib is taken and adapted from
+<ok1zia at nagano.cz>. Cwlib was taken and adapted from
 the unixcw package, version 2.2 by Simon Baldwin, G0FRD.
 FreeBSD support mostly done by Diane Bruce, VA3DB.
 OpenBSD support by Jason L. Wright, AI4JW.

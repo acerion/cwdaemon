@@ -40,7 +40,7 @@ Fix it.
 See which items are critical.
 Investigate, clarify and document unclear items.
 
-*** TODO Quality of man page
+*** DONE Quality of man page
 Carefully review the man page. Fix typos, omissions, misinformations.
 
 *** DONE fortify-source=2

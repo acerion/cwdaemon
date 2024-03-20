@@ -63,8 +63,13 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
     - includes trailing "\r\n" bytes and is sent in response to caret request.
 
 - Use "code" or "Escape code" when describing a character that follows ESC
-  character in Escape requests. This is the second character in the escape
+  character in Escape requests. This is the second character in the Escape
   requests.
+
+- Capitalize "Escape" word in "Escape request" phrases.
+
+  Good: "send Escape request"
+  Bad:  "send escape request"
 
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services

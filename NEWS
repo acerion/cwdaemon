@@ -191,6 +191,9 @@ New release. Changes since previous release:
     * man page now has separate chapters with generic description of network
       requests and replies.
 
+    * man page now has "Quick start" section that has been added to make
+      introduction to cwdaemon easier.
+
 
 ----
 
