@@ -70,7 +70,7 @@
 
 
 
-static int cwdaemon_start(const char * path, const cwdaemon_opts_t * opts, server_t * server);
+static int cwdaemon_start(const char * path, const server_options_t * server_opts, server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
 static char g_arg_tone[TONE_BUF_SIZE] = { 0 };
@@ -85,33 +85,33 @@ static char g_arg_tone[TONE_BUF_SIZE] = { 0 };
 
 
 /**
-   @brief Return port number per specification in @p opts
+   @brief Return port number per specification in @p server_opts
 
-   The returned value will either be an explicity value specified in @p opts,
-   or a random value if @p opts doesn't specify it.
+   The returned value will either be an explicity value specified in @p server_opts,
+   or a random value if @p server_opts doesn't specify it.
 
    The random value is slightly biased towards being a cwdaemon's default
    value of port.
 
    Function uses 'int' instead of 'in_port_t' type for port value because in
    some tests we may explicitly specify an invalid port value (e.g. 100000)
-   in @p opts to see how cwdaemon handles it. 'in_port_t' type would not
+   in @p server_opts to see how cwdaemon handles it. 'in_port_t' type would not
    allow such value.
 
-   @param[in] opts cwdaemon's configuration options
+   @param[in] server_opts cwdaemon's configuration options
    @paran[out] port Port on which cwdaemon should listen
 
    @return -1 on errors
    @return 0 on success
 */
-static int get_port_number(const cwdaemon_opts_t * opts, int * port)
+static int get_port_number(const server_options_t * server_opts, int * port)
 {
-	if (opts->l4_port == -1) {
+	if (server_opts->l4_port == -1) {
 		/* Special case used in "option_port" functional test. Run the
 		   process with invalid port zero. */
 		test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", 0);
 		*port = 0;
-	} else if (opts->l4_port == 0) {
+	} else if (server_opts->l4_port == 0) {
 		/* Generate random (but still valid, within valid range) port
 		   number. */
 		in_port_t random_valid_port = 0;
@@ -121,13 +121,13 @@ static int get_port_number(const cwdaemon_opts_t * opts, int * port)
 		}
 		*port = (int) random_valid_port;
 	} else {
-		if (opts->l4_port < CWDAEMON_NETWORK_PORT_MIN || opts->l4_port > CWDAEMON_NETWORK_PORT_MAX) {
+		if (server_opts->l4_port < CWDAEMON_NETWORK_PORT_MIN || server_opts->l4_port > CWDAEMON_NETWORK_PORT_MAX) {
 			/* Invalid (out of range) values may be allowed in code testing
 			   how cwdaemon process handles invalid values of ports.
 			   Therefore this is just a warning situation. */
-			test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", opts->l4_port);
+			test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", server_opts->l4_port);
 		}
-		*port = opts->l4_port;
+		*port = server_opts->l4_port;
 	}
 
 	return 0;
@@ -149,18 +149,18 @@ static int get_port_number(const cwdaemon_opts_t * opts, int * port)
    argv. This is used to test that cwdaemon can run correctly without
    explicit port option. cwdaemon should use default port in such situation.
 
-   @param[in] opts cwdaemon's configuration options
+   @param[in] server_opts cwdaemon's configuration options
    @param[out] argv processes' argv vector to which to append "port" option
    @param[in/out] argc Index to @p argv, incremented by this function
-   @param[out] port Port selected by this function based on config from @p opts
+   @param[out] port Port selected by this function based on config from @p server_opts
 
    @return 0 on success
    @return -1 on failure
 */
-static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int * argc, int * port)
+static int get_option_port(const server_options_t * server_opts, const char ** argv, int * argc, int * port)
 {
-	if (0 != get_port_number(opts, port)) {
-		test_log_err("Test: failed to get port number from opts %s\n", "");
+	if (0 != get_port_number(server_opts, port)) {
+		test_log_err("Test: failed to get port number from server opts %s\n", "");
 		return -1;
 	}
 
@@ -198,7 +198,7 @@ static int get_option_port(const cwdaemon_opts_t * opts, const char ** argv, int
 
 
 
-int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, server_t * server)
+int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_opts, server_t * server)
 {
 	int l4_port = 0;
 
@@ -206,7 +206,7 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 	int argc = 0;
 	const char * top_level_exec_path = cwdaemon_path; /* First item in argv[] passed to execv(). */
 
-	switch (opts->supervisor_id) {
+	switch (server_opts->supervisor_id) {
 	case supervisor_id_none:
 		break;
 	case supervisor_id_valgrind:
@@ -218,13 +218,13 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 		top_level_exec_path = "/usr/bin/gdb";
 		break;
 	default:
-		test_log_err("Test: can't get top level exec path: unhandled supervisor id %d\n", opts->supervisor_id);
+		test_log_err("Test: can't get top level exec path: unhandled supervisor id %d\n", server_opts->supervisor_id);
 		return -1;
 	}
 
 	argv[argc++] = cwdaemon_path;
 
-	if (0 != get_option_port(opts, argv, &argc, &l4_port)) {
+	if (0 != get_option_port(server_opts, argv, &argc, &l4_port)) {
 		test_log_err("Test: failed to get 'port' option for command line %s\n", "");
 		return -1;
 	}
@@ -237,13 +237,13 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 			return -1;
 		}
 
-		if (0 != opts->tone) {
+		if (0 != server_opts->tone) {
 			argv[argc++] = "-T";
-			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", opts->tone);
+			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", server_opts->tone);
 			argv[argc++] = g_arg_tone;
 		}
 
-		switch (opts->sound_system) {
+		switch (server_opts->sound_system) {
 		case CW_AUDIO_CONSOLE:
 			argv[argc++] = "-x";
 			argv[argc++] = "c";
@@ -272,27 +272,27 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
 			break;
 		default:
-			test_log_err("Test: unsupported %d sound system\n", opts->sound_system);
+			test_log_err("Test: unsupported %d sound system\n", server_opts->sound_system);
 			return -1;
 		};
 
-		if (opts->nofork) {
+		if (server_opts->nofork) {
 			argv[argc++] = "-n";
 		}
-		if ('\0' != opts->cwdevice_name[0]) {
+		if ('\0' != server_opts->cwdevice_name[0]) {
 			argv[argc++] = "-d";
-			argv[argc++] = opts->cwdevice_name;
+			argv[argc++] = server_opts->cwdevice_name;
 		}
 		char wpm_buf[WPM_BUF_SIZE] = { 0 };
-		if (opts->wpm) {
-			snprintf(wpm_buf, sizeof (wpm_buf), "%d", opts->wpm);
+		if (server_opts->wpm) {
+			snprintf(wpm_buf, sizeof (wpm_buf), "%d", server_opts->wpm);
 			argv[argc++] = "-s";
 			argv[argc++] = wpm_buf;
 		}
-		if (opts->tty_pins.explicit) {
+		if (server_opts->tty_pins.explicit) {
 			/* tty options for cwdaemon server have been explicitly defined.
 			   Use them here. */
-			switch (opts->tty_pins.pin_keying) {
+			switch (server_opts->tty_pins.pin_keying) {
 			case TIOCM_DTR:
 				argv[argc++] = "-o";
 				argv[argc++] = "key=dtr";
@@ -305,7 +305,7 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 				break;
 			}
 
-			switch (opts->tty_pins.pin_ptt) {
+			switch (server_opts->tty_pins.pin_ptt) {
 			case TIOCM_DTR:
 				argv[argc++] = "-o";
 				argv[argc++] = "ptt=dtr";
@@ -333,7 +333,7 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 		test_log_err("Test: returning after failed exec(): %s\n", strerror(errno));
 		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
-		server->supervisor_id = opts->supervisor_id;
+		server->supervisor_id = server_opts->supervisor_id;
 
 		/*
 		  Wait for start of cwdaemon for two reasons:
@@ -369,7 +369,7 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 			milli_sleep_duration = 1000;
 			break;
 		default:
-			test_log_err("Test: can't get start delay value, unhandled supervisor id %d\n", opts->supervisor_id);
+			test_log_err("Test: can't get start delay value, unhandled supervisor id %d\n", server_opts->supervisor_id);
 			return -1;
 		}
 		const int sleep_retv = test_millisleep_nonintr(milli_sleep_duration);
@@ -409,10 +409,10 @@ int cwdaemon_start(const char * cwdaemon_path, const cwdaemon_opts_t * opts, ser
 
 
 
-int server_start(const cwdaemon_opts_t * opts, server_t * server)
+int server_start(const server_options_t * server_opts, server_t * server)
 {
 	const char * path = TEST_CWDAEMON_PATH;
-	if (0 != cwdaemon_start(path, opts, server)) {
+	if (0 != cwdaemon_start(path, server_opts, server)) {
 		/* Some test cases may expect the server not to start (e.g. when
 		   testing values of options out-of-range. Therefore this is just a
 		   warning. */
@@ -424,10 +424,10 @@ int server_start(const cwdaemon_opts_t * opts, server_t * server)
 		return -1;
 	}
 
-	if (0 == strlen(opts->l3_address)) {
+	if (0 == strlen(server_opts->l3_address)) {
 		snprintf(server->ip_address, sizeof (server->ip_address), "%s", "127.0.0.1");
 	} else {
-		snprintf(server->ip_address, sizeof (server->ip_address), "%s", opts->l3_address);
+		snprintf(server->ip_address, sizeof (server->ip_address), "%s", server_opts->l3_address);
 	}
 
 	return 0;

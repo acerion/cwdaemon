@@ -60,7 +60,7 @@
    command line, and with PID and network port known to the test binary.
 
    In order to use the supervisor, you just have to explicitly assign a value
-   to `supervisor_id` members of `cwdaemon_opts_t` variable before passing
+   to `supervisor_id` members of `server_options_t` variable before passing
    the variable to server_start().
 */
 

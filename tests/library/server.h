@@ -73,7 +73,7 @@ typedef struct {
 	/** Type of supervisor the local instance of cwdaemon process is running
 	    under. */
 	supervisor_id_t supervisor_id;
-} cwdaemon_opts_t;
+} server_options_t;
 
 
 
@@ -87,7 +87,7 @@ typedef struct {
    @return 0 on success
    @return -1 on failure
 */
-int server_start(const cwdaemon_opts_t * opts, server_t * server);
+int server_start(const server_options_t * server_opts, server_t * server);
 
 
 

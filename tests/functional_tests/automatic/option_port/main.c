@@ -298,7 +298,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 {
 	*wpm = test_get_test_wpm();
 
-	const cwdaemon_opts_t cwdaemon_opts = {
+	const server_options_t server_opts = {
 		.tone           = test_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
@@ -307,7 +307,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 		.l4_port        = test_case->port,
 		.supervisor_id  = test_opts->supervisor_id,
 	};
-	const int retv = server_start(&cwdaemon_opts, server);
+	const int retv = server_start(&server_opts, server);
 	if (0 != retv) {
 		save_child_exit_to_events(&g_child_exit_info, server->events);
 		if (test_case->expected_fail) {

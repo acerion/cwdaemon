@@ -230,7 +230,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	const int wpm = test_get_test_wpm();
 
 	/* Prepare local test instance of cwdaemon server. */
-	cwdaemon_opts_t server_opts = {
+	server_options_t server_opts = {
 		.tone           = test_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,

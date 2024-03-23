@@ -185,7 +185,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	const int wpm = TEST_WPM_MAX;
 
 	/* Prepare local test instance of cwdaemon server. */
-	const cwdaemon_opts_t cwdaemon_opts = {
+	const server_options_t server_opts = {
 		.tone           = TEST_TONE_EASY,
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
@@ -193,7 +193,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 		.wpm            = wpm,
 		.supervisor_id  = test_opts->supervisor_id,
 	};
-	if (0 != server_start(&cwdaemon_opts, server)) {
+	if (0 != server_start(&server_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon server %s\n", "");
 		failure = true;
 	}
