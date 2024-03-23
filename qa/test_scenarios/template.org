@@ -401,3 +401,116 @@ In this test cwdaemon is executed:
 *Actual result*
 
 
+
+*** TODO memory tests with valgrind
+**** TODO memory tests with valgrind for functional/automatic tests
+
+*Goal*
+
+Run all of cwdaemon's automatic functional tests in a setup where cwdaemon is
+running under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of manual functional tests
+
+   ./configure --enable-functional-tests --enable-long-functional-tests
+
+2. Compile cwdaemon
+
+   make && make check
+
+3. Prepare environment variables that will be used by all test programs
+   executed with "make check"
+
+   export CWDAEMON_TEST_SOUND_SYSTEM=null
+   export CWDAEMON_TEST_SUPERVISOR=valgrind
+
+4. Compile and run the tests.
+
+   make check
+
+5. After tests are completed:
+
+   1. Look for sections in test logs that contain valgrind's summary of memory leaks.
+
+	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers in *.log
+      files.
+
+   2. Look for sections in test logs that contain valgrind's summary of
+      memory errors.
+
+	  Look for "ERROR SUMMARY" section header in *.log files
+
+   3. Confirm that no memory leaks or memory errors were reported by
+      valgrind.
+
+
+*Expected result*
+
+1. no memory leaks or memory errors were reported by valgrind.
+
+*Actual result*
+
+**** TODO memory tests with valgrind for functional/manual tests
+
+*Goal*
+
+Run selected cwdaemon's manual functional tests in a setup where cwdaemon is
+running under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of manual functional tests
+
+   ./configure --enable-functional-tests --enable-long-functional-tests
+
+2. Compile
+
+   make && make check
+
+3. Run the test. Use command line options necessary to enable and use valgrind
+
+   ./tests/functional_tests/manual/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
+
+4. After test is completed:
+
+   1. Confirm that cwdaemon has exited correctly, without errors.
+
+   2. Confirm that there are no memory leaks or memory errors reported in
+      valgrind's log.
+
+	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers the log.
+	  Look for "ERROR SUMMARY" section header in the log.
+
+
+*Expected result*
+
+1. cwdaemon didn't crash.
+
+2. no memory leaks or memory errors were reported by valgrind.
+
+*Actual result*
+
+**** TODO memory tests with valgrind for fuzzing tests
+
+*Goal*
+
+Run all of cwdaemon's fuzzing tests in a setup where cwdaemon is running
+under control of valgrind.
+
+
+*Steps*
+
+1. Confirm that fuzzing tests done few sections above were already executed
+   with cwdaemon being under control of valgrind.
+
+*Expected result*
+
+No additional test is needed here because the primary fuzzing tests already
+use valgrind.
+
+*Actual result*
+

@@ -52,7 +52,7 @@ used when compiling code of daemon and when compiling tests code.
 There were no issues found when I ran my automatic functional tests. Some
 issues may arise in the future, though.
 
-*** TODO Basic tests with valgrind
+*** DONE Basic tests with valgrind
 
 Define scenarios, scripts, procedures needed to cover - in the long run - all
 code paths with valgrind. The scenarios, scripts and procedures should be
@@ -60,6 +60,13 @@ easy to use in repeatable manner.
 
 Use them at least once in this release. In this release we don't need to
 cover 100% of code, but let's make a start.
+
+DONE: functionality and fuzzing tests written in C accept "--supervisor"
+option that can be set to "valgrind". When such option is passed to a test
+binary, the test is executed against cwdaemon's instance running under
+valgrind.
+
+DONE: test scenario has been updated to include tests with valgrind.
 
 *** DONE Basic tests with fuzzing of network socket
 
