@@ -24,9 +24,11 @@
 
 
 
-#include <libcw.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <libcw.h>
 
 #include "log.h"
 #include "test_env.h"
@@ -37,13 +39,13 @@
 bool test_env_is_usable(test_env_flags_t flags)
 {
 	if (flags & test_env_libcw_without_signals) {
-			uint32_t v = (uint32_t) cw_version();
-			uint32_t current = (v & 0xffff0000) >> 16U;
-			uint32_t revision =  v & 0x0000ffff;
-			if (current < 7) {
-				test_log_err("Test: libcw version %d.%d is too low\n", current, revision);
-				return false;
-			}
+		const uint32_t v = (uint32_t) cw_version();
+		const uint32_t current = (v & 0xffff0000) >> 16U;
+		const uint32_t revision =  v & 0x0000ffff;
+		if (current < 7) {
+			test_log_err("Test: libcw version %"PRIu32".%"PRIu32" is too low\n", current, revision);
+			return false;
+		}
 	}
 
 	return true;

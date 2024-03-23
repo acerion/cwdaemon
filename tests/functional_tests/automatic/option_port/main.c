@@ -437,7 +437,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * sigchld_event = NULL;
 	for (int i = 0; i < expected_events_cnt; i++) {
 		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
 
@@ -453,7 +453,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		case event_type_socket_receive:
 		case event_type_request_exit:
 		default:
-			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
 	}
@@ -470,14 +470,14 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		/* cwdaemon should have exited when it detected invalid value of port
 		   option. */
 		if (!WIFEXITED(wstatus)) {
-			test_log_err("Expectation %d: failure case: cwdaemon did not exit, wstatus = 0x%04x\n", expectation_idx, wstatus);
+			test_log_err("Expectation %d: failure case: cwdaemon did not exit, wstatus = 0x%04x\n", expectation_idx, (unsigned int) wstatus);
 			return -1;
 		}
 		if (EXIT_FAILURE != WEXITSTATUS(wstatus)) {
-			test_log_err("Expectation %d: failure case: incorrect exit status (expected %04x/EXIT_FAILURE): 0x%04x\n", expectation_idx, EXIT_FAILURE, WEXITSTATUS(wstatus));
+			test_log_err("Expectation %d: failure case: incorrect exit status (expected %04x/EXIT_FAILURE): 0x%04x\n", expectation_idx, (unsigned int) EXIT_FAILURE, (unsigned int) WEXITSTATUS(wstatus));
 			return -1;
 		}
-		test_log_info("Expectation %d: failure case: exit status is as expected (0x%04x)\n", expectation_idx, wstatus);
+		test_log_info("Expectation %d: failure case: exit status is as expected (0x%04x)\n", expectation_idx, (unsigned int) wstatus);
 	} else {
 		test_log_info("Expectation %d: evaluation of exit status was skipped for correctly started cwdaemon\n", expectation_idx);
 	}

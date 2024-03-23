@@ -387,7 +387,7 @@ static int get_value_mode(value_mode_t * value_mode)
 		test_log_info("Test: value mode = RANDOM BYTES %s\n", "");
 		break;
 	default:
-		test_log_err("Test: value mode = UNKNOWN: %d\n", *value_mode);
+		test_log_err("Test: value mode = UNKNOWN: %u\n", *value_mode);
 		break;
 	}
 
@@ -1028,7 +1028,7 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 
 		const size_t n_bytes_to_send = sizeof (full_request);
 		if (0 != client_send_message(client, full_request, n_bytes_to_send)) {
-			test_log_err("Test: failed to send escape request with code %d / 0x%02x\n", code, (unsigned char) code);
+			test_log_err("Test: failed to send escape request with code %u / 0x%02x\n", code, (unsigned char) code);
 			return -1;
 		}
 

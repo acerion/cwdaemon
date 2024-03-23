@@ -134,7 +134,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * morse_event = NULL;
 	for (int i = 0; i < expected_events_cnt; i++) {
 		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
 
@@ -148,7 +148,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		case event_type_request_exit:
 		case event_type_sigchld:
 		default:
-			test_log_err("Expectation %d: unhandled event type %d at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].event_type, i);
 			return -1;
 		}
 	}

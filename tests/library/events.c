@@ -84,7 +84,7 @@ void events_print(const events_t * events)
 
 		switch (event->event_type) {
 		case event_type_morse_receive:
-			test_log_debug("Test: event #%02zd: %3ld.%09ld: Morse receive:  [%s]\n",
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: Morse receive:  [%s]\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec,
 			               event->u.morse_receive.string);
@@ -92,20 +92,20 @@ void events_print(const events_t * events)
 		case event_type_socket_receive:
 			{
 				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.bytes))] = { 0 };
-				test_log_debug("Test: event #%02zd: %3ld.%09ld: socket receive: [%s]\n",
+				test_log_debug("Test: event #%02zu: %3ld.%09ld: socket receive: [%s]\n",
 				               e,
 				               diff.tv_sec, diff.tv_nsec,
 				               get_printable_string(event->u.socket_receive.bytes, printable, sizeof (printable)));
 			}
 			break;
 		case event_type_sigchld:
-			test_log_debug("Test: event #%02zd: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec,
-			               event->u.sigchld.wstatus);
+			               (unsigned int) event->u.sigchld.wstatus);
 			break;
 		case event_type_request_exit:
-			test_log_debug("Test: event #%02zd: %3ld.%09ld: EXIT request\n",
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: EXIT request\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec);
 			break;

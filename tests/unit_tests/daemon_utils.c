@@ -110,13 +110,13 @@ static int test_build_full_device_path_success(void)
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
 		int retv = build_full_device_path(buffer, sizeof (buffer), test_data[i].input);
 		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zd, %s) gives wrong return value %d/%s (success test #%zd)\n",
+			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (success test #%zu)\n",
 					  buffer, sizeof (buffer), test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
 
 		if (0 != strcmp(buffer, test_data[i].expected_path)) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zd, %s) gives wrong result [%s] (success test #%zd)\n",
+			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong result [%s] (success test #%zu)\n",
 					  buffer, sizeof (buffer), test_data[i].input, buffer, i);
 			return -1;
 		}
@@ -151,7 +151,7 @@ static int test_build_full_device_path_failure(void)
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
 		int retv = build_full_device_path(test_data[i].buffer, test_data[i].buffer_size, test_data[i].input);
 		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zd, %s) gives wrong return value %d/%s (failure test #%zd)\n",
+			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (failure test #%zu)\n",
 					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
@@ -186,12 +186,12 @@ static int test_build_full_device_path_length(void)
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
 		int retv = build_full_device_path(test_data[i].buffer, test_data[i].buffer_size, test_data[i].input);
 		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zd, %s) gives wrong return value %d/%s (length test #%zd)\n",
+			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (length test #%zu)\n",
 					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
 		if (0 != strcmp(test_data[i].buffer, test_data[i].expected_result)) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zd, %s) gives wrong result [%s] (length test #%zd)\n",
+			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong result [%s] (length test #%zu)\n",
 					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, test_data[i].buffer, i);
 			return -1;
 		}
@@ -240,14 +240,14 @@ static int test_find_opt_value(void)
 		const char * value = NULL;
 		opt_t retv = find_opt_value(test_data[i].input, test_data[i].searched_key, &value);
 		if (retv != test_data[i].expected_retv) {
-			fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected retv: retv = %d, expected = %d in test #%zd\n",
+			fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected retv: retv = %u, expected = %u in test #%zu\n",
 			        test_data[i].input, test_data[i].searched_key,
 			        retv, test_data[i].expected_retv, i);
 			return -1;
 		}
 		if (retv == opt_success) {
 			if (0 != strcmp(value, test_data[i].expected_value)) {
-				fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected value: value = [%s], expected = [%s] in test #%zd\n",
+				fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected value: value = [%s], expected = [%s] in test #%zu\n",
 				        test_data[i].input, test_data[i].searched_key,
 				        value, test_data[i].expected_value, i);
 				return -1;

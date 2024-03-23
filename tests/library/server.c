@@ -218,7 +218,7 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 		top_level_exec_path = "/usr/bin/gdb";
 		break;
 	default:
-		test_log_err("Test: can't get top level exec path: unhandled supervisor id %d\n", server_opts->supervisor_id);
+		test_log_err("Test: can't get top level exec path: unhandled supervisor id %u\n", server_opts->supervisor_id);
 		return -1;
 	}
 
@@ -272,7 +272,7 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
 			break;
 		default:
-			test_log_err("Test: unsupported %d sound system\n", server_opts->sound_system);
+			test_log_err("Test: unsupported %u sound system\n", server_opts->sound_system);
 			return -1;
 		};
 
@@ -369,7 +369,7 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 			milli_sleep_duration = 1000;
 			break;
 		default:
-			test_log_err("Test: can't get start delay value, unhandled supervisor id %d\n", server_opts->supervisor_id);
+			test_log_err("Test: can't get start delay value, unhandled supervisor id %u\n", server_opts->supervisor_id);
 			return -1;
 		}
 		const int sleep_retv = test_millisleep_nonintr(milli_sleep_duration);

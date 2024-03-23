@@ -92,6 +92,7 @@
 #include <lp.h>
 #endif
 
+#include <inttypes.h> /* PRI* format specifiers. */
 #include <stdint.h> /* uint32_t */
 
 #include <libcw.h>
@@ -1943,10 +1944,10 @@ void cwdaemon_params_version(void)
 {
 	printf("%s version %s\n", PACKAGE, VERSION);
 
-	uint32_t v = (uint32_t) cw_version();
-	uint32_t current = (v & 0xffff0000) >> 16U;
-	uint32_t revision =  v & 0x0000ffff;
-	printf("Linked with libcw version: %d.%d\n", current, revision);
+	const uint32_t v = (uint32_t) cw_version();
+	const uint32_t current = (v & 0xffff0000) >> 16U;
+	const uint32_t revision =  v & 0x0000ffff;
+	printf("Linked with libcw version: %"PRIu32".%"PRIu32"\n", current, revision);
 	return;
 }
 

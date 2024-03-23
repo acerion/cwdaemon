@@ -194,7 +194,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 			// test_log_debug("cwdaemon client: receive poll() timeout\n");
 		} else if (n_descriptors == (nfds_t) ready) {
 			if (descriptor.revents != POLLIN) {
-				test_log_err("cwdaemon client: Unexpected event on poll socket: %02x\n", descriptor.revents);
+				test_log_err("cwdaemon client: Unexpected event on poll socket: %02x\n", (unsigned int) descriptor.revents);
 				break;
 			}
 			const ssize_t r = recv(descriptor.fd, client->received_data.bytes, sizeof (client->received_data.bytes), MSG_DONTWAIT);
