@@ -90,20 +90,27 @@ esac
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
+CFLAGS="${CFLAGS} -std=c99"
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
-  CFLAGS="${CFLAGS} -Wswitch-default -Wimplicit-function-declaration -Wswitch-enum"
-  CFLAGS="${CFLAGS} -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings"
+  CFLAGS="${CFLAGS} -Wswitch-default -Wswitch-enum"
+  CFLAGS="${CFLAGS} -Wimplicit-function-declaration -Wimplicit-int"
+  CFLAGS="${CFLAGS} -Wpointer-arith -Wpointer-sign"
+  CFLAGS="${CFLAGS} -Wfloat-equal -Wcast-qual -Wwrite-strings"
   CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
   CFLAGS="${CFLAGS} -Wundef"
+  CFLAGS="${CFLAGS} -Wunused -Wunused-macros -Wunused-result"
+  CFLAGS="${CFLAGS} -Wconversion -Wsign-conversion -Wint-conversion"
+  CFLAGS="${CFLAGS} -Wmisleading-indentation -Walloc-zero -Wformat-signedness"
+  CFLAGS="${CFLAGS} -Wuninitialized -Winit-self -Wstrict-aliasing -Wattributes -Wmain"
+  CFLAGS="${CFLAGS} -Wincompatible-pointer-types -Wold-style-definition"
 
   # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
   CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
   CFLAGS="${CFLAGS} -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion"
   CFLAGS="${CFLAGS} -Wshadow -Wformat=2"
 fi
-CFLAGS="${CFLAGS} -std=c99"
 
 
 
