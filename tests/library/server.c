@@ -528,7 +528,7 @@ int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz)
 	if (do_fuzz) {
 		test_log_debug("cwdaemon server: will try to fuzz cwdaemon while sending EXIT escape request %s\n", "");
 		char value[CLIENT_SEND_BUFFER_SIZE] = { 0 };
-		int pos = 0;
+		size_t pos = 0;
 		value[pos++] = ASCII_ESC;
 		value[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
 		if (0 != cwdaemon_random_bytes(value + pos, sizeof (value) - pos)) {

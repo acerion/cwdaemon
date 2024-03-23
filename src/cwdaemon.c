@@ -2298,7 +2298,7 @@ int main(int argc, char *argv[])
 
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (process_priority != 0) {
-		if (setpriority(PRIO_PROCESS, getpid(), process_priority) < 0) {
+		if (setpriority(PRIO_PROCESS, (id_t) getpid(), process_priority) < 0) { /* TODO acerion 2024.03.22: replace getpid() with zero (see 'man setpriority'). */
 			cwdaemon_errmsg("Setting process priority: \"%s\"", strerror(errno));
 			exit(EXIT_FAILURE);
 		}

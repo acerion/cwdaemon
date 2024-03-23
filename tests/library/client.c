@@ -87,7 +87,7 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 	char buf[CLIENT_SEND_BUFFER_SIZE] = { 0 };
 
 	size_t n_bytes_to_send = 0; /* Total count of bytes to send over network socket. */
-	int i = 0;
+	size_t i = 0;
 	switch (request) {
 	case CWDAEMON_ESC_REQUEST_RESET:
 	case CWDAEMON_ESC_REQUEST_SPEED:
@@ -121,7 +121,7 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 		  through @p bytes. We just send @p n_bytes of data through socket.
 		*/
 		if (n_bytes + i > sizeof (buf)) {
-			test_log_err("cwdaemon client: size of data to send to cwdaemon server as escaped request is too large: %zu + %d > %zu\n", n_bytes, i, sizeof (buf));
+			test_log_err("cwdaemon client: size of data to send to cwdaemon server as escaped request is too large: %zu + %zu > %zu\n", n_bytes, i, sizeof (buf));
 			return -1;
 		}
 		memcpy(buf + i, bytes, n_bytes);

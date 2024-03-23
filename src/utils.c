@@ -108,7 +108,11 @@ opt_t find_opt_value(const char * input, const char * keyword, const char ** val
 	/* When input string is "pt=none", kwlen will be 2. Without this test the
 	   function would find "ptt" in "pt=none" because the strncasecmp() would
 	   only compare 2 first characters. */
-	size_t kwlen = equal - input;
+	const ptrdiff_t offset = equal - input;
+	if (offset < 0) {
+		return opt_key_not_found;
+	}
+	const size_t kwlen = (size_t) offset;
 	if (kwlen != strlen(keyword)) {
 		return opt_key_not_found;
 	}

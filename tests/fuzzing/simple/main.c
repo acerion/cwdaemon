@@ -1020,7 +1020,7 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 		char full_request[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
 		const int head = snprintf(full_request, sizeof (full_request), "%c%c", ASCII_ESC, (char) code);
 
-		const int value_size = get_value_string_string(full_request + head, sizeof (full_request) - head);
+		const int value_size = get_value_string_string(full_request + head, sizeof (full_request) - (size_t) head);
 		if (value_size < 0) {
 			test_log_err("Test: failed to generate value for esc request string %s\n", "");
 			return -1;

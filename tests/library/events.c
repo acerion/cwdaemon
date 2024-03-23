@@ -228,7 +228,7 @@ int events_sort(events_t * events)
 		test_log_debug("Test: ^^^^^^^^ %s\n", "");
 	}
 
-	qsort(events->events, events->event_idx, sizeof (event_t), cmpevent);
+	qsort(events->events, (size_t) events->event_idx, sizeof (event_t), cmpevent);
 
 	if (do_debug) {
 		test_log_debug("Test: events after sort: %s\n", "");
