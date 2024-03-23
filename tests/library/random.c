@@ -61,9 +61,11 @@ uint32_t cwdaemon_srandom(uint32_t seed)
 		  3b9ac9ff. This means that if I apply 7-digits mask, I will have
 		  7x4=28 random-ish bits.
 		*/
-		const uint32_t nsec = (spec.tv_nsec & 0xfffffff) << (32 - 28);
+		const uint32_t nsec = (((uint32_t) spec.tv_nsec) & 0xfffffff) << (32 - 28);
 
-		const uint32_t local_seed = time(NULL) ^ getpid() ^ nsec;
+		const uint32_t now = (uint32_t) time(NULL);
+		const uint32_t pid = (uint32_t) getpid();
+		const uint32_t local_seed = now ^ pid ^ nsec;
 		srandom((unsigned int) local_seed);
 		return local_seed;
 	} else {

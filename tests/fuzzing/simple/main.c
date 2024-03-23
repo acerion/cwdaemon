@@ -1091,7 +1091,7 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) mors
 		}
 
 		unsigned int lower = 0;
-		unsigned int upper = strlen(value);
+		unsigned int upper = (unsigned int) strlen(value);
 		if (upper) {
 			/* Be sure to not select index of value[] that would point to
 			   terminating NUL. */

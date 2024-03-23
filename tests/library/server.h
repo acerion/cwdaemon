@@ -22,7 +22,7 @@
    cwdaemon server. */
 typedef struct server_t {
 	pid_t pid;    /**< pid of local test instance of cwdaemon process. */
-	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. */
+	int l4_port;  /**< Network port, on which cwdaemon server is available and listening. TODO acerion 2024.03.22: why this is int instead of in_port_t? */
 	int wstatus;  /**< Second argument to waitpid(). */
 	char ip_address[INET6_ADDRSTRLEN]; /**< String representation of server's IP address. */
 

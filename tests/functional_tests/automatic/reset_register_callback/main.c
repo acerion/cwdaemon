@@ -179,7 +179,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 		failure = true;
 	}
 
-	if (0 != client_connect_to_server(client, server->ip_address, server->l4_port)) {
+	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.03.22: remove casting. */
 		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
 		failure = true;
 	}

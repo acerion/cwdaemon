@@ -126,7 +126,7 @@ static int get_options_from_args(int argc, char * const * argv, test_options_t *
 			}
 			break;
 		case 'r':
-			test_opts->random_seed = strtol(optarg, &endptr, 10);
+			test_opts->random_seed = (uint32_t) strtoul(optarg, &endptr, 10);
 			if (endptr && strlen(endptr) > 0) {
 				test_log_err("Test options: failed at getting seed from optarg value string [%s] (endptr = [%s])\n", optarg, endptr);
 				return -1;

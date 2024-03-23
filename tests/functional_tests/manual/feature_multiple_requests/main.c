@@ -352,10 +352,16 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 					client_send_message(&clients[c], test_case->full_message, strlen(test_case->full_message) + 1);
 				}
 				unsigned int delay = 0;
+
+				/* For 1-based counter displays. */
+				const int iter_1 = iter + 1;
+				const float fiter_1 = (float) iter_1;
+				const float n_fiterations = (float) n_iterations;
+
 				//cwdaemon_random_uint(0, 5, &delay);
 				test_log_info("Test: iteration %d / %d (%7.3f%%): sleeping for %u seconds before sending next request\n",
-				              iter + 1, n_iterations,
-				              (double) (((iter + 1.0F) / n_iterations) * 100.0F),
+				              iter_1, n_iterations,
+				              (double) ((fiter_1 / n_fiterations) * 100.0F),
 				              delay);
 				test_sleep_nonintr(delay);
 			}
