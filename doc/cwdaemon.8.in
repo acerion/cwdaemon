@@ -75,6 +75,8 @@ Escape requests start with ASCII Escape character (decimal 27, hex 1B)
 followed by an Escape code: a character specifying exact request type. Escape
 requests are used to control and configure a running instance of cwdaemon.
 
+The Escape code characters are case-sensitive.
+
 The Escape character is represented in the "OPTIONS" section below by "<ESC>"
 string. Notice that there are no space characters between parts of Escape
 requests.
