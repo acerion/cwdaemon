@@ -110,7 +110,7 @@
 
 
 /*
-  Escaped requests supported by cwdaemon.
+  Codes of Escape requests supported by cwdaemon.
 
   Values of the defines are treated by cwdaemon in case-sensitive way.
 */

@@ -1033,18 +1033,17 @@ void cwdaemon_handle_escaped_request(char *request)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
 		}
 		break;
-	case '5':
+
+	case CWDAEMON_ESC_REQUEST_EXIT:
 		/* Exit cwdaemon. */
 		errno = 0;
 #if 0
-		char address[INET_ADDRSTRLEN];
+		char address[INET_ADDRSTRLEN] = { 0 };
 		inet_ntop(g_cwdaemon.request_addr.sin_family, (struct in_addr*) &(g_cwdaemon.request_addr.sin_addr.s_addr),
-			  address, INET_ADDRSTRLEN);
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested exit of daemon (client address: %s)", address);
+		          address, INET_ADDRSTRLEN);
+		log_info("requested exit of daemon (client address: %s)", address);
 #else
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-			       "requested exit of daemon");
+		log_info("requested exit of daemon %s", "");
 #endif
 		exit(EXIT_SUCCESS);
 
