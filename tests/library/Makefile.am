@@ -24,6 +24,7 @@ check_HEADERS = client.h             \
                 string_utils.h       \
                 supervisor.h         \
                 test_env.h           \
+                test_options.h       \
                 time_utils.h         \
                 thread.h
 
@@ -46,6 +47,7 @@ lib_tests_a_SOURCES = client.c             \
                       string_utils.c       \
                       supervisor.c         \
                       test_env.c           \
+                      test_options.c       \
                       time_utils.c         \
                       thread.c
 

@@ -125,6 +125,7 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-string_utils.$(OBJEXT) \
 	lib_tests_a-supervisor.$(OBJEXT) \
 	lib_tests_a-test_env.$(OBJEXT) \
+	lib_tests_a-test_options.$(OBJEXT) \
 	lib_tests_a-time_utils.$(OBJEXT) lib_tests_a-thread.$(OBJEXT)
 lib_tests_a_OBJECTS = $(am_lib_tests_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -158,6 +159,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-string_utils.Po \
 	./$(DEPDIR)/lib_tests_a-supervisor.Po \
 	./$(DEPDIR)/lib_tests_a-test_env.Po \
+	./$(DEPDIR)/lib_tests_a-test_options.Po \
 	./$(DEPDIR)/lib_tests_a-thread.Po \
 	./$(DEPDIR)/lib_tests_a-time_utils.Po
 am__mv = mv -f
@@ -335,6 +337,7 @@ check_HEADERS = client.h             \
                 string_utils.h       \
                 supervisor.h         \
                 test_env.h           \
+                test_options.h       \
                 time_utils.h         \
                 thread.h
 
@@ -357,6 +360,7 @@ lib_tests_a_SOURCES = client.c             \
                       string_utils.c       \
                       supervisor.c         \
                       test_env.c           \
+                      test_options.c       \
                       time_utils.c         \
                       thread.c
 
@@ -425,6 +429,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-string_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-supervisor.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_env.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-test_options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-thread.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-time_utils.Po@am__quote@ # am--include-marker
 
@@ -674,6 +679,20 @@ lib_tests_a-test_env.obj: test_env.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-test_env.obj `if test -f 'test_env.c'; then $(CYGPATH_W) 'test_env.c'; else $(CYGPATH_W) '$(srcdir)/test_env.c'; fi`
 
+lib_tests_a-test_options.o: test_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-test_options.o -MD -MP -MF $(DEPDIR)/lib_tests_a-test_options.Tpo -c -o lib_tests_a-test_options.o `test -f 'test_options.c' || echo '$(srcdir)/'`test_options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-test_options.Tpo $(DEPDIR)/lib_tests_a-test_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_options.c' object='lib_tests_a-test_options.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-test_options.o `test -f 'test_options.c' || echo '$(srcdir)/'`test_options.c
+
+lib_tests_a-test_options.obj: test_options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-test_options.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-test_options.Tpo -c -o lib_tests_a-test_options.obj `if test -f 'test_options.c'; then $(CYGPATH_W) 'test_options.c'; else $(CYGPATH_W) '$(srcdir)/test_options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-test_options.Tpo $(DEPDIR)/lib_tests_a-test_options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_options.c' object='lib_tests_a-test_options.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-test_options.obj `if test -f 'test_options.c'; then $(CYGPATH_W) 'test_options.c'; else $(CYGPATH_W) '$(srcdir)/test_options.c'; fi`
+
 lib_tests_a-time_utils.o: time_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-time_utils.o -MD -MP -MF $(DEPDIR)/lib_tests_a-time_utils.Tpo -c -o lib_tests_a-time_utils.o `test -f 'time_utils.c' || echo '$(srcdir)/'`time_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-time_utils.Tpo $(DEPDIR)/lib_tests_a-time_utils.Po
@@ -842,6 +861,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-string_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-supervisor.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-test_options.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-time_utils.Po
 	-rm -f Makefile
@@ -905,6 +925,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-string_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-supervisor.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-test_env.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-test_options.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-thread.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-time_utils.Po
 	-rm -f Makefile
