@@ -6230,8 +6230,6 @@ then :
 fi
 
 
-# AC_HEADER_TIME
-
 # getopt_long()
 ac_fn_c_check_header_compile "$LINENO" "getopt.h" "ac_cv_header_getopt_h" "$ac_includes_default"
 if test "x$ac_cv_header_getopt_h" = xyes
