@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "tests/library/client.h"
+#include "tests/library/test_options.h"
 
 
 
@@ -31,7 +32,7 @@ typedef struct test_case_t {
    @return 0 if test passed
    @return -1 otherwise
 */
-int run_test_cases(const test_case_t * test_cases, size_t n_test_cases);
+int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts);
 
 
 

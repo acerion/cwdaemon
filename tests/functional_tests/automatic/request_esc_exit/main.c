@@ -77,6 +77,7 @@
 #include "tests/library/sleep.h"
 #include "tests/library/socket.h"
 #include "tests/library/test_env.h"
+#include "tests/library/test_options.h"
 #include "tests/library/time_utils.h"
 
 
@@ -131,7 +132,7 @@ static test_case_t g_test_cases[] = {
 
 
 static int evaluate_events(events_t * events, const test_case_t * test_case);
-static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case);
+static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case, const test_options_t * test_opts);
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver);
 
@@ -153,7 +154,7 @@ static void sighandler(int sig)
 
 
 
-int main(void)
+int main(int argc, char * const * argv)
 {
 #if 0
 	if (!test_env_is_usable(test_env_libcw_without_signals)) {
@@ -162,7 +163,17 @@ int main(void)
 	}
 #endif
 
-	const uint32_t seed = cwdaemon_srandom(0);
+	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
+	if (0 != test_options_get(argc, argv, &test_opts)) {
+		test_log_err("Test: failed to process command line options %s\n", "");
+		exit(EXIT_FAILURE);
+	}
+	if (test_opts.invoked_help) {
+		/* Help text was printed as requested. Now exit. */
+		exit(EXIT_SUCCESS);
+	}
+
+	const uint32_t seed = cwdaemon_srandom(test_opts.random_seed);
 	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	signal(SIGCHLD, sighandler);
@@ -183,7 +194,7 @@ int main(void)
 		client_t client = { .events = &events };
 		morse_receiver_t morse_receiver = { .events = &events };
 
-		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case)) {
+		if (0 != testcase_setup(&server, &client, &morse_receiver, test_case, &test_opts)) {
 			test_log_err("Test: failed at setting up of test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
 			goto cleanup;
@@ -223,7 +234,7 @@ int main(void)
 /**
    @brief Prepare resources used to execute single test case
 */
-static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case)
+static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case, const test_options_t * test_opts)
 {
 	bool failure = false;
 
@@ -231,10 +242,11 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 
 	const cwdaemon_opts_t cwdaemon_opts = {
 		.tone           = test_get_test_tone(),
-		.sound_system   = CW_AUDIO_SOUNDCARD,
+		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
+		.supervisor_id  = test_opts->supervisor_id,
 	};
 
 	if (0 != server_start(&cwdaemon_opts, server)) {

@@ -5,6 +5,7 @@
 
 
 #include "tests/library/client.h"
+#include "tests/library/test_options.h"
 
 
 
@@ -19,7 +20,7 @@ typedef struct test_case_t {
 
 
 
-int run_test_cases(test_case_t * test_cases, size_t n_test_cases);
+int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts);
 
 
 

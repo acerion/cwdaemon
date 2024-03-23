@@ -51,10 +51,10 @@ static test_case_t g_test_cases[] = {
 
 
 
-int basic_tests(void)
+int basic_tests(const test_options_t * test_opts)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	const int rv = run_test_cases(g_test_cases, n_test_cases);
+	const int rv = run_test_cases(g_test_cases, n_test_cases, test_opts);
 
 	if (0 != rv) {
 		test_log_err("Test: result of the 'basic' test: FAIL %s\n", "");

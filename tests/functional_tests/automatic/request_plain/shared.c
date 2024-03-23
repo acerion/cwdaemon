@@ -51,7 +51,7 @@
 
 
 
-static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int evaluate_events(events_t * events, const test_case_t * test_case);
@@ -59,7 +59,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case);
 
 
 
-int run_test_cases(test_case_t * test_cases, size_t n_test_cases)
+int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts)
 {
 	bool failure = false;
 	events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
@@ -67,7 +67,7 @@ int run_test_cases(test_case_t * test_cases, size_t n_test_cases)
 	client_t client = { .events = &events };
 	morse_receiver_t morse_receiver = { .events = &events };
 
-	if (0 != test_setup(&server, &client, &morse_receiver)) {
+	if (0 != test_setup(&server, &client, &morse_receiver, test_opts)) {
 		test_log_err("Test: failed at test setup %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -176,7 +176,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 /**
    @brief Prepare resources used to execute set of test cases
 */
-static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts)
 {
 	bool failure = false;
 
@@ -186,12 +186,12 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 	/* Prepare local test instance of cwdaemon server. */
 	const cwdaemon_opts_t cwdaemon_opts = {
-		//.supervisor_id =  supervisor_id_valgrind,
 		.tone           = TEST_TONE_EASY,
-		.sound_system   = CW_AUDIO_SOUNDCARD,
+		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
 		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
+		.supervisor_id  = test_opts->supervisor_id,
 	};
 	if (0 != server_start(&cwdaemon_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon server %s\n", "");
