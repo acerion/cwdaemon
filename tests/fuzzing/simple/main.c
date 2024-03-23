@@ -71,28 +71,11 @@
 
 
 
-/**
-   A value of escaped request is an array that does not include <ESC>, or
-   escaped request code.
-*/
-#define ESC_REQ_VALUE_BUFFER_SIZE (CLIENT_SEND_BUFFER_SIZE - 1 - 1)
-
-
-
-
-/**
-   Size of buffer for a value of plain message or caret message.
-*/
-#define MESSAGE_VALUE_BUFFER_SIZE (CLIENT_SEND_BUFFER_SIZE)
-
-
-
-
-
 typedef struct test_case_t {
 	const char * description;     /** Human-readable description of the test case. */
 	int (* fn)(client_t * client, morse_receiver_t * morse_receiver);
 } test_case_t;
+
 
 
 
@@ -118,9 +101,23 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 static int test_fn_plain_message(client_t * client, morse_receiver_t * morse_receiver);
 static int test_fn_caret_message(client_t * client, morse_receiver_t * morse_receiver);
 
+static int test_request_set_value_string(test_request_t * request);
+static int test_request_set_value_bool(test_request_t * request);
+static int test_request_set_value_int(test_request_t * request, int range_low, int range_high);
+static void test_request_set_random_n_bytes(test_request_t * request);
+
+/**
+   Set first byte of request to Esc character. Set second byte of request to
+   given Escape request code. Set count of bytes in request to 2, since this
+   is how many bytes are being put into the request.
+*/
+#define TEST_REQUEST_INIT_ESC(_code_) { .bytes[0] = ASCII_ESC, .bytes[1] = (_code_), .n_bytes = 2 }
 
 
 
+
+/* TODO acerion 2024.03.23: add a function that sends random messages that
+   always start with <ESC>, but bytes other than 0th are random. */
 static const test_case_t g_test_cases[] = {
 #if 1
 	{ .description = "esc request - reset",           .fn = test_fn_esc_reset           }, // CWDAEMON_ESC_REQUEST_RESET
@@ -401,78 +398,83 @@ static int get_value_mode(value_mode_t * value_mode)
    Pick a size of data to be sent by cwdaemon client
 
    Usually we want to send exactly as many bytes as there are in generated
-   value (i.e. @p value_size), but sometimes we may want to send more or less.
+   request (i.e. @p request->n_bytes), but sometimes we may want to send more or less.
 
-   The function can decide to return any value between zero and @p buf_size,
-   which represents total size of buffer in which value is stored.
+   The function can decide to set some random value of request->n_bytes which
+   represents total count of bytes in request.
 
-   @p buf_size is the upper limit. @p value_size <= @p buf_size.
+   If given request is an Escape request, the lower limit on the random value
+   is 2 (to not truncate the Escape requests' header).
 
-   @param value_size Count of bytes that represent a generated value
-   @param buf_size Count of bytes that can be stored in value buffer
+   The function decides to change the value of n_bytes at random, meaning
+   that sometimes the function doesn't change the value.
 
-   @return Count of bytes that should be used as size of data to be sent by cwdaemon client
- */
-static size_t get_n_bytes_to_send(int value_size, size_t buf_size)
+   @param[in/out] request Request in which to set n_bytes value
+*/
+static void test_request_set_random_n_bytes(test_request_t * request)
 {
-	size_t n_bytes_to_send = value_size;
+	/* Change the value of n_bytes only sometimes, at random. */
+	bool keep_value_size = true;
+	cwdaemon_random_biased_bool(10, &keep_value_size); /* bias = 10 -> very biased towards returning 'false'. */
 
-	/* Randomly switch between using exact @p value_size and some random
-	   value. But be biased towards using @p value_size. */
-	bool use_value_size = true;
-	cwdaemon_random_biased_bool(10, &use_value_size); /* antibias = 10 -> not very biased towards returning 'true'. */
-
-	if (!use_value_size) {
-		unsigned int lower = 0;
-		unsigned int upper = (unsigned int) buf_size;
+	if (!keep_value_size) {
+		unsigned int lower = request->bytes[0] == ASCII_ESC ? 2 : 0;
+		unsigned int upper = (unsigned int) sizeof (request->bytes);
 		unsigned int val = 0;
 		cwdaemon_random_uint(lower, upper, &val);
 
-		n_bytes_to_send = (size_t) val;
+		request->n_bytes = (size_t) val;
+
+		test_log_debug("Test: count of bytes in value has been selected at random: %zu\n", request->n_bytes);
 	}
 
-	test_log_debug("Test: size of value = %d bytes, n bytes to send = %zu (%s)\n",
-	               value_size, n_bytes_to_send, use_value_size ? "used value size" : "used random size");
-
-	return n_bytes_to_send;
+	return;
 }
 
 
 
 
 /**
-   @return count of bytes put into buffer on success
+   @return 0 on success
    @return -1 on error
 */
-static int get_value_string_boolean(char * buffer, size_t size)
+static int test_request_set_value_bool(test_request_t * request)
 {
 	bool value_in_range = false;
 	bool truly_empty = true;
 
+	/* Skip potential header of Escape request (the Escape character + Escape
+	   code). */
+	char * const val_start = request->bytes + request->n_bytes;
+	const size_t val_size = sizeof (request->bytes) - request->n_bytes;
+
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
 	switch (value_mode) {
 	case value_mode_empty:
 		cwdaemon_random_bool(&truly_empty);
 		if (truly_empty) {
-			memset(buffer, 0, size);
+			memset(val_start, 0, val_size);
 			return 0;
 		} else {
-			buffer[0] = '\0';
-			return 1; /* One byte. */
+			val_start[0] = '\0';
+			request->n_bytes += 1; /* One byte: '\0'. */
+			return 0;
 		}
 	case value_mode_in_range:
 		cwdaemon_random_bool(&value_in_range);
-		snprintf(buffer, size, "%d", (int) value_in_range);
-		return (int) (strlen(buffer) + 1);
+		snprintf(val_start, val_size, "%u", (unsigned int) value_in_range);
+		request->n_bytes += strlen(val_start) + 1;
+		return 0;
 	case value_mode_random_bytes:
-		if (0 != cwdaemon_random_bytes(buffer, size)) {
+		if (0 != cwdaemon_random_bytes(val_start, val_size)) {
 			test_log_err("Test: failed to get random bytes in %s\n", __func__);
 			return -1;
 		}
-		return (int) size;
+		request->n_bytes += val_size;
+		return 0;
 	default:
-		test_log_err("Test: uhandled value mode %d in %s\n", (int) value_mode, __func__);
+		test_log_err("Test: unhandled value mode %u in %s\n", value_mode, __func__);
 		return -1;
 	}
 }
@@ -481,38 +483,46 @@ static int get_value_string_boolean(char * buffer, size_t size)
 
 
 /**
-   @return count of bytes put into buffer on success
+   @return 0 on success
    @return -1 on error
 */
-static int get_value_string_int(char * buffer, size_t size, int range_low, int range_high)
+static int test_request_set_value_int(test_request_t * request, int range_low, int range_high)
 {
 	unsigned int value_in_range = 0;
 	bool truly_empty = true;
 
+	/* Skip potential header of Escape request (the Escape character + Escape
+	   code). */
+	char * const val_start = request->bytes + request->n_bytes;
+	const size_t val_size = sizeof (request->bytes) - request->n_bytes;
+
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
 	switch (value_mode) {
 	case value_mode_empty:
 		cwdaemon_random_bool(&truly_empty);
 		if (truly_empty) {
-			memset(buffer, 0, size);
+			memset(val_start, 0, val_size);
 			return 0;
 		} else {
-			buffer[0] = '\0';
-			return 1; /* One byte. */
+			val_start[0] = '\0';
+			request->n_bytes += 1; /* One byte: '\0'. */
+			return 0;
 		}
 	case value_mode_in_range:
 		cwdaemon_random_uint((unsigned int) range_low, (unsigned int) range_high, &value_in_range);
-		snprintf(buffer, size, "%u", value_in_range);
-		return (int) (strlen(buffer) + 1);
+		snprintf(val_start, val_size, "%u", value_in_range);
+		request->n_bytes += strlen(val_start) + 1;
+		return 0;
 	case value_mode_random_bytes:
-		if (0 != cwdaemon_random_bytes(buffer, size)) {
+		if (0 != cwdaemon_random_bytes(val_start, val_size)) {
 			test_log_err("Test: failed to get random bytes in %s\n", __func__);
 			return -1;
 		}
-		return (int) size;
+		request->n_bytes += val_size;
+		return 0;
 	default:
-		test_log_err("Test: unhandled value mode %d in %s\n", (int) value_mode, __func__);
+		test_log_err("Test: unhandled value mode %u in %s\n", value_mode, __func__);
 		return -1;
 	}
 }
@@ -521,12 +531,17 @@ static int get_value_string_int(char * buffer, size_t size, int range_low, int r
 
 
 /**
-   @return count of bytes put into buffer on success
+   @return 0 on success
    @return -1 on error
 */
-static int get_value_string_string(char * buffer, size_t size)
+static int test_request_set_value_string(test_request_t * request)
 {
 	bool truly_empty = true;
+
+	/* Skip potential header of Escape request (the Escape character + Escape
+	   code). */
+	char * const val_start = request->bytes + request->n_bytes;
+	const size_t val_size = sizeof (request->bytes) - request->n_bytes;
 
 	value_mode_t value_mode = value_mode_empty;
 	get_value_mode(&value_mode);
@@ -534,26 +549,30 @@ static int get_value_string_string(char * buffer, size_t size)
 	case value_mode_empty:
 		cwdaemon_random_bool(&truly_empty);
 		if (truly_empty) {
-			memset(buffer, 0, size);
+			memset(val_start, 0, val_size);
 			return 0;
 		} else {
-			buffer[0] = '\0';
-			return 1; /* One byte. */
+			val_start[0] = '\0';
+			request->n_bytes += 1; /* One byte: '\0'. */
+			return 0;
 		}
 	case value_mode_in_range:
-		snprintf(buffer, size, "%s", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_abcdefghijklmnopqrstuvw");
-		return (int) (strlen(buffer) + 1);
+		snprintf(val_start, val_size, "%s", "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee_abcdefghijklmnopqrstuvw");
+		request->n_bytes += strlen(val_start) + 1;
+		return 0;
 	case value_mode_random_bytes:
-		if (0 != cwdaemon_random_bytes(buffer, size)) {
+		if (0 != cwdaemon_random_bytes(val_start, val_size)) {
 			test_log_err("Test: failed to get random bytes in %s\n", __func__);
 			return -1;
 		}
-		return (int) size;
+		request->n_bytes += val_size;
+		return 0;
 	default:
-		test_log_err("Test: unhandled value mode %d in %s\n", (int) value_mode, __func__);
+		test_log_err("Test: unhandled value mode %u in %s\n", value_mode, __func__);
 		return -1;
 	}
 }
+
 
 
 
@@ -564,16 +583,15 @@ static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_re
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_RESET);
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_RESET, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'RESET' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'RESET' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -587,16 +605,15 @@ static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_re
 
 static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), CW_SPEED_MIN, CW_SPEED_MAX);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SPEED);
+	if (0 != test_request_set_value_int(&request, CW_SPEED_MIN, CW_SPEED_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_SPEED, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'SPEED' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'SPEED' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -610,16 +627,15 @@ static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_re
 
 static int test_fn_esc_tone(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TONE);
+	if (0 != test_request_set_value_int(&request, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_TONE, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'TONE' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'TONE' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -638,16 +654,15 @@ static int test_fn_esc_abort(client_t * client, __attribute__((unused)) morse_re
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_ABORT);
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_ABORT, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'ABORT' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'ABORT' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -659,7 +674,6 @@ static int test_fn_esc_abort(client_t * client, __attribute__((unused)) morse_re
 
 
 
-
 __attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	/*
@@ -667,16 +681,15 @@ __attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribu
 	  anyway. Just get any byte array as value for a request that doesn't
 	  expect any value.
 	*/
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_EXIT);
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'EXIT' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'EXIT' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -690,16 +703,15 @@ __attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribu
 
 static int test_fn_esc_word_mode(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_boolean(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_WORD_MODE);
+	if (0 != test_request_set_value_bool(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_WORD_MODE, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'WORD MODE' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'WORD MODE' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -713,16 +725,16 @@ static int test_fn_esc_word_mode(client_t * client, __attribute__((unused)) mors
 
 static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), 0, CWDAEMON_MORSE_WEIGHTING_MAX); /* TODO: lower range (the 3rd arg) should be CWDAEMON_MORSE_WEIGHTING_MIN. */
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_WEIGHTING);
+	/* TODO: lower range (the 3rd arg) should be CWDAEMON_MORSE_WEIGHTING_MIN. */
+	if (0 != test_request_set_value_int(&request, 0, CWDAEMON_MORSE_WEIGHTING_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_WEIGHTING, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'WEIGHTING' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'WEIGHTING' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -740,16 +752,15 @@ static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_r
  */
 static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_CWDEVICE);
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_CWDEVICE, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'CWDEVICE' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'CWDEVICE' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -760,18 +771,18 @@ static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) morse
 
 
 
+
 static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_PORT);
+	if (0 != test_request_set_value_int(&request, CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_PORT, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'PORT' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'PORT' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -785,16 +796,15 @@ static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_rec
 
 static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_boolean(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_PTT_STATE);
+	if (0 != test_request_set_value_bool(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_PTT_STATE, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'PTT STATE' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'PTT STATE' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -808,16 +818,15 @@ static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) mors
 
 static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), 0, 1);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SSB_WAY);
+	if (0 != test_request_set_value_int(&request, 0, 1)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_SSB_WAY, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'SSB WAY' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'SSB WAY' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -831,16 +840,15 @@ static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_
 
 static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TX_DELAY);
+	if (0 != test_request_set_value_int(&request, CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_TX_DELAY, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'TX DELAY' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'TX DELAY' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -854,16 +862,15 @@ static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse
 
 static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), 0, 10); /* TODO acerion 2024.03.01: replace magic values with constants. */
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TUNE);
+	if (0 != test_request_set_value_int(&request, 0, 10)) { /* TODO acerion 2024.03.01: replace magic values with constants. */
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_TUNE, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'TUNE' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'TUNE' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -877,16 +884,15 @@ static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_rec
 
 static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), 0, INT_MAX); /* TODO acerion 2024.03.01: use correct values to specify range of valid values. */
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_BAND_SWITCH);
+	/* TODO acerion 2024.03.01: use correct values to specify range of valid values. */
+	if (0 != test_request_set_value_int(&request, 0, INT_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_BAND_SWITCH, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'BAND SWITCH' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'BAND SWITCH' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -904,16 +910,15 @@ static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) mo
  */
 static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SOUND_SYSTEM);
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_SOUND_SYSTEM, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'SOUND SYSTEM' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'SOUND SYSTEM' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -927,16 +932,15 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) m
 
 static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_int(value, sizeof (value), CW_VOLUME_MIN, CW_VOLUME_MAX);
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_VOLUME);
+	if (0 != test_request_set_value_int(&request, CW_VOLUME_MIN, CW_VOLUME_MAX)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_VOLUME, value, n_bytes_to_send)) {
-		test_log_err("Test: failed to send 'VOLUME' escaped request %s\n", "");
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		test_log_err("Test: failed to send 'VOLUME' Escape request %s\n", "");
 		return -1;
 	}
 
@@ -951,31 +955,29 @@ static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_r
 static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	{
-		char requested_reply[ESC_REQ_VALUE_BUFFER_SIZE] = { 0 };
-		const int value_size = get_value_string_string(requested_reply, sizeof (requested_reply));
-		if (value_size < 0) {
-			test_log_err("Test: failed to generate value string %s\n", "");
+		test_request_t requested_reply = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_REPLY);
+		if (0 != test_request_set_value_string(&requested_reply)) {
+			test_log_err("Test: failed to set value of request %s\n", "");
 			return -1;
 		}
+		test_request_set_random_n_bytes(&requested_reply);
 
-		const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (requested_reply));
-		if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_REPLY, requested_reply, n_bytes_to_send)) {
-			test_log_err("Test: failed to send REPLY escaped request %s\n", "");
+		if (0 != client_send_message(client, requested_reply.bytes, requested_reply.n_bytes)) {
+			test_log_err("Test: failed to send REPLY Escape request %s\n", "");
 			return -1;
 		}
 	}
 
 	{
-		char message[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
-		const int value_size = get_value_string_string(message, sizeof (message));
-		if (value_size < 0) {
-			test_log_err("Test: failed to generate value string %s\n", "");
+		test_request_t message = { 0 };
+		if (0 != test_request_set_value_string(&message)) {
+			test_log_err("Test: failed to set value of request %s\n", "");
 			return -1;
 		}
+		test_request_set_random_n_bytes(&message);
 
-		const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (message));
-		if (0 != client_send_message(client, message, n_bytes_to_send)) {
-			test_log_err("Test: failed to send PLAIN MESSAGE in tests of REPLY escaped request %s\n", "");
+		if (0 != client_send_message(client, message.bytes, message.n_bytes)) {
+			test_log_err("Test: failed to send PLAIN MESSAGE in tests of REPLY Escape request %s\n", "");
 			return -1;
 		}
 
@@ -1017,18 +1019,15 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 		}
 
 		/* Full message, including leading <ESC> and escape code. */
-		char full_request[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
-		const int head = snprintf(full_request, sizeof (full_request), "%c%c", ASCII_ESC, (char) code);
-
-		const int value_size = get_value_string_string(full_request + head, sizeof (full_request) - (size_t) head);
-		if (value_size < 0) {
-			test_log_err("Test: failed to generate value for esc request string %s\n", "");
+		test_request_t request = TEST_REQUEST_INIT_ESC(((char) code));
+		if (0 != test_request_set_value_string(&request)) {
+			test_log_err("Test: failed to set value of request %s\n", "");
 			return -1;
 		}
+		test_request_set_random_n_bytes(&request);
 
-		const size_t n_bytes_to_send = sizeof (full_request);
-		if (0 != client_send_message(client, full_request, n_bytes_to_send)) {
-			test_log_err("Test: failed to send escape request with code %u / 0x%02x\n", code, (unsigned char) code);
+		if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+			test_log_err("Test: failed to send Escape request with code %u / 0x%02x\n", code, (unsigned char) code);
 			return -1;
 		}
 
@@ -1044,15 +1043,14 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
 static int test_fn_plain_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to generate value string %s\n", "");
+	test_request_t request = { 0 };
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to generate value of request %s\n", "");
 		return -1;
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_message(client, value, n_bytes_to_send)) {
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
 		test_log_err("Test: failed to send PLAIN MESSAGE %s\n", "");
 		return -1;
 	}
@@ -1069,10 +1067,9 @@ static int test_fn_plain_message(client_t * client, __attribute__((unused)) mors
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
 static int test_fn_caret_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	char value[MESSAGE_VALUE_BUFFER_SIZE] = { 0 };
-	const int value_size = get_value_string_string(value, sizeof (value));
-	if (value_size < 0) {
-		test_log_err("Test: failed to get generate value string %s\n", "");
+	test_request_t request = { 0 };
+	if (0 != test_request_set_value_string(&request)) {
+		test_log_err("Test: failed to set value of request %s\n", "");
 		return -1;
 	}
 
@@ -1091,7 +1088,7 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) mors
 		}
 
 		unsigned int lower = 0;
-		unsigned int upper = (unsigned int) strlen(value);
+		unsigned int upper = (unsigned int) request.n_bytes - 1;
 		if (upper) {
 			/* Be sure to not select index of value[] that would point to
 			   terminating NUL. */
@@ -1099,13 +1096,13 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) mors
 		}
 		unsigned int mark = 0;
 		cwdaemon_random_uint(lower, upper, &mark);
-		if (value[mark] != '\0') { /* Another check for NUL, just in case. */
-			value[mark] = '^';
+		if (request.bytes[mark] != '\0') { /* Another check for NUL, just in case. */
+			request.bytes[mark] = '^';
 		}
 	}
+	test_request_set_random_n_bytes(&request);
 
-	const size_t n_bytes_to_send = get_n_bytes_to_send(value_size, sizeof (value));
-	if (0 != client_send_message(client, value, n_bytes_to_send)) {
+	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
 		test_log_err("Test: failed to send CARET MESSAGE %s\n", "");
 		return -1;
 	}

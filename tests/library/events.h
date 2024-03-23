@@ -43,6 +43,7 @@ typedef struct socket_send_data_t {
 	char bytes[CLIENT_SEND_BUFFER_SIZE];    /**< What exactly bytes do we want to send? */
 } socket_send_data_t;
 
+typedef socket_send_data_t test_request_t;
 
 
 
