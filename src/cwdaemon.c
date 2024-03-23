@@ -20,7 +20,6 @@
  * 02110-1301, USA.
  */
 
-#define _POSIX_C_SOURCE 200809L /* nanosleep(), strdup() */
 #define _GNU_SOURCE /* getopt_long() */
 
 #include "config.h"

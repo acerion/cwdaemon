@@ -56,11 +56,11 @@
 #define K_WEIGHT       7
 #define K_DEVICE       8
 #define K_TOD          9     // set txdelay (turn on delay)
-#define K_ADDRESS     10     // set port address of device (obsolete)
-#define K_SET14       11     // set pin 14 on lpt
+//#define K_ADDRESS     10     // set port address of device (obsolete)
+//#define K_SET14       11     // set pin 14 on lpt
 #define K_TUNE        12     // tune
 #define K_PTT         13     // PTT on/off
-#define K_SWITCH      14     // set band switch output pins 2,7,8,9 on lpt
+//#define K_SWITCH      14     // set band switch output pins 2,7,8,9 on lpt
 #define K_SDEVICE     15     // set sound device
 #define K_VOLUME      16     // volume for soundcard
 #define K_REPLY       17     // Ask cwdaemon to send specified reply after playing text.
