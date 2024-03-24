@@ -1228,7 +1228,8 @@ void cwdaemon_handle_escaped_request(char *request)
 			cw_set_volume(current_morse_volume);
 		}
 		break;
-	case 'h':
+
+	case CWDAEMON_ESC_REQUEST_REPLY:
 		/* Data after '<ESC>h' is a text to be used as reply.
 		   It shouldn't be echoed back to client immediately.
 
@@ -1238,12 +1239,12 @@ void cwdaemon_handle_escaped_request(char *request)
 		   to the client.  So this is a reply with delay. */
 
 		/* 'request + 1' skips the leading <ESC>, but
-		   preserves 'h'.  The 'h' is a part of reply text. If
+		   preserves <code>, i.e. 'h' character. The 'h' character is a part of reply text. If
 		   the client didn't specify reply text, the 'h' will
 		   be the only content of server's reply. */
 
 		cwdaemon_prepare_reply(&g_cwdaemon, reply_buffer, request + 1, strlen(request + 1));
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "reply is ready, waiting for message from client (reply: \"%s\")", reply_buffer);
+		log_info("reply is ready, waiting for message from client (reply: \"%s\")", reply_buffer);
 		/* cwdaemon will wait for queue-empty callback before
 		   sending the reply. */
 		break;
