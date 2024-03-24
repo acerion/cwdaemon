@@ -28,6 +28,9 @@ void cwdaemon_debug_close(void);
 /**
    @brief Log message to current log output (possibly to syslog)
 
+   Function appends '\n' at the end of messages if the messages are sent to
+   file (stdout, stderr or disc file).
+
    @param[in] priority syslog priority level enum (LOG_ERR, LOG_INFO and friends)
    @param[in] format Format string for log message
 */
