@@ -24,9 +24,6 @@
 
 #include "config.h"
 
-# if HAVE_STDIO_H
-# include <stdio.h>
-#endif
 #if STDC_HEADERS
 # include <stddef.h>
 # include <stdlib.h>
@@ -35,9 +32,6 @@
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
 # endif
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
 #endif
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
@@ -55,11 +49,16 @@
 # include <sys/param.h>
 #endif
 
+#include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "cwdaemon.h"
 #include "log.h"
 #include "utils.h"
+
+
+
 
 /**
    \file ttys.c

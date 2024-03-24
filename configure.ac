@@ -19,14 +19,21 @@ AM_PROG_CC_C_O # per-target flags in src/Makefile.am
 
 # Checks for libraries.
 
+
+
 # Checks for header files.
-AC_CHECK_HEADERS([errno.h arpa/inet.h netinet/in.h fcntl.h netinet/in.h \
-stdlib.h string.h strings.h sys/ioctl.h sys/socket.h syslog.h unistd.h \
-sys/time.h time.h linux/ppdev.h stdio.h signal.h stdarg.h termios.h sys/resource.h \
-dev/ppbus/ppi.h sys/stat.h])
+AC_CHECK_HEADERS([arpa/inet.h netinet/in.h fcntl.h \
+stdlib.h string.h strings.h sys/ioctl.h sys/socket.h \
+sys/time.h time.h signal.h stdarg.h termios.h sys/resource.h \
+sys/stat.h])
+
+# Line-printer (parallel port printer) headers.
+AC_CHECK_HEADERS([linux/ppdev.h dev/ppbus/ppi.h])
 
 # getopt_long()
 AC_CHECK_HEADERS([getopt.h])
+
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T

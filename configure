@@ -6066,6 +6066,8 @@ test -n "$RPMBUILD" || RPMBUILD="rpm"
 
 # Checks for libraries.
 
+
+
 # Checks for header files.
 ac_header= ac_cache=
 for ac_item in $ac_header_c_list
@@ -6096,12 +6098,6 @@ then :
 printf "%s\n" "#define STDC_HEADERS 1" >>confdefs.h
 
 fi
-ac_fn_c_check_header_compile "$LINENO" "errno.h" "ac_cv_header_errno_h" "$ac_includes_default"
-if test "x$ac_cv_header_errno_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ERRNO_H 1" >>confdefs.h
-
-fi
 ac_fn_c_check_header_compile "$LINENO" "arpa/inet.h" "ac_cv_header_arpa_inet_h" "$ac_includes_default"
 if test "x$ac_cv_header_arpa_inet_h" = xyes
 then :
@@ -6118,12 +6114,6 @@ ac_fn_c_check_header_compile "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h" "$ac_inc
 if test "x$ac_cv_header_fcntl_h" = xyes
 then :
   printf "%s\n" "#define HAVE_FCNTL_H 1" >>confdefs.h
-
-fi
-ac_fn_c_check_header_compile "$LINENO" "netinet/in.h" "ac_cv_header_netinet_in_h" "$ac_includes_default"
-if test "x$ac_cv_header_netinet_in_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_NETINET_IN_H 1" >>confdefs.h
 
 fi
 ac_fn_c_check_header_compile "$LINENO" "stdlib.h" "ac_cv_header_stdlib_h" "$ac_includes_default"
@@ -6156,18 +6146,6 @@ then :
   printf "%s\n" "#define HAVE_SYS_SOCKET_H 1" >>confdefs.h
 
 fi
-ac_fn_c_check_header_compile "$LINENO" "syslog.h" "ac_cv_header_syslog_h" "$ac_includes_default"
-if test "x$ac_cv_header_syslog_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYSLOG_H 1" >>confdefs.h
-
-fi
-ac_fn_c_check_header_compile "$LINENO" "unistd.h" "ac_cv_header_unistd_h" "$ac_includes_default"
-if test "x$ac_cv_header_unistd_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_UNISTD_H 1" >>confdefs.h
-
-fi
 ac_fn_c_check_header_compile "$LINENO" "sys/time.h" "ac_cv_header_sys_time_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_time_h" = xyes
 then :
@@ -6178,18 +6156,6 @@ ac_fn_c_check_header_compile "$LINENO" "time.h" "ac_cv_header_time_h" "$ac_inclu
 if test "x$ac_cv_header_time_h" = xyes
 then :
   printf "%s\n" "#define HAVE_TIME_H 1" >>confdefs.h
-
-fi
-ac_fn_c_check_header_compile "$LINENO" "linux/ppdev.h" "ac_cv_header_linux_ppdev_h" "$ac_includes_default"
-if test "x$ac_cv_header_linux_ppdev_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_LINUX_PPDEV_H 1" >>confdefs.h
-
-fi
-ac_fn_c_check_header_compile "$LINENO" "stdio.h" "ac_cv_header_stdio_h" "$ac_includes_default"
-if test "x$ac_cv_header_stdio_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_STDIO_H 1" >>confdefs.h
 
 fi
 ac_fn_c_check_header_compile "$LINENO" "signal.h" "ac_cv_header_signal_h" "$ac_includes_default"
@@ -6216,16 +6182,25 @@ then :
   printf "%s\n" "#define HAVE_SYS_RESOURCE_H 1" >>confdefs.h
 
 fi
-ac_fn_c_check_header_compile "$LINENO" "dev/ppbus/ppi.h" "ac_cv_header_dev_ppbus_ppi_h" "$ac_includes_default"
-if test "x$ac_cv_header_dev_ppbus_ppi_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_DEV_PPBUS_PPI_H 1" >>confdefs.h
-
-fi
 ac_fn_c_check_header_compile "$LINENO" "sys/stat.h" "ac_cv_header_sys_stat_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_stat_h" = xyes
 then :
   printf "%s\n" "#define HAVE_SYS_STAT_H 1" >>confdefs.h
+
+fi
+
+
+# Line-printer (parallel port printer) headers.
+ac_fn_c_check_header_compile "$LINENO" "linux/ppdev.h" "ac_cv_header_linux_ppdev_h" "$ac_includes_default"
+if test "x$ac_cv_header_linux_ppdev_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_LINUX_PPDEV_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "dev/ppbus/ppi.h" "ac_cv_header_dev_ppbus_ppi_h" "$ac_includes_default"
+if test "x$ac_cv_header_dev_ppbus_ppi_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_DEV_PPBUS_PPI_H 1" >>confdefs.h
 
 fi
 
@@ -6237,6 +6212,8 @@ then :
   printf "%s\n" "#define HAVE_GETOPT_H 1" >>confdefs.h
 
 fi
+
+
 
 
 # Checks for typedefs, structures, and compiler characteristics.

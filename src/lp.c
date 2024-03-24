@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *                      and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,6 @@
 
 #include "config.h"
 
-# if HAVE_STDIO_H
-# include <stdio.h>
-#endif
 #if STDC_HEADERS
 # include <stddef.h>
 # include <stdlib.h>
@@ -40,9 +37,6 @@
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
 # endif
-#endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
 #endif
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
@@ -66,7 +60,9 @@
 #endif
 
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "cwdaemon.h"
 #include "log.h"

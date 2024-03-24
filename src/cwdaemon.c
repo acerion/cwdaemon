@@ -24,9 +24,6 @@
 
 #include "config.h"
 
-# if HAVE_STDIO_H
-# include <stdio.h>
-#endif
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
@@ -47,19 +44,9 @@
 # endif
 # include <string.h>
 #endif
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 #if HAVE_ARPA_INET_H
 # include <arpa/inet.h>
-#endif
-
-#if HAVE_SYSLOG_H
-# include <syslog.h>
-#endif
-#if HAVE_ERRNO_H
-# include <errno.h>
 #endif
 
 #if HAVE_SYS_TIME_H
@@ -80,19 +67,21 @@
 #if (defined(__unix__) || defined(unix)) && !defined(USG)
 # include <sys/param.h>
 #endif
-#include <assert.h>
-#include <limits.h>
-
 #if defined(HAVE_GETOPT_H)
 #include <getopt.h>
 #endif
-
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 #include <lp.h>
 #endif
 
+#include <assert.h>
+#include <errno.h>
 #include <inttypes.h> /* PRI* format specifiers. */
+#include <limits.h>
 #include <stdint.h> /* uint32_t */
+#include <stdio.h>
+#include <syslog.h>
+#include <unistd.h>
 
 #include <libcw.h>
 #include <libcw_debug.h>

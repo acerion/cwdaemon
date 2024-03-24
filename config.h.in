@@ -6,9 +6,6 @@
 /* Define to 1 if you have the <dev/ppbus/ppi.h> header file. */
 #undef HAVE_DEV_PPBUS_PPI_H
 
-/* Define to 1 if you have the <errno.h> header file. */
-#undef HAVE_ERRNO_H
-
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
@@ -56,9 +53,6 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
-
-/* Define to 1 if you have the <syslog.h> header file. */
-#undef HAVE_SYSLOG_H
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
