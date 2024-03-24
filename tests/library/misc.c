@@ -213,17 +213,16 @@ int test_get_test_wpm(void)
 
 int test_get_test_tone(void)
 {
-	/* Set of frequencies with identifiable differences. Values are not too
-	   low, and not to high. */
-	const int frequencies[] = { 600, 630, 660, 690, 720, 750, 780, 810 };
-	const unsigned int lower = 0;
-	const unsigned int upper = (sizeof (frequencies) / sizeof (frequencies[0])) - 1;
+	/* Values in this range are not too low, and not to high. High enough to
+	   be well heard, low enough to not be unpleasant. */
+	const unsigned int lower = 600;
+	const unsigned int upper = 810;
 
-	int index = 0;
-	if (0 != cwdaemon_random_uint(lower, upper, (unsigned int *) &index)) {
-		index = 0;
+	unsigned int freq = 0;
+	if (0 != cwdaemon_random_uint(lower, upper, &freq)) {
+		freq = TEST_TONE_EASY;
 	}
 
-	return frequencies[index];
+	return (int) freq;
 }
 
