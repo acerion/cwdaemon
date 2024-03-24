@@ -13,7 +13,7 @@ cwdaemon \- Morse daemon for the serial or parallel port
 
 
 .SH "DESCRIPTION"
-cwdaemon is a small daemon which uses an USB/TTY converter or PC parallel or
+cwdaemon is a small daemon which uses an USB-to-UART converter or PC parallel or
 serial port (so called "cwdevice") to output Morse code to a transmitter from
 a text message sent to it via UDP port 6789.
 
@@ -488,10 +488,14 @@ For parallel ports on Linux try parport0 (default) or parport1, and on
 FreeBSD, ppi0 (default), ppi1, etc.  OpenBSD does not support parallel
 port operation, and defaults to 'tty00'.
 
-cwdaemon can also be used with USB/TTY converters.
-
 You can also specify a full path to the device in /dev/ dir,
 e.g. '/dev/ttyUSB0'.
+
+cwdaemon can be used with USB-to-UART converters that support DTR and RTS
+pins.
+
+You can assign keying and ptt functions to the pins of serial port or
+USB-to-UART converter through '-o'/--options' command line options.
 
 For completeness, a dummy 'null' device is provided.  This device does
 exactly nothing (no rig keying, no ssb keying, etc.).

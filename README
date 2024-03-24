@@ -1,10 +1,12 @@
 cwdaemon-0.12.0
 ===============
 
-Cwdaemon is a small daemon which uses the pc parallel or serial port and a
-simple transistor switch to output morse code to a transmitter from a text
-message sent to it via the udp internet protocol. The program uses the
-soundcard or PC speaker (console buzzer) to generate a sidetone.
+cwdaemon is a small daemon which uses an USB-to-UART converter or PC parallel or
+serial port to output Morse code to a transmitter from a text message sent to
+it via UDP port 6789.
+
+The program uses the soundcard or PC speaker (console buzzer) to generate a
+sidetone.
 
 It is called as root, with "cwdaemon -p <portnumber> -d <device>". If no
 portnumber is given, the default portnumber 6789 is used. Device can be one of
@@ -17,7 +19,7 @@ for the parallel ports. Default is the first parallel port.
 You can also use dummy device "null" instead of parallel or serial port.
 This device does exactly nothing (no rig keying, no ssb keying, etc.).
 
-Cwdaemon also handles PTT, and band index output for automatic switching of
+cwdaemon also handles PTT, and band index output for automatic switching of
 antennas, filters etc. Pinout is compatible with the standard (CT, TRlog).
 
 cwdaemon is available on github: https://github.com/acerion/cwdaemon
@@ -224,7 +226,7 @@ start with Escape character.
 			 server does not send a reply - none was specified this time for "purring"
 
 
-Any message              Send morse code message  (max 1 packet!)
+Any message              Send Morse code message  (max 1 packet!)
 qrz de pa0rct ++test--   In- and decrease speed on the fly in 2 wpm steps.
                          Repeated '+' and '-' characters are allowed,
                          in such cases increase and decrease of speed is
@@ -266,7 +268,7 @@ at DTR, use
 -o ptt=none ["-o key=DTR" can be omitted]
 
 
-Cwdaemon supports the following special characters
+cwdaemon supports the following special characters
 --------------------------------------------------
 *	AR
 =	BT
@@ -277,7 +279,7 @@ Cwdaemon supports the following special characters
 >	BK
 
 
-Cwdaemon parallel and serial port circuitry
+cwdaemon parallel and serial port circuitry
 -------------------------------------------
 See the examples in the schematics directory.
 
@@ -349,7 +351,7 @@ Quality Assurance
 
       The functional tests are executed by running "make check" command.
 
-      The tests require presence of USB-TTY converter, which is visible as
+      The tests require presence of USB-to-UART converter, which is visible as
       /dev/ttyUSB0 (on other OSes the default name may be different). The
       name of /dev/ device can be configured at compile time with
       '--with-test-tty-cwdevice-name=<name>' flag passed to './configure'
@@ -363,7 +365,7 @@ Quality Assurance
         - < examine reports found in tests/coverage/functional_tests >
         - make gcov-clean
 
-      Don't forget to connect TTY/USB converter before running the tests,
+      Don't forget to connect USB-to-UART converter before running the tests,
       otherwise the functional tests fill all fail.
 
     - An array of tests written in Perl, to be executed manually and observed

@@ -71,6 +71,17 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
   Good: "send Escape request"
   Bad:  "send escape request"
 
+- An USB dongle used to emulate UART device is an USB-to-UART device.
+
+  Good:        USB-to-UART
+  Not-so-good: USB-UART, USB/UART
+  Bad:         USB/tty, USB-serial, USB-to-tty, USB-COM
+
+  Rationale:
+   - CP2102 chip's data sheet calls the chip a "USB-to-UART Bridge
+     Controller".
+   - FT232R chip's data sheet calls the chip a "USB UART I.C.".
+
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services
 

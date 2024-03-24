@@ -239,7 +239,7 @@ Test passes
 Make sure that user with which cwdaemon is running is in a group which has
 "rw" permissions for /dev/ttyS0. The test checks different devices, and one
 of devices should be a valid, accessible tty device. ttyS0 is such a device
-(unless you plugged in an USB-to-serial converter and ttyUSB0 is also
+(unless you plugged in an USB-to-UART converter and ttyUSB0 is also
 available).
 
 *Expected result*
@@ -307,7 +307,7 @@ Execute each and every binary in tests/test_00X*. Run each of them manually
 to see the debugs printed in console.
 
 *Preconditions*
-1. Plug in USB/tty converter to USB socket.
+1. Plug in USB-to-UART converter to USB socket.
 2. ./configure --enable-functional-tests
 3. make check (fix compiler error about files from unixcw)
 

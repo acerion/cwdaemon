@@ -61,7 +61,7 @@ case $host_os in
 	AC_MSG_NOTICE([Detected Linux: $host_os])
 	# Example value of host_os: 'linux-gnu'
 	#
-	# Name of first tty device (USB-to-serial converter) on Linux. User
+	# Name of first tty device (USB-to-UART converter) on Linux. User
 	# group: dialout.
 	test_tty_cwdevice_name="ttyUSB0"
 	;;
@@ -70,7 +70,7 @@ case $host_os in
 	AC_MSG_NOTICE([Detected FreeBSD: $host_os])
 	# Example value of host_os: 'freebsd13.2'.
 	#
-	# Name of first tty device (USB-to-serial converter) on FreeBSD 13.2.
+	# Name of first tty device (USB-to-UART converter) on FreeBSD 13.2.
 	# User group: dialer.
 	test_tty_cwdevice_name="cuau0"
 	;;
