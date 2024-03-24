@@ -58,9 +58,9 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
   request.
 
 - Use "full reply" or "full socket reply" when referring to a reply that:
-    - includes leading 'h' character and trailing "\r\n" bytes and is sent in
-      response to <ESC>H request
-    - includes trailing "\r\n" bytes and is sent in response to caret request.
+  - includes leading 'h' character and trailing "\r\n" bytes and is sent in
+    response to <ESC>H request
+  - includes trailing "\r\n" bytes and is sent in response to caret request.
 
 - Use "code" or "Escape code" when describing a character that follows ESC
   character in Escape requests. This is the second character in the Escape
@@ -78,9 +78,10 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
   Bad:         USB/tty, USB-serial, USB-to-tty, USB-COM
 
   Rationale:
-   - CP2102 chip's data sheet calls the chip a "USB-to-UART Bridge
-     Controller".
-   - FT232R chip's data sheet calls the chip a "USB UART I.C.".
+  - CP2102 chip's data sheet calls the chip a "USB-to-UART Bridge
+    Controller".
+  - FT232R chip's data sheet calls the chip a "USB UART I.C.".
+
 
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services
