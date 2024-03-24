@@ -66,11 +66,6 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
   character in Escape requests. This is the second character in the Escape
   requests.
 
-- Capitalize "Escape" word in "Escape request" phrases.
-
-  Good: "send Escape request"
-  Bad:  "send escape request"
-
 - An USB dongle used to emulate UART device is an USB-to-UART device.
 
   Good:        USB-to-UART
@@ -82,6 +77,21 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
     Controller".
   - FT232R chip's data sheet calls the chip a "USB UART I.C.".
 
+- Request types
+
+  Messages sent to cwdaemon server can be of three types:
+
+  - plain request - contains just text to be played,
+  - caret request - like plain request, but the last character is a caret
+    ('^'), which triggers special behaviour in cwdaemon server,
+  - Escape request - request in which first character is an Escape character,
+    the second character is an Escape request code, and the remainder of
+    request is optional data.
+
+- Capitalize "Escape" word in "Escape request" phrases.
+
+  Good: "send Escape request"
+  Bad:  "send escape request"
 
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services
