@@ -72,34 +72,27 @@
 
 
 typedef struct test_case_t {
-	const char * description;     /** Human-readable description of the test case. */
-	int (* fn)(client_t * client, morse_receiver_t * morse_receiver);
+	const char * description;     /**< Human-readable description of the test case. */
+	int (* fn)(client_t * client, const struct test_case_t * test_case, morse_receiver_t * morse_receiver);
+	char code;                    /**< Escape request code. */
+	int int_min;                  /**< Lower bound of valid values for Escape requests requiring integer argument. */
+	int int_max;                  /**< Upper bound of valid values for Escape requests requiring integer argument. */
 } test_case_t;
 
 
 
 
-static int test_fn_esc_reset(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_speed(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_tone(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_abort(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_exit(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_word_mode(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_weight(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_cwdevice(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
-static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver);
+static int test_fn_esc_no_value(client_t * client, const test_case_t * test_case, morse_receiver_t * morse_receiver);
+static int test_fn_esc_int(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver);
+static int test_fn_esc_bool(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver);
 
-static int test_fn_plain_message(client_t * client, morse_receiver_t * morse_receiver);
-static int test_fn_caret_message(client_t * client, morse_receiver_t * morse_receiver);
+static int test_fn_esc_cwdevice(client_t * client, const test_case_t * test_case, morse_receiver_t * morse_receiver);
+static int test_fn_esc_sound_system(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver);
+static int test_fn_esc_reply(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver);
+static int test_fn_esc_almost_all(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver);
+
+static int test_fn_plain_message(client_t * client, const test_case_t * test_case, morse_receiver_t * morse_receiver);
+static int test_fn_caret_message(client_t * client, const test_case_t * test_case, morse_receiver_t * morse_receiver);
 
 static int test_request_set_value_string(test_request_t * request);
 static int test_request_set_value_bool(test_request_t * request);
@@ -116,31 +109,37 @@ static void test_request_set_random_n_bytes(test_request_t * request);
 
 
 
-/* TODO acerion 2024.03.23: add a function that sends random messages that
-   always start with <ESC>, but bytes other than 0th are random. */
+/*
+  TODO acerion 2024.03.24: add a function that sends the following special
+  cases:
+   - Escape request that consists only of N <ESC> characters (N = 1 - MAX).
+
+  Notice that the test function doesn't go over the array in linear way. The
+  test function selects test cases in random order.
+*/
 static const test_case_t g_test_cases[] = {
 #if 1
-	{ .description = "esc request - reset",           .fn = test_fn_esc_reset           }, // CWDAEMON_ESC_REQUEST_RESET
-	{ .description = "esc request - speed",           .fn = test_fn_esc_speed           }, // CWDAEMON_ESC_REQUEST_SPEED
-	{ .description = "esc request - tone",            .fn = test_fn_esc_tone            }, // CWDAEMON_ESC_REQUEST_TONE
-	{ .description = "esc request - abort",           .fn = test_fn_esc_abort           }, // CWDAEMON_ESC_REQUEST_ABORT
-	{ .description = "esc request - exit",            /* .fn = test_fn_esc_exit */      }, // CWDAEMON_ESC_REQUEST_EXIT
-	{ .description = "esc request - word mode",       .fn = test_fn_esc_word_mode       }, // CWDAEMON_ESC_REQUEST_WORD_MODE
-	{ .description = "esc request - weighting",       .fn = test_fn_esc_weight          }, // CWDAEMON_ESC_REQUEST_WEIGHTING
-	{ .description = "esc request - cwdevice",        .fn = test_fn_esc_cwdevice        }, // CWDAEMON_ESC_REQUEST_CWDEVICE
-	{ .description = "esc request - port",            .fn = test_fn_esc_port            }, // CWDAEMON_ESC_REQUEST_PORT
-	{ .description = "esc request - ptt state",       .fn = test_fn_esc_ptt_state       }, // CWDAEMON_ESC_REQUEST_PTT_STATE
-	{ .description = "esc request - ssb way",         .fn = test_fn_esc_ssb_way         }, // CWDAEMON_ESC_REQUEST_SSB_WAY
-	{ .description = "esc request - tune",            .fn = test_fn_esc_tune            }, // CWDAEMON_ESC_REQUEST_TUNE
-	{ .description = "esc request - tx delay",        .fn = test_fn_esc_tx_delay        }, // CWDAEMON_ESC_REQUEST_TX_DELAY
-	{ .description = "esc request - band switch",     .fn = test_fn_esc_band_switch     }, // CWDAEMON_ESC_REQUEST_BAND_SWITCH
-	{ .description = "esc request - sound system",    .fn = test_fn_esc_sound_system    }, // CWDAEMON_ESC_REQUEST_SOUND_SYSTEM
-	{ .description = "esc request - volume",          .fn = test_fn_esc_volume          }, // CWDAEMON_ESC_REQUEST_VOLUME
+	{ .description = "esc request - reset",           .fn = test_fn_esc_no_value,       .code = CWDAEMON_ESC_REQUEST_RESET,          },
+	{ .description = "esc request - speed",           .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_SPEED,         .int_min = CW_SPEED_MIN,     .int_max = CW_SPEED_MAX,     },
+	{ .description = "esc request - tone",            .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_TONE,          .int_min = CW_FREQUENCY_MIN, .int_max = CW_FREQUENCY_MAX, },
+	{ .description = "esc request - abort",           .fn = test_fn_esc_no_value,       .code = CWDAEMON_ESC_REQUEST_ABORT,          },
+	{ .description = "esc request - exit",            /* .fn = test_fn_esc_no_value */  .code = CWDAEMON_ESC_REQUEST_EXIT,           },
+	{ .description = "esc request - word mode",       .fn = test_fn_esc_bool,           .code = CWDAEMON_ESC_REQUEST_WORD_MODE,      },
+	{ .description = "esc request - weighting",       .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_WEIGHTING,     .int_min = 0,                         .int_max = CWDAEMON_MORSE_WEIGHTING_MAX, }, 	/* TODO acerion 2024.03.24: .int_min should be CWDAEMON_MORSE_WEIGHTING_MIN. */
+	{ .description = "esc request - cwdevice",        .fn = test_fn_esc_cwdevice,       .code = CWDAEMON_ESC_REQUEST_CWDEVICE,       },
+	{ .description = "esc request - port",            .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_PORT,          .int_min = CWDAEMON_NETWORK_PORT_MIN, .int_max = CWDAEMON_NETWORK_PORT_MAX, },
+	{ .description = "esc request - ptt state",       .fn = test_fn_esc_bool,           .code = CWDAEMON_ESC_REQUEST_PTT_STATE,      },
+	{ .description = "esc request - ssb way",         .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_SSB_WAY,       .int_min = 0,                      .int_max = 1,  },
+	{ .description = "esc request - tune",            .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_TUNE,          .int_min = 0,                      .int_max = 10, },   /* TODO acerion 2024.03.01: replace magic values with constants. */
+	{ .description = "esc request - tx delay",        .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_TX_DELAY,      .int_min = CWDAEMON_PTT_DELAY_MIN, .int_max = CWDAEMON_PTT_DELAY_MAX, },
+	{ .description = "esc request - band switch",     .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_BAND_SWITCH,   .int_min = 0,                      .int_max = INT_MAX, }, 	/* TODO acerion 2024.03.01: use correct values to specify range of valid values. */
+	{ .description = "esc request - sound system",    .fn = test_fn_esc_sound_system,   .code = CWDAEMON_ESC_REQUEST_SOUND_SYSTEM,   },
+	{ .description = "esc request - volume",          .fn = test_fn_esc_int,            .code = CWDAEMON_ESC_REQUEST_VOLUME,        .int_min = CW_VOLUME_MIN,          .int_max = CW_VOLUME_MAX, },
 #endif
 #if 1
-	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
-	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
-	{ .description = "esc request - reply",           .fn = test_fn_esc_reply           }, // CWDAEMON_ESC_REQUEST_REPLY
+	{ .description = "esc request - reply",           .fn = test_fn_esc_reply,          .code = CWDAEMON_ESC_REQUEST_REPLY, },
+	{ .description = "esc request - reply",           .fn = test_fn_esc_reply,          .code = CWDAEMON_ESC_REQUEST_REPLY, },
+	{ .description = "esc request - reply",           .fn = test_fn_esc_reply,          .code = CWDAEMON_ESC_REQUEST_REPLY, },
 #endif
 #if 1
 	{ .description = "esc request - almost all",      .fn = test_fn_esc_almost_all      },
@@ -341,7 +340,7 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 		              test_case->description,
 		              iter + 1, n_iters);
 
-		if (0 != test_case->fn(client, morse_receiver)) {
+		if (0 != test_case->fn(client, test_case, morse_receiver)) {
 			test_log_info("Test: test case has failed %s\n", "");
 			failure = true;
 			break;
@@ -576,26 +575,39 @@ static int test_request_set_value_string(test_request_t * request)
 
 
 
-static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+/*
+*/
+/**
+   @brief Send Escape request that doesn't require a value
+
+   This Escape request doesn't require a value, but we will try to send one
+   anyway to stress-test cwdaemon. The function will just get an array of
+   random bytes and use it as value.
+
+   Escape request code will be taken from @p test_case.
+
+   @param client cwdaemon client to use for sending of the request
+   @param[in] test_case Current test case
+   @param morse_receiver Morse receiver that may or may not be used to receive Morse code on cwdevice during additional verification
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int test_fn_esc_no_value(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	/*
-	  This request doesn't require a value, but we will try to send one
-	  anyway. Just get any byte array as value for a request that doesn't
-	  expect any value.
-	*/
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_RESET);
+	test_request_t request = TEST_REQUEST_INIT_ESC(test_case->code);
 	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'RESET' Escape request %s\n", "");
+		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
-	test_sleep_nonintr(2);
+	test_sleep_nonintr(2); /* TODO acerion 2024.02.24: for RESET the sleep should be longer. For others it should be shorter. */
 
 	return 0;
 }
@@ -603,21 +615,37 @@ static int test_fn_esc_reset(client_t * client, __attribute__((unused)) morse_re
 
 
 
-static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+/**
+   @brief Send Escape request that requires an integer value
+
+   The integer will be sent as its string representation.
+
+   Escape request code will be taken from @p test_case.
+
+   Lower and upper bound of range of valid integer values will be taken from @p test_case.
+
+   @param client cwdaemon client to use for sending of the request
+   @param[in] test_case Current test case
+   @param morse_receiver Morse receiver that may or may not be used to receive Morse code on cwdevice during additional verification
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int test_fn_esc_int(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SPEED);
-	if (0 != test_request_set_value_int(&request, CW_SPEED_MIN, CW_SPEED_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+	test_request_t request = TEST_REQUEST_INIT_ESC(test_case->code);
+	if (0 != test_request_set_value_int(&request, test_case->int_min, test_case->int_max)) {
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'SPEED' Escape request %s\n", "");
+		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
-	test_sleep_nonintr(1);
+	test_sleep_nonintr(1); /* TODO acerion 2024.03.24: sleep time for "tune" should depend on time of tuning. */
 
 	return 0;
 }
@@ -625,116 +653,31 @@ static int test_fn_esc_speed(client_t * client, __attribute__((unused)) morse_re
 
 
 
-static int test_fn_esc_tone(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+/**
+   @brief Send Escape request that requires a boolean value
+
+   The boolean will be sent as its string representation.
+
+   Escape request code will be taken from @p test_case.
+
+   @param client cwdaemon client to use for sending of the request
+   @param[in] test_case Current test case
+   @param morse_receiver Morse receiver that may or may not be used to receive Morse code on cwdevice during additional verification
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int test_fn_esc_bool(client_t * client, const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TONE);
-	if (0 != test_request_set_value_int(&request, CW_FREQUENCY_MIN, CW_FREQUENCY_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'TONE' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_abort(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	/*
-	  This request doesn't require a value, but we will try to send one
-	  anyway. Just get any byte array as value for a request that doesn't
-	  expect any value.
-	*/
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_ABORT);
-	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'ABORT' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-__attribute__((unused)) static int test_fn_esc_exit(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	/*
-	  This request doesn't require a value, but we will try to send one
-	  anyway. Just get any byte array as value for a request that doesn't
-	  expect any value.
-	*/
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_EXIT);
-	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'EXIT' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_word_mode(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_WORD_MODE);
+	test_request_t request = TEST_REQUEST_INIT_ESC(test_case->code);
 	if (0 != test_request_set_value_bool(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'WORD MODE' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_WEIGHTING);
-	/* TODO: lower range (the 3rd arg) should be CWDAEMON_MORSE_WEIGHTING_MIN. */
-	if (0 != test_request_set_value_int(&request, 0, CWDAEMON_MORSE_WEIGHTING_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'WEIGHTING' Escape request %s\n", "");
+		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
@@ -750,153 +693,21 @@ static int test_fn_esc_weight(client_t * client, __attribute__((unused)) morse_r
   TODO (acerion) 2024.02.11: implement properly: "cwdevice" may require some
   especial cases for values.
  */
-static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_CWDEVICE);
 	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'CWDEVICE' Escape request %s\n", "");
+		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
 	test_sleep_nonintr(2);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_port(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_PORT);
-	if (0 != test_request_set_value_int(&request, CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'PORT' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_ptt_state(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_PTT_STATE);
-	if (0 != test_request_set_value_bool(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'PTT STATE' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_ssb_way(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SSB_WAY);
-	if (0 != test_request_set_value_int(&request, 0, 1)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'SSB WAY' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_tx_delay(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TX_DELAY);
-	if (0 != test_request_set_value_int(&request, CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'TX DELAY' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_tune(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_TUNE);
-	if (0 != test_request_set_value_int(&request, 0, 10)) { /* TODO acerion 2024.03.01: replace magic values with constants. */
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'TUNE' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_BAND_SWITCH);
-	/* TODO acerion 2024.03.01: use correct values to specify range of valid values. */
-	if (0 != test_request_set_value_int(&request, 0, INT_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'BAND SWITCH' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
 
 	return 0;
 }
@@ -908,17 +719,17 @@ static int test_fn_esc_band_switch(client_t * client, __attribute__((unused)) mo
   TODO (acerion) 2024.02.11: implement properly: "sound system" may require
   some especial cases for values.
  */
-static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_SOUND_SYSTEM);
 	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'SOUND SYSTEM' Escape request %s\n", "");
+		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
@@ -930,40 +741,18 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) m
 
 
 
-static int test_fn_esc_volume(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
-{
-	test_request_t request = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_VOLUME);
-	if (0 != test_request_set_value_int(&request, CW_VOLUME_MIN, CW_VOLUME_MAX)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
-		return -1;
-	}
-	test_request_set_random_n_bytes(&request);
-
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send 'VOLUME' Escape request %s\n", "");
-		return -1;
-	}
-
-	test_sleep_nonintr(1);
-
-	return 0;
-}
-
-
-
-
-static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_esc_reply(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	{
 		test_request_t requested_reply = TEST_REQUEST_INIT_ESC(CWDAEMON_ESC_REQUEST_REPLY);
 		if (0 != test_request_set_value_string(&requested_reply)) {
-			test_log_err("Test: failed to set value of request %s\n", "");
+			test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 			return -1;
 		}
 		test_request_set_random_n_bytes(&requested_reply);
 
 		if (0 != client_send_message(client, requested_reply.bytes, requested_reply.n_bytes)) {
-			test_log_err("Test: failed to send REPLY Escape request %s\n", "");
+			test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 			return -1;
 		}
 	}
@@ -971,13 +760,13 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_re
 	{
 		test_request_t message = { 0 };
 		if (0 != test_request_set_value_string(&message)) {
-			test_log_err("Test: failed to set value of request %s\n", "");
+			test_log_err("Test: failed to set value of plain message in test case [%s]\n", test_case->description);
 			return -1;
 		}
 		test_request_set_random_n_bytes(&message);
 
 		if (0 != client_send_message(client, message.bytes, message.n_bytes)) {
-			test_log_err("Test: failed to send PLAIN MESSAGE in tests of REPLY Escape request %s\n", "");
+			test_log_err("Test: failed to send plain message in test case [%s]\n", test_case->description);
 			return -1;
 		}
 
@@ -1008,7 +797,7 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) morse_re
    Each call of the function sends 255 escape requests with 255 values of
    escape code - with exception of EXIT escape request.
 */
-static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	/* Don't use 'unsigned char' type for 'code'. With this range of values the
 	   usage of 'unsigned char' would result in infinite loop. */
@@ -1021,13 +810,13 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 		/* Full message, including leading <ESC> and escape code. */
 		test_request_t request = TEST_REQUEST_INIT_ESC(((char) code));
 		if (0 != test_request_set_value_string(&request)) {
-			test_log_err("Test: failed to set value of request %s\n", "");
+			test_log_err("Test: failed to set value of request for code 0x%02x in test case [%s]\n", code, test_case->description);
 			return -1;
 		}
 		test_request_set_random_n_bytes(&request);
 
 		if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-			test_log_err("Test: failed to send Escape request with code %u / 0x%02x\n", code, (unsigned char) code);
+			test_log_err("Test: failed to send Escape request with code %u / 0x%02x in test case [%s]\n", code, (unsigned char) code, test_case->description);
 			return -1;
 		}
 
@@ -1041,17 +830,17 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) mor
 
 
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
-static int test_fn_plain_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_plain_message(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	test_request_t request = { 0 };
 	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to generate value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send PLAIN MESSAGE %s\n", "");
+		test_log_err("Test: failed to send plain message in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
@@ -1065,11 +854,11 @@ static int test_fn_plain_message(client_t * client, __attribute__((unused)) mors
 
 
 // TODO (acerion) 2024.02.25: implement properly: make sure that messages have varying lengths.
-static int test_fn_caret_message(client_t * client, __attribute__((unused)) morse_receiver_t * morse_receiver)
+static int test_fn_caret_message(client_t * client, __attribute__((unused)) const test_case_t * test_case, __attribute__((unused)) morse_receiver_t * morse_receiver)
 {
 	test_request_t request = { 0 };
 	if (0 != test_request_set_value_string(&request)) {
-		test_log_err("Test: failed to set value of request %s\n", "");
+		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
@@ -1103,7 +892,7 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) mors
 	test_request_set_random_n_bytes(&request);
 
 	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
-		test_log_err("Test: failed to send CARET MESSAGE %s\n", "");
+		test_log_err("Test: failed to send caret message in test case [%s]\n", test_case->description);
 		return -1;
 	}
 
