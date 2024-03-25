@@ -29,6 +29,7 @@
 
 
 
+#include <string.h>
 
 #include "src/cwdaemon.h"
 #include "src/log.h"
@@ -90,6 +91,48 @@ int cwdaemon_option_libcwflags(uint32_t * flags, const char * opt_value)
 	return 0;
 }
 
+
+
+
+void cwdaemon_option_inc_verbosity(int * threshold)
+{
+	if (*threshold < LOG_DEBUG) {
+		(*threshold)++;
+
+		log_info("requested log threshold: \"%s\"", log_get_priority_label(*threshold));
+	}
+
+	return;
+}
+
+
+
+
+int cwdaemon_option_set_verbosity(int * threshold, const char * opt_arg)
+{
+	if (NULL == opt_arg) {
+		log_error("Invalid arg while setting log threshold %s", "");
+		return -1;
+	}
+
+	if (!strcmp(opt_arg, "n") || !strcmp(opt_arg, "N")) { /* In cwdaemon 'N' means 'None', i.e. "threshold so high that nothing gets logged". */
+		*threshold = LOG_CRIT;
+	} else if (!strcmp(opt_arg, "e") || !strcmp(opt_arg, "E")) {
+		*threshold = LOG_ERR;
+	} else if (!strcmp(opt_arg, "w") || !strcmp(opt_arg, "W")) {
+		*threshold = LOG_WARNING;
+	} else if (!strcmp(opt_arg, "i") || !strcmp(opt_arg, "I")) {
+		*threshold = LOG_INFO;
+	} else if (!strcmp(opt_arg, "d") || !strcmp(opt_arg, "D")) {
+		*threshold = LOG_DEBUG;
+	} else {
+		log_error("invalid requested log threshold: \"%s\"", opt_arg);
+		return -1;
+	}
+
+	log_info("requested log threshold: \"%s\"", log_get_priority_label(*threshold));
+	return 0;
+}
 
 
 

@@ -178,6 +178,7 @@ New release. Changes since previous release:
     * Refactored handling of following command line options:
       - "-p"/"--port",
       - "-I"/"--libcwflags"
+      - "-y"/"--verbosity"
 
     * Improved documentation of the following command line options:
       - "-p"/"--port"

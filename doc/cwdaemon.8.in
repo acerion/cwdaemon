@@ -533,18 +533,18 @@ options: -i, -y, or --verbosity. -y and --verbosity accept
 .TP
 \'n\' - none
 .TP
-\'e\' - errors
+\'e\' - error
 .TP
-\'w\' - warnings (default)
+\'w\' - warning (default)
 .TP
 \'i\' - information
 .TP
 \'d\' - debug
 
 .P
-By default the threshold is set to "warnings" - cwdaemon will print
-all errors and warnings. Changing the threshold to "information" will
-make the cwdaemon print errors, warnings, and information.
+By default the threshold is set to "warning" - cwdaemon will print
+errors and warnings. Changing the threshold to "information" will
+make the cwdaemon print errors, warnings, and information messages.
 
 .P
 Debug messages can be printed to stdout, stderr, or disc file. Printing

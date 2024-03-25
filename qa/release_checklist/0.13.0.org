@@ -116,6 +116,7 @@ DONE: options addressed in this release:
  - 'h'/"help" (print help text)
  - 'p'/"port" (network port on which cwdaemon listens)
  - 'I'/"libcwflags" (libcw debug flags)
+ - 'y'/"verbosity" (verbosity threshold for debug messages)
 
 *** DONE Unit tests
 

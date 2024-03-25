@@ -373,8 +373,6 @@ static int  cwdaemon_params_pttdelay(unsigned int * delay_ms, const char * opt_a
 static bool cwdaemon_params_volume(int *volume, const char * opt_arg);
 static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
-static void cwdaemon_params_inc_verbosity(int * verbosity);
-static bool cwdaemon_params_set_verbosity(int * verbosity, const char * opt_arg);
 static bool cwdaemon_params_debugfile(const char * opt_arg);
 static bool cwdaemon_params_system(int *system, const char * opt_arg);
 static bool cwdaemon_params_ptt_on_off(const char * opt_arg);
@@ -1542,7 +1540,7 @@ static struct option cwdaemon_args_long[] = {
 	{ "version",     no_argument,             0, 0},  /* Program's version. */
 	{ "weighting",   required_argument,       0, 0},  /* CW weight. */
 	{ "tone",        required_argument,       0, 0},  /* CW tone. */
-	{ "verbosity",   required_argument,       0, 0},  /* Verbosity of cwdaemon's debug strings. */
+	{ "verbosity",   required_argument,       0, 'y' },  /* Verbosity of cwdaemon's debug strings. */
 	{ "libcwflags",  required_argument,       0, 'I' },  /* libcw's debug flags. */
 	{ "debugfile",   required_argument,       0, 0},  /* Path to output debug file. */
 	{ "system",      required_argument,       0, 0},  /* Audio system. */
@@ -1618,11 +1616,6 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 
 			} else if (!strcmp(optname, "tone")) {
 				if (!cwdaemon_params_tone(&default_morse_tone, optarg)) {
-					exit(EXIT_FAILURE);
-				}
-
-			} else if (!strcmp(optname, "verbosity")) {
-				if (0 != cwdaemon_params_set_verbosity(&g_process_default_options.log_threshold, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1717,10 +1710,10 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 'i':
-		cwdaemon_params_inc_verbosity(&g_process_default_options.log_threshold);
+		cwdaemon_option_inc_verbosity(&g_process_default_options.log_threshold);
 		break;
 	case 'y':
-		if (0 != cwdaemon_params_set_verbosity(&g_process_default_options.log_threshold, opt_arg)) {
+		if (0 != cwdaemon_option_set_verbosity(&g_process_default_options.log_threshold, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1977,47 +1970,6 @@ bool cwdaemon_params_tone(int *tone, const char * opt_arg)
 		return true;
 	}
 }
-
-
-void cwdaemon_params_inc_verbosity(int * verbosity)
-{
-	if (*verbosity < LOG_DEBUG) {
-		(*verbosity)++;
-
-		log_info("requested log verbosity: \"%s\"", log_get_priority_label(*verbosity));
-	}
-
-	return;
-}
-
-
-bool cwdaemon_params_set_verbosity(int * verbosity, const char * opt_arg)
-{
-	if (NULL == opt_arg) {
-		log_error("Invalid arg while setting log verbosity %s", "");
-		return false;
-	}
-
-	if (!strcmp(opt_arg, "n") || !strcmp(opt_arg, "N")) { /* In cwdaemon 'N' means 'None', i.e. "verbosity so high that nothing gets logged". */
-		*verbosity = LOG_CRIT;
-	} else if (!strcmp(opt_arg, "e") || !strcmp(opt_arg, "E")) {
-		*verbosity = LOG_ERR;
-	} else if (!strcmp(opt_arg, "w") || !strcmp(opt_arg, "W")) {
-		*verbosity = LOG_WARNING;
-	} else if (!strcmp(opt_arg, "i") || !strcmp(opt_arg, "I")) {
-		*verbosity = LOG_INFO;
-	} else if (!strcmp(opt_arg, "d") || !strcmp(opt_arg, "D")) {
-		*verbosity = LOG_DEBUG;
-	} else {
-		log_error("invalid requested log verbosity: \"%s\"", opt_arg);
-		return false;
-	}
-
-	log_info("requested log verbosity: \"%s\"", log_get_priority_label(*verbosity));
-	return true;
-}
-
-
 
 
 bool cwdaemon_params_debugfile(const char * opt_arg)
