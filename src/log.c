@@ -31,6 +31,7 @@
 #include <string.h>
 #include <syslog.h>
 
+#include "cwdaemon.h"
 #include "log.h"
 
 
@@ -44,7 +45,7 @@
 extern bool g_forking;
 extern FILE *cwdaemon_debug_f;
 extern char *cwdaemon_debug_f_path;
-extern int current_verbosity;
+extern options_t g_process_current_options;
 
 
 
@@ -55,15 +56,16 @@ extern int current_verbosity;
 const char * log_get_priority_label(int priority)
 {
    switch (priority) {
-   case CWDAEMON_VERBOSITY_E:
+   case LOG_ERR:
       return "ERROR";
-   case CWDAEMON_VERBOSITY_W:
+   case LOG_WARNING:
       return "WARN";
-   case CWDAEMON_VERBOSITY_I:
+   case LOG_INFO:
       return "INFO";
-   case CWDAEMON_VERBOSITY_D:
+   case LOG_DEBUG:
       return "DEBUG";
-   case CWDAEMON_VERBOSITY_N:  /* "N" == None (don't display logs). */
+   case LOG_CRIT:    /* == None (don't display logs). */
+   case LOG_NOTICE:  /* == None (don't display logs). */
    default:
       return "--";
    }
@@ -110,6 +112,11 @@ void log_message(int priority, const char * format, ...)
 {
 	if (!g_forking && !cwdaemon_debug_f) {
 		/* No output file defined. */
+		return;
+	}
+
+	/* LOG_EMERG == 0, ... LOG_DEBUG == 7. */
+	if (priority > g_process_current_options.log_threshold) {
 		return;
 	}
 
@@ -178,19 +185,22 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 	if (!cwdaemon_debug_f) {
 		return;
 	}
-	if (current_verbosity > CWDAEMON_VERBOSITY_N
-		 && verbosity <= current_verbosity) {
 
-		va_list ap;
-		char s[LOG_BUF_SIZE];
-		va_start(ap, format);
-		vsnprintf(s, sizeof (s), format, ap);
-		va_end(ap);
-
-		fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
-		// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
-		fflush(cwdaemon_debug_f);
+	/* LOG_EMERG == 0, ... LOG_DEBUG == 7. */
+	if (verbosity > g_process_current_options.log_threshold) {
+		return;
 	}
+
+	va_list ap;
+	char s[LOG_BUF_SIZE];
+	va_start(ap, format);
+	vsnprintf(s, sizeof (s), format, ap);
+	va_end(ap);
+
+	fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
+	// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
+	fflush(cwdaemon_debug_f);
+
 
 	return;
 }

@@ -12,11 +12,11 @@
 
 /* cwdaemon debug verbosity levels. */
 enum cwdaemon_verbosity {
-	CWDAEMON_VERBOSITY_N, /* None. Don't display any debug information. */
-	CWDAEMON_VERBOSITY_E, /* Error */
-	CWDAEMON_VERBOSITY_W, /* Warning */
-	CWDAEMON_VERBOSITY_I, /* Info */
-	CWDAEMON_VERBOSITY_D  /* Debug */
+	CWDAEMON_VERBOSITY_N = LOG_CRIT,    /* Means "None". Don't display any debug information. */
+	CWDAEMON_VERBOSITY_E = LOG_ERR,     /* Error */
+	CWDAEMON_VERBOSITY_W = LOG_WARNING, /* Warning */
+	CWDAEMON_VERBOSITY_I = LOG_INFO,    /* Info */
+	CWDAEMON_VERBOSITY_D = LOG_DEBUG    /* Debug */
 };
 
 
@@ -37,6 +37,7 @@ void cwdaemon_debug_close(void);
 void log_message(int priority, const char * format, ...) __attribute__ ((format (printf, 2, 3)));
 
 #define log_error(format, ...)      log_message(LOG_ERR, format, __VA_ARGS__)
+#define log_warning(format, ...)    log_message(LOG_WARNING, format, __VA_ARGS__)
 #define log_info(format, ...)       log_message(LOG_INFO, format, __VA_ARGS__)
 #define log_debug(format, ...)      log_message(LOG_DEBUG, format, __VA_ARGS__)
 

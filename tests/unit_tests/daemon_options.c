@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "src/cwdaemon.h"
 #include "src/options.h"
 #include "tests/library/log.h"
 
@@ -54,6 +55,7 @@ FILE * cwdaemon_debug_f;
 FILE * cwdaemon_debug_f_path;
 bool g_forking;                /* false -> not forking -> logs from tested functions will be redirected to cwdaemon_debug_f. */
 int current_verbosity = 3;     /* CWDAEMON_VERBOSITY_I */
+options_t g_process_current_options;
 
 
 

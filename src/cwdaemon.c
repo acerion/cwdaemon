@@ -167,7 +167,7 @@
 
 /* cwdaemon constants. */
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
-#define CWDAEMON_VERBOSITY_DEFAULT     CWDAEMON_VERBOSITY_W /* Threshold of verbosity of debug strings. */
+#define CWDAEMON_LOG_THRESHOLD_DEFAULT LOG_WARNING /* Threshold of priority of debug message. */
 
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
@@ -178,8 +178,8 @@
 extern cw_debug_t cw_debug_object;
 
 
-/* Default values of parameters, may be modified only through
-   command line arguments passed to cwdaemon.
+/* Default values of parameters for current cwdaemon process. May be only set
+   once from command line options passed to cwdaemon.
 
    After setting these variables with values passed in command line,
    these become the default state of cwdaemon.  Values of default_*
@@ -190,7 +190,9 @@ static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static unsigned int g_default_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-static int default_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
+static options_t g_process_default_options = {
+	.log_threshold = CWDAEMON_LOG_THRESHOLD_DEFAULT,
+};
 
 
 /* Actual values of parameters, used to control ongoing operation of
@@ -202,7 +204,9 @@ static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static unsigned int g_current_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-int current_verbosity    = CWDAEMON_VERBOSITY_DEFAULT;
+options_t g_process_current_options = {
+	.log_threshold = CWDAEMON_LOG_THRESHOLD_DEFAULT,
+};
 
 /* Level of libcw's tone queue that triggers 'callback for low level
    in tone queue'.  The callback function is
@@ -369,8 +373,8 @@ static int  cwdaemon_params_pttdelay(unsigned int * delay_ms, const char * opt_a
 static bool cwdaemon_params_volume(int *volume, const char * opt_arg);
 static bool cwdaemon_params_weighting(int *weighting, const char * opt_arg);
 static bool cwdaemon_params_tone(int *tone, const char * opt_arg);
-static void cwdaemon_params_inc_verbosity(int *verbosity);
-static bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg);
+static void cwdaemon_params_inc_verbosity(int * verbosity);
+static bool cwdaemon_params_set_verbosity(int * verbosity, const char * opt_arg);
 static bool cwdaemon_params_debugfile(const char * opt_arg);
 static bool cwdaemon_params_system(int *system, const char * opt_arg);
 static bool cwdaemon_params_ptt_on_off(const char * opt_arg);
@@ -667,15 +671,15 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 	g_current_ptt_delay_ms    = g_default_ptt_delay_ms;
 	current_weighting    = default_weighting;
 
-	/* Right now there is no way to alter current_verbosity after
+	/* Right now there is no way to alter current log_threshold after
 	   start of daemon, but it's easy to imagine a new network
 	   request to modify verbosity. Maybe not very useful (to
 	   change verbosity of debug strings displayed on remote
 	   machine), but during development phase it may be useful.
 
 	   Anyway... Right now there is no such request, but for
-	   consistency I'm resetting the current_verbosity as well. */
-	current_verbosity    = default_verbosity;
+	   consistency I'm resetting the log_threshold as well. */
+	g_process_current_options.log_threshold = g_process_default_options.log_threshold;
 
 	cwdaemon_reset_libcw_output();
 
@@ -1618,7 +1622,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				}
 
 			} else if (!strcmp(optname, "verbosity")) {
-				if (!cwdaemon_params_set_verbosity(&default_verbosity, optarg)) {
+				if (0 != cwdaemon_params_set_verbosity(&g_process_default_options.log_threshold, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1713,10 +1717,10 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 'i':
-		cwdaemon_params_inc_verbosity(&default_verbosity);
+		cwdaemon_params_inc_verbosity(&g_process_default_options.log_threshold);
 		break;
 	case 'y':
-		if (!cwdaemon_params_set_verbosity(&default_verbosity, opt_arg)) {
+		if (0 != cwdaemon_params_set_verbosity(&g_process_default_options.log_threshold, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1975,44 +1979,41 @@ bool cwdaemon_params_tone(int *tone, const char * opt_arg)
 }
 
 
-void cwdaemon_params_inc_verbosity(int *verbosity)
+void cwdaemon_params_inc_verbosity(int * verbosity)
 {
-	if (*verbosity < CWDAEMON_VERBOSITY_D) {
+	if (*verbosity < LOG_DEBUG) {
 		(*verbosity)++;
 
-		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-                     "requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
+		log_info("requested log verbosity: \"%s\"", log_get_priority_label(*verbosity));
 	}
 
 	return;
 }
 
 
-bool cwdaemon_params_set_verbosity(int *verbosity, const char * opt_arg)
+bool cwdaemon_params_set_verbosity(int * verbosity, const char * opt_arg)
 {
 	if (NULL == opt_arg) {
-		log_message(LOG_ERR, "Invalid arg while setting verbosity\n");
+		log_error("Invalid arg while setting log verbosity %s", "");
 		return false;
 	}
 
-	if (!strcmp(opt_arg, "n") || !strcmp(opt_arg, "N")) {
-		*verbosity = CWDAEMON_VERBOSITY_N;
+	if (!strcmp(opt_arg, "n") || !strcmp(opt_arg, "N")) { /* In cwdaemon 'N' means 'None', i.e. "verbosity so high that nothing gets logged". */
+		*verbosity = LOG_CRIT;
 	} else if (!strcmp(opt_arg, "e") || !strcmp(opt_arg, "E")) {
-		*verbosity = CWDAEMON_VERBOSITY_E;
+		*verbosity = LOG_ERR;
 	} else if (!strcmp(opt_arg, "w") || !strcmp(opt_arg, "W")) {
-		*verbosity = CWDAEMON_VERBOSITY_W;
+		*verbosity = LOG_WARNING;
 	} else if (!strcmp(opt_arg, "i") || !strcmp(opt_arg, "I")) {
-		*verbosity = CWDAEMON_VERBOSITY_I;
+		*verbosity = LOG_INFO;
 	} else if (!strcmp(opt_arg, "d") || !strcmp(opt_arg, "D")) {
-		*verbosity = CWDAEMON_VERBOSITY_D;
+		*verbosity = LOG_DEBUG;
 	} else {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid requested verbosity level: \"%s\"", opt_arg);
+		log_error("invalid requested log verbosity: \"%s\"", opt_arg);
 		return false;
 	}
 
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-						"requested verbosity level threshold: \"%s\"", log_get_priority_label(*verbosity));
+	log_info("requested log verbosity: \"%s\"", log_get_priority_label(*verbosity));
 	return true;
 }
 
@@ -2310,20 +2311,20 @@ int main(int argc, char *argv[])
 		cw_debug_set_flags(&cw_debug_object, g_libcw_debug_flags);
 
 		/* Use the same verbosity for libcw as is configured for cwdaemon. */
-		switch (current_verbosity) {
-		case CWDAEMON_VERBOSITY_E:
+		switch (g_process_current_options.log_threshold) {
+		case LOG_ERR:
 			cw_debug_object.level = CW_DEBUG_ERROR;
 			break;
-		case CWDAEMON_VERBOSITY_W:
+		case LOG_WARNING:
 			cw_debug_object.level = CW_DEBUG_WARNING;
 			break;
-		case CWDAEMON_VERBOSITY_I:
+		case LOG_INFO:
 			cw_debug_object.level = CW_DEBUG_INFO;
 			break;
-		case CWDAEMON_VERBOSITY_D:
+		case LOG_DEBUG:
 			cw_debug_object.level = CW_DEBUG_DEBUG;
 			break;
-		case CWDAEMON_VERBOSITY_N: /* N == NONE. */
+		case LOG_CRIT: /* == NONE. */
 		default:
 			cw_debug_object.level = CW_DEBUG_NONE;
 			break;

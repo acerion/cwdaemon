@@ -135,6 +135,13 @@
 
 
 
+typedef struct {
+	int log_threshold;
+} options_t;
+
+
+
+
 typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);
