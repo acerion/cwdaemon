@@ -517,7 +517,7 @@ SUBDIRS = unit_tests $(am__append_1)
 
 # These unit tests are for code that is used in cwdaemon.
 TESTS = unit_tests/daemon_utils unit_tests/daemon_options \
-	$(am__append_2)
+	unit_tests/daemon_sleep $(am__append_2)
 all: all-recursive
 
 .SUFFIXES:
@@ -802,6 +802,13 @@ unit_tests/daemon_utils.log: unit_tests/daemon_utils
 unit_tests/daemon_options.log: unit_tests/daemon_options
 	@p='unit_tests/daemon_options'; \
 	b='unit_tests/daemon_options'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+unit_tests/daemon_sleep.log: unit_tests/daemon_sleep
+	@p='unit_tests/daemon_sleep'; \
+	b='unit_tests/daemon_sleep'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

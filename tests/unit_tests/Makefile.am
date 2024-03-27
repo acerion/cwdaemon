@@ -1,8 +1,8 @@
-.PHONY: check daemon_utils.dummy daemon_options.dummy
+.PHONY: check daemon_utils.dummy daemon_options.dummy daemon_sleep.dummy
 
 
 # Programs to be built when "make check" target is built.
-check_PROGRAMS  = daemon_options daemon_utils
+check_PROGRAMS  = daemon_options daemon_utils daemon_sleep
 if FUNCTIONAL_TESTS
 check_PROGRAMS += tests_random \
                   tests_string_utils \
@@ -32,6 +32,7 @@ gcov_LD_FLAGS = --coverage
 gcov:
 	make daemon_utils.gcov
 	make daemon_options.gcov
+	make daemon_sleep.gcov
 
 
 # POSIX-compliant "suffix rules" are SO MUCH FUN!
@@ -73,6 +74,11 @@ daemon_utils_LDFLAGS  = $(gcov_LD_FLAGS)
 daemon_options_SOURCES  = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
 daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_options_LDFLAGS  = $(gcov_LD_FLAGS)
+
+
+daemon_sleep_SOURCES  = ../../src/sleep.c ./daemon_sleep.c
+daemon_sleep_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
+daemon_sleep_LDFLAGS  = $(gcov_LD_FLAGS)
 
 
 

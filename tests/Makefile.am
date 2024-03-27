@@ -5,6 +5,7 @@ SUBDIRS = unit_tests
 # These unit tests are for code that is used in cwdaemon.
 TESTS  = unit_tests/daemon_utils
 TESTS += unit_tests/daemon_options
+TESTS += unit_tests/daemon_sleep
 
 
 
