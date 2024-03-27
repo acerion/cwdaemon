@@ -190,8 +190,8 @@ static int default_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static unsigned int g_default_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int default_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int default_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-static options_t g_process_default_options = {
-	.log_threshold = CWDAEMON_LOG_THRESHOLD_DEFAULT,
+static options_t g_default_options = {
+	.log_threshold   = CWDAEMON_LOG_THRESHOLD_DEFAULT,
 };
 
 
@@ -204,8 +204,8 @@ static int current_morse_volume = CWDAEMON_MORSE_VOLUME_DEFAULT;
 static unsigned int g_current_ptt_delay_ms    = CWDAEMON_PTT_DELAY_DEFAULT; /* [milliseconds] */
 static int current_audio_system = CWDAEMON_AUDIO_SYSTEM_DEFAULT;
 static int current_weighting    = CWDAEMON_MORSE_WEIGHTING_DEFAULT;
-options_t g_process_current_options = {
-	.log_threshold = CWDAEMON_LOG_THRESHOLD_DEFAULT,
+options_t g_current_options = {
+	.log_threshold   = CWDAEMON_LOG_THRESHOLD_DEFAULT,
 };
 
 /* Level of libcw's tone queue that triggers 'callback for low level
@@ -351,9 +351,9 @@ void cwdaemon_reset_libcw_output(void);
 
 
 
-static void cwdaemon_args_parse(int argc, char *argv[]);
-static void cwdaemon_args_process_short(int c, const char * opt_arg);
-static void cwdaemon_args_process_long(int argc, char *argv[]);
+static void cwdaemon_args_parse(options_t * defaults, int argc, char *argv[]);
+static void cwdaemon_args_process_short(options_t * defaults, int c, const char * opt_arg);
+static void cwdaemon_args_process_long(options_t * defaults, int argc, char *argv[]);
 
 /* These two are called only in code handling command line options. No
    request can prompt cwdaemon to inform about version or to fork.
@@ -677,7 +677,7 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 
 	   Anyway... Right now there is no such request, but for
 	   consistency I'm resetting the log_threshold as well. */
-	g_process_current_options.log_threshold = g_process_default_options.log_threshold;
+	g_current_options.log_threshold = g_default_options.log_threshold;
 
 	cwdaemon_reset_libcw_output();
 
@@ -1552,7 +1552,7 @@ static struct option cwdaemon_args_long[] = {
 
 
 
-void cwdaemon_args_process_long(int argc, char *argv[])
+void cwdaemon_args_process_long(options_t * defaults, int argc, char *argv[])
 {
 	int option_index = 0;
 
@@ -1633,7 +1633,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 				; /* All long options have been already handled. */
 			}
 		} else {
-			cwdaemon_args_process_short(c, optarg);
+			cwdaemon_args_process_short(defaults, c, optarg);
 		}
 	}
 
@@ -1646,7 +1646,7 @@ void cwdaemon_args_process_long(int argc, char *argv[])
 }
 
 
-void cwdaemon_args_process_short(int c, const char * opt_arg)
+void cwdaemon_args_process_short(options_t * defaults, int c, const char * opt_arg)
 {
 	switch (c) {
 	case ':':
@@ -1710,10 +1710,10 @@ void cwdaemon_args_process_short(int c, const char * opt_arg)
 		}
 		break;
 	case 'i':
-		cwdaemon_option_inc_verbosity(&g_process_default_options.log_threshold);
+		cwdaemon_option_inc_verbosity(&defaults->log_threshold);
 		break;
 	case 'y':
-		if (0 != cwdaemon_option_set_verbosity(&g_process_default_options.log_threshold, opt_arg)) {
+		if (0 != cwdaemon_option_set_verbosity(&defaults->log_threshold, opt_arg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -2115,17 +2115,18 @@ bool cwdaemon_params_options(cwdevice * dev, const char * opt_arg)
 
    Scan program's arguments, check for command line options, parse them.
 
+   \param[out] defaults Set of program's default options, to be modified by command line options
    \param argc - main()'s argc argument
    \param argv - main()'s argv argument
 */
-void cwdaemon_args_parse(int argc, char *argv[])
+void cwdaemon_args_parse(options_t * defaults, int argc, char *argv[])
 {
 #if defined(HAVE_GETOPT_H)
-	cwdaemon_args_process_long(argc, argv);
+	cwdaemon_args_process_long(defaults, argc, argv);
 #else
 	int p = 0;
 	while ((p = getopt(argc, argv, cwdaemon_args_short)) != -1) {
-		cwdaemon_args_process_short(p, optarg);
+		cwdaemon_args_process_short(defaults, p, optarg);
 	}
 #endif
 
@@ -2164,7 +2165,7 @@ int main(int argc, char *argv[])
 	   with command line argument. */
 	cwdaemon_cwdevice_init();
 
-	cwdaemon_args_parse(argc, argv);
+	cwdaemon_args_parse(&g_default_options, argc, argv);
 	cwdevice * dev = global_cwdevice;
 
 	atexit(cwdaemon_debug_close);
@@ -2263,7 +2264,7 @@ int main(int argc, char *argv[])
 		cw_debug_set_flags(&cw_debug_object, g_libcw_debug_flags);
 
 		/* Use the same verbosity for libcw as is configured for cwdaemon. */
-		switch (g_process_current_options.log_threshold) {
+		switch (g_current_options.log_threshold) {
 		case LOG_ERR:
 			cw_debug_object.level = CW_DEBUG_ERROR;
 			break;

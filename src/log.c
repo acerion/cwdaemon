@@ -45,7 +45,7 @@
 extern bool g_forking;
 extern FILE *cwdaemon_debug_f;
 extern char *cwdaemon_debug_f_path;
-extern options_t g_process_current_options;
+extern options_t g_current_options;
 
 
 
@@ -116,7 +116,7 @@ void log_message(int priority, const char * format, ...)
 	}
 
 	/* LOG_EMERG == 0, ... LOG_DEBUG == 7. */
-	if (priority > g_process_current_options.log_threshold) {
+	if (priority > g_current_options.log_threshold) {
 		return;
 	}
 
@@ -187,7 +187,7 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 	}
 
 	/* LOG_EMERG == 0, ... LOG_DEBUG == 7. */
-	if (verbosity > g_process_current_options.log_threshold) {
+	if (verbosity > g_current_options.log_threshold) {
 		return;
 	}
 
