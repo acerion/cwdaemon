@@ -5,6 +5,7 @@ Checks: >
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-narrowing-conversions,
   -concurrency-mt-unsafe,
+  -clang-diagnostic-shadow,
   -llvm-else-after-return,
   -llvm-header-guard,
   -llvmlibc-restrict-system-libc-headers,
