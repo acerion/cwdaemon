@@ -214,19 +214,19 @@ Do this slowly, one option at a time. The processing of command-line options
 functions correctly so don't try to adjust everything at once and
 accidentally break something.
 
-** IN-PROGRESS [#A] R0012: Static code analysis with clang-tidy
+** IN-PROGRESS [#A] R0012: Feature: Static code analysis with clang-tidy
 
 Add/improve tools and procedures for static code analysis with clang-tidy.
 
-** TODO [#A] R0013: Static code analysis with cppcheck
+** TODO [#A] R0013: Feature: Static code analysis with cppcheck
 
 Add/improve tools and procedures for static code analysis with cppcheck.
 
-** TODO [#A] R0014: Static code analysis with gcc fanalyse
+** TODO [#A] R0014: Feature: Static code analysis with gcc fanalyse
 
 Add/improve tools and procedures for static code analysis with gcc fanalyse.
 
-** TODO [#C] R0015: Improve approach to logging
+** TODO [#C] R0015: Feature: Improve approach to logging
 
 Code from src/log.c should be refactored to provide the following features:
 
@@ -245,12 +245,12 @@ Code from src/log.c should be refactored to provide the following features:
  - verbosity/severity of log messages doesn't use custom VERBOSITY enums, but
    relies on LOG_ERR and friends.
 
-** TODO [#A] R0016: Unit tests for cwdaemon_recvfrom()
+** TODO [#A] R0016: Feature: Unit tests for cwdaemon_recvfrom()
 
 Write proper unit tests of cwdaemon_recvfrom(), including mocking of libc's
 recvfrom().
 
-** TODO [#B] R0017: Continue writing unit tests for cwdaemon code
+** TODO [#B] R0017: Feature: Continue writing unit tests for cwdaemon code
 
 Find next functions (existing or to-be-written) in cwdaemon that should be
 unit-tested.
@@ -258,7 +258,7 @@ unit-tested.
 Ticket R0016 is for specific function that needs special attention. Ticket
 R0017 is for unit testing in general.
 
-** TODO [#B] R0018: Review cooperation of cwdevice::init() and cwdevice::free()
+** TODO [#B] R0018: Feature: Review cooperation of cwdevice::init() and cwdevice::free()
 
 Review a "TODO acerion 2024.03.17" comment added to ttys_init(). Evaluate how
 cwdevice::init() and cwdevice::free() should be called in
@@ -306,7 +306,7 @@ done
 ==13591==    by 0x10CF77: cwdaemon_receive (cwdaemon.c:946)
 ==13591==    by 0x10AD94: main (cwdaemon.c:2374)
 
-** TODO [#B] R0019: Further work on simple fuzzing test
+** TODO [#B] R0019: Feature: Further work on simple fuzzing test
 
 We have a simple fuzzing test in tests/fuzzing/simple/. The test needs
 further work:
@@ -329,10 +329,82 @@ further work:
    This will demonstrate that fuzzed cwdaemon doesn't fall into some
    unexpected state.
 
-** TODO [#C] R0020: Add non-simple fuzzing test
+** TODO [#C] R0020: Feature: Add non-simple fuzzing test framework
 
-Come up with non-simple, non-naive fuzzing test.
+Come up with non-simple, non-naive fuzzing test framework
 
 Maybe American Fuzzy Loop?
 
+** TODO [#A] R0021: Feature: Stop treating requests and replies as plain strings
+
+Requests (and to some degree replies) should not be treated as plain C
+strings.
+
+It's possible that the requests incoming from client (or from attacker) will
+consist of non-printable characters, and will include embedded NUL or escaped
+characters.
+
+cwdaemon MUST handle such requests correctly (for legitimate users and
+legitimate use cases) and safely (for both legitimate and rogue users).
+
+This means that we need to make at least following changes in cwdaemon:
+
+ - Request buffer must be changed from simple array of characters to struct
+   with 'bytes' and with 'n_bytes' members. Similar structure already appears
+   in tests code.
+
+ - The same change should be done for reply buffer since the buffer may also
+   need to store non-printable characters.
+
+ - Interaction with contents of requests and replies MUST NOT be done using
+   printf() like functions (in particular you MUST NOT call strlen() or
+   snprintf() on request or reply buffers).
+
+** TODO [#B] R0022: Feature: Add events handling to simple fuzzing test
+
+The following events must be evaluated and expectations for them must be met:
+
+ - Morse message keyed on cwdevice is correct (for plain request, caret
+   request and REPLY Escape request).
+
+ - Reply received over socket from server is correct (for caret request and
+   REPLY Escape request).
+
+** TODO [#C] R0023: Feature: Fail functional tests early when cwdevice is not present
+
+Some functional tests require presence of cwdevice. Currently the presence of
+the device is not checked explicitly, the test start running, and fails only
+after some time. This introduces unnecessary delay.
+
+The tests could/should explicitly search for cwdevice, and if it's not
+present then fail quickly and without unnecessary delay.
+
+The main gain from this would be to shorten execution time of tests and to
+have quicker feedback on the tests.
+
+** TODO [#C] R0024: Feature: Explicit functional test for handling of missing cwdevice
+
+Add a functional test that confirms that cwdaemon handles gracefully a
+situation where cwdevice is missing.
+
+** TODO [#C] R0025: Documentation: document special characters in replies and requests
+
+Add to cwdaemon's man page description of following cases:
+
+ - handling of terminating NUL in requests by cwdaemon,
+ - replies are terminated with '\r' + '\n' ONLY.
+ - maximal count of bytes in replies sent by cwdaemon
+
+** TODO [#B] R0026: Bug: "warm up" problem in Morse receiver
+
+Currently Morse receiver can't correctly receive the first character keyed on
+cwdevice. To work around this, test code has an exception allowing the first
+character in received Morse text to be mis-received.
+
+After unixcw project fixes the receiver, cwdaemon's tests should start using
+that receiver and should fix the code verifying received Morse text. The code
+doing the verification should no longer make the exception for the first
+character.
+
+See morse_receive_text_is_correct() for more info.
 

@@ -113,6 +113,8 @@ static void test_request_set_random_n_bytes(test_request_t * request);
   TODO acerion 2024.03.24: add a function that sends the following special
   cases:
    - Escape request that consists only of N <ESC> characters (N = 1 - MAX).
+   - Requests that contain multiple NUL characters, especially requests that
+     consist only of NUL characters.
 
   Notice that the test function doesn't go over the array in linear way. The
   test function selects test cases in random order.
@@ -407,6 +409,11 @@ static int get_value_mode(value_mode_t * value_mode)
 
    The function decides to change the value of n_bytes at random, meaning
    that sometimes the function doesn't change the value.
+
+   TODO acerion 2024.03.28: the function should slightly prioritize sizes
+   that are close to size of cwdaemon's receive buffer. The reason for this
+   is: I would like this test to be able off-by-one errors in cwdaemon's code
+   handling requests and replies.
 
    @param[in/out] request Request in which to set n_bytes value
 */

@@ -109,8 +109,15 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1, /* port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon". */
+	/*
+	  port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon".
+
+	  TODO acerion 2024.03.28: Come up with a better representation of port
+	  to avoid such special cases. Current solution is not clear error-prone.
+	 */
+	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+
 	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
