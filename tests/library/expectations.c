@@ -13,10 +13,10 @@
 int expect_socket_reply_match(int expectation_idx, const socket_receive_data_t * received, const socket_receive_data_t * expected)
 {
 	char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
-	get_printable_string(received->bytes, printable_received, sizeof (printable_received));
+	get_printable_string(received->bytes, received->n_bytes, printable_received, sizeof (printable_received));
 
 	char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
-	get_printable_string(expected->bytes, printable_expected, sizeof (printable_expected));
+	get_printable_string(expected->bytes, expected->n_bytes, printable_expected, sizeof (printable_expected));
 
 	if (!socket_receive_bytes_is_correct(expected, received)) {
 		test_log_err("Expectation %d: received socket reply [%s] doesn't match expected socket reply [%s]\n",

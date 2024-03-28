@@ -52,14 +52,14 @@
   characters. This means that they can't be easily mistaken with valid
   characters processed during regular tests.
 */
-char * get_printable_string(const char * buffer, char * printable, size_t size)
+char * get_printable_string(const char * bytes, size_t n_bytes, char * printable, size_t size)
 {
-	/* TODO: acerion: add better control of indexes: check if printing to
-	   output buffer doesn't go beyond buffer boundary. */
+	/* TODO acerion 2024.03.28: double-check control of indexes: check if
+	   printing to output buffer doesn't go beyond buffer boundary. */
 	size_t e_idx = 0;
 
-	for (size_t i = 0; i < strlen(buffer); i++) {
-		const char character = buffer[i];
+	for (size_t i = 0; i < n_bytes; i++) {
+		const char character = bytes[i];
 		if (isprint((unsigned char) character)) {
 			if (e_idx < size - 1) {
 				printable[e_idx++] = character;
@@ -68,6 +68,17 @@ char * get_printable_string(const char * buffer, char * printable, size_t size)
 			}
 		} else {
 			switch (character) {
+			case '\0':
+				if (e_idx < size - 5) {
+					printable[e_idx++] = '{';
+					printable[e_idx++] = 'N';
+					printable[e_idx++] = 'U';
+					printable[e_idx++] = 'L';
+					printable[e_idx++] = '}';
+				} else {
+					goto L_NO_SPACE;
+				}
+				break;
 			case '\r':
 				if (e_idx < size - 4) {
 					printable[e_idx++] = '{';

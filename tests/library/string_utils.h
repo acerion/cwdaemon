@@ -12,15 +12,17 @@
 /**
    Replace non-printable characters with their printable representations
 
-   A copy of @buffer with printable characters is placed in @p printable
+   A representation of @bytes with printable characters is placed in @p
+   printable.
 
-   @param[in] buffer Input string
+   @param[in] bytes Input array of bytes to convert
+   @param[in] n_bytes Count of bytes in @p bytes
    @param[out] printable Preallocated output string
    @param[in] size Size of @p printable buffer
 
    @return @p printable
 */
-char * get_printable_string(const char * buffer, char * printable, size_t size);
+char * get_printable_string(const char * bytes, size_t n_bytes, char * printable, size_t size);
 
 
 

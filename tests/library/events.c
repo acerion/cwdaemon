@@ -95,7 +95,7 @@ void events_print(const events_t * events)
 				test_log_debug("Test: event #%02zu: %3ld.%09ld: socket receive: [%s]\n",
 				               e,
 				               diff.tv_sec, diff.tv_nsec,
-				               get_printable_string(event->u.socket_receive.bytes, printable, sizeof (printable)));
+				               get_printable_string(event->u.socket_receive.bytes, event->u.socket_receive.n_bytes, printable, sizeof (printable)));
 			}
 			break;
 		case event_type_sigchld:
