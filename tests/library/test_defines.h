@@ -109,5 +109,32 @@
 
 
 
+/**
+   @brief Set "bytes" and "count" of bytes in data structure
+
+   The macro can be used to set contents of socket_send_data_t or
+   socket_receive_data_t variables or other "bytes+n_bytes" structure used in
+   test code.
+
+   The argument to the macro should be a string literal.
+
+   An implicit terminating NUL of a string literal is NEVER included in the
+   bytes to be set or the count of bytes to be set.
+
+   If bytes to be set and the count of bytes to be set should include
+   terminating NUL, the string literal passed as argument to the macro should
+   contain explicit terminating NUL character, like this:
+
+   TEST_SET_BYTES("Hello, world\0")
+
+   cwdaemon server should be able to handle sent and received data that does
+   or doesn't end with NUL. This macro makes it easy to declare such data in
+   tests code.
+*/
+#define TEST_SET_BYTES(_str_) { .n_bytes = ((sizeof (_str_)) - 1), .bytes = {_str_} }
+
+
+
+
 #endif /* #ifndef TEST_DEFINES_H */
 

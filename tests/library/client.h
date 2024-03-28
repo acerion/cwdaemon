@@ -139,31 +139,5 @@ bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, con
 
 
 
-/**
-   @brief Set "bytes" and "count" of bytes in socket data buffer
-
-   The macro can be used to set contents of socket_send_data_t or
-   socket_receive_data_t variables.
-
-   The argument to the macro should be a string literal.
-
-   An implicit terminating NUL of a string literal is NEVER included in the
-   bytes to be sent or the count of bytes to be sent.
-
-   If bytes to be sent and the count of bytes to be sent should include
-   terminating NUL, the string literal passed as argument to the macro should
-   contain explicit terminating NUL character, like this:
-
-   SOCKET_BUF_SET("Hello, world\0")
-
-   cwdaemon server should be able to handle sent and received data that does
-   or doesn't end with NUL. This macro makes it easy to declare such data in
-   tests code.
-*/
-#define SOCKET_BUF_SET(_str_) { .n_bytes = ((sizeof (_str_)) - 1), .bytes = {_str_} }
-
-
-
-
 #endif /* #ifndef CWDAEMON_TEST_LIB_CLIENT_H */
 

@@ -37,6 +37,7 @@
 
 #include "tests/library/log.h"
 #include "tests/library/string_utils.h"
+#include "tests/library/test_defines.h"
 
 
 
@@ -69,9 +70,6 @@ int main(void)
 	return 0;
 }
 
-
-
-#define TEST_SET_BYTES(input) { .bytes = { input }, .n_bytes = (sizeof (input)) - 1, }
 
 
 

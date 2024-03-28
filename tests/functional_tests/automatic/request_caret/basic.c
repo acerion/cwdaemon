@@ -85,8 +85,8 @@
 
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
-	  .caret_request              = SOCKET_BUF_SET("22 crows, 1 stork?^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("22 crows, 1 stork?\r\n"),
+	  .caret_request              = TEST_SET_BYTES("22 crows, 1 stork?^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("22 crows, 1 stork?\r\n"),
 	  .expected_morse_receive     =                "22 crows, 1 stork?",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
@@ -102,15 +102,15 @@ static test_case_t g_test_cases[] = {
 	          *x = '\0';     // Remove '^' and possible trailing garbage.
 	*/
 	{ .description = "additional message after caret",
-	  .caret_request              = SOCKET_BUF_SET("Fun^Joy^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("Fun\r\n"),
+	  .caret_request              = TEST_SET_BYTES("Fun^Joy^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("Fun\r\n"),
 	  .expected_morse_receive     =                "Fun",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
 	},
 	{ .description = "message with two carets",
-	  .caret_request              = SOCKET_BUF_SET("Monday^^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("Monday\r\n"),
+	  .caret_request              = TEST_SET_BYTES("Monday^^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("Monday\r\n"),
 	  .expected_morse_receive     =                "Monday",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
@@ -119,8 +119,8 @@ static test_case_t g_test_cases[] = {
 
 
 	{ .description = "two words",
-	  .caret_request              = SOCKET_BUF_SET("Hello world!^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("Hello world!\r\n"),
+	  .caret_request              = TEST_SET_BYTES("Hello world!^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("Hello world!\r\n"),
 	  .expected_morse_receive     =                "Hello world!",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
@@ -129,8 +129,8 @@ static test_case_t g_test_cases[] = {
 	/* There should be no action from cwdaemon: neither keying nor socket
 	   reply. */
 	{ .description = "empty text - no terminating NUL in request",
-	  .caret_request              = SOCKET_BUF_SET("^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET(""),
+	  .caret_request              = TEST_SET_BYTES("^"),
+	  .expected_socket_reply      = TEST_SET_BYTES(""),
 	  .expected_morse_receive     =                "",
 	  .expected_events            = { { 0 } },
 	},
@@ -138,31 +138,31 @@ static test_case_t g_test_cases[] = {
 	/* There should be no action from cwdaemon: neither keying nor socket
 	   reply. */
 	{ .description = "empty text - with terminating NUL in request",
-	  .caret_request              = SOCKET_BUF_SET("^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
-	  .expected_socket_reply      = SOCKET_BUF_SET(""),
+	  .caret_request              = TEST_SET_BYTES("^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
+	  .expected_socket_reply      = TEST_SET_BYTES(""),
 	  .expected_morse_receive     =                "",
 	  .expected_events            = { { 0 } },
 	},
 
 	{ .description = "single character",
-	  .caret_request              = SOCKET_BUF_SET("f^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("f\r\n"),
+	  .caret_request              = TEST_SET_BYTES("f^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("f\r\n"),
 	  .expected_morse_receive     =                "f",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
 	},
 
 	{ .description = "single word - no terminating NUL in request",
-	  .caret_request              = SOCKET_BUF_SET("Paris^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("Paris\r\n"),
+	  .caret_request              = TEST_SET_BYTES("Paris^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
 	},
 
 	{ .description = "single word - with terminating NUL in request",
-	  .caret_request              = SOCKET_BUF_SET("Paris^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
-	  .expected_socket_reply      = SOCKET_BUF_SET("Paris\r\n"),
+	  .caret_request              = TEST_SET_BYTES("Paris^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
+	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
@@ -170,8 +170,8 @@ static test_case_t g_test_cases[] = {
 
 	/* Notice how the leading space from message is preserved in socket reply. */
 	{ .description = "single word with leading space",
-	  .caret_request              = SOCKET_BUF_SET(" London^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET(" London\r\n"),
+	  .caret_request              = TEST_SET_BYTES(" London^"),
+	  .expected_socket_reply      = TEST_SET_BYTES(" London\r\n"),
 	  .expected_morse_receive     =                 "London",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },
@@ -179,8 +179,8 @@ static test_case_t g_test_cases[] = {
 
 	/* Notice how the trailing space from message is preserved in socket reply. */
 	{ .description = "mixed characters with trailing space",
-	  .caret_request              = SOCKET_BUF_SET("when, now = right: ^"),
-	  .expected_socket_reply      = SOCKET_BUF_SET("when, now = right: \r\n"),
+	  .caret_request              = TEST_SET_BYTES("when, now = right: ^"),
+	  .expected_socket_reply      = TEST_SET_BYTES("when, now = right: \r\n"),
 	  .expected_morse_receive     =                "when, now = right:",
 	  .expected_events            = { { .event_type = event_type_socket_receive },
 	                                  { .event_type = event_type_morse_receive  }, },

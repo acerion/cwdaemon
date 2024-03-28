@@ -42,7 +42,7 @@
 
 static test_case_t g_test_cases[] = {
 	{ .description = "success case: short plain request",
-	  .plain_request          = SOCKET_BUF_SET("paris abc"),
+	  .plain_request          = TEST_SET_BYTES("paris abc"),
 	  .expected_morse_receive =                "paris abc",
 	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
 	},
