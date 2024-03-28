@@ -49,8 +49,8 @@
 # include <sys/param.h>
 #endif
 
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "cwdaemon.h"
