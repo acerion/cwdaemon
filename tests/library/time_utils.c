@@ -28,6 +28,9 @@
 */
 
 
+#define _POSIX_C_SOURCE 200809L /* struct timespec */
+
+
 
 
 #include "tests/library/time_utils.h"
