@@ -226,7 +226,7 @@ Add/improve tools and procedures for static code analysis with cppcheck.
 
 Add/improve tools and procedures for static code analysis with gcc fanalyse.
 
-** TODO [#C] R0015: Feature: Improve approach to logging
+** IN-PROGRESS [#C] R0015: Feature: Improve approach to logging
 
 Code from src/log.c should be refactored to provide the following features:
 
@@ -244,6 +244,20 @@ Code from src/log.c should be refactored to provide the following features:
 
  - verbosity/severity of log messages doesn't use custom VERBOSITY enums, but
    relies on LOG_ERR and friends.
+
+IN-PROGRESS: log.h has new set of logging macros that are slowly being used
+in code base. They can be re-defined to be empty statements if necessary.
+
+IN-PROGRESS: the new logging macros use a single function underneath that
+uses standard priority names from syslog.h.
+
+IN-PROGRESS: the macros are introduced in new code or code being modified.
+
+The macros from src/log.h are:
+log_error()
+log_warning()
+log_info()
+log_debug()
 
 ** TODO [#A] R0016: Feature: Unit tests for cwdaemon_recvfrom()
 
