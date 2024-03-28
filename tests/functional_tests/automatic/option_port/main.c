@@ -464,6 +464,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 	}
+	if (test_case->expected_fail == true && NULL == sigchld_event) {
+		/*  This test is to satisfy clang-tidy's check for NULL dereference. */
+		test_log_err("Expectation %d: cwdaemon was expected to fail but sigchld event was not found\n", expectation_idx);
+		return -1;
+	}
 	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
 
 
