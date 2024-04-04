@@ -101,10 +101,13 @@ warnings for now (till next version of cwdaemon).
 Notice that ticket R0012 in README.dev.org is still open, to be revisited in
 future versions of cwdaemon.
 
-** STARTED Nice-to-haves
-
-*** TODO https://github.com/acerion/cwdaemon/issues/10
+** DONE Nice-to-haves
+*** DONE https://github.com/acerion/cwdaemon/issues/10
 Understand it better. Fix if necessary.
+
+DONE: there is nothing to fix. Problem reported in the ticket was caused by a
+driver, not by cwdaemon. The github ticket has been closed without any
+further action on my part.
 
 *** DONE R0011: move forward with the ticket by fixing/adjusting just one more option
 
