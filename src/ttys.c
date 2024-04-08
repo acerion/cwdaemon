@@ -125,10 +125,10 @@ out:
 int ttys_init(cwdevice * dev, int fd)
 {
 	/* TODO acerion 2024.03.17: this only prevents a specific memory leak.
-	   Should we call any other cwdaemon/tty function here? Perhaps reset and
-	   close dev->fd? Should we move this call to cwdevice's de-init and make
-	   sure that de-init is called on "cwdevice" escape request, i.e. in
-	   cwdaemon_cwdevice_set()? */
+	   Should we call any other cwdaemon/tty function here? Perhaps
+	   dev->reset_pins() and close dev->fd? Should we move this call to
+	   cwdevice's de-init and make sure that de-init is called on "cwdevice"
+	   escape request, i.e. in cwdaemon_cwdevice_set()? */
 	if (dev->cookie) {
 		free(dev->cookie);
 		dev->cookie = NULL;
@@ -140,7 +140,7 @@ int ttys_init(cwdevice * dev, int fd)
 		exit(EXIT_FAILURE);
 	}
 	dev->fd = fd;
-	dev->reset (dev);
+	dev->reset_pins(dev);
 
 	// modem control signals default to DTR for CW key, RTS for SSB PTT
 	struct driveroptions *dropt = dev->cookie;
@@ -156,10 +156,10 @@ int ttys_init(cwdevice * dev, int fd)
 */
 int ttys_free(cwdevice * dev)
 {
-	dev->reset (dev);
+	dev->reset_pins(dev);
 	close (dev->fd);
 
-	/* Deallocate only after call to ::reset(). */
+	/* Deallocate only after call to ::reset_pins(). */
 	if (dev->cookie) {
 		free(dev->cookie);
 		dev->cookie = NULL;
@@ -168,8 +168,7 @@ int ttys_free(cwdevice * dev)
 	return 0;
 }
 
-int
-ttys_reset (cwdevice * dev)
+int ttys_reset_pins(cwdevice * dev)
 {
 	ttys_cw (dev, OFF);
 	ttys_ptt (dev, OFF);

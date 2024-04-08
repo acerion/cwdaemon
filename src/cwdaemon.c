@@ -390,7 +390,7 @@ void cwdaemon_catch_sigint(int signal);
 cwdevice cwdevice_ttys = {
 	.init       = ttys_init,
 	.free       = ttys_free,
-	.reset      = ttys_reset,
+	.reset_pins = ttys_reset_pins,
 	.cw         = ttys_cw,
 	.ptt        = ttys_ptt,
 	.ssbway     = NULL,
@@ -406,7 +406,7 @@ cwdevice cwdevice_ttys = {
 cwdevice cwdevice_null = {
 	.init       = null_init,
 	.free       = null_free,
-	.reset      = null_reset,
+	.reset_pins = null_reset_pins,
 	.cw         = null_cw,
 	.ptt        = null_ptt,
 	.ssbway     = NULL,
@@ -423,7 +423,7 @@ cwdevice cwdevice_null = {
 cwdevice cwdevice_lp = {
 	.init       = lp_init,
 	.free       = lp_free,
-	.reset      = lp_reset,
+	.reset_pins = lp_reset_pins,
 	.cw         = lp_cw,
 	.ptt        = lp_ptt,
 	.ssbway     = lp_ssbway,
@@ -969,7 +969,7 @@ void cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_reset_almost_all(dev);
 		wordmode = 0;
 		async_abort = 0;
-		global_cwdevice->reset(global_cwdevice);
+		global_cwdevice->reset_pins(global_cwdevice);
 
 		ptt_flag = 0;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());

@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *                      and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -145,7 +145,15 @@ typedef struct {
 typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);
-	int (*reset) (struct cwdev_s *);
+
+	/// Reset pins of cwdevice to known states
+	///
+	/// In theory a function may have to do more resetting than just a reset
+	/// of pins, but in practice this is all the device functions do. So in
+	/// order to have a good idea on what's going on, I'm explicitly adding
+	/// "pins" in function name. */
+	int (* reset_pins)(struct cwdev_s *);
+
 	int (*cw) (struct cwdev_s *, int onoff);
 	int (*ptt) (struct cwdev_s *, int onoff);
 	int (*ssbway) (struct cwdev_s *, int onoff);
@@ -166,7 +174,8 @@ int dev_get_parport(const char *fname);
 
 int ttys_init (cwdevice * dev, int fd);
 int ttys_free (cwdevice * dev);
-int ttys_reset (cwdevice * dev);
+/// Reset pins of cwdevice to known states
+int ttys_reset_pins(cwdevice * dev);
 int ttys_cw (cwdevice * dev, int onoff);
 int ttys_ptt (cwdevice * dev, int onoff);
 bool ttys_optparse (cwdevice * dev, const char * option);
@@ -174,7 +183,8 @@ bool ttys_optvalidate (cwdevice * dev);
 
 int null_init (cwdevice * dev, int fd);
 int null_free (cwdevice * dev);
-int null_reset (cwdevice * dev);
+/// Reset pins of cwdevice to known states
+int null_reset_pins(cwdevice * dev);
 int null_cw (cwdevice * dev, int onoff);
 int null_ptt (cwdevice * dev, int onoff);
 

@@ -302,7 +302,7 @@ lp_init (cwdevice * dev, int fd)
 	parport_control (fd, STROBE, STROBE);
 #endif
 	dev->fd = fd;
-	dev->reset (dev);
+	dev->reset_pins(dev);
 	return 0;
 }
 
@@ -311,7 +311,7 @@ int
 lp_free (cwdevice * dev)
 {
 #ifdef HAVE_LINUX_PPDEV_H
-	dev->reset (dev);
+	dev->reset_pins(dev);
 
 	/* Disable CW & PTT - /STROBE bit (pin 1) */
 	parport_control (dev->fd, PARPORT_CONTROL_STROBE, 0);
@@ -326,9 +326,7 @@ lp_free (cwdevice * dev)
 	return 0;
 }
 
-/* set to a known state */
-int
-lp_reset (cwdevice * dev)
+int lp_reset_pins(cwdevice * dev)
 {
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
 	lp_cw (dev, 0);

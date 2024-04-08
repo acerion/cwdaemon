@@ -11,7 +11,8 @@ struct cwdev_s;
 
 int lp_init(struct cwdev_s * dev, int fd);
 int lp_free(struct cwdev_s * dev);
-int lp_reset(struct cwdev_s * dev);
+/// Reset pins of cwdevice to known states
+int lp_reset_pins(struct cwdev_s * dev);
 int lp_cw(struct cwdev_s * dev, int onoff);
 int lp_ptt(struct cwdev_s * dev, int onoff);
 int lp_ssbway(struct cwdev_s * dev, int onoff);

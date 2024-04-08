@@ -32,7 +32,7 @@ The goals of this development cycle are:
 
 ** STARTED Must-haves
 
-*** TODO https://github.com/acerion/cwdaemon/issues/12
+*** STARTED https://github.com/acerion/cwdaemon/issues/12
 Fix it.
 
 *** DONE Review and prioritize items from README.dev.org
