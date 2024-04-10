@@ -92,6 +92,7 @@
 #include "options.h"
 #include "sleep.h"
 #include "socket.h"
+#include "ttys.h"
 #include "utils.h"
 
 
@@ -398,7 +399,6 @@ cwdevice cwdevice_ttys = {
 	.footswitch = NULL,
 	.optparse   = ttys_optparse,
 	.optvalidate = ttys_optvalidate,
-	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -414,7 +414,6 @@ cwdevice cwdevice_null = {
 	.footswitch = NULL,
 	.optparse   = NULL,
 	.optvalidate = NULL,
-	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -431,7 +430,6 @@ cwdevice cwdevice_lp = {
 	.footswitch = lp_footswitch,
 	.optparse   = NULL,
 	.optvalidate = NULL,
-	.cookie	    = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -2366,6 +2364,10 @@ bool cwdaemon_cwdevices_init(void)
 #else
 	cwdevice_ttys.desc = NULL;
 #endif
+	if (0 != tty_init_global_cwdevice(&cwdevice_ttys)) {
+		log_error("Failed to initialize tty cwdevice %s", "");
+		return false;
+	}
 
 
 	/* Default device description of null port. */

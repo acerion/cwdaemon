@@ -55,6 +55,7 @@
 
 #include "cwdaemon.h"
 #include "log.h"
+#include "ttys.h"
 #include "utils.h"
 
 
@@ -66,10 +67,6 @@
    Serial port functions.
 */
 
-struct driveroptions {
-	int key; /* Pin/line used for keying. TIOCM_DTR by default. */
-	int ptt; /* Pin/line used for PTT.    TIOCM_RTS by default. */
-};
 
 
 
@@ -118,12 +115,29 @@ out:
 
 }
 
+
+
+
+int tty_init_global_cwdevice(cwdevice * dev)
+{
+	// Set default functions of tty pins. This assignment may be changed by
+	// parser of command line options (i.e. by ttys_optparse()).
+	dev->options.u.tty_options.key = TIOCM_DTR;
+	dev->options.u.tty_options.ptt = TIOCM_RTS;
+
+	return 0;
+}
+
+
+
+
 /**
    Use cwdevice::free() to de-init device that was initialized with this
    function.
 */
 int ttys_init(cwdevice * dev, int fd)
 {
+#if 0
 	/* TODO acerion 2024.03.17: this only prevents a specific memory leak.
 	   Should we call any other cwdaemon/tty function here? Perhaps
 	   dev->reset_pins() and close dev->fd? Should we move this call to
@@ -139,13 +153,9 @@ int ttys_init(cwdevice * dev, int fd)
 		log_error("Can't allocate memory for tty driver options %s", "");
 		exit(EXIT_FAILURE);
 	}
+#endif
 	dev->fd = fd;
 	dev->reset_pins(dev);
-
-	// modem control signals default to DTR for CW key, RTS for SSB PTT
-	struct driveroptions *dropt = dev->cookie;
-	dropt->key = TIOCM_DTR;
-	dropt->ptt = TIOCM_RTS;
 
 	return 0;
 }
@@ -158,12 +168,6 @@ int ttys_free(cwdevice * dev)
 {
 	dev->reset_pins(dev);
 	close (dev->fd);
-
-	/* Deallocate only after call to ::reset_pins(). */
-	if (dev->cookie) {
-		free(dev->cookie);
-		dev->cookie = NULL;
-	}
 
 	return 0;
 }
@@ -180,7 +184,7 @@ int ttys_reset_pins(cwdevice * dev)
 int
 ttys_cw (cwdevice * dev, int onoff)
 {
-	struct driveroptions *dropt = dev->cookie;
+	struct driveroptions * dropt = &dev->options.u.tty_options;
 
 	if (dropt->key == 0) {
 		// CW keying opted out
@@ -199,7 +203,7 @@ ttys_cw (cwdevice * dev, int onoff)
 int
 ttys_ptt (cwdevice * dev, int onoff)
 {
-	struct driveroptions *dropt = dev->cookie;
+	struct driveroptions * dropt = &dev->options.u.tty_options;
 
 	if (dropt->ptt == 0) {
 		// PTT opted out
@@ -220,7 +224,7 @@ ttys_ptt (cwdevice * dev, int onoff)
 /* Parse -o <option> invocation */
 bool ttys_optparse (cwdevice * dev, const char * option)
 {
-	struct driveroptions *dropt = dev->cookie;
+	struct driveroptions * dropt = &dev->options.u.tty_options;
 
 	/* find_opt_value() may be called twice in this function, and each time
 	   it will try to find '=' character in 'option'. It's a bit sub-optimal,
@@ -267,12 +271,7 @@ bool ttys_optparse (cwdevice * dev, const char * option)
 */
 bool ttys_optvalidate(cwdevice * dev)
 {
-	struct driveroptions *dropt = dev->cookie;
-	if (NULL == dropt) {
-		/* dev->cookie should have been initialized by ttys_init(). */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "can't validate driver options");
-		return false;
-	}
+	struct driveroptions * dropt = &dev->options.u.tty_options;
 
 	if (0 != dropt->key
 	    && 0 != dropt->ptt

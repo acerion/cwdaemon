@@ -28,6 +28,24 @@ New release. Changes since previous release:
       processing "caret" requests or "<ESC>h": the replies still contain
       verbatim copy of string sent by the client.
 
+    * Fixing GitHub issue https://github.com/acerion/cwdaemon/issues/12:
+      improper state of tty cwdevice's pins.
+
+    * A fix to GitHub issue #12 (mentioned in previous bullet point)
+      introduces a change/fix to resetting of tty cwdevice's pin functions.
+
+      Until now (since v0.11.0) when cwdaemon received "change cwdevice"
+      Escape request, the assigment of functions (keying/ptt) to tty pins
+      (DTR, RTS) specified through command line args would be lost during
+      handling of the Escape request. Handling of the request would reset the
+      assigment to cwdaemon's defaults, which may be different than assigment
+      specified through command line options.
+
+      A commit that fixes GitHub issue #12 also fixes the problem described
+      above. Now any changes of cwdevice through Escape request will preserve
+      assigment of functions to tty lines specified through command line
+      options (if any assigment was made).
+
     * Proper definition of cwdaemon's reply buffer size fixes a problem with
       too small buffer. Depending on which version of recent code
       (post-0.12.0 code currently in development), the incorrect size of the

@@ -400,7 +400,95 @@ In this test cwdaemon is executed:
 
 *Actual result*
 
+***** TODO State of tty DTR and RTS pins during inactivity
 
+*Purpose*
+
+Confirm that cwdaemon doesn't change initial state of tty cwdevice's DTR and
+RTS pins right after start.
+
+Incorrect initialization of tty device has led to
+https://github.com/acerion/cwdaemon/issues/12.
+
+You can use cwdaemon 0.10.2 as a baseline. In a version following 0.10.2 a
+change in ttys_init() was made that introduced an undesired behaviour of the
+pins.
+
+
+*Prerequisites*
+
+1. USB-to-UART converter that exposes DTR pin and RTS pin.
+2. A device capable of showing a logical state on converter's pins: a
+   multimeter or logical state analyzer.
+
+
+*Steps*
+
+1. Connect USB-to-UART converter to USB port.
+
+2. Measure initial state of DTR and RTS pins
+
+   Expectation: the state should be "high".
+
+3. Start cwdaemon, specify a proper cwdevice through "-d" option
+
+   ./src/cwdaemon -n -x s -ii -d ttyUSB0
+
+4. Measure again the state of DTR and RTS pins.
+
+   Expectation: cwdaemon should not change the state of the pins during start
+   of cwdaemon and initialization of the cwdevice. The state on both pins
+   should be "high".
+
+5. Send some text to be played by cwdaemon
+
+   nc -u 127.0.0.1 6789
+   <Enter some text>
+
+   After text is played and keyed on cwdevice, measure state of DTR and RTS
+   pins.
+
+   Expectation: after the text is played and keyed on cwdevice, the state of
+   both pins should be "high".
+
+6. Send "reset" command to cwdaemon
+
+   Send "<ESC>0" Escape request to cwdaemon.
+
+   nc -u 127.0.0.1 6789
+   <Press ESC key>
+   <Press "0" key>
+   <Press Enter key>
+
+
+   In cwdaemon's logs look for confirmation that reset is being performed:
+
+   [INFO ] cwdaemon: requested resetting of parameters
+   [INFO ] cwdaemon: resetting completed
+
+
+   Wait for 2 seconds for the end of reset, then measure state of DTR and RTS
+   pins.
+
+   Expectation: after a reset is completed, the state of both pins should be
+   "high".
+
+7. Terminate cwdaemon
+
+   Either press Ctrl-C while cwdaemon is running in foreground, or send
+   "<ESC>5" Escape request to cwdaemon.
+
+   Then measure state of DTR and RTS pins.
+
+   Expectation: after an exit is performed, the state of both pins should be
+   "high".
+
+
+*Expected result*
+
+All expectations from above steps are met.
+
+*Actual result*
 
 *** TODO memory tests with valgrind
 **** TODO memory tests with valgrind for functional/automatic tests

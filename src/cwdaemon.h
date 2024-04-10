@@ -43,6 +43,8 @@
 
 #include <stdbool.h>
 
+#include "ttys.h"
+
 
 
 
@@ -161,7 +163,15 @@ typedef struct cwdev_s {
 	int (*footswitch) (struct cwdev_s *);
 	bool (*optparse) (struct cwdev_s *, const char *);
 	bool (*optvalidate) (struct cwdev_s *);
-	void *cookie; /* can be used by optparse */
+
+	/// Options of driver controlling a cwdevice. Not all cwdevice types
+	/// support changing options through command line.
+	struct {
+		union {
+			driveroptions tty_options;
+		} u;
+	} options;
+
 	int fd;
 	char *desc; /* "parport0", "ttyS0", "null" - name of device used for keying. */
 }
