@@ -388,32 +388,18 @@ static const char *cwdaemon_debug_ptt_flags(void);
 void cwdaemon_catch_sigint(int signal);
 
 
-cwdevice cwdevice_ttys = {
-	.init       = ttys_init,
-	.free       = ttys_free,
-	.reset_pins = ttys_reset_pins,
-	.cw         = ttys_cw,
-	.ptt        = ttys_ptt,
-	.ssbway     = NULL,
-	.switchband = NULL,
-	.footswitch = NULL,
-	.optparse   = ttys_optparse,
-	.optvalidate = ttys_optvalidate,
-	.fd         = 0,
-	.desc       = NULL
-};
+// Will be initialized by tty_init_global_cwdevice().
+cwdevice cwdevice_ttys = { 0 };
 
 cwdevice cwdevice_null = {
 	.init       = null_init,
 	.free       = null_free,
-	.reset_pins = null_reset_pins,
+	.reset_pins_state = null_reset_pins_state,
 	.cw         = null_cw,
 	.ptt        = null_ptt,
 	.ssbway     = NULL,
 	.switchband = NULL,
 	.footswitch = NULL,
-	.optparse   = NULL,
-	.optvalidate = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -422,14 +408,12 @@ cwdevice cwdevice_null = {
 cwdevice cwdevice_lp = {
 	.init       = lp_init,
 	.free       = lp_free,
-	.reset_pins = lp_reset_pins,
+	.reset_pins_state = lp_reset_pins_state,
 	.cw         = lp_cw,
 	.ptt        = lp_ptt,
 	.ssbway     = lp_ssbway,
 	.switchband = lp_switchband,
 	.footswitch = lp_footswitch,
-	.optparse   = NULL,
-	.optvalidate = NULL,
 	.fd         = 0,
 	.desc       = NULL
 };
@@ -967,7 +951,9 @@ void cwdaemon_handle_escaped_request(char *request)
 		cwdaemon_reset_almost_all(dev);
 		wordmode = 0;
 		async_abort = 0;
-		global_cwdevice->reset_pins(global_cwdevice);
+		if (global_cwdevice->reset_pins_state) {
+			global_cwdevice->reset_pins_state(global_cwdevice);
+		}
 
 		ptt_flag = 0;
 		cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "PTT flag = 0 (0x%02x/%s)", ptt_flag, cwdaemon_debug_ptt_flags());
@@ -2099,11 +2085,11 @@ bool cwdaemon_params_options(cwdevice * dev, const char *optarg)
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "-o option must be used after -d <device>");
 		return false;
 	}
-	if (dev->optparse == NULL) {
+	if (dev->options.optparse == NULL) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "selected device does not support -o option");
 		return false;
 	}
-	return dev->optparse(dev, optarg);
+	return 0 == dev->options.optparse(dev, optarg);
 }
 
 
@@ -2128,8 +2114,8 @@ void cwdaemon_args_parse(options_t * defaults, int argc, char *argv[])
 	}
 #endif
 
-	if (global_cwdevice && global_cwdevice->optvalidate) {
-		if (!global_cwdevice->optvalidate(global_cwdevice)) {
+	if (global_cwdevice && global_cwdevice->options.optvalidate) {
+		if (0 != global_cwdevice->options.optvalidate(global_cwdevice)) {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "cw device options are not valid");
 			exit(EXIT_FAILURE);
 		}
@@ -2354,16 +2340,6 @@ bool cwdaemon_cwdevices_init(void)
 #endif
 
 
-	/* Default device description of serial/com port. */
-#if defined(__linux__)
-	cwdevice_ttys.desc = strdup("ttyS0");
-#elif defined(__FreeBSD__)
-        cwdevice_ttys.desc = strdup("ttyd0");
-#elif defined(__OpenBSD__)
-	cwdevice_ttys.desc = strdup("tty00");
-#else
-	cwdevice_ttys.desc = NULL;
-#endif
 	if (0 != tty_init_global_cwdevice(&cwdevice_ttys)) {
 		log_error("Failed to initialize tty cwdevice %s", "");
 		return false;
@@ -2443,7 +2419,7 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		return false;
 	}
 
-	int fd = dev_get_tty(desc);
+	int fd = tty_get_file_descriptor(desc);
 	if (fd != -1) {
 		*device = &cwdevice_ttys;
 	}
@@ -2491,7 +2467,12 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		return false;
 	}
 
-	(*device)->init(*device, fd);
+	// TODO (acerion) 2024.04.11 shouldn't we call reset_pins_state() and free() on
+	// old cwdevice before we initialize new cwdevice?
+
+	if ((*device)->init) {
+		(*device)->init(*device, fd);
+	}
 
 	/*
 	  TODO (acerion) 2023.05.03: clang-tidy-11 complains that "Access to

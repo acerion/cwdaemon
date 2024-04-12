@@ -154,21 +154,22 @@ typedef struct cwdev_s {
 	/// of pins, but in practice this is all the device functions do. So in
 	/// order to have a good idea on what's going on, I'm explicitly adding
 	/// "pins" in function name. */
-	int (* reset_pins)(struct cwdev_s *);
+	int (* reset_pins_state)(struct cwdev_s *);
 
 	int (*cw) (struct cwdev_s *, int onoff);
 	int (*ptt) (struct cwdev_s *, int onoff);
 	int (*ssbway) (struct cwdev_s *, int onoff);
 	int (*switchband) (struct cwdev_s *, unsigned char bandswitch);
 	int (*footswitch) (struct cwdev_s *);
-	bool (*optparse) (struct cwdev_s *, const char *);
-	bool (*optvalidate) (struct cwdev_s *);
 
 	/// Options of driver controlling a cwdevice. Not all cwdevice types
 	/// support changing options through command line.
 	struct {
+		int (*optparse) (struct cwdev_s *, const char *);
+		int (*optvalidate) (struct cwdev_s *);
+
 		union {
-			driveroptions tty_options;
+			tty_driver_options tty_options;
 		} u;
 	} options;
 
@@ -178,23 +179,13 @@ typedef struct cwdev_s {
 cwdevice;
 
 
-int dev_get_tty(const char *fname);
 int dev_get_null(const char *fname);
 int dev_get_parport(const char *fname);
-
-int ttys_init (cwdevice * dev, int fd);
-int ttys_free (cwdevice * dev);
-/// Reset pins of cwdevice to known states
-int ttys_reset_pins(cwdevice * dev);
-int ttys_cw (cwdevice * dev, int onoff);
-int ttys_ptt (cwdevice * dev, int onoff);
-bool ttys_optparse (cwdevice * dev, const char * option);
-bool ttys_optvalidate (cwdevice * dev);
 
 int null_init (cwdevice * dev, int fd);
 int null_free (cwdevice * dev);
 /// Reset pins of cwdevice to known states
-int null_reset_pins(cwdevice * dev);
+int null_reset_pins_state(cwdevice * dev);
 int null_cw (cwdevice * dev, int onoff);
 int null_ptt (cwdevice * dev, int onoff);
 

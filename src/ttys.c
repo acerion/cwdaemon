@@ -70,17 +70,19 @@
 
 
 
-/**
-   \brief Get fd for serial port
+static int ttys_init(cwdevice * dev, int fd);
+static int ttys_free(cwdevice * dev);
+static int ttys_reset_pins_state(cwdevice * dev);
+static int ttys_cw(cwdevice * dev, int onoff);
+static int ttys_ptt(cwdevice * dev, int onoff);
 
-   Check to see whether \p fname is a tty type character device
-   capable of TIOCM*.
-   This should be platform independent.
+static int ttys_optparse(cwdevice * dev, const char * option);
+static int ttys_optvalidate(cwdevice * dev);
 
-   \return -1 if the device isn't a suitable tty device
-   \return a file descriptor if the device is a suitable tty device
-*/
-int dev_get_tty(const char *fname)
+
+
+
+int tty_get_file_descriptor(const char * fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
@@ -120,10 +122,32 @@ out:
 
 int tty_init_global_cwdevice(cwdevice * dev)
 {
+	memset(dev, 0, sizeof (cwdevice));
+
+	dev->init                  = ttys_init;
+	dev->free                  = ttys_free;
+	dev->reset_pins_state      = ttys_reset_pins_state;
+	dev->cw                    = ttys_cw;
+	dev->ptt                   = ttys_ptt;
+
+	dev->options.optparse      = ttys_optparse,
+	dev->options.optvalidate   = ttys_optvalidate,
+
 	// Set default functions of tty pins. This assignment may be changed by
 	// parser of command line options (i.e. by ttys_optparse()).
 	dev->options.u.tty_options.key = TIOCM_DTR;
 	dev->options.u.tty_options.ptt = TIOCM_RTS;
+
+	// Default name of device file in /dev/.
+#if defined(__linux__)
+	dev->desc = strdup("ttyS0"); // This is not a "ttyUSB0" for legacy reasons.
+#elif defined(__FreeBSD__)
+	dev->desc = strdup("ttyd0");
+#elif defined(__OpenBSD__)
+	dev->desc = strdup("tty00");
+#else
+	dev->desc = NULL;
+#endif
 
 	return 0;
 }
@@ -135,27 +159,10 @@ int tty_init_global_cwdevice(cwdevice * dev)
    Use cwdevice::free() to de-init device that was initialized with this
    function.
 */
-int ttys_init(cwdevice * dev, int fd)
+static int ttys_init(cwdevice * dev, int fd)
 {
-#if 0
-	/* TODO acerion 2024.03.17: this only prevents a specific memory leak.
-	   Should we call any other cwdaemon/tty function here? Perhaps
-	   dev->reset_pins() and close dev->fd? Should we move this call to
-	   cwdevice's de-init and make sure that de-init is called on "cwdevice"
-	   escape request, i.e. in cwdaemon_cwdevice_set()? */
-	if (dev->cookie) {
-		free(dev->cookie);
-		dev->cookie = NULL;
-	}
-
-	dev->cookie = calloc(1, sizeof(struct driveroptions));
-	if (dev->cookie == NULL) {
-		log_error("Can't allocate memory for tty driver options %s", "");
-		exit(EXIT_FAILURE);
-	}
-#endif
 	dev->fd = fd;
-	dev->reset_pins(dev);
+	dev->reset_pins_state(dev);
 
 	return 0;
 }
@@ -164,15 +171,21 @@ int ttys_init(cwdevice * dev, int fd)
    Use this function to de-initialize a device that was initialized with
    cwdevice::init().
 */
-int ttys_free(cwdevice * dev)
+static int ttys_free(cwdevice * dev)
 {
-	dev->reset_pins(dev);
+	dev->reset_pins_state(dev);
 	close (dev->fd);
 
 	return 0;
 }
 
-int ttys_reset_pins(cwdevice * dev)
+
+/// @brief Reset pins of cwdevice to known states
+///
+/// @param dev cwdevice to reset
+///
+/// @return 0
+static int ttys_reset_pins_state(cwdevice * dev)
 {
 	ttys_cw (dev, OFF);
 	ttys_ptt (dev, OFF);
@@ -181,10 +194,9 @@ int ttys_reset_pins(cwdevice * dev)
 
 
 /* CW keying on pin indicated by dev->key. */
-int
-ttys_cw (cwdevice * dev, int onoff)
+static int ttys_cw(cwdevice * dev, int onoff)
 {
-	struct driveroptions * dropt = &dev->options.u.tty_options;
+	tty_driver_options * dropt = &dev->options.u.tty_options;
 
 	if (dropt->key == 0) {
 		// CW keying opted out
@@ -200,10 +212,9 @@ ttys_cw (cwdevice * dev, int onoff)
 }
 
 /* SSB PTT keying - 0 bit (pin 7 for DB-9) */
-int
-ttys_ptt (cwdevice * dev, int onoff)
+static int ttys_ptt(cwdevice * dev, int onoff)
 {
-	struct driveroptions * dropt = &dev->options.u.tty_options;
+	tty_driver_options * dropt = &dev->options.u.tty_options;
 
 	if (dropt->ptt == 0) {
 		// PTT opted out
@@ -222,9 +233,9 @@ ttys_ptt (cwdevice * dev, int onoff)
 
 
 /* Parse -o <option> invocation */
-bool ttys_optparse (cwdevice * dev, const char * option)
+static int ttys_optparse(cwdevice * dev, const char * option)
 {
-	struct driveroptions * dropt = &dev->options.u.tty_options;
+	tty_driver_options * dropt = &dev->options.u.tty_options;
 
 	/* find_opt_value() may be called twice in this function, and each time
 	   it will try to find '=' character in 'option'. It's a bit sub-optimal,
@@ -241,7 +252,7 @@ bool ttys_optparse (cwdevice * dev, const char * option)
 			dropt->key = 0;
 		} else {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value for 'key' option: %s", value);
-			return false;
+			return -1;
 		}
 		ttys_cw(dev, 0);
 	} else if (opt_success == find_opt_value(option, "ptt", &value)) {
@@ -254,14 +265,14 @@ bool ttys_optparse (cwdevice * dev, const char * option)
 			dropt->ptt = 0;
 		} else {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid value for 'ptt' option: %s", value);
-			return false;
+			return -1;
 		}
 		ttys_ptt(dev, 0);
 	} else {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "Invalid option for keying device (expected 'key|ptt=RTS|DTR|none'): [%s]", option);
-		return false;
+		return -1;
 	}
-	return true;
+	return 0;
 }
 
 
@@ -269,18 +280,18 @@ bool ttys_optparse (cwdevice * dev, const char * option)
 /**
    @brief Validate parsed driver options
 */
-bool ttys_optvalidate(cwdevice * dev)
+static int ttys_optvalidate(cwdevice * dev)
 {
-	struct driveroptions * dropt = &dev->options.u.tty_options;
+	tty_driver_options * dropt = &dev->options.u.tty_options;
 
 	if (0 != dropt->key
 	    && 0 != dropt->ptt
 	    && dropt->key == dropt->ptt) {
 		/* You can't use the same tty pin for two purposes. */
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %d", dropt->key);
-		return false;
+		return -1;
 	}
 
-	return true;
+	return 0;
 }
 

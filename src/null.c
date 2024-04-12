@@ -61,7 +61,7 @@ int null_free(__attribute__((unused)) cwdevice *dev)
 	return 0;
 }
 
-int null_reset_pins(__attribute__((unused)) cwdevice * dev)
+int null_reset_pins_state(__attribute__((unused)) cwdevice * dev)
 {
 	return 0;
 }
