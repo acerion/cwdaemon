@@ -387,6 +387,8 @@ static const char *cwdaemon_debug_ptt_flags(void);
 
 void cwdaemon_catch_sigint(int signal);
 
+static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, uint32_t flags);
+
 
 // Will be initialized by tty_init_global_cwdevice().
 cwdevice cwdevice_ttys = { 0 };
@@ -2244,30 +2246,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (0 != g_libcw_debug_flags) { /* We are debugging libcw as well. */
-
-		cw_debug_set_flags(&cw_debug_object, g_libcw_debug_flags);
-
-		/* Use the same verbosity for libcw as is configured for cwdaemon. */
-		switch (g_current_options.log_threshold) {
-		case LOG_ERR:
-			cw_debug_object.level = CW_DEBUG_ERROR;
-			break;
-		case LOG_WARNING:
-			cw_debug_object.level = CW_DEBUG_WARNING;
-			break;
-		case LOG_INFO:
-			cw_debug_object.level = CW_DEBUG_INFO;
-			break;
-		case LOG_DEBUG:
-			cw_debug_object.level = CW_DEBUG_DEBUG;
-			break;
-		case LOG_CRIT: /* == NONE. */
-		default:
-			cw_debug_object.level = CW_DEBUG_NONE;
-			break;
-		}
+		set_libcw_debugging(&cw_debug_object, g_current_options.log_threshold, g_libcw_debug_flags);
 	}
-
 
 #ifndef CWDAEMON_GITHUB_ISSUE_6_FIXED
 	fprintf(stderr, "With re-registration not fixed\n");
@@ -2545,4 +2525,38 @@ void cwdaemon_close_socket_wrapper(void)
 	return;
 }
 
+
+
+
+/// @brief Configure debugging of libcw
+///
+/// @param debug_object libcw's debug object
+/// @param log_threshold[in] cwdaemon's log threshold
+/// @param flags[in] libcw debug flags from command line options
+static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, uint32_t flags)
+{
+	cw_debug_set_flags(debug_object, flags);
+
+	/* Use the same verbosity for libcw as is configured for cwdaemon. */
+	switch (log_threshold) {
+	case LOG_ERR:
+		debug_object->level = CW_DEBUG_ERROR;
+		break;
+	case LOG_WARNING:
+		debug_object->level = CW_DEBUG_WARNING;
+		break;
+	case LOG_INFO:
+		debug_object->level = CW_DEBUG_INFO;
+		break;
+	case LOG_DEBUG:
+		debug_object->level = CW_DEBUG_DEBUG;
+		break;
+	case LOG_CRIT: /* == NONE. */
+	default:
+		debug_object->level = CW_DEBUG_NONE;
+		break;
+	}
+
+	return;
+}
 
