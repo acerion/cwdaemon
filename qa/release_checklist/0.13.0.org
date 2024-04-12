@@ -19,7 +19,7 @@ This release will push forward the following internal tickets:
 R0012
 R0011
 
-* STARTED Define scope of changes to be done in this release
+* DONE Define scope of changes to be done in this release
 
 Describe them here, and stick to them during the development phase. Don't
 extend the scope unless really necessary (e.g. unless you find a serious
@@ -30,10 +30,12 @@ requests' list, put the ticket numbers on the list below.
 
 The goals of this development cycle are:
 
-** STARTED Must-haves
+** DONE Must-haves
 
-*** STARTED https://github.com/acerion/cwdaemon/issues/12
+*** DONE https://github.com/acerion/cwdaemon/issues/12
 Fix it.
+
+DONE in commit b26b10d39e13b4ea30b7a28e61a017dd8483c217
 
 *** DONE Review and prioritize items from README.dev.org
 
@@ -155,12 +157,12 @@ the past.
 
 Try to read the lessons learned few times during current development cycle.
 
-* STARTED Do the main work: implement release goals
+* DONE Do the main work: implement release goals
 
 Do whatever you planned to do for given release (see first point in this
 document).
 
-* TODO Stop the work on release goals
+* DONE Stop the work on release goals
 
 Regardless of what you did: fixing bugs, refactoring, adding features,
 reviewing code, you need to be able to say "This is where I need to stop".
