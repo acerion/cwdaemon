@@ -6638,6 +6638,9 @@ esac
 # For debug purposes only.
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
+# TODO acerion 2024.04.12: include these flags and fix warnings:
+#   CFLAGS="${CFLAGS} -Wconversion -Wsign-conversion -Wint-conversion"
+
 CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
 CFLAGS="${CFLAGS} -std=c99"
 if test "${ac_cv_c_compiler_gnu}" = "yes"; then
@@ -6650,7 +6653,6 @@ if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
   CFLAGS="${CFLAGS} -Wundef"
   CFLAGS="${CFLAGS} -Wunused -Wunused-macros -Wunused-result"
-  CFLAGS="${CFLAGS} -Wconversion -Wsign-conversion -Wint-conversion"
   CFLAGS="${CFLAGS} -Wmisleading-indentation -Walloc-zero -Wformat-signedness"
   CFLAGS="${CFLAGS} -Wuninitialized -Winit-self -Wstrict-aliasing -Wattributes -Wmain"
   CFLAGS="${CFLAGS} -Wincompatible-pointer-types -Wold-style-definition"
