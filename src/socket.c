@@ -187,7 +187,7 @@ ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, size_t size)
 		; /* pass */
 	}
 
-#if 1 /* Just for debug. */
+#if 0 /* Just for debug. */
 	/* Potential lack of terminating NUL is not an error of client, this is
 	   just a fact that we have to deal with. cwdaemon should be able to
 	   safely handle array of arbitrary bytes that is not terminated with
