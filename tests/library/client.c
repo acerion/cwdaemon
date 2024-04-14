@@ -33,8 +33,8 @@
    cwdaemon server over network socket.
 
    Most of the time the communication is from client to server, but once in a
-   while the client can expect to receive some reply from the server (e.g.
-   thanks to <ESC>h request).
+   while the client can expect to receive some reply from the server (e.g. a
+   reply to <ESC>h request).
 */
 
 
@@ -61,22 +61,16 @@
 
 
 
+// Poll interval for client's receiver polling [milliseconds].
+#define RECEIVE_THREAD_INTERVAL_MS     1000
+
+// How long to wait for termination of receive thread [milliseconds].
+#define RECEIVE_THREAD_STOP_WAIT_MS   (RECEIVE_THREAD_INTERVAL_MS + (RECEIVE_THREAD_INTERVAL_MS * 0.2))
+
+
+
+
 static void * client_socket_receiver_thread_poll_fn(void * client_arg);
-
-
-
-
-int client_send_esc_request_va(client_t * client, int request, const char * format, ...)
-{
-	char buffer[CLIENT_SEND_BUFFER_SIZE] = { 0 };
-	va_list ap;
-
-	va_start(ap, format);
-	vsnprintf(buffer, sizeof (buffer), format, ap);
-	va_end(ap);
-
-	return client_send_esc_request(client, request, buffer, sizeof (buffer)); /* TODO acerion 2024.02.28: last arg should be a value returned by vsnmprintf(). */
-}
 
 
 
@@ -109,7 +103,7 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 		buf[i++] = ASCII_ESC;
 		buf[i++] = (char) request;
 		/*
-		  Some of the escaped requests don't require a value, but we always
+		  Some of the Escape requests don't require a value, but we always
 		  copy all bytes of value to network message to test cwdaemon's
 		  behaviour in unexpected situations.
 
@@ -121,14 +115,14 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 		  through @p bytes. We just send @p n_bytes of data through socket.
 		*/
 		if (n_bytes + i > sizeof (buf)) {
-			test_log_err("cwdaemon client: size of data to send to cwdaemon server as escaped request is too large: %zu + %zu > %zu\n", n_bytes, i, sizeof (buf));
+			test_log_err("cwdaemon client: size of data to send to cwdaemon server as Escape request is too large: %zu + %zu > %zu\n", n_bytes, i, sizeof (buf));
 			return -1;
 		}
 		memcpy(buf + i, bytes, n_bytes);
 		n_bytes_to_send = n_bytes + i;
 		return client_send_message(client, buf, n_bytes_to_send);
 	default:
-		test_log_err("cwdaemon client: unsupported escaped request 0x%02x / '%c' / %d\n", (unsigned char) request, (char) request, request);
+		test_log_err("cwdaemon client: unsupported Escape request 0x%02x / '%c' / %d\n", (unsigned char) request, (char) request, request);
 		return -1;
 	}
 }
@@ -155,10 +149,12 @@ int client_send_message(client_t * client, const char * bytes, size_t n_bytes)
 int client_disconnect(client_t * client)
 {
 	if (NULL == client) {
+		test_log_err("cwdaemon client: can't disconnect a client that is NULL %s\n", "");
 		return -1;
 	}
 
 	if (client->sock < 0) {
+		test_log_warn("cwdaemon client: can't disconnect a client that has closed socket %s\n", "");
 		return 0;
 	}
 	if (close(client->sock) == -1) {
@@ -187,7 +183,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 		struct pollfd descriptor = { .fd = client->sock, .events = POLLIN };
 		const nfds_t n_descriptors = 1;
 
-		const int timeout_ms = (1 * 1000);
+		const int timeout_ms = RECEIVE_THREAD_INTERVAL_MS;
 		const int ready = poll(&descriptor, n_descriptors, timeout_ms);
 		if (0 == ready) {
 			/* Timeout. */
@@ -252,9 +248,14 @@ int client_socket_receive_start(client_t * client)
 
 int client_socket_receive_stop(client_t * client)
 {
+	if (NULL == client->socket_receiver_thread.thread_fn) {
+		test_log_err("cwdaemon client: trying to stop 'socket receive' thread without thread function %s\n", "");
+		return -1;
+	}
+
 	test_log_info("cwdaemon client: stopping %s\n", client->socket_receiver_thread.name);
 	client->socket_receiver_thread.thread_loop_continue = false;
-	sleep(1);
+	test_millisleep_nonintr(RECEIVE_THREAD_STOP_WAIT_MS);
 	thread_join(&client->socket_receiver_thread);
 	test_log_info("cwdaemon client: stopped %s\n", client->socket_receiver_thread.name);
 
@@ -287,6 +288,10 @@ int client_dtor(client_t * client)
 		success = false;
 	}
 
+	if (client->sock >= 0) {
+		test_log_err("cwdaemon client: detected non-closed socket during destruction of client %s\n", "");
+	}
+
 	return success ? 0 : -1;
 }
 
@@ -305,7 +310,7 @@ bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, con
 
 	  Facts to validate about "expected":
 	  1. It ends with CR+LF (and perhaps with NUL),
-	  2. It holds no more bytes than cwdaemon's "reply" buffer; TODO acerion 2024.03.03 - add this test here.
+	  2. It holds no more bytes than cwdaemon's "reply" buffer can hold; TODO acerion 2024.03.03 - add this test here.
 
 	  Therefore one of the tests done here is looking for CR+LF in
 	  "expected".
@@ -321,6 +326,9 @@ bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, con
 		/* Pass. If a test says "we don't expect any socket reply in this
 		   test case", it may use empty "expected" string to indicate
 		   this. */
+		// TODO (acerion) 2024.04.14: perhaps this function should not be
+		// called when we know that no reply is expected? Then we should
+		// return failure if expected->n_bytes is less than 2.
 	}
 
 	if (received->n_bytes != expected->n_bytes) {
