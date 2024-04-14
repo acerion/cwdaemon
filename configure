@@ -778,8 +778,8 @@ enable_maintainer_mode
 enable_dependency_tracking
 enable_functional_tests
 enable_long_functional_tests
-with_test_cwdaemon_path
-with_test_tty_cwdevice_name
+with_tests_cwdaemon_path
+with_tests_tty_cwdevice_name
 enable_gcov
 '
       ac_precious_vars='build_alias
@@ -1440,10 +1440,10 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-test-cwdaemon-path=STRING
+  --with-tests-cwdaemon-path=STRING
                           specify a path to cwdaemon binary used in functional
                           tests
-  --with-test-tty-cwdevice-name=STRING
+  --with-tests-tty-cwdevice-name=STRING
                           specify a mame of tty cwdevice used in functional
                           tests
 
@@ -6514,7 +6514,7 @@ ABS_TOP_BUILDDIR=abs_top_builddir
 
 
 # This is just a default value that can be overriden later.
-test_tty_cwdevice_name="ttyUSB0"
+default_tests_tty_cwdevice_name="ttyUSB0"
 
 
 
@@ -6601,7 +6601,7 @@ printf "%s\n" "$as_me: Detected Linux: $host_os" >&6;}
 	#
 	# Name of first tty device (USB-to-UART converter) on Linux. User
 	# group: dialout.
-	test_tty_cwdevice_name="ttyUSB0"
+	default_tests_tty_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
@@ -6611,7 +6611,7 @@ printf "%s\n" "$as_me: Detected FreeBSD: $host_os" >&6;}
 	#
 	# Name of first tty device (USB-to-UART converter) on FreeBSD 13.2.
 	# User group: dialer.
-	test_tty_cwdevice_name="cuau0"
+	default_tests_tty_cwdevice_name="cuau0"
 	;;
 
 	*openbsd*|*OpenBSD*)
@@ -6714,13 +6714,13 @@ if test x$enable_long_functional_tests = xyes ; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
 
-printf "%s\n" "#define RUN_LONG_FUNCTIONAL_TESTS 1" >>confdefs.h
+printf "%s\n" "#define TESTS_RUN_LONG_FUNCTIONAL_TESTS 1" >>confdefs.h
 
 else
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 
-printf "%s\n" "#define RUN_LONG_FUNCTIONAL_TESTS 0" >>confdefs.h
+printf "%s\n" "#define TESTS_RUN_LONG_FUNCTIONAL_TESTS 0" >>confdefs.h
 
 fi
 
@@ -6728,17 +6728,17 @@ fi
 
 
 # Path to cwdaemon binary that will be used as local test instance of cwdaemon server.
-test_cwdaemon_path=$ac_pwd/src/cwdaemon
+tests_cwdaemon_path=$ac_pwd/src/cwdaemon
 
-# Check whether --with-test_cwdaemon_path was given.
-if test ${with_test_cwdaemon_path+y}
+# Check whether --with-tests_cwdaemon_path was given.
+if test ${with_tests_cwdaemon_path+y}
 then :
-  withval=$with_test_cwdaemon_path; test_cwdaemon_path="$withval"
+  withval=$with_tests_cwdaemon_path; tests_cwdaemon_path="$withval"
 fi
 
 # The next line will write a #define into ROOT/config.h.
 
-printf "%s\n" "#define TEST_CWDAEMON_PATH \"${test_cwdaemon_path}\"" >>confdefs.h
+printf "%s\n" "#define TESTS_CWDAEMON_PATH \"${tests_cwdaemon_path}\"" >>confdefs.h
 
 
 
@@ -6746,17 +6746,17 @@ printf "%s\n" "#define TEST_CWDAEMON_PATH \"${test_cwdaemon_path}\"" >>confdefs.
 
 # Name of tty cwdevice that will be used by local test instance of cwdaemon
 # server.
-test_tty_cwdevice_name=ttyUSB0
+tests_tty_cwdevice_name=$default_tests_tty_cwdevice_name
 
-# Check whether --with-test_tty_cwdevice_name was given.
-if test ${with_test_tty_cwdevice_name+y}
+# Check whether --with-tests_tty_cwdevice_name was given.
+if test ${with_tests_tty_cwdevice_name+y}
 then :
-  withval=$with_test_tty_cwdevice_name; test_tty_cwdevice_name="$withval"
+  withval=$with_tests_tty_cwdevice_name; tests_tty_cwdevice_name="$withval"
 fi
 
 # The next line will write a #define into ROOT/config.h.
 
-printf "%s\n" "#define TEST_TTY_CWDEVICE_NAME \"${test_tty_cwdevice_name}\"" >>confdefs.h
+printf "%s\n" "#define TESTS_TTY_CWDEVICE_NAME \"${tests_tty_cwdevice_name}\"" >>confdefs.h
 
 
 
@@ -8362,10 +8362,10 @@ printf "%s\n" "$as_me:   enable functional tests: ..............  $enable_functi
 if test x$enable_functional_tests = xyes ; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       run long functional tests: ........  $enable_long_functional_tests" >&5
 printf "%s\n" "$as_me:       run long functional tests: ........  $enable_long_functional_tests" >&6;}
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test tty cwdevice name: ...........  $test_tty_cwdevice_name" >&5
-printf "%s\n" "$as_me:       test tty cwdevice name: ...........  $test_tty_cwdevice_name" >&6;}
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..........  $test_cwdaemon_path" >&5
-printf "%s\n" "$as_me:       path to cwdaemon binary: ..........  $test_cwdaemon_path" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       test tty cwdevice name: ...........  $tests_tty_cwdevice_name" >&5
+printf "%s\n" "$as_me:       test tty cwdevice name: ...........  $tests_tty_cwdevice_name" >&6;}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}:       path to cwdaemon binary: ..........  $tests_cwdaemon_path" >&5
+printf "%s\n" "$as_me:       path to cwdaemon binary: ..........  $tests_cwdaemon_path" >&6;}
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: ----------------------------------------------------------" >&5
 printf "%s\n" "$as_me: ----------------------------------------------------------" >&6;}

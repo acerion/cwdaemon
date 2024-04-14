@@ -309,7 +309,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 		.tone           = test_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
-		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
+		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
 		.wpm            = *wpm,
 		.l4_port        = test_case->port,
 		.supervisor_id  = test_opts->supervisor_id,

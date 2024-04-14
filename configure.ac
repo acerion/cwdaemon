@@ -51,7 +51,7 @@ AC_SUBST([ABS_TOP_BUILDDIR], [abs_top_builddir])
 
 
 # This is just a default value that can be overriden later.
-test_tty_cwdevice_name="ttyUSB0"
+default_tests_tty_cwdevice_name="ttyUSB0"
 
 
 
@@ -63,7 +63,7 @@ case $host_os in
 	#
 	# Name of first tty device (USB-to-UART converter) on Linux. User
 	# group: dialout.
-	test_tty_cwdevice_name="ttyUSB0"
+	default_tests_tty_cwdevice_name="ttyUSB0"
 	;;
 
 	*freebsd*|*FreeBSD*)
@@ -72,7 +72,7 @@ case $host_os in
 	#
 	# Name of first tty device (USB-to-UART converter) on FreeBSD 13.2.
 	# User group: dialer.
-	test_tty_cwdevice_name="cuau0"
+	default_tests_tty_cwdevice_name="cuau0"
 	;;
 
 	*openbsd*|*OpenBSD*)
@@ -151,36 +151,36 @@ AC_ARG_ENABLE(long_functional_tests,
 AC_MSG_CHECKING([whether to run cwdaemon's long functional tests])
 if test x$enable_long_functional_tests = xyes ; then
     AC_MSG_RESULT(yes)
-	AC_DEFINE([RUN_LONG_FUNCTIONAL_TESTS], [1], [Whether to run long functional tests.])
+	AC_DEFINE([TESTS_RUN_LONG_FUNCTIONAL_TESTS], [1], [Whether to run long functional tests.])
 else
     AC_MSG_RESULT(no)
-	AC_DEFINE([RUN_LONG_FUNCTIONAL_TESTS], [0], [Whether to run long functional tests.])
+	AC_DEFINE([TESTS_RUN_LONG_FUNCTIONAL_TESTS], [0], [Whether to run long functional tests.])
 fi
 
 
 
 
 # Path to cwdaemon binary that will be used as local test instance of cwdaemon server.
-test_cwdaemon_path=$ac_pwd/src/cwdaemon
-AC_ARG_WITH([test_cwdaemon_path],
-            [AS_HELP_STRING([--with-test-cwdaemon-path=STRING],
+tests_cwdaemon_path=$ac_pwd/src/cwdaemon
+AC_ARG_WITH([tests_cwdaemon_path],
+            [AS_HELP_STRING([--with-tests-cwdaemon-path=STRING],
                             [specify a path to cwdaemon binary used in functional tests])],
-            [test_cwdaemon_path="$withval"], [])
+            [tests_cwdaemon_path="$withval"], [])
 # The next line will write a #define into ROOT/config.h.
-AC_DEFINE_UNQUOTED([TEST_CWDAEMON_PATH],["${test_cwdaemon_path}"],[Path to cwdaemon binary used in functional tests.])
+AC_DEFINE_UNQUOTED([TESTS_CWDAEMON_PATH],["${tests_cwdaemon_path}"],[Path to cwdaemon binary used in functional tests.])
 
 
 
 
 # Name of tty cwdevice that will be used by local test instance of cwdaemon
 # server.
-test_tty_cwdevice_name=ttyUSB0
-AC_ARG_WITH([test_tty_cwdevice_name],
-            [AS_HELP_STRING([--with-test-tty-cwdevice-name=STRING],
+tests_tty_cwdevice_name=$default_tests_tty_cwdevice_name
+AC_ARG_WITH([tests_tty_cwdevice_name],
+            [AS_HELP_STRING([--with-tests-tty-cwdevice-name=STRING],
                             [specify a mame of tty cwdevice used in functional tests])],
-            [test_tty_cwdevice_name="$withval"], [])
+            [tests_tty_cwdevice_name="$withval"], [])
 # The next line will write a #define into ROOT/config.h.
-AC_DEFINE_UNQUOTED([TEST_TTY_CWDEVICE_NAME],["${test_tty_cwdevice_name}"],[Name of tty cwdevice used in functional tests.])
+AC_DEFINE_UNQUOTED([TESTS_TTY_CWDEVICE_NAME],["${tests_tty_cwdevice_name}"],[Name of tty cwdevice used in functional tests.])
 
 
 
@@ -291,7 +291,7 @@ AC_MSG_NOTICE([  enable gcov: ..........................  $enable_gcov])
 AC_MSG_NOTICE([  enable functional tests: ..............  $enable_functional_tests])
 if test x$enable_functional_tests = xyes ; then
     AC_MSG_NOTICE([      run long functional tests: ........  $enable_long_functional_tests])
-    AC_MSG_NOTICE([      test tty cwdevice name: ...........  $test_tty_cwdevice_name])
-    AC_MSG_NOTICE([      path to cwdaemon binary: ..........  $test_cwdaemon_path])
+    AC_MSG_NOTICE([      test tty cwdevice name: ...........  $tests_tty_cwdevice_name])
+    AC_MSG_NOTICE([      path to cwdaemon binary: ..........  $tests_cwdaemon_path])
 fi
 AC_MSG_NOTICE([----------------------------------------------------------])

@@ -106,7 +106,7 @@ New release. Changes since previous release:
     * Path to cwdaemon binary used during functional tests can be specified
       through an argument to ./configure script:
 
-          ./configure --enable-functional-tests --with-test-cwdaemon-path=/home/user/sbin/cwdaemon
+          ./configure --enable-functional-tests --with-tests-cwdaemon-path=/home/user/sbin/cwdaemon
 
       This allows running a set of functional tests against any version of
       cwdaemon. It's e.g. possible to run the latest set of tests against
@@ -118,7 +118,7 @@ New release. Changes since previous release:
     * Name of tty cwdevice to be used during functional tests can be
       specified through an argument to ./configure script:
 
-          ./configure --enable-functional-tests --with-test-tty-cwdevice-name=/dev/ttyUSB1
+          ./configure --enable-functional-tests --with-tests-tty-cwdevice-name=/dev/ttyUSB1
 
       The ./configure script defines some (platform-specific) default name of
       the name. The default name is overwritten with the value passed to the

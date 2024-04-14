@@ -354,7 +354,7 @@ Quality Assurance
       The tests require presence of USB-to-UART converter, which is visible as
       /dev/ttyUSB0 (on other OSes the default name may be different). The
       name of /dev/ device can be configured at compile time with
-      '--with-test-tty-cwdevice-name=<name>' flag passed to './configure'
+      '--with-tests-tty-cwdevice-name=<name>' flag passed to './configure'
       script.
 
     - A very basic support for gcov/lcov coverage for functional tests

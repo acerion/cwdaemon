@@ -179,7 +179,7 @@ int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, void * key_state
 		observer->tty_pins_config = *observer_pins_config;
 	}
 
-	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TEST_TTY_CWDEVICE_NAME);
+	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TESTS_TTY_CWDEVICE_NAME);
 
 #if PTT_EXPERIMENT
 	observer->new_ptt_state_cb  = on_ptt_state_change;

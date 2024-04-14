@@ -411,7 +411,7 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 
 int server_start(const server_options_t * server_opts, server_t * server)
 {
-	const char * path = TEST_CWDAEMON_PATH;
+	const char * path = TESTS_CWDAEMON_PATH;
 	if (0 != cwdaemon_start(path, server_opts, server)) {
 		/* Some test cases may expect the server not to start (e.g. when
 		   testing values of options out-of-range. Therefore this is just a

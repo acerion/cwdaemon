@@ -52,7 +52,7 @@
 
 static int (*g_tests[])(const test_options_t *) = {
 	basic_caret_test,
-#if RUN_LONG_FUNCTIONAL_TESTS
+#if TESTS_RUN_LONG_FUNCTIONAL_TESTS
 	request_size_caret_test,
 #endif
 };

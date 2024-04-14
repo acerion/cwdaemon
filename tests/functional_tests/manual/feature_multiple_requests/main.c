@@ -236,7 +236,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 		.tone           = test_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
-		.cwdevice_name  = TEST_TTY_CWDEVICE_NAME,
+		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 		.supervisor_id  = test_opts->supervisor_id,
 	};

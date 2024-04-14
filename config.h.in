@@ -114,19 +114,19 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* Whether to run long functional tests. */
-#undef RUN_LONG_FUNCTIONAL_TESTS
-
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */
 #undef STDC_HEADERS
 
 /* Path to cwdaemon binary used in functional tests. */
-#undef TEST_CWDAEMON_PATH
+#undef TESTS_CWDAEMON_PATH
+
+/* Whether to run long functional tests. */
+#undef TESTS_RUN_LONG_FUNCTIONAL_TESTS
 
 /* Name of tty cwdevice used in functional tests. */
-#undef TEST_TTY_CWDEVICE_NAME
+#undef TESTS_TTY_CWDEVICE_NAME
 
 /* Version number of package */
 #undef VERSION
