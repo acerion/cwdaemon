@@ -169,7 +169,7 @@ reviewing code, you need to be able to say "This is where I need to stop".
 Constant making changes in code won't help you "freeze" your code and make a
 release.
 
-* TODO Review changes - quality check
+* STARTED Review changes - quality check
 
 Review changes in code, documentation and other files to catch and fix
 problems, and to do last-minute necessary minor improvements.
@@ -178,7 +178,7 @@ Review all changes done since previous release.
 
 Update comments and other documentation.
 
-Update @reviewedon tags in functions' top-level comments while doing the
+Update @reviewed_on tags in functions' top-level comments while doing the
 review.
 
 Don't be afraid to do refactoring if you notice opportunities or necessity to
