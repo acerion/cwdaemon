@@ -1,4 +1,4 @@
-cwdaemon 0.13.0 / 20ab.cd.ef
+cwdaemon 0.13.0 / 202b.cd.ef
 
 New release. Changes since previous release:
 
@@ -19,14 +19,15 @@ New release. Changes since previous release:
       has this fix included, cwdaemon must be able to work around this
       problem.
 
-      The workaround is to notice if a string passed to cwdaemon contains a
-      character with the problematic, and simply not call cw_send_character()
-      for that one specific character. Other characters in the string are
-      still passed to cw_send_character().
+      The workaround is to notice if a string passed to cwdaemon contains the
+      problematic character, and simply not call cw_send_character() for that
+      one specific character. Other characters in the string are still passed
+      to cw_send_character().
 
       This change doesn't affect replies sent by cwdaemon to clients after
       processing "caret" requests or "<ESC>h": the replies still contain
-      verbatim copy of string sent by the client.
+      verbatim copy of string sent by the client, including the ((unsigned
+      char) 255) character.
 
     * Fixing GitHub issue https://github.com/acerion/cwdaemon/issues/12:
       improper state of tty cwdevice's pins.
@@ -35,16 +36,16 @@ New release. Changes since previous release:
       introduces a change/fix to resetting of tty cwdevice's pin functions.
 
       Until now (since v0.11.0) when cwdaemon received "change cwdevice"
-      Escape request, the assigment of functions (keying/ptt) to tty pins
-      (DTR, RTS) specified through command line args would be lost during
+      Escape request, the assignment of functions (keying/ptt) to tty pins
+      (DTR, RTS) specified through command line options would be lost during
       handling of the Escape request. Handling of the request would reset the
-      assigment to cwdaemon's defaults, which may be different than assigment
+      assignment to cwdaemon's defaults, which may be different than assignment
       specified through command line options.
 
       A commit that fixes GitHub issue #12 also fixes the problem described
-      above. Now any changes of cwdevice through Escape request will preserve
-      assigment of functions to tty lines specified through command line
-      options (if any assigment was made).
+      above. Now any changes of cwdevice through "change cwdevice" Escape
+      request will preserve assignment of functions to tty lines specified
+      through command line options (if any assignment was made).
 
     * Proper definition of cwdaemon's reply buffer size fixes a problem with
       too small buffer. Depending on which version of recent code
@@ -82,26 +83,15 @@ New release. Changes since previous release:
       presence of compile_commands.json, which needs to be created by
       manually invoking `bear` command.
 
-    * .clang-tidy config file is now added to root dir of project. There are
-      a lot of excluded checks in the config file, but the list of exclusions
-      will be decreased in future releases.
+    * .clang-tidy configuration file is now added to root directory of
+      project. There are a lot of excluded checks in the configuration file,
+      but the list of exclusions will be decreased in future releases.
 
       The list of exclusions will never become empty because some of checks
       won't apply to this project.
 
-    * Fixing issues found by clang-tidy (in cwdaemon code and in code
-      implementing unit and functional tests):
-
-      - clang-diagnostic-deprecated-declarations
-      - clang-analyzer-core.NonNullParamChecker
-      - readability-duplicate-include
-      - bugprone-narrowing-conversions
-      - google-readability-casting
-      - google-readability-todo
-      - bugprone-implicit-widening-of-multiplication-result
-      - cert-msc32-c (cert-msc51-cpp)
-      - cert-msc30-c (cert-msc50-cpp)
-      - llvm-include-order
+    * Fixing a bunch of issues found by clang-tidy (in cwdaemon code and in
+      code implementing unit and functional tests).
 
     * Path to cwdaemon binary used during functional tests can be specified
       through an argument to ./configure script:
@@ -118,7 +108,7 @@ New release. Changes since previous release:
     * Name of tty cwdevice to be used during functional tests can be
       specified through an argument to ./configure script:
 
-          ./configure --enable-functional-tests --with-tests-tty-cwdevice-name=/dev/ttyUSB1
+          ./configure --enable-functional-tests --with-tests-tty-cwdevice-name=ttyUSB1
 
       The ./configure script defines some (platform-specific) default name of
       the name. The default name is overwritten with the value passed to the
@@ -156,7 +146,7 @@ New release. Changes since previous release:
     * Adding -Wundef to CFLAGS.
 
     * Adding most basic support for gcov/lcov to find holes in unit-tested
-      code. Four releavnt commands are:
+      code. Four relevant commands are:
 
       - ./configure --enable-gcov
       - make gcov
@@ -205,13 +195,14 @@ New release. Changes since previous release:
       in:
 
       - man page ("man cwdaemon")
-      - help text (cwdaemon --help)
+      - help text ("cwdaemon --help")
 
     * man page now has separate chapters with generic description of network
       requests and replies.
 
     * man page now has "Quick start" section that has been added to make
       introduction to cwdaemon easier.
+
 
 
 ----

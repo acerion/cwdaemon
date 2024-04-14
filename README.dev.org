@@ -422,3 +422,9 @@ character.
 
 See morse_receive_text_is_correct() for more info.
 
+** TODO [#B] R0027: Bug: handle items from local BUGS file
+
+There is a file called BUGS that is located in my local dir - it is not a
+part of repo. Review its contents and include the contents in the repo -
+perhaps in this file, as new bug items.
+

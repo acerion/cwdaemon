@@ -1,19 +1,28 @@
 You will need to have the the libcw7 library and header files from unixcw
 3.6.0 package installed to compile and install cwdaemon 0.12.0.
 
-libcw is a part of unicw package which can be found here:
+libcw is a part of unixcw package which can be found here:
 http://unixcw.sourceforge.net/
 
-After installing libcw7 development files do:
+After installing libcw development files do:
 
-1: ./configure
-2: make
-3: make install (as root)
+1. (optional) update your PKG_CONFIG_PATH environment variable so that it
+   contains location of libcw.pc file.
 
-Before doing step 1, you may need to update your PKG_CONFIG_PATH
-environment variable so that it contains location of libcw.pc file.
+   Example:
+   export PKG_CONFIG_PATH=/home/kamil/compilations/lib/pkgconfig/
+
+2. (optional) update your LD_LIBRARY_PATH environment variable so that it
+   contains location of libcw shared library.
+
+   Example:
+   export LD_LIBRARY_PATH=/home/kamil/compilations/lib/
+
+3. ./configure
+4. make
+5. make install # (as root)
 
 The cwdaemon program is installed in /usr/local/sbin.
 
 See the provided README for more details. The manual page will tell you
-some more about startup options, you could also type cwdaemon -h.
+some more about startup options, you could also type "cwdaemon -h".
