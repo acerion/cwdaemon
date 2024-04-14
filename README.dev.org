@@ -428,3 +428,11 @@ There is a file called BUGS that is located in my local dir - it is not a
 part of repo. Review its contents and include the contents in the repo -
 perhaps in this file, as new bug items.
 
+** TODO [#B] R0028: ptt pin functions in cwdaemon.init
+
+Add basic support for specifying ptt pin functions (KEY/PTT) to cwdaemon.init
+file.
+
+You don't have to specify any pin assignment in the file, but add enough code
+to the file to make it easy and fast to change default assignments.
+

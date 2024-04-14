@@ -102,9 +102,9 @@ Some types of requests are followed by replies sent back from cwdaemon to a
 program issuing the original request. These requests are:
 
 .IP \[bu]
-\'reply\' Escape request (Escape request \'h\')
-.IP \[bu]
 caret request
+.IP \[bu]
+\'reply\' Escape request (Escape request \'h\')
 
 .P
 Each reply is terminated with '\\r' + '\\n' characters.

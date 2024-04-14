@@ -133,7 +133,7 @@ echo "Initial location is `pwd`"
 header 1 "Obtaining location of repo directory"
 repo_dir=`pwd`
 if [ -z "$repo_dir"  ]; then
-    echo "repo dir is empty, exiting"
+    echo "'repo dir' string is empty, exiting"
     exit 1
 elif [ "$repo_dir" == "/" ]; then
     echo "repo dir is root directory, exiting"

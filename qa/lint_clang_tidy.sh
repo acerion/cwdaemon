@@ -5,7 +5,7 @@
 # Pass to it a single argument: path to dir or file that you want to test.
 
 if [ "$#" -ne 1 ]; then
-    echo "wrong args"
+    echo "wrong args: path to source code dir or file was expected"
     exit
 fi
 
