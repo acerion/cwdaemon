@@ -105,6 +105,25 @@ int client_send_message(client_t * client, const char * bytes, size_t n_bytes);
 
 
 
+/**
+   @brief Send an opaque request to cwdaemon server
+
+   Value and size of data is stored in opaque request @p request. All @p
+   request->n_bytes bytes of data are sent through client's socket.
+
+   @reviewed_on{2024.04.14}
+
+   @param client cwdaemon client
+   @param[in] request Request to be sent to cwdaemon server
+
+   @return 0 on successful sending of data
+   @return -1 otherwise
+*/
+int client_send_request(client_t * client, const test_request_t * request);
+
+
+
+
 /// @brief Connect given cwdaemon client to cwdaemon server that listens on given host/port
 ///
 /// TODO (acerion) 2024.04.14: the second arg SHOULD be a "host", allowing

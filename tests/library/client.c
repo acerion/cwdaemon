@@ -146,6 +146,14 @@ int client_send_message(client_t * client, const char * bytes, size_t n_bytes)
 
 
 
+int client_send_request(client_t * client, const test_request_t * request)
+{
+	return client_send_message(client, request->bytes, request->n_bytes);
+}
+
+
+
+
 int client_disconnect(client_t * client)
 {
 	if (NULL == client) {

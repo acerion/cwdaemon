@@ -276,10 +276,8 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 				break;
 			}
 
-			/* Send the message to be played. Notice that we use
-			   test_case->plain_request.n_bytes to specify count of bytes to
-			   be sent. */
-			client_send_message(client, test_case->plain_request.bytes, test_case->plain_request.n_bytes);
+			/* Send the message to be played. */
+			client_send_request(client, &test_case->plain_request);
 
 			morse_receiver_wait(morse_receiver);
 		}

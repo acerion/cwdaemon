@@ -335,12 +335,10 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 			*/
 
 			/* Ask cwdaemon to send us this reply back after playing a message. */
-			client_send_message(client, test_case->esc_request.bytes, test_case->esc_request.n_bytes);
+			client_send_request(client, &test_case->esc_request);
 
-			/* Send the message to be played. Notice that we use
-			   test_case->esc_request.n_bytes_to_send to specify count of
-			   bytes to be sent. */
-			client_send_message(client, test_case->plain_request.bytes, test_case->plain_request.n_bytes);
+			/* Send the message to be played. */
+			client_send_request(client, &test_case->plain_request);
 
 			morse_receiver_wait(morse_receiver);
 

@@ -326,10 +326,8 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 				break;
 			}
 
-			/* Send the message to be played. Notice that we use
-			   test_case->caret_request.n_bytes_to_send to specify count of
-			   bytes to be sent. */
-			client_send_message(client, test_case->caret_request.bytes, test_case->caret_request.n_bytes);
+			/* Send the message to be played.*/
+			client_send_request(client, &test_case->caret_request);
 
 			morse_receiver_wait(morse_receiver);
 		}

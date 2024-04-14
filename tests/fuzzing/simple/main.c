@@ -609,7 +609,7 @@ static int test_fn_esc_no_value(client_t * client, const test_case_t * test_case
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -647,7 +647,7 @@ static int test_fn_esc_int(client_t * client, const test_case_t * test_case, __a
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -683,7 +683,7 @@ static int test_fn_esc_bool(client_t * client, const test_case_t * test_case, __
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -709,7 +709,7 @@ static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) const
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -735,7 +735,7 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) c
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -758,7 +758,7 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) const te
 		}
 		test_request_set_random_n_bytes(&requested_reply);
 
-		if (0 != client_send_message(client, requested_reply.bytes, requested_reply.n_bytes)) {
+		if (0 != client_send_request(client, &requested_reply)) {
 			test_log_err("Test: failed to send Escape request in test case [%s]\n", test_case->description);
 			return -1;
 		}
@@ -772,7 +772,7 @@ static int test_fn_esc_reply(client_t * client, __attribute__((unused)) const te
 		}
 		test_request_set_random_n_bytes(&message);
 
-		if (0 != client_send_message(client, message.bytes, message.n_bytes)) {
+		if (0 != client_send_request(client, &message)) {
 			test_log_err("Test: failed to send plain message in test case [%s]\n", test_case->description);
 			return -1;
 		}
@@ -822,7 +822,7 @@ static int test_fn_esc_almost_all(client_t * client, __attribute__((unused)) con
 		}
 		test_request_set_random_n_bytes(&request);
 
-		if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+		if (0 != client_send_request(client, &request)) {
 			test_log_err("Test: failed to send Escape request with code %u / 0x%02x in test case [%s]\n", code, (unsigned char) code, test_case->description);
 			return -1;
 		}
@@ -846,7 +846,7 @@ static int test_fn_plain_message(client_t * client, __attribute__((unused)) cons
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send plain message in test case [%s]\n", test_case->description);
 		return -1;
 	}
@@ -898,7 +898,7 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) cons
 	}
 	test_request_set_random_n_bytes(&request);
 
-	if (0 != client_send_message(client, request.bytes, request.n_bytes)) {
+	if (0 != client_send_request(client, &request)) {
 		test_log_err("Test: failed to send caret message in test case [%s]\n", test_case->description);
 		return -1;
 	}
