@@ -66,41 +66,14 @@ int client_dtor(client_t * client);
    @reviewed_on{2024.04.14}
 
    @param client cwdaemon client used to communicate with cwdaemon server
-   @param[in] request one of CWDAEMON_ESC_REQUEST_* values from src/cwdaemon.h
+   @param[in] code one of CWDAEMON_ESC_REQUEST_* values from src/cwdaemon.h
    @param[in] bytes data to be sent to cwdaemon server
    @param[in] n_bytes count of bytes in @p bytes
 
    @return 0 on successful sending of data
    @return -1 otherwise
 */
-int client_send_esc_request(client_t * client, int request, const char * bytes, size_t n_bytes);
-
-
-
-
-/**
-   @brief Send data with arbitrary contents to cwdaemon server
-
-   Value of data is stored in opaque array @p bytes. There are @p n_bytes
-   bytes of data in @b bytes. All @p n_bytes bytes of data are sent
-   through client's socket.
-
-   If data in @p bytes is representing a C string, it is up to caller of the
-   function to have it terminated with NUL and to pass correct value of @p
-   n_bytes. The value of @p n_bytes must include terminating NUL of the
-   string. Even if caller passes a string to the function, the function
-   treats @p bytes as opaque array of some bytes.
-
-   @reviewed_on{2024.04.14}
-
-   @param client cwdaemon client
-   @param[in] bytes Array of bytes to be sent over socket
-   @param[in] n_bytes Count of bytes in @p bytes to be sent over socket
-
-   @return 0 on successful sending of data
-   @return -1 otherwise
-*/
-int client_send_message(client_t * client, const char * bytes, size_t n_bytes);
+int client_send_esc_request(client_t * client, int code, const char * bytes, size_t n_bytes);
 
 
 

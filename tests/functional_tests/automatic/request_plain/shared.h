@@ -12,7 +12,7 @@
 
 typedef struct test_case_t {
 	const char * description;             /**< Tester-friendly description of test case. */
-	socket_send_data_t plain_request;     /**< Bytes to be sent to cwdaemon server in the plain MESSAGE request. */
+	test_request_t plain_request;         /**< Bytes to be sent to cwdaemon server in the plain MESSAGE request. */
 	const char * expected_morse_receive;  /**< What is expected to be received by Morse code receiver (without ending space). */
 	event_t expected_events[EVENTS_MAX];  /**< Events that we expect to happen in this test case. */
 } test_case_t;

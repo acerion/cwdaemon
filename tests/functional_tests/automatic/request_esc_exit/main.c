@@ -91,7 +91,7 @@ static child_exit_info_t g_child_exit_info;
 typedef struct test_case_t {
 	const char * description;    /**< Human-readable description of the test case. */
 	bool send_message_request;   /**< Whether in this test case we should send MESSAGE request. */
-	const char * full_message;   /**< Full text of message to be played by cwdaemon. */
+	test_request_t full_message; /**< Full text of message to be played by cwdaemon. */
 	event_t expected_events[EVENTS_MAX]; /**< Events that we expect to happen in this test case. */
 } test_case_t;
 
@@ -121,7 +121,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description          = "exiting a cwdaemon server that played some message",
 	  .send_message_request = true,
-	  .full_message         = "paris",
+	  .full_message         = TEST_SET_BYTES("paris"),
 	  .expected_events      = { { .event_type = event_type_morse_receive  },
 	                            { .event_type = event_type_request_exit   },
 	                            { .event_type = event_type_sigchld        }, },
@@ -285,7 +285,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 		}
 
 		/* Send the message to be played. */
-		client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
+		client_send_request(client, &test_case->full_message);
 
 		morse_receiver_wait(morse_receiver);
 	} else {
@@ -468,7 +468,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 3;
 	if (test_case->send_message_request) {
-		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
+		char expected[1024] = { 0 };
+		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
+		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
 			return -1;
 		}
 	} else {

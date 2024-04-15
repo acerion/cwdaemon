@@ -112,7 +112,7 @@
 /**
    @brief Set "bytes" and "count" of bytes in data structure
 
-   The macro can be used to set contents of socket_send_data_t or
+   The macro can be used to set contents of test_request_t or
    socket_receive_data_t variables or other "bytes+n_bytes" structure used in
    test code.
 

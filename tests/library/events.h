@@ -38,12 +38,10 @@ typedef struct {
   Bytes will be sent through send().
   Count of bytes will be passed to send().
 */
-typedef struct socket_send_data_t {
+typedef struct test_request_t {
 	size_t n_bytes;                         /**< How many bytes to send? */
 	char bytes[CLIENT_SEND_BUFFER_SIZE];    /**< What exactly bytes do we want to send? */
-} socket_send_data_t;
-
-typedef socket_send_data_t test_request_t;
+} test_request_t;
 
 
 

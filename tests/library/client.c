@@ -75,14 +75,13 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg);
 
 
 
-int client_send_esc_request(client_t * client, int request, const char * bytes, size_t n_bytes)
+int client_send_esc_request(client_t * client, int code, const char * bytes, size_t n_bytes)
 {
 	/* This buffer will store opaque data, so we don't have to think whether there is space for terminating NUL. */
-	char buf[CLIENT_SEND_BUFFER_SIZE] = { 0 };
+	test_request_t request = { 0 };
 
-	size_t n_bytes_to_send = 0; /* Total count of bytes to send over network socket. */
 	size_t i = 0;
-	switch (request) {
+	switch (code) {
 	case CWDAEMON_ESC_REQUEST_RESET:
 	case CWDAEMON_ESC_REQUEST_SPEED:
 	case CWDAEMON_ESC_REQUEST_TONE:
@@ -100,8 +99,8 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 	case CWDAEMON_ESC_REQUEST_SOUND_SYSTEM:
 	case CWDAEMON_ESC_REQUEST_VOLUME:
 	case CWDAEMON_ESC_REQUEST_REPLY:
-		buf[i++] = ASCII_ESC;
-		buf[i++] = (char) request;
+		request.bytes[i++] = ASCII_ESC;
+		request.bytes[i++] = (char) code;
 		/*
 		  Some of the Escape requests don't require a value, but we always
 		  copy all bytes of value to network message to test cwdaemon's
@@ -114,15 +113,15 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 		  We use memcpy() because we don't care what caller has passed
 		  through @p bytes. We just send @p n_bytes of data through socket.
 		*/
-		if (n_bytes + i > sizeof (buf)) {
-			test_log_err("cwdaemon client: size of data to send to cwdaemon server as Escape request is too large: %zu + %zu > %zu\n", n_bytes, i, sizeof (buf));
+		if (n_bytes + i > sizeof (request.bytes)) {
+			test_log_err("cwdaemon client: size of data to send to cwdaemon server as Escape request is too large: %zu + %zu > %zu\n", n_bytes, i, sizeof (request.bytes));
 			return -1;
 		}
-		memcpy(buf + i, bytes, n_bytes);
-		n_bytes_to_send = n_bytes + i;
-		return client_send_message(client, buf, n_bytes_to_send);
+		memcpy(request.bytes + i, bytes, n_bytes);
+		request.n_bytes = i + n_bytes;
+		return client_send_request(client, &request);
 	default:
-		test_log_err("cwdaemon client: unsupported Escape request 0x%02x / '%c' / %d\n", (unsigned char) request, (char) request, request);
+		test_log_err("cwdaemon client: unsupported Escape request code 0x%02x / '%c' / %d\n", (unsigned char) code, (char) code, code);
 		return -1;
 	}
 }
@@ -130,10 +129,32 @@ int client_send_esc_request(client_t * client, int request, const char * bytes, 
 
 
 
-int client_send_message(client_t * client, const char * bytes, size_t n_bytes)
+/**
+   @brief Send data with arbitrary contents to cwdaemon server
+
+   Value of data is stored in opaque array @p bytes. There are @p n_bytes
+   bytes of data in @b bytes. All @p n_bytes bytes of data are sent
+   through client's socket.
+
+   If data in @p bytes is representing a C string, it is up to caller of the
+   function to have it terminated with NUL and to pass correct value of @p
+   n_bytes. The value of @p n_bytes must include terminating NUL of the
+   string. Even if caller passes a string to the function, the function
+   treats @p bytes as opaque array of some bytes.
+
+   @reviewed_on{2024.04.14}
+
+   @param client cwdaemon client
+   @param[in] bytes Array of bytes to be sent over socket
+   @param[in] n_bytes Count of bytes in @p bytes to be sent over socket
+
+   @return 0 on successful sending of data
+   @return -1 otherwise
+*/
+int client_send_request(client_t * client, const test_request_t * request)
 {
 	errno = 0;
-	const ssize_t send_rc = send(client->sock, bytes, n_bytes, 0);
+	const ssize_t send_rc = send(client->sock, request->bytes, request->n_bytes, 0);
 	if (send_rc == -1) { /* TODO acerion 2024.02.28: shouldn't we compare the value with n_bytes? */
 		test_log_err("cwdaemon client: failed to send data to server: %s\n", strerror(errno));
 		return -1;
@@ -141,14 +162,6 @@ int client_send_message(client_t * client, const char * bytes, size_t n_bytes)
 
 	test_log_info("cwdaemon client: sent %ld bytes\n", send_rc);
 	return 0;
-}
-
-
-
-
-int client_send_request(client_t * client, const test_request_t * request)
-{
-	return client_send_message(client, request->bytes, request->n_bytes);
 }
 
 

@@ -65,7 +65,7 @@
 typedef struct test_case_t {
 	const char * description;                /**< Tester-friendly description of test case. */
 	tty_pins_t server_tty_pins;              /**< Configuration of tty pins on cwdevice used by cwdaemon server. */
-	const char * full_message;               /**< Text to be sent to cwdaemon server in the MESSAGE request. */
+	test_request_t full_message;             /**< Text to be sent to cwdaemon server in the MESSAGE request. */
 	bool expected_failed_receive;            /**< Is a failure of Morse-receiving process expected in this testcase? */
 	tty_pins_t observer_tty_pins;            /**< Which tty pins on cwdevice should be treated by cwdevice as keying or ptt pins. */
 	event_t expected_events[EVENTS_MAX];     /**< Events that we expect to happen in this test case. */
@@ -85,7 +85,7 @@ static test_case_t g_test_cases[] = {
 	  uses implicit default configuration of pins.
 	*/
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
-	  .full_message            = "paris",
+	  .full_message            = TEST_SET_BYTES("paris"),
 	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
 
@@ -101,7 +101,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-	  .full_message            = "paris",
+	  .full_message            = TEST_SET_BYTES("paris"),
 	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
 
@@ -119,7 +119,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "failure case, cwdaemon is keying DTR, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-	  .full_message            = "paris",
+	  .full_message            = TEST_SET_BYTES("paris"),
 	  .expected_failed_receive = true,
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .expected_events         = { { 0 } },
@@ -139,7 +139,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, cwdaemon is keying RTS, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
-	  .full_message            = "paris",
+	  .full_message            = TEST_SET_BYTES("paris"),
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
 	},
@@ -293,7 +293,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 		return -1;
 	}
 
-	client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
+	client_send_request(client, &test_case->full_message);
 
 	morse_receiver_wait(morse_receiver);
 
@@ -407,7 +407,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	expectation_idx = 3;
-	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
+	char expected[1024] = { 0 };
+	snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
+	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
 		return -1;
 	}
 

@@ -99,7 +99,7 @@ static child_exit_info_t g_child_exit_info;
 
 typedef struct test_case_t {
 	const char * description;  /** Human-readable description of the test case. */
-	const char * full_message; /** Full text of message to be played by cwdaemon. */
+	test_request_t full_message; /** Full text of message to be played by cwdaemon. */
 	bool expected_fail;        /** Whether we expect cwdaemon to fail to start correctly due to invalid port number. */
 	int port;                  /** Value of port passed to cwdaemon. */
 	event_t expected_events[EVENTS_MAX];   /**< Events that we expect to happen in this test case. */
@@ -113,29 +113,29 @@ static test_case_t g_test_cases[] = {
 	  port == -1 will be interpreted by code in server.c as "pass port 0 to cwdaemon".
 
 	  TODO acerion 2024.03.28: Come up with a better representation of port
-	  to avoid such special cases. Current solution is not clear error-prone.
+	  to avoid such special cases. Current solution is not clear.
 	 */
-	{ .description = "failure case: port 0",        .full_message = "paris",  .expected_fail = true,   .port = -1,
+	{ .description = "failure case: port 0",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = -1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 
-	{ .description = "failure case: port 1",        .full_message = "paris",  .expected_fail = true,   .port = 1,
+	{ .description = "failure case: port 1",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = 1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
-	{ .description = "failure case: port MIN - 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
+	{ .description = "failure case: port MIN - 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
-	{ .description = "failure case: port MIN - 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
+	{ .description = "failure case: port MIN - 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 
 	/* All valid ports between MIN and MAX are indirectly tested by other
 	   functional tests that use random valid port. Here we just explicitly
 	   test the MIN and MAX itself */
-	{ .description = "success case: port MIN",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
+	{ .description = "success case: port MIN",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
 	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
-	{ .description = "success case: port MAX",      .full_message = "paris",  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
+	{ .description = "success case: port MAX",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
 	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
 
-	{ .description = "failure case: port MAX + 1",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
+	{ .description = "failure case: port MAX + 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
-	{ .description = "failure case: port MAX + 2",  .full_message = "paris",  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
+	{ .description = "failure case: port MAX + 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
 	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
 };
 
@@ -373,7 +373,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 	/* Send the message to be played to double-check that a cwdaemon server
 	   is running, and that it's listening on a network socket on a port
 	   specified in test case.. */
-	client_send_message(client, test_case->full_message, strlen(test_case->full_message) + 1);
+	client_send_request(client, &test_case->full_message);
 
 	morse_receiver_wait(morse_receiver);
 
@@ -499,7 +499,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 4;
 	if (!test_case->expected_fail) {
-		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->full_message)) {
+		char expected[1024] = { 0 };
+		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
+		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
 			return -1;
 		}
 	} else {

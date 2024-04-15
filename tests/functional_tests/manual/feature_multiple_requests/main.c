@@ -75,33 +75,48 @@ typedef struct test_case_t {
 	/**
 	   Full text of message to be played by cwdaemon.
 	*/
-	char full_message[CLIENT_SEND_BUFFER_SIZE];
+	test_request_t play_request;
 
 
 	/**
 	   What is being sent to cwdaemon server as expected value of reply.
 	   (without leading 'h').
 	*/
-	char requested_reply_value[CLIENT_SEND_BUFFER_SIZE - 1];
+	test_request_t esc_h_request;
 } test_case_t;
 
 
 
 
 static test_case_t g_test_cases[N_CLIENTS] = {
-	{ .description             = "client 1 data",
+	{ .description    = "client 1 data",
+	  .caret          = false,
+	  .play_request   = TEST_SET_BYTES("request_1 11111 11111 11111 111111111 111111111?"),
+	  .esc_h_request  = TEST_SET_BYTES("\033hreply_111 11111 11111 11111 111111111 111111111!"),
 	},
 
-	{ .description             = "client 2 data",
+	{ .description    = "client 2 data",
+	  .caret          = true,
+	  .play_request   = TEST_SET_BYTES("caret_222 22222 22222 22222 222222222 22222222?^"),
 	},
 
-	{ .description             = "client 3 data",
+	{ .description    = "client 3 data",
+	  .caret          = false,
+	  .play_request   = TEST_SET_BYTES("request_3 33333 33333 33333 333333333 333333333?"),
+	  .esc_h_request  = TEST_SET_BYTES("\033hreply_333 33333 33333 33333 333333333 333333333!"),
+
 	},
 
-	{ .description             = "client 4 data",
+	{ .description    = "client 4 data",
+	  .caret          = true,
+	  .play_request   = TEST_SET_BYTES("caret_444 44444 44444 44444 444444444 44444444?^"),
+
 	},
 
-	{ .description             = "client 5 data",
+	{ .description    = "client 5 data",
+	  .caret          = false,
+	  .play_request   = TEST_SET_BYTES("request_555555555555555555555555555555555555555?"),
+	  .esc_h_request  = TEST_SET_BYTES("\033hreply_55555555555555555555555555555555555555555!"),
 	},
 };
 
@@ -205,29 +220,6 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 
 	const int wpm = test_get_test_wpm();
 
-	int c = 0;
-	g_test_cases[c].caret = false;
-	snprintf(g_test_cases[c].full_message, sizeof (g_test_cases[c].full_message),                   "request_1 11111 11111 11111 111111111 111111111?");
-	snprintf(g_test_cases[c].requested_reply_value, sizeof (g_test_cases[c].requested_reply_value), "reply_111 11111 11111 11111 111111111 111111111!");
-	c++;
-
-	g_test_cases[c].caret = true;
-	snprintf(g_test_cases[c].full_message, sizeof (g_test_cases[c].full_message),	                "caret_222 22222 22222 22222 222222222 22222222?^");
-	c++;
-
-	g_test_cases[c].caret = false;
-	snprintf(g_test_cases[c].full_message, sizeof (g_test_cases[c].full_message),                   "request_3 33333 33333 33333 333333333 333333333?");
-	snprintf(g_test_cases[c].requested_reply_value, sizeof (g_test_cases[c].requested_reply_value),	"reply_333 33333 33333 33333 333333333 333333333!");
-	c++;
-
-	g_test_cases[c].caret = true;
-	snprintf(g_test_cases[c].full_message, sizeof (g_test_cases[c].full_message),	                "caret_444 44444 44444 44444 444444444 44444444?^");
-	c++;
-
-	g_test_cases[c].caret = false;
-	snprintf(g_test_cases[c].full_message, sizeof (g_test_cases[c].full_message),	                "request_555555555555555555555555555555555555555?");
-	snprintf(g_test_cases[c].requested_reply_value, sizeof (g_test_cases[c].requested_reply_value),	"reply_55555555555555555555555555555555555555555!");
-	c++;
 
 
 #if 0
@@ -337,19 +329,19 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 				char id_buffer[16] = { 0 };
 				snprintf(id_buffer, sizeof (id_buffer), ">%zu_%08d<", c, iter);
 				const size_t id_len = strlen(id_buffer);
-				memcpy(test_case->full_message + 10, id_buffer, id_len);
+				memcpy(test_case->play_request.bytes + 10, id_buffer, id_len);
 
 				if (test_case->caret) {
 					/* Send the caret message to be played. */
-					test_log_info("Test: client %zu: sending caret request [%s]\n", c, test_case->full_message);
-					client_send_message(&clients[c], test_case->full_message, strlen(test_case->full_message) + 1);
+					test_log_info("Test: client %zu: sending caret request [%s]\n", c, test_case->play_request.bytes);
+					client_send_request(&clients[c], &test_case->play_request);
 				} else {
 					/* Ask cwdaemon to send us this reply back after playing a message. */
-					client_send_esc_request(&clients[c], CWDAEMON_ESC_REQUEST_REPLY, test_case->requested_reply_value, strlen(test_case->requested_reply_value) + 1);
+					client_send_request(&clients[c], &test_case->esc_h_request);
 
 					/* Send the message to be played. */
-					test_log_info("Test: client %zu: sending non-caret request [%s]\n", c, test_case->full_message);
-					client_send_message(&clients[c], test_case->full_message, strlen(test_case->full_message) + 1);
+					test_log_info("Test: client %zu: sending non-caret request [%s]\n", c, test_case->play_request.bytes);
+					client_send_request(&clients[c], &test_case->play_request);
 				}
 				unsigned int delay = 0;
 

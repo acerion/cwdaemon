@@ -171,12 +171,12 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 	int socket = open_socket_to_server(server, server_in_port);
 	setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
 
-	const char * requested_message_value = "e";
+	const test_request_t requested_message_value = TEST_SET_BYTES("e");
 	const char * requested_reply_value   = "t";
 
 	client_t client = { .sock = socket };
 	client_send_esc_request(&client, CWDAEMON_ESC_REQUEST_REPLY, requested_reply_value, strlen(requested_reply_value) + 1);
-	client_send_message(&client, requested_message_value, strlen(requested_message_value) + 1);
+	client_send_request(&client, &requested_message_value);
 
 	/* Try receiving preconfigured reply. Receiving it means that there
 	   is a process on the other side of socket that behaves like

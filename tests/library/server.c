@@ -527,16 +527,18 @@ int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz)
 	/* First ask nicely for a clean exit. */
 	if (do_fuzz) {
 		test_log_debug("cwdaemon server: will try to fuzz cwdaemon while sending EXIT escape request %s\n", "");
-		char value[CLIENT_SEND_BUFFER_SIZE] = { 0 };
+		test_request_t value = { 0 };
 		size_t pos = 0;
-		value[pos++] = ASCII_ESC;
-		value[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
-		if (0 != cwdaemon_random_bytes(value + pos, sizeof (value) - pos)) {
+		value.bytes[pos++] = ASCII_ESC;
+		value.bytes[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
+		const size_t n_random_bytes = sizeof (value.bytes) - pos;
+		if (0 != cwdaemon_random_bytes(value.bytes + pos, n_random_bytes)) {
 			test_log_warn("cwdaemon server: failed to get random bytes when preparing EXIT esc request %s\n", "");
 			/* Don't do anything more. We have to send the message, even if
 			   we can't prepare random value. */
 		}
-		if (0 != client_send_message(client, value, sizeof (value))) {
+		value.n_bytes = pos + n_random_bytes;
+		if (0 != client_send_request(client, &value)) {
 			test_log_err("cwdaemon server: failed to send fuzzing EXIT request to server %s\n", "");
 		}
 	} else {

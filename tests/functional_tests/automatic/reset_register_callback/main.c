@@ -82,9 +82,9 @@ static test_case_t g_test_cases[] = {
 
 
 
-static int evaluate_events(events_t * events, const test_case_t * test_case, const char * message1, const char * message2);
+static int evaluate_events(events_t * events, const test_case_t * test_case, const test_request_t * message1, const test_request_t * message2);
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts);
-static int test_run(client_t * client, morse_receiver_t * morse_receiver, const char * message1, const char * message2);
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, const test_request_t * message1, const test_request_t * message2);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 
 
@@ -117,8 +117,8 @@ int main(int argc, char * const * argv)
 	server_t server = { .events = &events };
 	client_t client = { .events = &events };
 	morse_receiver_t morse_receiver = { .events = &events };
-	const char * message1 = "paris";
-	const char * message2 = "finger";
+	const test_request_t message1 = TEST_SET_BYTES("paris");
+	const test_request_t message2 = TEST_SET_BYTES("finger");
 
 
 	if (0 != test_setup(&server, &client, &morse_receiver, &test_opts)) {
@@ -127,13 +127,13 @@ int main(int argc, char * const * argv)
 		goto cleanup;
 	}
 
-	if (0 != test_run(&client, &morse_receiver, message1, message2)) {
+	if (0 != test_run(&client, &morse_receiver, &message1, &message2)) {
 		test_log_err("Test: failed at execution of test %s\n", "");
 		failure = true;
 		goto cleanup;
 	}
 
-	if (0 != evaluate_events(&events, &g_test_cases[0], message1, message2)) {
+	if (0 != evaluate_events(&events, &g_test_cases[0], &message1, &message2)) {
 		test_log_err("Test: evaluation of events has failed %s\n", "");
 		failure = true;
 		goto cleanup;
@@ -196,7 +196,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 
 
-static int test_run(client_t * client, morse_receiver_t * morse_receiver, const char * message1, const char * message2)
+static int test_run(client_t * client, morse_receiver_t * morse_receiver, const test_request_t * message1, const test_request_t * message2)
 {
 	/* This sends a text request to cwdaemon server that works in initial state,
 	   i.e. reset command was not sent yet, so cwdaemon should not be
@@ -207,7 +207,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_message(client, message1, strlen(message1) + 1);
+		client_send_request(client, message1);
 
 		morse_receiver_wait(morse_receiver);
 	}
@@ -226,7 +226,7 @@ static int test_run(client_t * client, morse_receiver_t * morse_receiver, const 
 			return -1;
 		}
 
-		client_send_message(client, message2, strlen(message2) + 1);
+		client_send_request(client, message2);
 
 		morse_receiver_wait(morse_receiver);
 	}
@@ -273,7 +273,7 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 
 
-static int evaluate_events(events_t * events, const test_case_t * test_case, const char * message1, const char * message2)
+static int evaluate_events(events_t * events, const test_case_t * test_case, const test_request_t * message1, const test_request_t * message2)
 {
 	events_sort(events);
 	events_print(events);
@@ -317,7 +317,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case, con
 
 
 	expectation_idx = 3;
-	if (0 != expect_morse_receive_match(expectation_idx, morse1->u.morse_receive.string, message1)) {
+	char expected[1024] = { 0 };
+	snprintf(expected, message1->n_bytes + 1, "%s", message1->bytes);
+	if (0 != expect_morse_receive_match(expectation_idx, morse1->u.morse_receive.string, expected)) {
 		return -1;
 	}
 
@@ -325,7 +327,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case, con
 
 
 	expectation_idx = 4;
-	if (0 != expect_morse_receive_match(expectation_idx, morse2->u.morse_receive.string, message2)) {
+	snprintf(expected, message2->n_bytes + 1, "%s", message2->bytes);
+	if (0 != expect_morse_receive_match(expectation_idx, morse2->u.morse_receive.string, expected)) {
 		return -1;
 	}
 
