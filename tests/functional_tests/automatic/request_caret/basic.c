@@ -88,8 +88,8 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES("22 crows, 1 stork?^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("22 crows, 1 stork?\r\n"),
 	  .expected_morse_receive     =                "22 crows, 1 stork?",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 
@@ -105,15 +105,15 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES("Fun^Joy^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("Fun\r\n"),
 	  .expected_morse_receive     =                "Fun",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 	{ .description = "message with two carets",
 	  .caret_request              = TEST_SET_BYTES("Monday^^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("Monday\r\n"),
 	  .expected_morse_receive     =                "Monday",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 
@@ -122,8 +122,8 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES("Hello world!^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("Hello world!\r\n"),
 	  .expected_morse_receive     =                "Hello world!",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	/* There should be no action from cwdaemon: neither keying nor socket
@@ -148,24 +148,24 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES("f^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("f\r\n"),
 	  .expected_morse_receive     =                "f",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	{ .description = "single word - no terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("Paris^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	{ .description = "single word - with terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("Paris^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
 	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	/* Notice how the leading space from message is preserved in socket reply. */
@@ -173,8 +173,8 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES(" London^"),
 	  .expected_socket_reply      = TEST_SET_BYTES(" London\r\n"),
 	  .expected_morse_receive     =                 "London",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	/* Notice how the trailing space from message is preserved in socket reply. */
@@ -182,8 +182,8 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = TEST_SET_BYTES("when, now = right: ^"),
 	  .expected_socket_reply      = TEST_SET_BYTES("when, now = right: \r\n"),
 	  .expected_morse_receive     =                "when, now = right:",
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 
 	/* Refer to comment starting with "Info for test case with '-1' byte."
@@ -192,8 +192,8 @@ static test_case_t g_test_cases[] = {
 	  .caret_request              = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', } },
 	  .expected_socket_reply      = { .n_bytes = 11, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n' } },      /* cwdaemon sends verbatim text in socket reply. */
 	  .expected_morse_receive     =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
-	  .expected_events            = { { .event_type = event_type_socket_receive },
-	                                  { .event_type = event_type_morse_receive  }, },
+	  .expected_events            = { { .etype = etype_reply },
+	                                  { .etype = etype_morse  }, },
 	},
 };
 

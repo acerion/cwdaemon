@@ -74,8 +74,8 @@ typedef struct test_case_t {
 
 
 static test_case_t g_test_cases[] = {
-	{ .expected_events = { { .event_type = event_type_morse_receive, },
-	                       { .event_type = event_type_morse_receive, }, },
+	{ .expected_events = { { .etype = etype_morse, },
+	                       { .etype = etype_morse, }, },
 	}
 };
 
@@ -299,8 +299,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case, con
 	/* Expectation: correct types of events. */
 	expectation_idx = 2;
 	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+		if (test_case->expected_events[i].etype != events->events[i].etype) {
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 	}

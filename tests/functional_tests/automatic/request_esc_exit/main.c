@@ -113,8 +113,8 @@ typedef struct test_case_t {
 static test_case_t g_test_cases[] = {
 	{ .description          = "exiting a cwdaemon server that has just started",
 	  .send_message_request = false,
-	  .expected_events      = { { .event_type = event_type_request_exit   },
-	                            { .event_type = event_type_sigchld        }, },
+	  .expected_events      = { { .etype = etype_req_exit   },
+	                            { .etype = etype_sigchld    }, },
 
 
 	},
@@ -122,9 +122,9 @@ static test_case_t g_test_cases[] = {
 	{ .description          = "exiting a cwdaemon server that played some message",
 	  .send_message_request = true,
 	  .full_message         = TEST_SET_BYTES("paris"),
-	  .expected_events      = { { .event_type = event_type_morse_receive  },
-	                            { .event_type = event_type_request_exit   },
-	                            { .event_type = event_type_sigchld        }, },
+	  .expected_events      = { { .etype = etype_morse      },
+	                            { .etype = etype_req_exit   },
+	                            { .etype = etype_sigchld    }, },
 	},
 };
 
@@ -315,7 +315,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 		pthread_mutex_lock(&events->mutex);
 		{
 			clock_gettime(CLOCK_MONOTONIC, &events->events[events->event_idx].tstamp);
-			events->events[events->event_idx].event_type = event_type_request_exit;
+			events->events[events->event_idx].etype = etype_req_exit;
 			events->event_idx++;
 		}
 		pthread_mutex_unlock(&events->mutex);
@@ -432,26 +432,26 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * exit_request = NULL;
 	const event_t * sigchld_event = NULL;
 	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+		if (test_case->expected_events[i].etype != events->events[i].etype) {
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 
 		/* Get references to specific events in array of events. */
-		switch (events->events[i].event_type) {
-		case event_type_morse_receive:
+		switch (events->events[i].etype) {
+		case etype_morse:
 			morse_event = &events->events[i];
 			break;
-		case event_type_sigchld:
+		case etype_sigchld:
 			sigchld_event = &events->events[i];
 			break;
-		case event_type_request_exit:
+		case etype_req_exit:
 			exit_request = &events->events[i];
 			break;
-		case event_type_none:
-		case event_type_socket_receive:
+		case etype_none:
+		case etype_reply:
 		default:
-			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 	}

@@ -79,11 +79,11 @@ static int test_events_sort(void)
 {
 	events_t events = {
 		.events = {
-			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
-			{ .event_type = event_type_socket_receive,        .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
-			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
-			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
-			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
+			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
+			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
+			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
 		},
 		.event_idx = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -91,11 +91,11 @@ static int test_events_sort(void)
 
 	events_t sorted = {
 		.events = {
-			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
-			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
-			{ .event_type = event_type_morse_receive,         .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
-			{ .event_type = event_type_sigchld,               .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
-			{ .event_type = event_type_socket_receive,        .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
+			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
+			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
+			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
 		},
 		.event_idx = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -115,7 +115,7 @@ static int test_events_sort(void)
 	  ./tests_events.c:109:11: warning: comparing object representation of type 'events_t' which does not have a unique object representation; consider comparing the members of the object manually [bugprone-suspicious-memory-comparison,cert-exp42-c,cert-flp37-c]
 	*/
 	for (int i = 0; i < sorted.event_idx; i++) {
-		if (sorted.events[i].event_type != events.events[i].event_type) {
+		if (sorted.events[i].etype != events.events[i].etype) {
 			test_log_err("Unit tests: events_sort() failed at event type in event %d\n", i);
 			return -1;
 		}
@@ -125,14 +125,14 @@ static int test_events_sort(void)
 			return -1;
 		}
 
-		switch (sorted.events[i].event_type) {
-		case event_type_morse_receive:
+		switch (sorted.events[i].etype) {
+		case etype_morse:
 			if (0 != memcmp(&sorted.events[i].u.morse_receive, &events.events[i].u.morse_receive, sizeof (event_morse_receive_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'morse receive' member in event %d\n", i);
 				return -1;
 			}
 			break;
-		case event_type_socket_receive:
+		case etype_reply:
 			/* TODO: clang complained about usage of memcmp() for entire struct, so I have to now be careful to compare all members and never miss some member. */
 			if (0 != memcmp(&sorted.events[i].u.socket_receive.bytes, &events.events[i].u.socket_receive.bytes, sizeof (events.events[i].u.socket_receive.bytes))) {
 				test_log_err("Unit tests: events_sort() failed at 'socket_receive.bytes' member in event %d\n", i);
@@ -143,17 +143,17 @@ static int test_events_sort(void)
 				return -1;
 			}
 			break;
-		case event_type_request_exit:
+		case etype_req_exit:
 			/* TODO: acerion 2024.01.28: If you add "exit" member to union,
 			   make sure to update this part of code. */
 			break;
-		case event_type_sigchld:
+		case etype_sigchld:
 			if (0 != memcmp(&sorted.events[i].u.sigchld, &events.events[i].u.sigchld, sizeof (event_sigchld_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'sigchld' member in event %d\n", i);
 				return -1;
 			}
 			break;
-		case event_type_none:
+		case etype_none:
 		default:
 			break;
 		}

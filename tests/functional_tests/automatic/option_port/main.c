@@ -116,27 +116,27 @@ static test_case_t g_test_cases[] = {
 	  to avoid such special cases. Current solution is not clear.
 	 */
 	{ .description = "failure case: port 0",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = -1,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 
 	{ .description = "failure case: port 1",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = 1,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 	{ .description = "failure case: port MIN - 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 	{ .description = "failure case: port MIN - 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 
 	/* All valid ports between MIN and MAX are indirectly tested by other
 	   functional tests that use random valid port. Here we just explicitly
 	   test the MIN and MAX itself */
 	{ .description = "success case: port MIN",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
-	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
+	  .expected_events  = { { .etype = etype_morse }, }, },
 	{ .description = "success case: port MAX",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
-	  .expected_events  = { { .event_type = event_type_morse_receive }, }, },
+	  .expected_events  = { { .etype = etype_morse }, }, },
 
 	{ .description = "failure case: port MAX + 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 	{ .description = "failure case: port MAX + 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
-	  .expected_events  = { { .event_type = event_type_sigchld }, }, },
+	  .expected_events  = { { .etype = etype_sigchld }, }, },
 };
 
 
@@ -443,24 +443,24 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * morse_event = NULL;
 	const event_t * sigchld_event = NULL;
 	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+		if (test_case->expected_events[i].etype != events->events[i].etype) {
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 
 		/* Get references to specific events in array of events. */
-		switch (events->events[i].event_type) {
-		case event_type_morse_receive:
+		switch (events->events[i].etype) {
+		case etype_morse:
 			morse_event = &events->events[i];
 			break;
-		case event_type_sigchld:
+		case etype_sigchld:
 			sigchld_event = &events->events[i];
 			break;
-		case event_type_none:
-		case event_type_socket_receive:
-		case event_type_request_exit:
+		case etype_none:
+		case etype_reply:
+		case etype_req_exit:
 		default:
-			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 	}

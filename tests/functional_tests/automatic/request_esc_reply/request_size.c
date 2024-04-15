@@ -84,8 +84,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 	{ .description = "esc REPLY request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
@@ -96,8 +96,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 	{ .description = "esc REPLY request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
@@ -108,8 +108,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 	{ .description = "esc REPLY request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
@@ -120,8 +120,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 	{ .description = "esc REPLY request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
@@ -132,8 +132,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
@@ -146,8 +146,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 
 
@@ -166,8 +166,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL) - TRUNCATION of reply",
 
@@ -179,8 +179,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258 bytes (without NUL) - TRUNCATION of reply",
 
@@ -192,8 +192,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 	{ .description = "esc REPLY request with size larger than cwdaemon's receive buffer - 258+1 bytes (with NUL) - TRUNCATION of reply",
 
@@ -205,8 +205,8 @@ static test_case_t g_test_cases[] = {
 	  .plain_request          = TEST_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
 	  .expected_morse_receive =                "liverpool0" PLAIN_BYTES_250 "123456",
 
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse }, },
 	},
 };
 

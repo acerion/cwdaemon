@@ -139,7 +139,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* Expectation: events are of correct type. */
 	expectation_idx = 2;
 	int morse_idx = -1;
-	const int morse_cnt  = events_find_by_type(events, event_type_morse_receive, &morse_idx);
+	const int morse_cnt  = events_find_by_type(events, etype_morse, &morse_idx);
 	if (1 != morse_cnt) {
 		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
 		return -1;
@@ -147,7 +147,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	const event_t * morse_event = &events->events[morse_idx];
 
 	int socket_idx = -1;
-	const int socket_cnt = events_find_by_type(events, event_type_socket_receive, &socket_idx);
+	const int socket_cnt = events_find_by_type(events, etype_reply, &socket_idx);
 	if (expecting_socket_reply_event) {
 		if (1 != socket_cnt) {
 			test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, found %d\n", expectation_idx, socket_cnt);

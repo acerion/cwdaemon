@@ -72,7 +72,7 @@ void events_print(const events_t * events)
 
 		const event_t * event = &events->events[e];
 
-		if (event->event_type == event_type_none) {
+		if (event->etype == etype_none) {
 			/* End of events. */
 			break;
 		}
@@ -82,14 +82,14 @@ void events_print(const events_t * events)
 		struct timespec diff = { 0 };
 		timespec_diff(&first_ts, &ts, &diff);
 
-		switch (event->event_type) {
-		case event_type_morse_receive:
+		switch (event->etype) {
+		case etype_morse:
 			test_log_debug("Test: event #%02zu: %3ld.%09ld: Morse receive:  [%s]\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec,
 			               event->u.morse_receive.string);
 			break;
-		case event_type_socket_receive:
+		case etype_reply:
 			{
 				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.bytes))] = { 0 };
 				test_log_debug("Test: event #%02zu: %3ld.%09ld: socket receive: [%s]\n",
@@ -98,18 +98,18 @@ void events_print(const events_t * events)
 				               get_printable_string(event->u.socket_receive.bytes, event->u.socket_receive.n_bytes, printable, sizeof (printable)));
 			}
 			break;
-		case event_type_sigchld:
+		case etype_sigchld:
 			test_log_debug("Test: event #%02zu: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec,
 			               (unsigned int) event->u.sigchld.wstatus);
 			break;
-		case event_type_request_exit:
+		case etype_req_exit:
 			test_log_debug("Test: event #%02zu: %3ld.%09ld: EXIT request\n",
 			               e,
 			               diff.tv_sec, diff.tv_nsec);
 			break;
-		case event_type_none:
+		case etype_none:
 		default:
 			break;
 		}
@@ -136,7 +136,7 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 	pthread_mutex_lock(&events->mutex);
 	{
 		event_t * event = &events->events[events->event_idx];
-		event->event_type = event_type_morse_receive;
+		event->etype = etype_morse;
 		event->tstamp = *last_character_receive_tstamp;
 
 		event_morse_receive_t * morse = &event->u.morse_receive;
@@ -162,7 +162,7 @@ int events_insert_socket_receive_event(events_t * events, const socket_receive_d
 	pthread_mutex_lock(&events->mutex);
 	{
 		event_t * event = &events->events[events->event_idx];
-		event->event_type = event_type_socket_receive;
+		event->etype = etype_reply;
 		event->tstamp = spec;
 
 		memcpy(&event->u.socket_receive, received, sizeof (socket_receive_data_t));
@@ -182,7 +182,7 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
 	pthread_mutex_lock(&events->mutex);
 	{
 		events->events[events->event_idx].tstamp = exit_info->sigchld_timestamp;
-		events->events[events->event_idx].event_type = event_type_sigchld;
+		events->events[events->event_idx].etype = etype_sigchld;
 		events->events[events->event_idx].u.sigchld.wstatus = exit_info->wstatus;
 
 		events->event_idx++;
@@ -247,7 +247,7 @@ int events_find_by_type(const events_t * events, event_type_t type, int * first_
 {
 	int found_cnt = 0;
 	for (int i = 0; i < events->event_idx; i++) {
-		if (events->events[i].event_type == type) {
+		if (events->events[i].etype == type) {
 			found_cnt++;
 			if (1 == found_cnt) {
 				*first_idx = i;
@@ -265,7 +265,7 @@ int events_get_count(const event_t events[EVENTS_MAX])
 {
 	int i = 0;
 	for (i = 0; i < EVENTS_MAX; i++) {
-		if (events[i].event_type == event_type_none) {
+		if (events[i].etype == etype_none) {
 			break;
 		}
 	}

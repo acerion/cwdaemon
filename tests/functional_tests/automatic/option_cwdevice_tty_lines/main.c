@@ -86,7 +86,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
 	  .full_message            = TEST_SET_BYTES("paris"),
-	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
+	  .expected_events         = { { .etype = etype_morse  }, },
 	},
 
 	/*
@@ -102,7 +102,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
 	  .full_message            = TEST_SET_BYTES("paris"),
-	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
+	  .expected_events         = { { .etype = etype_morse  }, },
 	},
 
 	/* This is a FAILURE case.
@@ -141,7 +141,7 @@ static test_case_t g_test_cases[] = {
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .full_message            = TEST_SET_BYTES("paris"),
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
-	  .expected_events         = { { .event_type = event_type_morse_receive  }, },
+	  .expected_events         = { { .etype = etype_morse  }, },
 	},
 };
 
@@ -382,22 +382,22 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	expectation_idx = 2;
 	const event_t * morse_event = NULL;
 	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].event_type != events->events[i].event_type) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+		if (test_case->expected_events[i].etype != events->events[i].etype) {
+			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 
 		/* Get references to specific events in array of events. */
-		switch (events->events[i].event_type) {
-		case event_type_morse_receive:
+		switch (events->events[i].etype) {
+		case etype_morse:
 			morse_event = &events->events[i];
 			break;
-		case event_type_none:
-		case event_type_socket_receive:
-		case event_type_request_exit:
-		case event_type_sigchld:
+		case etype_none:
+		case etype_reply:
+		case etype_req_exit:
+		case etype_sigchld:
 		default:
-			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].event_type, i);
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].etype, i);
 			return -1;
 		}
 	}

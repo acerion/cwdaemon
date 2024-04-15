@@ -67,16 +67,16 @@ static test_case_t g_test_cases[] = {
 	  .caret_request          = TEST_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
 	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "1234",
 	  .expected_socket_reply  = TEST_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n"),
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse  }, },
 	},
 
 	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
 	  .caret_request          = TEST_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
 	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "12345",
 	  .expected_socket_reply  = TEST_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n"),
-	  .expected_events        = { { .event_type = event_type_socket_receive },
-	                              { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_reply },
+	                              { .etype = etype_morse  }, },
 	},
 
 	/* '^' is a byte no. 257, so it will be dropped by cwdaemon's receive
@@ -86,7 +86,7 @@ static test_case_t g_test_cases[] = {
 	  .caret_request          = TEST_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
 	  .expected_morse_receive =                "paris 7890" BYTES_11_250 "123456",
 	  .expected_socket_reply  = TEST_SET_BYTES(""),
-	  .expected_events        = { { .event_type = event_type_morse_receive  }, },
+	  .expected_events        = { { .etype = etype_morse  }, },
 	},
 };
 

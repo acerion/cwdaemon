@@ -14,11 +14,11 @@
 
 
 typedef enum {
-	event_type_none = 0,                  /**< Indicates empty/invalid event. */
-	event_type_morse_receive,             /**< Something was received as Morse code by Morse receiver observing a cwdevice. */
-	event_type_socket_receive,            /**< Something was received by cwdaemon client over network socket from cwdaemon server. */
-	event_type_request_exit,              /**< EXIT request has been sent to cwdaemon. */
-	event_type_sigchld,                   /**< SIGCHLD received from child process. */
+	etype_none = 0,         /**< Indicates empty/invalid event. */
+	etype_morse,            /**< Something was received as Morse code by Morse receiver observing a cwdevice. */
+	etype_reply,            /**< A reply was received by cwdaemon client over network socket from cwdaemon server. */
+	etype_req_exit,         /**< "EXIT" Escape request has been sent to cwdaemon. */
+	etype_sigchld,          /**< SIGCHLD signal was received from child process. */
 } event_type_t;
 
 
@@ -67,8 +67,8 @@ typedef struct {
 
 
 typedef struct {
-	event_type_t event_type;     /**< Type of the event. */
-	struct timespec tstamp;      /**< Time stamp of the event. */
+	event_type_t etype;       /**< Type of the event. */
+	struct timespec tstamp;   /**< Time stamp of the event. */
 
 	union {
 		event_morse_receive_t morse_receive;          /**< Morse code received by observer of cwdevice. */
