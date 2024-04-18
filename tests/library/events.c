@@ -91,11 +91,11 @@ void events_print(const events_t * events)
 			break;
 		case etype_reply:
 			{
-				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.socket_receive.bytes))] = { 0 };
+				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.reply.bytes))] = { 0 };
 				test_log_debug("Test: event #%02zu: %3ld.%09ld: socket receive: [%s]\n",
 				               e,
 				               diff.tv_sec, diff.tv_nsec,
-				               get_printable_string(event->u.socket_receive.bytes, event->u.socket_receive.n_bytes, printable, sizeof (printable)));
+				               get_printable_string(event->u.reply.bytes, event->u.reply.n_bytes, printable, sizeof (printable)));
 			}
 			break;
 		case etype_sigchld:
@@ -154,7 +154,7 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 
 
-int events_insert_socket_receive_event(events_t * events, const socket_receive_data_t * received)
+int events_insert_socket_receive_event(events_t * events, const test_reply_data_t * received)
 {
 	struct timespec spec = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &spec);
@@ -165,7 +165,7 @@ int events_insert_socket_receive_event(events_t * events, const socket_receive_d
 		event->etype = etype_reply;
 		event->tstamp = spec;
 
-		memcpy(&event->u.socket_receive, received, sizeof (socket_receive_data_t));
+		memcpy(&event->u.reply, received, sizeof (test_reply_data_t));
 
 		events->event_idx++;
 	}

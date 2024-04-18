@@ -10,7 +10,7 @@
 
 
 
-int expect_socket_reply_match(int expectation_idx, const socket_receive_data_t * received, const socket_receive_data_t * expected)
+int expect_socket_reply_match(int expectation_idx, const test_reply_data_t * received, const test_reply_data_t * expected)
 {
 	char printable_received[PRINTABLE_BUFFER_SIZE(sizeof (received->bytes))] = { 0 };
 	get_printable_string(received->bytes, received->n_bytes, printable_received, sizeof (printable_received));

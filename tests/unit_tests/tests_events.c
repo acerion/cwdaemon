@@ -80,7 +80,7 @@ static int test_events_sort(void)
 	events_t events = {
 		.events = {
 			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
-			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
+			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.reply = { .n_bytes = 4, .bytes = "Four" }, },
 			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
@@ -95,7 +95,7 @@ static int test_events_sort(void)
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
 			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
-			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.socket_receive = { .n_bytes = 4, .bytes = "Four" }, },
+			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.reply = { .n_bytes = 4, .bytes = "Four" }, },
 		},
 		.event_idx = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
@@ -134,12 +134,12 @@ static int test_events_sort(void)
 			break;
 		case etype_reply:
 			/* TODO: clang complained about usage of memcmp() for entire struct, so I have to now be careful to compare all members and never miss some member. */
-			if (0 != memcmp(&sorted.events[i].u.socket_receive.bytes, &events.events[i].u.socket_receive.bytes, sizeof (events.events[i].u.socket_receive.bytes))) {
-				test_log_err("Unit tests: events_sort() failed at 'socket_receive.bytes' member in event %d\n", i);
+			if (0 != memcmp(&sorted.events[i].u.reply.bytes, &events.events[i].u.reply.bytes, sizeof (events.events[i].u.reply.bytes))) {
+				test_log_err("Unit tests: events_sort() failed at 'reply.bytes' member in event %d\n", i);
 				return -1;
 			}
-			if (sorted.events[i].u.socket_receive.n_bytes != events.events[i].u.socket_receive.n_bytes) {
-				test_log_err("Unit tests: events_sort() failed at 'socket_receive.n_bytes' member in event %d\n", i);
+			if (sorted.events[i].u.reply.n_bytes != events.events[i].u.reply.n_bytes) {
+				test_log_err("Unit tests: events_sort() failed at 'reply.n_bytes' member in event %d\n", i);
 				return -1;
 			}
 			break;

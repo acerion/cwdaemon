@@ -77,7 +77,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, empty reply value - no terminating NUL in esc request",
 
 	  .esc_request             = TEST_SET_BYTES("\033h"),
-	  .expected_socket_reply   = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -93,7 +93,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, empty reply value - with terminating NUL in esc request",
 
 	  .esc_request             = TEST_SET_BYTES("\033h\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
-	  .expected_socket_reply   = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -107,7 +107,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, single-letter as a value of reply",
 
 	  .esc_request             = TEST_SET_BYTES("\033hX"),
-	  .expected_socket_reply   = TEST_SET_BYTES(    "hX\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "hX\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -121,7 +121,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, a word as value of reply, no terminating NUL in esc request",
 
 	  .esc_request             = TEST_SET_BYTES("\033hreply"),
-	  .expected_socket_reply   = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -136,7 +136,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, a word as value of reply, with terminating NUL in esc request",
 
 	  .esc_request             = TEST_SET_BYTES("\033hreply\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
-	  .expected_socket_reply   = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -149,7 +149,7 @@ static test_case_t g_test_cases[] = {
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
 	  .esc_request             = TEST_SET_BYTES("\033hThis is a reply to your 27th request."),
-	  .expected_socket_reply   = TEST_SET_BYTES(    "hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = TEST_SET_BYTES(    "hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = TEST_SET_BYTES("paris"),
 	  .expected_morse_receive  =                "paris",
@@ -163,7 +163,7 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "message containing '-1' integer value",
 
 	  .esc_request             = { .n_bytes =  8, .bytes = { 033, 'h', 'l', -1,  'z', 'a', 'r', 'd' } },              /* cwdaemon doesn't validate values of chars (e.g. '-1') that are requested for socket reply. */
-	  .expected_socket_reply   = { .n_bytes =  9, .bytes =      { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char copied from esc request. */
+	  .expected_reply          = { .n_bytes =  9, .bytes =      { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request           = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' } },   /* Notice '-1' char. */
 	  .expected_morse_receive  =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },     /* Morse message keyed on cwdevice must not contain the '-1' char (the char should be skipped by cwdaemon). */

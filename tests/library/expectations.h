@@ -16,7 +16,7 @@
    @return 0 if expectation is met
    @return -1 otherwise
 */
-int expect_socket_reply_match(int expectation_idx, const socket_receive_data_t * received, const socket_receive_data_t * expected);
+int expect_socket_reply_match(int expectation_idx, const test_reply_data_t * received, const test_reply_data_t * expected);
 
 
 

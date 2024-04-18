@@ -86,7 +86,7 @@
 static test_case_t g_test_cases[] = {
 	{ .description = "mixed characters",
 	  .caret_request              = TEST_SET_BYTES("22 crows, 1 stork?^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("22 crows, 1 stork?\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("22 crows, 1 stork?\r\n"),
 	  .expected_morse_receive     =                "22 crows, 1 stork?",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -103,14 +103,14 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description = "additional message after caret",
 	  .caret_request              = TEST_SET_BYTES("Fun^Joy^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("Fun\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("Fun\r\n"),
 	  .expected_morse_receive     =                "Fun",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
 	},
 	{ .description = "message with two carets",
 	  .caret_request              = TEST_SET_BYTES("Monday^^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("Monday\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("Monday\r\n"),
 	  .expected_morse_receive     =                "Monday",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -120,7 +120,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "two words",
 	  .caret_request              = TEST_SET_BYTES("Hello world!^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("Hello world!\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("Hello world!\r\n"),
 	  .expected_morse_receive     =                "Hello world!",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -130,7 +130,7 @@ static test_case_t g_test_cases[] = {
 	   reply. */
 	{ .description = "empty text - no terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("^"),
-	  .expected_socket_reply      = TEST_SET_BYTES(""),
+	  .expected_reply             = TEST_SET_BYTES(""),
 	  .expected_morse_receive     =                "",
 	  .expected_events            = { { 0 } },
 	},
@@ -139,14 +139,14 @@ static test_case_t g_test_cases[] = {
 	   reply. */
 	{ .description = "empty text - with terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
-	  .expected_socket_reply      = TEST_SET_BYTES(""),
+	  .expected_reply             = TEST_SET_BYTES(""),
 	  .expected_morse_receive     =                "",
 	  .expected_events            = { { 0 } },
 	},
 
 	{ .description = "single character",
 	  .caret_request              = TEST_SET_BYTES("f^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("f\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("f\r\n"),
 	  .expected_morse_receive     =                "f",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -154,7 +154,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "single word - no terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("Paris^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -162,7 +162,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description = "single word - with terminating NUL in request",
 	  .caret_request              = TEST_SET_BYTES("Paris^\0"), /* Explicit terminating NUL. The NUL will be ignored by cwdaemon. */
-	  .expected_socket_reply      = TEST_SET_BYTES("Paris\r\n"),
+	  .expected_reply             = TEST_SET_BYTES("Paris\r\n"),
 	  .expected_morse_receive     =                "Paris",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -171,7 +171,7 @@ static test_case_t g_test_cases[] = {
 	/* Notice how the leading space from message is preserved in socket reply. */
 	{ .description = "single word with leading space",
 	  .caret_request              = TEST_SET_BYTES(" London^"),
-	  .expected_socket_reply      = TEST_SET_BYTES(" London\r\n"),
+	  .expected_reply             = TEST_SET_BYTES(" London\r\n"),
 	  .expected_morse_receive     =                 "London",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -180,7 +180,7 @@ static test_case_t g_test_cases[] = {
 	/* Notice how the trailing space from message is preserved in socket reply. */
 	{ .description = "mixed characters with trailing space",
 	  .caret_request              = TEST_SET_BYTES("when, now = right: ^"),
-	  .expected_socket_reply      = TEST_SET_BYTES("when, now = right: \r\n"),
+	  .expected_reply             = TEST_SET_BYTES("when, now = right: \r\n"),
 	  .expected_morse_receive     =                "when, now = right:",
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },
@@ -190,7 +190,7 @@ static test_case_t g_test_cases[] = {
 	   above for more info. */
 	{ .description                = "message containing '-1' integer value",
 	  .caret_request              = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '^', } },
-	  .expected_socket_reply      = { .n_bytes = 11, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n' } },      /* cwdaemon sends verbatim text in socket reply. */
+	  .expected_reply             = { .n_bytes = 11, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\r', '\n' } },      /* cwdaemon sends verbatim text in socket reply. */
 	  .expected_morse_receive     =                           { 'p', 'a', 's', 's', 'e', 'n',     'e', 'r', '\0' },              /* Morse message keyed on cwdevice must not contain the -1 char (the char should be skipped by cwdaemon). */
 	  .expected_events            = { { .etype = etype_reply },
 	                                  { .etype = etype_morse  }, },

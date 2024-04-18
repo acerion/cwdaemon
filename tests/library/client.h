@@ -24,7 +24,7 @@
 
 typedef struct client_t {
 	int sock;                              ///< Network socket used by client to communicate with server. Set to (-1) when unused/closed.
-	socket_receive_data_t received_data;   ///< Buffer for receiving replies from server.
+	test_reply_data_t received_data;   ///< Buffer for receiving replies from server.
 
 	thread_t socket_receiver_thread;       ///< Thread receiving data over socket from cwdaemon server.
 
@@ -194,7 +194,7 @@ int client_socket_receive_stop(client_t * client);
    @return true if received data matches expected data
    @return false otherwise
 */
-bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, const socket_receive_data_t * received);
+bool socket_receive_bytes_is_correct(const test_reply_data_t * expected, const test_reply_data_t * received);
 
 
 

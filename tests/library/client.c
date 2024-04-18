@@ -297,7 +297,7 @@ int client_dtor(client_t * client)
 
 
 
-bool socket_receive_bytes_is_correct(const socket_receive_data_t * expected, const socket_receive_data_t * received)
+bool socket_receive_bytes_is_correct(const test_reply_data_t * expected, const test_reply_data_t * received)
 {
 	/*
 	  This function is more than just simple memcmp() or strcmp() because I

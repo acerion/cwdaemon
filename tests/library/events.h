@@ -51,10 +51,10 @@ typedef struct test_request_t {
   Bytes are received through recv().
   Count of bytes is a value returned by recv().
 */
-typedef struct socket_receive_data_t {
+typedef struct test_reply_data_t {
 	size_t n_bytes;                        /**< How many bytes we expect to receive send? */
 	char bytes[CLIENT_RECV_BUFFER_SIZE];   /**< What exactly bytes do we expect to receive? */
-} socket_receive_data_t;
+} test_reply_data_t;
 
 
 
@@ -72,7 +72,7 @@ typedef struct {
 
 	union {
 		event_morse_receive_t morse_receive;          /**< Morse code received by observer of cwdevice. */
-		socket_receive_data_t socket_receive; /**< Data received over socket by cwdaemon client. */
+		test_reply_data_t reply; /**< Data received over socket by cwdaemon client. */
 		event_sigchld_t sigchld;                     /**< Data collected by waitpid() in signal handler for SIGCHLD. */
 	} u;
 } event_t;
@@ -148,7 +148,7 @@ int events_sort(events_t * events);
 
 
 int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp);
-int events_insert_socket_receive_event(events_t * events, const socket_receive_data_t * received);
+int events_insert_socket_receive_event(events_t * events, const test_reply_data_t * received);
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);
 
 
