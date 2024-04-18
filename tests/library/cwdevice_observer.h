@@ -38,7 +38,7 @@
 
 
 struct cwdevice_observer_t;
-typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on);
+typedef int (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on);
 
 
 
@@ -115,10 +115,10 @@ typedef struct cwdevice_observer_t {
 	   user wants to poll at different interval. */
 	unsigned int poll_interval_us;
 
-	/* User-provided function function that checks once, at given moment, if
-	   keying pin is down or up, and if ptt pin is on or off. State of keying
-	   pin is returned through @p key_is_down. State of ptt pin is returned
-	   through @p ptt_is_on */
+	/* User-provided function function that checks once, at given moment, the
+	   state of specific pins of cwdevice. The most interesting pins are
+	   keying pin and ptt pin. State of keying pin is returned through @p
+	   key_is_down. State of ptt pin is returned through @p ptt_is_on */
 	poll_once_fn_t poll_once_fn;
 
 	/* Reference to low-level resource related to cwdevice. It may be

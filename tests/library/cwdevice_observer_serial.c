@@ -26,12 +26,21 @@
 
 
 
-/**
-   @file Code that observes cwdaemon's tty cwdevice
-
-   Code for polling of serial port is based on "statserial" program (see
-   copyright notice above).
-*/
+/// @file
+///
+/// Code that observes cwdaemon's tty cwdevice
+///
+/// The observation happens from within the Linux system. The observed device
+/// is Linux's /dev/ttyXY device or similar device. This file doesn't
+/// implement observing of a cwdevice "from outside" of system on which the
+/// test code is running.
+///
+/// For such observation "from outside" we would need to use some kind of
+/// external hardware (loopback?) that would monitor the physical pins of
+/// hardware port and feed that info to test code.
+///
+/// Code for polling of serial port is based on "statserial" program (see
+/// copyright notice above).
 
 
 
@@ -71,10 +80,11 @@ int cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 		char buf[ERRNO_BUF_SIZE] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
 		test_log_err("cwdevice observer: open(%s): %s / %d\n", observer->source_path, b, errno);
+		observer->source_reference = (uintptr_t) -1;
 		return -1;
 	}
-	observer->source_reference = (uintptr_t) fd;
 
+	observer->source_reference = (uintptr_t) fd;
 	return 0;
 }
 
@@ -84,13 +94,16 @@ int cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 void cwdevice_observer_serial_close(cwdevice_observer_t * observer)
 {
 	int fd = (int) observer->source_reference;
-	close(fd);
+	if (fd != -1) {
+		close(fd);
+		observer->source_reference = (uintptr_t) -1;
+	}
 }
 
 
 
 
-bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on)
+int cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on)
 {
 	int fd = (int) observer->source_reference;
 	errno = 0;
@@ -100,8 +113,9 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 		char buf[ERRNO_BUF_SIZE] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
 		test_log_err("cwdevice observer: ioctl(TIOCMGET): %s / %d\n", b, errno);
-		return false;
+		return -1;
 	}
+
 	unsigned int keying_pin = TIOCM_DTR; /* Default ID of keying pin. */
 	unsigned int ptt_pin = TIOCM_RTS;    /* Default ID of ptt pin. */
 	if (observer->tty_pins_config.explicit) {
@@ -110,9 +124,11 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 		keying_pin = observer->tty_pins_config.pin_keying;
 		ptt_pin    = observer->tty_pins_config.pin_ptt;
 	}
+
 	*key_is_down = !!(value & keying_pin);
 	*ptt_is_on   = !!(value & ptt_pin);
-	return true;
+
+	return 0;
 }
 
 
@@ -128,6 +144,9 @@ int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, const tty_pins_t
 		observer->tty_pins_config = *observer_pins_config;
 	}
 
+	// TODO (acerion) 2024.04.17: be ready to support TESTS_TTY_CWDEVICE_NAME
+	// being a full path to cwdevice. Currently TESTS_TTY_CWDEVICE_NAME can
+	// be only something like "ttyUSB0".
 	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TESTS_TTY_CWDEVICE_NAME);
 
 	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);

@@ -114,7 +114,7 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 		bool key_is_down = false;
 		bool ptt_is_on = false;
 
-		if (!observer->poll_once_fn(observer, &key_is_down, &ptt_is_on)) {
+		if (0 != observer->poll_once_fn(observer, &key_is_down, &ptt_is_on)) {
 			test_log_err("cwdevice observer: failed to poll once %s\n", "");
 			return NULL;
 		}
