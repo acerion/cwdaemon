@@ -61,6 +61,7 @@
 #include <time.h> /* nanosleep() */
 #include <unistd.h>
 
+#include "log.h"
 #include "sleep.h"
 
 
@@ -84,7 +85,7 @@ int test_microsleep_nonintr(unsigned int usecs)
 			case EINTR:
 				break;
 			default:
-				perror("nanosleep()");
+				test_log_err("nanosleep: errno = %d", errno);
 				return -1;
 			}
 		}
@@ -126,7 +127,7 @@ int test_sleep_nonintr(unsigned int secs)
 			case EINTR:
 				break;
 			default:
-				perror("nanosleep()");
+				test_log_err("nanosleep: errno = %d", errno);
 				return -1;
 			}
 		}
