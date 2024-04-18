@@ -11,8 +11,8 @@ struct cwdev_s;
 
 
 typedef struct tty_driver_options {
-	int key; // Pin/line used for keying. TIOCM_DTR by default.
-	int ptt; // Pin/line used for PTT.    TIOCM_RTS by default.
+	unsigned int key; // Pin/line used for keying. TIOCM_DTR by default. "unsigned" because TIOCM_* is defined as hex value.
+	unsigned int ptt; // Pin/line used for PTT.    TIOCM_RTS by default. "unsigned" because TIOCM_* is defined as hex value.
 } tty_driver_options;
 
 

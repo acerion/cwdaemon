@@ -288,7 +288,7 @@ static int ttys_optvalidate(cwdevice * dev)
 	    && 0 != dropt->ptt
 	    && dropt->key == dropt->ptt) {
 		/* You can't use the same tty pin for two purposes. */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %d", dropt->key);
+		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %u", dropt->key);
 		return -1;
 	}
 
