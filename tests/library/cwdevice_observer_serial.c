@@ -1,7 +1,7 @@
 /*
  * This file is a part of cwdaemon project.
  *
- * Copyright (C) 2022 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2022 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * Code for polling of serial port is based on "statserial - Serial Port
  * Status Utility" (GPL2+).
@@ -62,39 +62,7 @@
 
 
 
-#define PTT_EXPERIMENT 1
-
-#if PTT_EXPERIMENT
-typedef struct ptt_sink_t {
-	int dummy;
-} ptt_sink_t;
-
-
-
-
-static ptt_sink_t g_ptt_sink = { 0 };
-
-
-
-
-/**
-   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
-
-   A simple wrapper that seems to be convenient.
-*/
-static bool on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
-{
-	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
-	test_log_debug("cwdevice observer: ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
-
-	return true;
-}
-#endif /* #if PTT_EXPERIMENT */
-
-
-
-
-bool cwdevice_observer_serial_open(cwdevice_observer_t * observer)
+int cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 {
 	/* Open serial port. */
 	errno = 0;
@@ -103,11 +71,11 @@ bool cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 		char buf[ERRNO_BUF_SIZE] = { 0 };
 		char * b = strerror_r(errno, buf, sizeof (buf));
 		test_log_err("cwdevice observer: open(%s): %s / %d\n", observer->source_path, b, errno);
-		return false;
+		return -1;
 	}
 	observer->source_reference = (uintptr_t) fd;
 
-	return true;
+	return 0;
 }
 
 
@@ -150,48 +118,19 @@ bool cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * k
 
 
 
-/**
-   @brief Inform an easy receiver that a key has a new state (up or down)
-
-   A simple wrapper that seems to be convenient.
-*/
-static bool on_key_state_change(void * arg_easy_rec, bool key_is_down)
-{
-	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
-	cw_easy_receiver_sk_event(easy_rec, key_is_down);
-	// test_log_debug("cwdevice observer: key is %s\n", key_is_down ? "down" : "up");
-
-	return true;
-}
-
-
-
-
-int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, void * key_state_cb_arg, const tty_pins_t * observer_pins_config)
+int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, const tty_pins_t * observer_pins_config)
 {
 	memset(observer, 0, sizeof (cwdevice_observer_t));
 
 	observer->open_fn  = cwdevice_observer_serial_open;
 	observer->close_fn = cwdevice_observer_serial_close;
-	observer->new_key_state_cb     = on_key_state_change;
-	observer->new_key_state_cb_arg = key_state_cb_arg;
 	if (observer_pins_config) {
 		observer->tty_pins_config = *observer_pins_config;
 	}
 
 	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TESTS_TTY_CWDEVICE_NAME);
 
-#if PTT_EXPERIMENT
-	observer->new_ptt_state_cb  = on_ptt_state_change;
-	observer->new_ptt_state_arg = &g_ptt_sink;
-#endif
-
 	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
-
-	if (!observer->open_fn(observer)) {
-		test_log_err("cwdevice observer: failed to open cwdevice '%s' in setup of observer\n", observer->source_path);
-		return -1;
-	}
 
 	return 0;
 }

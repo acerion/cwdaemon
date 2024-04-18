@@ -525,3 +525,16 @@ void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec)
 
 
 
+int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, bool key_is_down)
+{
+	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
+	cw_easy_receiver_sk_event(easy_rec, key_is_down);
+
+	// fprintf(stdout, "[INFO ] easy receiver: key is %s\n", key_is_down ? "down" : "up");
+
+	return 0;
+}
+
+
+
+

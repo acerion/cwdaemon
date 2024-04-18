@@ -137,6 +137,20 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 
 
 
+/// @brief Inform an easy receiver that a key pin has a new state (up or down)
+///
+/// A simple wrapper that seems to be convenient.
+///
+/// @reviewed_on{2024.04.16}
+///
+/// @param[in] arg_easy_rec cw_easy_receiver_t variable
+/// @param[in] key_is_down current state of keying pin
+///
+/// @return 0
+int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, bool key_is_down);
+
+
+
 
 #if defined(__cplusplus)
 }

@@ -23,11 +23,32 @@
 
 
 
-/**
-   Wrapper around "easy receiver", using it's API to:
-    - inform the easy receiver that observer of cwdevice is seeing changes of "keying" pin,
-    - poll from the receiver the received characters and inter-word-spaces.
-*/
+/// @file
+///
+/// Wrapper around "easy receiver", using it's API to:
+///    - inform the easy receiver that observer of cwdevice is seeing changes of "keying" pin,
+///    - poll from the receiver the received characters and inter-word-spaces.
+///
+///
+/// @todo
+/// \parblock
+/// TODO (acerion) 2024.04.16 Refactor interaction between Morse
+/// receiver, cw_easy_receiver and cwdevice observer.
+///
+/// The thread function in this file tries to do too much. Right now the
+/// process of receiving Morse code is the only sink for events happening on
+/// cwdevice's pin(s), so putting cwdevice observer inside of this file was
+/// an easy choice. But it's a bad choice in the long run.
+///
+/// In the future the state of cwdevice's ptt pins will have to be also
+/// somehow handled, and by something else than Morse receiver (even if this
+/// "something else" is just an events store).
+///
+/// The cwdevice will somehow have to be shared by Morse receiver and by PTT
+/// sink, or maybe Morse receiver and PT sink will have to be owned by
+/// cwdevice observer. Perhaps the main object used by tests should be not
+/// "Morse receiver" (as it is now) but "cwdevice observer".
+/// \endparblock
 
 
 
@@ -50,6 +71,38 @@
 #include "events.h"
 #include "morse_receiver.h"
 #include "sleep.h"
+
+
+
+
+#define PTT_EXPERIMENT 1
+
+#if PTT_EXPERIMENT
+typedef struct ptt_sink_t {
+	int dummy;
+} ptt_sink_t;
+
+
+
+
+static ptt_sink_t g_ptt_sink = { 0 };
+
+
+
+
+/**
+   @brief Inform a ptt sink that a ptt pin has a new state (on or off)
+
+   A simple wrapper that seems to be convenient.
+*/
+static int ptt_sink_on_ptt_state_change(void * arg_ptt_sink, bool ptt_is_on)
+{
+	__attribute__((unused)) ptt_sink_t * ptt_sink = (ptt_sink_t *) arg_ptt_sink;
+	test_log_debug("cwdevice observer: ptt sink: ptt is %s\n", ptt_is_on ? "on" : "off");
+
+	return 0;
+}
+#endif /* #if PTT_EXPERIMENT */
 
 
 
@@ -154,6 +207,15 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 {
 	morse_receiver_t * morse_receiver = (morse_receiver_t *) receiver_arg;
 
+	/*
+	  cw_receiver is notified about changes of 'keying' pin by
+	  cwdevice_observer. Those changes are translated by libcw's cw_receiver
+	  into characters and spaces. Periodically poll cw_receiver to see if it
+	  recognized some character or a space.
+
+	  The characters and spaces are put into 'buffer[]'.
+	*/
+
 	thread_t * thread = &morse_receiver->thread;
 	cwdevice_observer_t cwdevice_observer = { 0 };
 	cw_easy_receiver_t cw_receiver = { 0 };
@@ -162,13 +224,34 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 
 	/* Preparation of test helpers. */
 	{
-		/* Prepare observer of cwdevice. */
-		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &cw_receiver, &morse_receiver->config.observer_tty_pins_config)) {
+		// cwdevice observer is configured here in 3 steps. I believe that such
+		// multi-step and more explicit setup gives better idea about interactions
+		// of the observer with cw receiver.
+
+		/* Configure observer to observe tty cwdevice. */
+		if (0 != cwdevice_observer_tty_setup(&cwdevice_observer, &morse_receiver->config.observer_tty_pins_config)) {
 			test_log_err("Morse receiver thread: failed to set up observer of cwdevice %s\n", "");
 			thread->status = thread_stopped_err;
 			return NULL;
 		}
-		if (0 != cwdevice_observer_start(&cwdevice_observer)) {
+
+		/* Changes of cwdevice's keying pin will be forwarded to cw_receiver. */
+		if (0 != cwdevice_observer_set_key_change_handler(&cwdevice_observer, cw_easy_receiver_on_key_state_change, &cw_receiver)) {
+			test_log_err("Morse receiver thread: failed to set up handler of key pin %s\n", "");
+			thread->status = thread_stopped_err;
+			return NULL;
+		}
+
+#if PTT_EXPERIMENT
+		/* Changes of cwdevice's ptt pin will be forwarded to g_ptt_sink. */
+		if (0 != cwdevice_observer_set_ptt_change_handler(&cwdevice_observer, ptt_sink_on_ptt_state_change, &g_ptt_sink)) {
+			test_log_err("Morse receiver thread: failed to set up handler of ptt pin %s\n", "");
+			thread->status = thread_stopped_err;
+			return NULL;
+		}
+#endif
+
+		if (0 != cwdevice_observer_start_observing(&cwdevice_observer)) {
 			test_log_err("Morse receiver thread: failed to start up cwdevice observer %s\n", "");
 			thread->status = thread_stopped_err;
 			return NULL;
@@ -207,12 +290,6 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 	int remaining_wait_ms = total_wait_ms;
 	struct timespec last_character_receive_tstamp = { 0 };
 
-	/*
-	  The loop below is receiving a Morse code. cwdevice observer is telling
-	  a Morse code receiver how a 'keying' pin on tty device is changing
-	  state, and the receiver is translating this into text. The text is put
-	  into 'buffer[]'.
-	*/
 	do {
 		const int sleep_retv = test_millisleep_nonintr(poll_interval_ms);
 		if (sleep_retv) {
@@ -249,7 +326,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 
 	/* Cleanup of test helpers. */
 	cw_receiver_desetup(&cw_receiver);
-	cwdevice_observer_dtor(&cwdevice_observer);
+	cwdevice_observer_stop_observing(&cwdevice_observer);
 
 
 	thread->status = thread_stopped_ok;

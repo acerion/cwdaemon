@@ -1,7 +1,7 @@
 /*
  * This file is a part of cwdaemon project.
  *
- * Copyright (C) 2022 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2022 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 
 
 /**
-   @file Top-level code for observing cwdaemon's cwdevice
+   @file Top-level code for observing state of pins on cwdaemon's cwdevice
 */
 
 
@@ -47,7 +47,10 @@
 
 
 
-/* Default interval for polling a cwdevice [microseconds]. */
+/// Default interval for polling a cwdevice [microseconds].
+///
+/// TODO (acerion) 2024.04.16: describe where this value comes from. Maybe
+/// it's not the best default.
 #define KEY_SOURCE_DEFAULT_INTERVAL_US 100
 
 
@@ -58,35 +61,52 @@ static void * cwdevice_observer_poll_thread(void * arg_observer);
 
 
 
-int cwdevice_observer_start(cwdevice_observer_t * observer)
+int cwdevice_observer_start_observing(cwdevice_observer_t * observer)
 {
+	if (observer->open_fn) {
+		if (0 != observer->open_fn(observer)) {
+			test_log_err("cwdevice observer: failed to open cwdevice '%s' when starting observation of cwdevice\n", observer->source_path);
+			return -1;
+		}
+	}
+
 	observer->do_polling = true;
 	const int retv = pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
 	if (0 != retv) {
 		test_log_err("cwdevice observer: failed to create an observer thread: %d\n", retv);
 		observer->do_polling = false;
+		if (observer->close_fn) {
+			observer->close_fn(observer);
+		}
 		return -1;
-	} else {
-		observer->thread_created = true;
-		return 0;
 	}
+
+	observer->thread_created = true;
+	return 0;
 }
 
 
 
 
-void cwdevice_observer_stop(cwdevice_observer_t * observer)
+void cwdevice_observer_stop_observing(cwdevice_observer_t * observer)
 {
 	if (observer->thread_created) {
 		observer->do_polling = false;
 		pthread_cancel(observer->thread_id);
 		observer->thread_created = false;
 	}
+
+	if (observer->close_fn) {
+		observer->close_fn(observer);
+	}
 }
 
 
 
 
+/// @brief Thread function polling state of cwdevice's pins
+///
+/// @reviewed_on{2024.04.16}
 static void * cwdevice_observer_poll_thread(void * arg_observer)
 {
 	cwdevice_observer_t * observer = (cwdevice_observer_t *) arg_observer;
@@ -103,13 +123,16 @@ static void * cwdevice_observer_poll_thread(void * arg_observer)
 		if (key_is_down != observer->previous_key_is_down) {
 			observer->previous_key_is_down = key_is_down;
 			if (observer->new_key_state_cb) {
+				/* We may forward state of key to libcw's Morse
+				   receiver/decoder, and the receiver will try to decode
+				   characters and spaces. */
 				observer->new_key_state_cb(observer->new_key_state_cb_arg, key_is_down);
 			}
 		}
 		if (ptt_is_on != observer->previous_ptt_is_on) {
 			observer->previous_ptt_is_on = ptt_is_on;
 			if (observer->new_ptt_state_cb) {
-				observer->new_ptt_state_cb(observer->new_ptt_state_arg, ptt_is_on);
+				observer->new_ptt_state_cb(observer->new_ptt_state_cb_arg, ptt_is_on);
 			}
 		}
 
@@ -139,20 +162,22 @@ void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigne
 
 
 
-int cwdevice_observer_dtor(cwdevice_observer_t * observer)
+int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool key_is_down), void * obj)
 {
-	if (!observer) {
-		return 0;
-	}
-
-	cwdevice_observer_stop(observer);
-	if (observer->close_fn) {
-		observer->close_fn(observer);
-	}
+	observer->new_key_state_cb     = cb;
+	observer->new_key_state_cb_arg = obj;
 
 	return 0;
 }
 
 
 
+
+int cwdevice_observer_set_ptt_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool ptt_is_on), void * obj)
+{
+	observer->new_ptt_state_cb     = cb;
+	observer->new_ptt_state_cb_arg = obj;
+
+	return 0;
+}
 

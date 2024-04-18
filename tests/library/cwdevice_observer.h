@@ -9,12 +9,17 @@
 #include <stdint.h>
 #include <unistd.h>
 
-//#include "server.h"
+
+
+
+#include "cw_easy_receiver.h"
 
 
 
 
 /**
+   @file
+
    Source of information about state of key (key down/key up).
 
    Structure holding the state of key.
@@ -22,7 +27,7 @@
    Structure holding functions that poll the cwdevice, waiting for state of the
    key to change.
 
-   Structure holding a callback that will be called when change to state of
+   Structure holding a callback that will be called when change of state of
    key has been detected.
 
    As cwdaemon shows, the other interesting data is the state of PTT pin. The
@@ -38,6 +43,7 @@ typedef bool (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * ke
 
 
 
+// TODO (acerion) 2024.04.15: this size should be defined in cwdaemon.h.
 #define SOURCE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
 
 
@@ -68,58 +74,39 @@ typedef struct {
 
 
 /**
-   Structure used by test code to configure observer of cwdevice.
-*/
-typedef struct cwdevice_observer_params_t {
-	tty_pins_t tty_pins_config; /* See cwdevice_observer_t::tty_pins_config. */
-	char source_path[SOURCE_PATH_SIZE];      /* See cwdevice_observer_t::source_path. */
-
-	bool (* new_ptt_state_cb)(void * arg_ptt_arg, bool ptt_is_on); /**< Callback called on change of ptt pin. */
-	void * new_ptt_state_arg;                                      /**< Argument to be passed by cwdaevice observer to new_ptt_state_cb. */
-} cwdevice_observer_params_t;
-
-
-
-
-/**
    Methods and data of object that observes cwdaemon's cwdevice
 */
 typedef struct cwdevice_observer_t {
 
-	/* User-provided function that opens a specific cwdevice.*/
-	bool (* open_fn)(struct cwdevice_observer_t * observer);
+	/// User-provided function that opens a specific cwdevice.
+	int (* open_fn)(struct cwdevice_observer_t * observer);
 
-	/* User-provided function that closed a specific cwdevice.*/
+	/// User-provided function that closed a specific cwdevice.
 	void (* close_fn)(struct cwdevice_observer_t * observer);
 
 
 
-	/* User-provided callback function that is called by observer each
-	   time the state of key pin of cwdevice changes between up and down. */
-	bool (* new_key_state_cb)(void * new_key_state_cb_arg, bool key_is_down);
+	/// User-provided callback function that is called by observer each time
+	/// the state of key pin of cwdevice changes between up and down.
+	int (* new_key_state_cb)(void * new_key_state_cb_arg, bool key_is_down);
 
-	/*
-	  Pointer that will be passed as first argument of new_key_state_cb on
-	  each call to the function.
-
-	  This field is set using value of second arg of
-	  cwdevice_observer_tty_setup().
-
-	  Since the observer of cwdevice is frequently used to feed data to Morse
-	  receiver, this pointer will be set to some cw_easy_receiver_t*
-	  variable.
-	*/
+	/// Pointer that will be passed as first argument of new_key_state_cb on
+	/// each call to the function.
+	///
+	/// Since the observer of cwdevice is frequently used to feed data to
+	/// Morse receiver, this pointer will be set to some cw_easy_receiver_t*
+	/// variable.
 	void * new_key_state_cb_arg;
 
 
 
 	/* User-provided callback function that is called by observer each
 	   time the state of PTT pin of cwdevice changes between 'on' and 'off'. */
-	bool (* new_ptt_state_cb)(void * ptt_arg, bool ptt_is_on);
+	int (* new_ptt_state_cb)(void * ptt_arg, bool ptt_is_on);
 
 	/* Pointer that will be passed as first argument of new_ptt_state_cb
 	   on each call to the function. */
-	void * new_ptt_state_arg;
+	void * new_ptt_state_cb_arg;
 
 
 
@@ -144,8 +131,8 @@ typedef struct cwdevice_observer_t {
 	char source_path[SOURCE_PATH_SIZE];
 
 	/*
-	  Low-level integer parameters specifying where in a cwdevice to find
-	  information about:
+	  Low-level parameters specifying where in a cwdevice to find information
+	  about:
 
 	   - keying. E.g. for ttyS0 it will be a pin/line from which to read key
 	     state (cwdaemon uses DTR line by default, but it can be tuned
@@ -180,53 +167,82 @@ typedef struct cwdevice_observer_t {
 
 
 
+/// @brief Configure handler of changes to keying pin that occur on observed cwdevice
+///
+/// @reviewed_on{2024.04.16}
+///
+/// @param observer Observer of cwdevice, reporting changes of state of keying pin
+/// @param[in] cb Callback to be called on each change of state of the pin
+/// @param[in] obj First argument to the @cb callback
+///
+/// @return 0
+int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool key_is_down), void * obj);
+
+
+
+
+/// @brief Configure handler of changes to ptt pin that occur on observed cwdevice
+///
+/// @reviewed_on{2024.04.16}
+///
+/// @param observer Observer of cwdevice, reporting changes of state of ptt pin
+/// @param[in] cb Callback to be called on each change of state of the pin
+/// @param[in] obj First argument to the @cb callback
+///
+/// @return 0
+int cwdevice_observer_set_ptt_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool ptt_is_on), void * obj);
+
+
+
+
 /**
-   Start polling the cwdevice
+   @brief Start observing the cwdevice
+
+   Start monitoring pins of cwdevice and forwarding changes to the pins to
+   change handlers (handlers registered with
+   cwdevice_observer_set_X_change_handler). .
+
+   @reviewed_on{2024.04.16}
+
+   @param observer cwdevice observer that should start observing cwdevice
 
    @return 0 on success
    @return -1 on failure
 */
-int cwdevice_observer_start(cwdevice_observer_t * observer);
+int cwdevice_observer_start_observing(cwdevice_observer_t * observer);
 
 
 
 
 /**
-   Stop polling the cwdevice
+   @brief Stop observing the cwdevice
+
+   Stop monitoring pins of cwdevice and forwarding changes to the pins to
+   change handlers.
+
+   @reviewed_on{2024.04.16}
+
+   @param observer cwdevice observer that should stop observing cwdevice
 */
-void cwdevice_observer_stop(cwdevice_observer_t * observer);
+void cwdevice_observer_stop_observing(cwdevice_observer_t * observer);
 
 
 
 
 /**
-   @brief Configure cwdevice observer to do periodical polls of the cwdevice
+   @brief Configure periodical polling of cwdevice done by cwdevice observer
 
-   In theory we can have an observer that learns about key/ptt state changes by
-   means other than polling.
+   @reviewed_on{2024.04.16}
 
-   @param observer cwdevice observer to configure
+   In theory we can have an observer that learns about key/ptt state changes
+   by means other than polling, but for now polling is the only supported
+   method.
+
+   @param observer cwdevice observer for which to configure polling
    @param poll_interval_us interval of polling [microseconds]; use 0 to tell function to use default value
    @param poll_once_fn function that executes a single poll every @p poll_interval_us microseconds.
 */
 void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigned int poll_interval_us, poll_once_fn_t poll_once_fn);
-
-
-
-
-
-/**
-   @brief Destructor of observer of cwdevice
-
-   Stop any activities of observer. Release all resources used by the
-   observer.
-
-   @param [in/out] observer Observer to be destructed
-
-   @return 0 on success
-   @return -1 on failure
-*/
-int cwdevice_observer_dtor(cwdevice_observer_t * observer);
 
 
 
