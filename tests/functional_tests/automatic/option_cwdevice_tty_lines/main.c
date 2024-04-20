@@ -85,7 +85,7 @@ static test_case_t g_test_cases[] = {
 	  uses implicit default configuration of pins.
 	*/
 	{ .description             = "success case, standard setup without tty line options passed to cwdaemon",
-	  .full_message            = TEST_SET_BYTES("paris"),
+	  .full_message            = TESTS_SET_BYTES("paris"),
 	  .expected_events         = { { .etype = etype_morse  }, },
 	},
 
@@ -101,7 +101,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, standard setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-	  .full_message            = TEST_SET_BYTES("paris"),
+	  .full_message            = TESTS_SET_BYTES("paris"),
 	  .expected_events         = { { .etype = etype_morse  }, },
 	},
 
@@ -119,7 +119,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "failure case, cwdaemon is keying DTR, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-	  .full_message            = TEST_SET_BYTES("paris"),
+	  .full_message            = TESTS_SET_BYTES("paris"),
 	  .expected_failed_receive = true,
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .expected_events         = { { 0 } },
@@ -139,7 +139,7 @@ static test_case_t g_test_cases[] = {
 	*/
 	{ .description             = "success case, cwdaemon is keying RTS, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
-	  .full_message            = TEST_SET_BYTES("paris"),
+	  .full_message            = TESTS_SET_BYTES("paris"),
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .expected_events         = { { .etype = etype_morse  }, },
 	},

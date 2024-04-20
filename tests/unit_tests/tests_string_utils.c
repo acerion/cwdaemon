@@ -92,14 +92,14 @@ static int test_get_printable_string(void)
 		const char expected_output[OUTPUT_SIZE];
 	} test_data[] = {
 		/* String that doesn't contain non-printable characters. */
-		{ .data = TEST_SET_BYTES(""),           .expected_output = ""            },
-		{ .data = TEST_SET_BYTES("Hello_WORLD"), .expected_output = "Hello_WORLD" },
+		{ .data = TESTS_SET_BYTES(""),           .expected_output = ""            },
+		{ .data = TESTS_SET_BYTES("Hello_WORLD"), .expected_output = "Hello_WORLD" },
 
 		/* \r\n, found in socket reply. */
-		{ .data = TEST_SET_BYTES("\r"),                       .expected_output = "{CR}"                                 },
-		{ .data = TEST_SET_BYTES("\n"),                       .expected_output = "{LF}"                                 },
-		{ .data = TEST_SET_BYTES("\rHello_WORLD\n"),          .expected_output = "{CR}Hello_WORLD{LF}"                  },
-		{ .data = TEST_SET_BYTES("\n\r\rHello_WORLD\n\n\r"),  .expected_output = "{LF}{CR}{CR}Hello_WORLD{LF}{LF}{CR}"  },
+		{ .data = TESTS_SET_BYTES("\r"),                       .expected_output = "{CR}"                                 },
+		{ .data = TESTS_SET_BYTES("\n"),                       .expected_output = "{LF}"                                 },
+		{ .data = TESTS_SET_BYTES("\rHello_WORLD\n"),          .expected_output = "{CR}Hello_WORLD{LF}"                  },
+		{ .data = TESTS_SET_BYTES("\n\r\rHello_WORLD\n\n\r"),  .expected_output = "{LF}{CR}{CR}Hello_WORLD{LF}{LF}{CR}"  },
 
 		/* -1 integer in the middle. Testing -1 because the value was
             involved in 39fd657fd62942e4d13e198a3dc2d7d7eb6d3920, and I want

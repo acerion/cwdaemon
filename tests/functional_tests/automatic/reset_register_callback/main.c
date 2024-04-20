@@ -117,8 +117,8 @@ int main(int argc, char * const * argv)
 	server_t server = { .events = &events };
 	client_t client = { .events = &events };
 	morse_receiver_t morse_receiver = { .events = &events };
-	const test_request_t message1 = TEST_SET_BYTES("paris");
-	const test_request_t message2 = TEST_SET_BYTES("finger");
+	const test_request_t message1 = TESTS_SET_BYTES("paris");
+	const test_request_t message2 = TESTS_SET_BYTES("finger");
 
 
 	if (0 != test_setup(&server, &client, &morse_receiver, &test_opts)) {

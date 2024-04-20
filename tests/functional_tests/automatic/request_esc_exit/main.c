@@ -121,7 +121,7 @@ static test_case_t g_test_cases[] = {
 
 	{ .description          = "exiting a cwdaemon server that played some message",
 	  .send_message_request = true,
-	  .full_message         = TEST_SET_BYTES("paris"),
+	  .full_message         = TESTS_SET_BYTES("paris"),
 	  .expected_events      = { { .etype = etype_morse      },
 	                            { .etype = etype_req_exit   },
 	                            { .etype = etype_sigchld    }, },

@@ -91,32 +91,32 @@ typedef struct test_case_t {
 static test_case_t g_test_cases[N_CLIENTS] = {
 	{ .description    = "client 1 data",
 	  .caret          = false,
-	  .play_request   = TEST_SET_BYTES("request_1 11111 11111 11111 111111111 111111111?"),
-	  .esc_h_request  = TEST_SET_BYTES("\033hreply_111 11111 11111 11111 111111111 111111111!"),
+	  .play_request   = TESTS_SET_BYTES("request_1 11111 11111 11111 111111111 111111111?"),
+	  .esc_h_request  = TESTS_SET_BYTES("\033hreply_111 11111 11111 11111 111111111 111111111!"),
 	},
 
 	{ .description    = "client 2 data",
 	  .caret          = true,
-	  .play_request   = TEST_SET_BYTES("caret_222 22222 22222 22222 222222222 22222222?^"),
+	  .play_request   = TESTS_SET_BYTES("caret_222 22222 22222 22222 222222222 22222222?^"),
 	},
 
 	{ .description    = "client 3 data",
 	  .caret          = false,
-	  .play_request   = TEST_SET_BYTES("request_3 33333 33333 33333 333333333 333333333?"),
-	  .esc_h_request  = TEST_SET_BYTES("\033hreply_333 33333 33333 33333 333333333 333333333!"),
+	  .play_request   = TESTS_SET_BYTES("request_3 33333 33333 33333 333333333 333333333?"),
+	  .esc_h_request  = TESTS_SET_BYTES("\033hreply_333 33333 33333 33333 333333333 333333333!"),
 
 	},
 
 	{ .description    = "client 4 data",
 	  .caret          = true,
-	  .play_request   = TEST_SET_BYTES("caret_444 44444 44444 44444 444444444 44444444?^"),
+	  .play_request   = TESTS_SET_BYTES("caret_444 44444 44444 44444 444444444 44444444?^"),
 
 	},
 
 	{ .description    = "client 5 data",
 	  .caret          = false,
-	  .play_request   = TEST_SET_BYTES("request_555555555555555555555555555555555555555?"),
-	  .esc_h_request  = TEST_SET_BYTES("\033hreply_55555555555555555555555555555555555555555!"),
+	  .play_request   = TESTS_SET_BYTES("request_555555555555555555555555555555555555555?"),
+	  .esc_h_request  = TESTS_SET_BYTES("\033hreply_55555555555555555555555555555555555555555!"),
 	},
 };
 

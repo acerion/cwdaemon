@@ -171,7 +171,7 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 	int socket = open_socket_to_server(server, server_in_port);
 	setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof (tv));
 
-	const test_request_t requested_message_value = TEST_SET_BYTES("e");
+	const test_request_t requested_message_value = TESTS_SET_BYTES("e");
 	const char * requested_reply_value   = "t";
 
 	client_t client = { .sock = socket };
@@ -201,8 +201,8 @@ int test_get_test_wpm(void)
 	/* Remember that some receive timeouts in tests were selected when the
 	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
 	   overrunning the timeouts. */
-	if (0 != cwdaemon_random_uint(TEST_WPM_MIN, TEST_WPM_MAX, (unsigned int *) &wpm)) {
-		wpm = TEST_WPM_DEFAULT;
+	if (0 != cwdaemon_random_uint(TESTS_WPM_MIN, TESTS_WPM_MAX, (unsigned int *) &wpm)) {
+		wpm = TESTS_WPM_DEFAULT;
 	}
 
 	return wpm;
@@ -220,7 +220,7 @@ int test_get_test_tone(void)
 
 	unsigned int freq = 0;
 	if (0 != cwdaemon_random_uint(lower, upper, &freq)) {
-		freq = TEST_TONE_EASY;
+		freq = TESTS_TONE_EASY;
 	}
 
 	return (int) freq;

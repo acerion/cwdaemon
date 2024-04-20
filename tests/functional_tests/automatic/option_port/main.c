@@ -115,27 +115,27 @@ static test_case_t g_test_cases[] = {
 	  TODO acerion 2024.03.28: Come up with a better representation of port
 	  to avoid such special cases. Current solution is not clear.
 	 */
-	{ .description = "failure case: port 0",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = -1,
+	{ .description = "failure case: port 0",        .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = -1,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
 
-	{ .description = "failure case: port 1",        .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = 1,
+	{ .description = "failure case: port 1",        .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = 1,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
-	{ .description = "failure case: port MIN - 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
+	{ .description = "failure case: port MIN - 2",  .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 2,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
-	{ .description = "failure case: port MIN - 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
+	{ .description = "failure case: port MIN - 1",  .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MIN - 1,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
 
 	/* All valid ports between MIN and MAX are indirectly tested by other
 	   functional tests that use random valid port. Here we just explicitly
 	   test the MIN and MAX itself */
-	{ .description = "success case: port MIN",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
+	{ .description = "success case: port MIN",      .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MIN,
 	  .expected_events  = { { .etype = etype_morse }, }, },
-	{ .description = "success case: port MAX",      .full_message = TEST_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
+	{ .description = "success case: port MAX",      .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = false,  .port = CWDAEMON_NETWORK_PORT_MAX,
 	  .expected_events  = { { .etype = etype_morse }, }, },
 
-	{ .description = "failure case: port MAX + 1",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
+	{ .description = "failure case: port MAX + 1",  .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 1,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
-	{ .description = "failure case: port MAX + 2",  .full_message = TEST_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
+	{ .description = "failure case: port MAX + 2",  .full_message = TESTS_SET_BYTES("paris"),  .expected_fail = true,   .port = CWDAEMON_NETWORK_PORT_MAX + 2,
 	  .expected_events  = { { .etype = etype_sigchld }, }, },
 };
 

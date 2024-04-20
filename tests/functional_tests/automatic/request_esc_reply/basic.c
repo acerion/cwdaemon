@@ -76,11 +76,11 @@ static test_case_t g_test_cases[] = {
 	   string in reply. */
 	{ .description             = "success case, empty reply value - no terminating NUL in esc request",
 
-	  .esc_request             = TEST_SET_BYTES("\033h"),
-	  .expected_reply          = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033h"),
+	  .expected_reply          = TESTS_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },
@@ -92,11 +92,11 @@ static test_case_t g_test_cases[] = {
 	   request. */
 	{ .description             = "success case, empty reply value - with terminating NUL in esc request",
 
-	  .esc_request             = TEST_SET_BYTES("\033h\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
-	  .expected_reply          = TEST_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033h\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
+	  .expected_reply          = TESTS_SET_BYTES(    "h\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },
@@ -106,11 +106,11 @@ static test_case_t g_test_cases[] = {
 	   single-letter string in reply. */
 	{ .description             = "success case, single-letter as a value of reply",
 
-	  .esc_request             = TEST_SET_BYTES("\033hX"),
-	  .expected_reply          = TEST_SET_BYTES(    "hX\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033hX"),
+	  .expected_reply          = TESTS_SET_BYTES(    "hX\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },
@@ -120,11 +120,11 @@ static test_case_t g_test_cases[] = {
 	   single-word string in reply. */
 	{ .description             = "success case, a word as value of reply, no terminating NUL in esc request",
 
-	  .esc_request             = TEST_SET_BYTES("\033hreply"),
-	  .expected_reply          = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033hreply"),
+	  .expected_reply          = TESTS_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },
@@ -135,11 +135,11 @@ static test_case_t g_test_cases[] = {
 	   esc request. */
 	{ .description             = "success case, a word as value of reply, with terminating NUL in esc request",
 
-	  .esc_request             = TEST_SET_BYTES("\033hreply\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
-	  .expected_reply          = TEST_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033hreply\0"),   /* Notice the explicit terminating NUL. It will be ignored by daemon. */
+	  .expected_reply          = TESTS_SET_BYTES(    "hreply\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },
@@ -148,11 +148,11 @@ static test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. We request cwdaemon server to send us
 	   full-sentence string in reply. */
 	{ .description             = "success case, a sentence as a value of reply",
-	  .esc_request             = TEST_SET_BYTES("\033hThis is a reply to your 27th request."),
-	  .expected_reply          = TEST_SET_BYTES(    "hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char copied from esc request. */
+	  .esc_request             = TESTS_SET_BYTES("\033hThis is a reply to your 27th request."),
+	  .expected_reply          = TESTS_SET_BYTES(    "hThis is a reply to your 27th request.\r\n"), /* Notice the 'h' char copied from esc request. */
 
-	  .plain_request           = TEST_SET_BYTES("paris"),
-	  .expected_morse_receive  =                "paris",
+	  .plain_request           = TESTS_SET_BYTES("paris"),
+	  .expected_morse_receive  =                 "paris",
 
 	  .expected_events         = { { .etype = etype_reply  },
 	                               { .etype = etype_morse  }, },

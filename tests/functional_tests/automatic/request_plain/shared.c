@@ -182,11 +182,11 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 	/* There is a lot of characters in test cases. Let's play them quickly to
 	   make the test short. */
-	const int wpm = TEST_WPM_MAX;
+	const int wpm = TESTS_WPM_MAX;
 
 	/* Prepare local test instance of cwdaemon server. */
 	const server_options_t server_opts = {
-		.tone           = TEST_TONE_EASY,
+		.tone           = TESTS_TONE_EASY,
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
 		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
