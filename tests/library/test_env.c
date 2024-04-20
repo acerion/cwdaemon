@@ -36,9 +36,9 @@
 
 
 
-bool test_env_is_usable(test_env_flags_t flags)
+bool testing_env_is_usable(testing_env_flags_t flags)
 {
-	if (flags & test_env_libcw_without_signals) {
+	if (flags & testing_env_libcw_without_signals) {
 		const uint32_t v = (uint32_t) cw_version();
 		const uint32_t current = (v & 0xffff0000) >> 16U;
 		const uint32_t revision =  v & 0x0000ffff;

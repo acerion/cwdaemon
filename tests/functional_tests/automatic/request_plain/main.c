@@ -45,6 +45,7 @@
 
 #include "tests/library/log.h"
 #include "tests/library/random.h"
+#include "tests/library/test_env.h"
 #include "tests/library/test_options.h"
 
 
@@ -64,12 +65,10 @@ static const char * g_test_name = "plain request";
 
 int main(int argc, char * const * argv)
 {
-#if 0
-	if (!test_env_is_usable(test_env_libcw_without_signals)) {
-		test_log_err("Test: preconditions for test env are not met, exiting\n");
+	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
+		test_log_err("Test: preconditions for testing env are not met, exiting %s\n", "");
 		exit(EXIT_FAILURE);
 	}
-#endif
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
