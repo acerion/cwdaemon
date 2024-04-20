@@ -246,7 +246,6 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 		.wpm            = wpm,
 		.supervisor_id  = test_opts->supervisor_id,
 	};
-
 	if (0 != server_start(&server_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon %s\n", "");
 		failure = true;

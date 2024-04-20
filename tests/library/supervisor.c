@@ -25,6 +25,8 @@
 
 
 /**
+   @file
+
    Supervisor: a program monitoring execution of test cwdaemon instance.
 
    cwdaemon is being executed inside of supervisor. The name may not be the
@@ -60,7 +62,7 @@
    command line, and with PID and network port known to the test binary.
 
    In order to use the supervisor, you just have to explicitly assign a value
-   to `supervisor_id` members of `server_options_t` variable before passing
+   to `supervisor_id` member of `server_options_t` variable before passing
    the variable to server_start().
 */
 
@@ -80,7 +82,7 @@
 
 
 
-int get_args_valgrind(const char ** argv, int * argc)
+int append_options_valgrind(const char ** argv, int * argc)
 {
 	argv[(*argc)++] = "valgrind";
 	argv[(*argc)++] = "-s";
@@ -93,7 +95,7 @@ int get_args_valgrind(const char ** argv, int * argc)
 
 
 
-int get_args_gdb(const char ** argv, int * argc)
+int append_options_gdb(const char ** argv, int * argc)
 {
 	argv[(*argc)++] = "gdb";
 	argv[(*argc)++] = "--args";

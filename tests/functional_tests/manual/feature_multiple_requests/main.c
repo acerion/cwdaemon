@@ -222,7 +222,7 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 
 #if 0
 	/* Prepare local test instance of cwdaemon server. */
-	server_options_t server_opts = {
+	const server_options_t server_opts = {
 		.tone           = tests_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,

@@ -25,7 +25,14 @@
 
 
 /**
-   Data types and functions for managing a child process.
+   @file
+
+   Data types and functions for managing test instance of cwdaemon server.
+
+   Right now the test instance is a cwdaemon process started on local machine
+   (on the same machine on which test programs are being run). Currently
+   there is no possibility to manage a remote test instance of cwdaemon and
+   run tests on it.
 
    Functional tests may need to start an instance of cwdaemon server process
    on which to run tests. The code in this file makes it easier to start,
@@ -70,16 +77,26 @@
 
 
 
-static int cwdaemon_start(const char * path, const server_options_t * server_opts, server_t * server);
+static int append_option_port(server_options_t const * server_opts, const char ** argv, int * argc, int * port);
+static int append_option_sound_system(server_options_t const * server_opts, const char ** argv, int * argc);
+static int append_option_tty_pins(server_options_t const * server_opts, const char ** argv, int * argc);
+static int start_process(const char * path, const server_options_t * server_opts, server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
 
+static int append_option_short_long(char const * opt_short, char const * opt_long, char const * value, const char ** argv, int * argc);
+
+
 static char g_arg_tone[TONE_BUF_SIZE] = { 0 };
+static char g_arg_wpm[WPM_BUF_SIZE] = { 0 };
 
 
 
+
+// Quick tip on how to start the cwdaemon process manually:
 // LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/acerion/lib ~/sbin/cwdaemon -d ttyS0 -n -x p  -s 10 -T 1000 > /dev/null
-/* TODO: make sure that child process is killed when a test is terminated
-   with Ctrl+C. */
+
+// TODO (acerion) 2024.04.20: make sure that child process is killed when
+// tester presses Ctrl-C in the middle of a test.
 
 
 
@@ -98,6 +115,8 @@ static char g_arg_tone[TONE_BUF_SIZE] = { 0 };
    in @p server_opts to see how cwdaemon handles it. 'in_port_t' type would not
    allow such value.
 
+   @reviewed_on{2024.04.20}
+
    @param[in] server_opts cwdaemon's configuration options
    @paran[out] port Port on which cwdaemon should listen
 
@@ -109,14 +128,14 @@ static int get_port_number(const server_options_t * server_opts, int * port)
 	if (server_opts->l4_port == -1) {
 		/* Special case used in "option_port" functional test. Run the
 		   process with invalid port zero. */
-		test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", 0);
 		*port = 0;
+		test_log_warn("Test: requested value of port is out of range: %d, continuing with the value anyway\n", *port);
 	} else if (server_opts->l4_port == 0) {
 		/* Generate random (but still valid, within valid range) port
 		   number. */
 		in_port_t random_valid_port = 0;
 		if (0 != find_unused_random_biased_local_udp_port(&random_valid_port)) {
-			test_log_err("Test: failed to get random port %s\n", "");
+			test_log_err("Test: failed to get random valid port %s\n", "");
 			return -1;
 		}
 		*port = (int) random_valid_port;
@@ -137,7 +156,7 @@ static int get_port_number(const server_options_t * server_opts, int * port)
 
 
 /**
-   @brief Conditionally add "network port" option to @p argv
+   @brief Conditionally append to @p argv the "network port" option
 
    The option is added either in short form "-p" or in long form "--port".
    The form is selected at random. This is used to test that both short
@@ -149,6 +168,8 @@ static int get_port_number(const server_options_t * server_opts, int * port)
    argv. This is used to test that cwdaemon can run correctly without
    explicit port option. cwdaemon should use default port in such situation.
 
+   @reviewed_on{2024.04.20}
+
    @param[in] server_opts cwdaemon's configuration options
    @param[out] argv processes' argv vector to which to append "port" option
    @param[in/out] argc Index to @p argv, incremented by this function
@@ -157,7 +178,7 @@ static int get_port_number(const server_options_t * server_opts, int * port)
    @return 0 on success
    @return -1 on failure
 */
-static int get_option_port(const server_options_t * server_opts, const char ** argv, int * argc, int * port)
+static int append_option_port(const server_options_t * server_opts, const char ** argv, int * argc, int * port)
 {
 	if (0 != get_port_number(server_opts, port)) {
 		test_log_err("Test: failed to get port number from server opts %s\n", "");
@@ -177,20 +198,11 @@ static int get_option_port(const server_options_t * server_opts, const char ** a
 		}
 	}
 
-	bool use_long_opt = false;
-	if (0 != cwdaemon_random_bool(&use_long_opt)) {
-		test_log_err("Test: failed go get 'use long opt' random boolean %s\n", "");
-		return -1;
-	}
-
 	static char port_buf[PORT_BUF_SIZE] = { 0 }; /* This must be static because the string will be shared with caller. */
 	snprintf(port_buf, sizeof (port_buf), "%d", *port);
-	if (use_long_opt) {
-		argv[(*argc)++] = "--port";
-	} else {
-		argv[(*argc)++] = "-p";
+	if (0 != append_option_short_long("-p", "--port", port_buf, argv, argc)) {
+		return -1;
 	}
-	argv[(*argc)++] = port_buf;
 
 	return 0;
 }
@@ -198,24 +210,183 @@ static int get_option_port(const server_options_t * server_opts, const char ** a
 
 
 
-int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_opts, server_t * server)
+/// @brief Append to @p argv either short or long form of option
+///
+/// Choose at random whether to append given option (@p opt_short, @p
+/// opt_long) and its value (@p value) in its short or long form.
+///
+/// If @p value is NULL then this token is not appended to @p argv.
+///
+/// @p argc is incremented accordingly.
+///
+/// This function was created to give us possibility to pass both forms of
+/// option to cwdaemon - this is also something that we want to test to some
+/// degree.
+///
+/// @param[in] opt_short Short form of command line option (e.g. "-p")
+/// @param[in] opt_long Long form of command line option (e.g. "--port")
+/// @param[in] value Value of option
+/// @param[out] argv Processes' argv vector to which to append option (and value)
+/// @param[in/out] argc Index to @p argv, incremented by this function
+///
+/// @return 0 on success
+/// @return -1 on failure
+static int append_option_short_long(char const * opt_short, char const * opt_long, char const * value, const char ** argv, int * argc)
+{
+	bool use_long_opt = false;
+	if (0 != cwdaemon_random_bool(&use_long_opt)) {
+		test_log_err("Test: failed go get 'use long opt' random boolean %s\n", "");
+		return -1;
+	}
+
+	if (use_long_opt) {
+		argv[(*argc)++] = opt_long;
+	} else {
+		argv[(*argc)++] = opt_short;
+	}
+	if (value) {
+		argv[(*argc)++] = value;
+	}
+
+	return 0;
+}
+
+
+
+
+/**
+   @brief Conditionally append to @p argv the "sound system" option
+
+   @reviewed_on{2024.04.20}
+
+   @param[in] server_opts cwdaemon's configuration options
+   @param[out] argv Processes' argv vector to which to append the option
+   @param[in/out] argc Index to @p argv, incremented by this function
+
+   @return 0 on success
+   @return -1 on failure
+*/
+static int append_option_sound_system(server_options_t const * server_opts, const char ** argv, int * argc)
+{
+	switch (server_opts->sound_system) {
+	case CW_AUDIO_CONSOLE:
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "c";
+		break;
+	case CW_AUDIO_OSS:
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "o";
+		break;
+	case CW_AUDIO_ALSA:
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "a";
+		break;
+	case CW_AUDIO_PA:
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "p";
+		break;
+	case CW_AUDIO_SOUNDCARD:
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "s";
+		break;
+	case CW_AUDIO_NULL: /* It's not NONE, it's really NULL! */
+		argv[(*argc)++] = "-x";
+		argv[(*argc)++] = "n";
+		break;
+	case CW_AUDIO_NONE:
+		; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
+		break;
+	default:
+		test_log_err("Test: unsupported %u sound system\n", server_opts->sound_system);
+		return -1;
+	};
+
+	return 0;
+}
+
+
+
+
+/**
+   @brief Conditionally append to @p argv the "tty pins" option
+
+   @param[in] server_opts cwdaemon's configuration options
+   @param[out] argv processes' argv vector to which to append the option
+   @param[in/out] argc Index to @p argv, incremented by this function
+
+   @return 0
+*/
+static int append_option_tty_pins(server_options_t const * server_opts, const char ** argv, int * argc)
+{
+	if (server_opts->tty_pins.explicit) {
+		/* tty options for cwdaemon server have been explicitly defined.
+		   Use them here. */
+		switch (server_opts->tty_pins.pin_keying) {
+		case TIOCM_DTR:
+			argv[(*argc)++] = "-o";
+			argv[(*argc)++] = "key=dtr";
+			break;
+		case TIOCM_RTS:
+			argv[(*argc)++] = "-o";
+			argv[(*argc)++] = "key=rts";
+			break;
+		default:
+			break;
+		}
+
+		switch (server_opts->tty_pins.pin_ptt) {
+		case TIOCM_DTR:
+			argv[(*argc)++] = "-o";
+			argv[(*argc)++] = "ptt=dtr";
+			break;
+		case TIOCM_RTS:
+			argv[(*argc)++] = "-o";
+			argv[(*argc)++] = "ptt=rts";
+			break;
+		default:
+			break;
+		}
+	} else {
+		; /* Allow cwdaemon server to use default assignment of tty pins. */
+	}
+
+	return 0;
+}
+
+
+
+
+/// @brief Start a new process with all necessary command line options
+///
+/// Start a @p cwdaemon_path binary with options specified by @p server_opts.
+/// Put the data representing the started process into @p server.
+///
+/// @reviewed_on{2024.04.20}
+///
+/// @param[in] cwdaemon_path Path to binary that should be started
+/// @param[in] server_opts Options used to start the process
+/// @param[out] server Representation of started server instance
+///
+/// @return 0 on success
+/// @return -1 on failure
+static int start_process(const char * cwdaemon_path, const server_options_t * server_opts, server_t * server)
 {
 	int l4_port = 0;
 
 	const char * argv[40] = { 0 };
 	int argc = 0;
-	const char * top_level_exec_path = cwdaemon_path; /* First item in argv[] passed to execv(). */
+	const char * execve_pathname = cwdaemon_path; /* First argument passed to execv(). */
 
 	switch (server_opts->supervisor_id) {
 	case supervisor_id_none:
 		break;
 	case supervisor_id_valgrind:
-		get_args_valgrind(argv, &argc);
-		top_level_exec_path = "/usr/bin/valgrind";
+		append_options_valgrind(argv, &argc);
+		execve_pathname = "/usr/bin/valgrind"; /* TODO (acerion) 2024.04.20: discover this path in runtime? */
 		break;
 	case supervisor_id_gdb:
-		get_args_gdb(argv, &argc);
-		top_level_exec_path = "/usr/bin/gdb";
+		append_options_gdb(argv, &argc);
+		execve_pathname = "/usr/bin/gdb"; /* TODO (acerion) 2024.04.20: discover this path in runtime? */
 		break;
 	default:
 		test_log_err("Test: can't get top level exec path: unhandled supervisor id %u\n", server_opts->supervisor_id);
@@ -224,112 +395,60 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 
 	argv[argc++] = cwdaemon_path;
 
-	if (0 != get_option_port(server_opts, argv, &argc, &l4_port)) {
+	/// This is called before fork() because the port number must be known to
+	/// parent process.
+	if (0 != append_option_port(server_opts, argv, &argc, &l4_port)) {
 		test_log_err("Test: failed to get 'port' option for command line %s\n", "");
 		return -1;
 	}
 
 	pid_t pid = fork();
 	if (0 == pid) {
-		char * env[ENV_MAX_COUNT + 1] = { 0 };
-		if (0 != prepare_env(env)) {
-			test_log_err("Test: failed to prepare env table for child process %s\n", "");
-			return -1;
-		}
-
 		if (0 != server_opts->tone) {
 			argv[argc++] = "-T";
 			snprintf(g_arg_tone, sizeof (g_arg_tone), "%d", server_opts->tone);
 			argv[argc++] = g_arg_tone;
 		}
 
-		switch (server_opts->sound_system) {
-		case CW_AUDIO_CONSOLE:
-			argv[argc++] = "-x";
-			argv[argc++] = "c";
-			break;
-		case CW_AUDIO_OSS:
-			argv[argc++] = "-x";
-			argv[argc++] = "o";
-			break;
-		case CW_AUDIO_ALSA:
-			argv[argc++] = "-x";
-			argv[argc++] = "a";
-			break;
-		case CW_AUDIO_PA:
-			argv[argc++] = "-x";
-			argv[argc++] = "p";
-			break;
-		case CW_AUDIO_SOUNDCARD:
-			argv[argc++] = "-x";
-			argv[argc++] = "s";
-			break;
-		case CW_AUDIO_NULL: /* It's not NONE, it's really NULL! */
-			argv[argc++] = "-x";
-			argv[argc++] = "n";
-			break;
-		case CW_AUDIO_NONE:
-			; /* NOOP. NONE == 0. Just don't pass audio system arg to cwdaemon. */
-			break;
-		default:
-			test_log_err("Test: unsupported %u sound system\n", server_opts->sound_system);
+		if (0 != append_option_sound_system(server_opts, argv, &argc)) {
+			test_log_err("Test: failed to append 'sound system' option for command line %s\n", "");
 			return -1;
-		};
+		}
 
 		if (server_opts->nofork) {
 			argv[argc++] = "-n";
 		}
+
 		if ('\0' != server_opts->cwdevice_name[0]) {
 			argv[argc++] = "-d";
 			argv[argc++] = server_opts->cwdevice_name;
 		}
-		char wpm_buf[WPM_BUF_SIZE] = { 0 };
+
 		if (server_opts->wpm) {
-			snprintf(wpm_buf, sizeof (wpm_buf), "%d", server_opts->wpm);
+			snprintf(g_arg_wpm, sizeof (g_arg_wpm), "%d", server_opts->wpm);
 			argv[argc++] = "-s";
-			argv[argc++] = wpm_buf;
+			argv[argc++] = g_arg_wpm;
 		}
-		if (server_opts->tty_pins.explicit) {
-			/* tty options for cwdaemon server have been explicitly defined.
-			   Use them here. */
-			switch (server_opts->tty_pins.pin_keying) {
-			case TIOCM_DTR:
-				argv[argc++] = "-o";
-				argv[argc++] = "key=dtr";
-				break;
-			case TIOCM_RTS:
-				argv[argc++] = "-o";
-				argv[argc++] = "key=rts";
-				break;
-			default:
-				break;
+
+		append_option_tty_pins(server_opts, argv, &argc);
+
+		// Debug print-out of the options array.
+		if (1) {
+			int i = 0;
+			while (argv[i]) {
+				fprintf(stderr, "%s ", argv[i]);
+				i++;
 			}
-
-			switch (server_opts->tty_pins.pin_ptt) {
-			case TIOCM_DTR:
-				argv[argc++] = "-o";
-				argv[argc++] = "ptt=dtr";
-				break;
-			case TIOCM_RTS:
-				argv[argc++] = "-o";
-				argv[argc++] = "ptt=rts";
-				break;
-			default:
-				break;
-			}
-		} else {
-			; /* Allow cwdaemon server to use default assignment of tty pins. */
+			fprintf(stderr, "\n");
 		}
 
-
-		int b = 0;
-		while (argv[b]) {
-			fprintf(stderr, "%s ", argv[b]);
-			b++;
+		char * env[ENV_MAX_COUNT + 1] = { 0 };
+		if (0 != prepare_env(env)) {
+			test_log_err("Test: failed to prepare env table for child process %s\n", "");
+			return -1;
 		}
-		fprintf(stderr, "\n");
 
-		execve(top_level_exec_path, (char * const *) argv, env);
+		execve(execve_pathname, (char * const *) argv, env);
 		test_log_err("Test: returning after failed exec(): %s\n", strerror(errno));
 		exit(EXIT_FAILURE); /* Calling "return -1" doesn't result in proper behaviour of waitpid. */
 	} else {
@@ -409,12 +528,12 @@ int cwdaemon_start(const char * cwdaemon_path, const server_options_t * server_o
 
 
 
-int server_start(const server_options_t * server_opts, server_t * server)
+int server_start(server_options_t const * server_opts, server_t * server)
 {
 	const char * path = TESTS_CWDAEMON_PATH;
-	if (0 != cwdaemon_start(path, server_opts, server)) {
+	if (0 != start_process(path, server_opts, server)) {
 		/* Some test cases may expect the server not to start (e.g. when
-		   testing values of options out-of-range. Therefore this is just a
+		   testing values of options out-of-range). Therefore this is just a
 		   warning. */
 
 		/* TODO (acerion) 2024.02.09: get more info about why process failed.
@@ -424,7 +543,8 @@ int server_start(const server_options_t * server_opts, server_t * server)
 		return -1;
 	}
 
-	if (0 == strlen(server_opts->l3_address)) {
+	const bool use_default_server_ip = 0 == strlen(server_opts->l3_address);
+	if (use_default_server_ip) {
 		snprintf(server->ip_address, sizeof (server->ip_address), "%s", "127.0.0.1");
 	} else {
 		snprintf(server->ip_address, sizeof (server->ip_address), "%s", server_opts->l3_address);
@@ -435,12 +555,18 @@ int server_start(const server_options_t * server_opts, server_t * server)
 
 
 
-/**
-   Prepare environment of cwdaemon process started with execve().
 
-   @return 0 on success
-   @return -1 on failure
-*/
+/// @brief Prepare environment of cwdaemon process started with execve().
+///
+/// Put into @p env the environment variables necessary to start cwdaemon.
+/// The last element in @p env will be set to NULL.
+///
+/// @reviewed_on{2024.04.20}
+///
+/// @param env Array into which to put env variables.
+///
+/// @return 0 on success
+/// @return -1 on failure
 static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 {
 #define BUF_SIZE 1024
@@ -457,8 +583,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 			test_log_err("Test: overflow when writing ld_path to env table %s\n", "");
 			return -1;
 		}
-		env[env_i] = ld_path;
-		env_i++;
+		env[env_i++] = ld_path;
 	}
 
 
@@ -486,8 +611,7 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 				test_log_err("Test: overflow when writing XDG RUNTIME DIR to env table %s\n", "");
 				return -1;
 			}
-			env[env_i] = xdg_runtime;
-			env_i++;
+			env[env_i++] = xdg_runtime;
 		}
 	}
 
@@ -507,7 +631,8 @@ static int prepare_env(char * env[ENV_MAX_COUNT + 1])
 
 int local_server_stop(server_t * server, client_t * client)
 {
-	/* This is a non-fuzzing variant of 'stop' function, so the third arg is 'false'. */
+	// The function is not meant to be used for fuzzing of EXIT Escape
+	// request, so the third arg to the _fuzz() call below is 'false'.
 	return local_server_stop_fuzz(server, client, false);
 }
 
@@ -519,38 +644,36 @@ int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz)
 	int retval = 0;
 
 	/*
-	  TODO acerion 2023.12.17: first check if the process with given pid and
-	  process name exists. It's possible that a test has crashed a process.
-	  If it happened, we have to know about it and react to it.
+	  TODO (acerion) 2023.12.17: first check if the process with given pid
+	  and process name exists. It's possible that a test has crashed a
+	  process. If it happened, we have to know about it and react to it.
 	*/
 
 	/* First ask nicely for a clean exit. */
+	test_request_t exit_request = { 0 };
+	size_t pos = 0;
+	exit_request.bytes[pos++] = ASCII_ESC;
+	exit_request.bytes[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
+	exit_request.n_bytes = pos;
 	if (do_fuzz) {
 		test_log_debug("cwdaemon server: will try to fuzz cwdaemon while sending EXIT escape request %s\n", "");
-		test_request_t value = { 0 };
-		size_t pos = 0;
-		value.bytes[pos++] = ASCII_ESC;
-		value.bytes[pos++] = CWDAEMON_ESC_REQUEST_EXIT;
-		const size_t n_random_bytes = sizeof (value.bytes) - pos;
-		if (0 != cwdaemon_random_bytes(value.bytes + pos, n_random_bytes)) {
+		const size_t n_random_bytes = sizeof (exit_request.bytes) - pos;
+		if (0 != cwdaemon_random_bytes(exit_request.bytes + pos, n_random_bytes)) {
 			test_log_warn("cwdaemon server: failed to get random bytes when preparing EXIT esc request %s\n", "");
 			/* Don't do anything more. We have to send the message, even if
 			   we can't prepare random value. */
 		}
-		value.n_bytes = pos + n_random_bytes;
-		if (0 != client_send_request(client, &value)) {
-			test_log_err("cwdaemon server: failed to send fuzzing EXIT request to server %s\n", "");
-		}
-	} else {
-		if (0 != client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0)) {
-			test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", "");
-		}
+		exit_request.n_bytes += n_random_bytes;
 	}
+	if (0 != client_send_request(client, &exit_request)) {
+		test_log_err("cwdaemon server: failed to send EXIT request to server %s\n", do_fuzz ? "(with fuzzing)" : "");
+	}
+
 
 	/* Give the server some time to exit. */
 	const int sleep_retv = test_sleep_nonintr(2);
 	if (sleep_retv) {
-		test_log_notice("Test: error during sleep while waiting for local server to exit %s\n", "");
+		test_log_notice("cwdaemon server: error during sleep while waiting for local server to exit %s\n", "");
 	}
 
 	if (server->supervisor_id != supervisor_id_none) {
@@ -563,11 +686,11 @@ int local_server_stop_fuzz(server_t * server, client_t * client, bool do_fuzz)
 	/* Now check if test instance of cwdaemon is no longer present, as expected. */
 	if (0 == waitpid(server->pid, &server->wstatus, WNOHANG)) {
 		/* Process still exists, kill it. */
-		test_log_err("Test: local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL %s\n", "");
+		test_log_err("cwdaemon server: local test instance of cwdaemon process is still active despite being asked to exit, sending SIGKILL %s\n", "");
 		/* The fact that we need to kill cwdaemon with a
 		   signal is a bug. */
 		kill(server->pid, SIGKILL);
-		test_log_notice("Test: local test instance of cwdaemon was forcibly killed %s\n", "");
+		test_log_notice("cwdaemon server: local test instance of cwdaemon was forcibly killed %s\n", "");
 		retval = -1;
 	}
 
