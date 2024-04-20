@@ -159,7 +159,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		test_log_err("Expectation %d: incorrect count of 'reply' events: expected %d, got %d\n", expectation_idx, expected_reply_cnt, reply_cnt);
 		return -1;
 	}
-	const event_t * socket_event = &events->events[reply_idx];
+	const event_t * reply_event = &events->events[reply_idx];
 
 	test_log_info("Expectation %d: types of events are correct\n", expectation_idx);
 
@@ -168,7 +168,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 3;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_morse_and_reply_events_order(expectation_idx, morse_idx, reply_idx)) {
+		const bool morse_is_earlier = morse_idx < reply_idx;
+		if (0 != expect_morse_and_reply_events_order(expectation_idx, morse_is_earlier)) {
 			return -1;
 		}
 	} else {
@@ -180,7 +181,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 4;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.reply, &test_case->expected_reply)) {
+		if (0 != expect_reply_match(expectation_idx, &reply_event->u.reply, &test_case->expected_reply)) {
+			test_log_err("Expectation %d: expectation not met\n", expectation_idx);
 			return -1;
 		}
 	} else {
@@ -192,7 +194,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 5;
 	if (expecting_morse_event) {
-		if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
+		if (0 != expect_morse_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
 			return -1;
 		}
 	} else {
@@ -204,7 +206,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 6;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_idx, morse_event, reply_idx, socket_event)) {
+		const bool morse_is_earlier = morse_idx < reply_idx;
+		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_is_earlier, morse_event, reply_event)) {
 			return -1;
 		}
 	} else {

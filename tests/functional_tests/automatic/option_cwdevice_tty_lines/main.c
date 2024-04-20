@@ -407,7 +407,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	expectation_idx = 3;
 	char expected[1024] = { 0 };
 	snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
-	if (0 != expect_morse_receive_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
+	if (0 != expect_morse_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
 		return -1;
 	}
 
