@@ -128,10 +128,10 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
+	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
 		return -1;
 	}
-	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->event_idx);
+	test_log_info("Expectation %d: count of events is correct: %d\n", expectation_idx, events->events_cnt);
 
 
 
@@ -146,20 +146,20 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	}
 	const event_t * morse_event = &events->events[morse_idx];
 
-	int socket_idx = -1;
-	const int socket_cnt = events_find_by_type(events, etype_reply, &socket_idx);
+	int reply_idx = -1;
+	const int reply_cnt = events_find_by_type(events, etype_reply, &reply_idx);
 	if (expecting_socket_reply_event) {
-		if (1 != socket_cnt) {
-			test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, found %d\n", expectation_idx, socket_cnt);
+		if (1 != reply_cnt) {
+			test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, found %d\n", expectation_idx, reply_cnt);
 			return -1;
 		}
 	} else {
-		if (0 != socket_cnt) {
-			test_log_err("Expectation %d: incorrect count of Morse receive events: expected 0, found %d\n", expectation_idx, socket_cnt);
+		if (0 != reply_cnt) {
+			test_log_err("Expectation %d: incorrect count of Morse receive events: expected 0, found %d\n", expectation_idx, reply_cnt);
 			return -1;
 		}
 	}
-	const event_t * socket_event = &events->events[socket_idx];
+	const event_t * reply_event = &events->events[reply_idx];
 
 	test_log_info("Expectation %d: found expected events\n", expectation_idx);
 
@@ -168,7 +168,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 3;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_morse_and_socket_event_order(expectation_idx, morse_idx, socket_idx)) {
+		if (0 != expect_morse_and_reply_events_order(expectation_idx, morse_idx, reply_idx)) {
 			return -1;
 		}
 	} else {
@@ -180,7 +180,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 4;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_morse_and_socket_events_distance(expectation_idx, morse_idx, morse_event, socket_idx, socket_event)) {
+		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_idx, morse_event, reply_idx, reply_event)) {
 			return -1;
 		}
 	} else {
@@ -202,7 +202,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 6;
 	if (expecting_socket_reply_event) {
-		if (0 != expect_socket_reply_match(expectation_idx, &socket_event->u.reply, &test_case->expected_reply)) {
+		if (0 != expect_socket_reply_match(expectation_idx, &reply_event->u.reply, &test_case->expected_reply)) {
 			return -1;
 		}
 	} else {

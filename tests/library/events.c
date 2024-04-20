@@ -24,18 +24,22 @@
 
 
 /**
+   @file
+
    Functions and data structures for events, used in for cwdaemon tests.
 
-   Events encapsulate actions performed by cwdaemon server that reflect
-   functionalities of cwdaemon.
+   Events encapsulate actions performed either by tests or by cwdaemon server
+   that reflect functionalities of cwdaemon.
 
-   The actions can include:
-    - keying a Morse code on cwdevice,
-    - toggling PTT pin on cwdevice,
-    - sending back reply to server's network client.
+   The actions include:
+    - keying a Morse code on cwdevice by cwdaemon,
+    - toggling PTT pin on cwdevice by cwdaemon,
+    - sending back reply to tests by cwdaemon,
+    - sending EXIT Escape request to cwdaemon by tests,
+    - receiving SIGCHLD signal from Operating System when tested cwdaemon server exits.
 
    Recording the actions and confirming that they occur in proper order and
-   at proper interval is vital for verification and validation of cwdaemon's
+   at proper intervals is vital for verification and validation of cwdaemon's
    behaviour.
 */
 
@@ -62,52 +66,54 @@
 
 
 
-void events_print(const events_t * events)
+void events_print(events_t const * events)
 {
-	const struct timespec first_ts = events->events[0].tstamp;
+	struct timespec const * first_ts = &events->events[0].tstamp;
 
 
 	const size_t n_events = sizeof (events->events) / sizeof (events->events[0]);
-	for (size_t e = 0; e < n_events; e++) {
+	for (size_t idx = 0; idx < n_events; idx++) {
 
-		const event_t * event = &events->events[e];
+		const event_t * event = &events->events[idx];
 
 		if (event->etype == etype_none) {
 			/* End of events. */
 			break;
 		}
 
-		/* Normalize timestamps. Make the timestamps more readable. */
-		const struct timespec ts = event->tstamp;
-		struct timespec diff = { 0 };
-		timespec_diff(&first_ts, &ts, &diff);
+		// All timestamps will be relative to timestamp of first event to
+		// make them more readable (to make time diffs between events easier
+		// to recognize and read).
+		struct timespec const * this_ts = &event->tstamp;
+		struct timespec relative_ts = { 0 };
+		timespec_diff(first_ts, this_ts, &relative_ts);
 
 		switch (event->etype) {
 		case etype_morse:
-			test_log_debug("Test: event #%02zu: %3ld.%09ld: Morse receive:  [%s]\n",
-			               e,
-			               diff.tv_sec, diff.tv_nsec,
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: received Morse: [%s]\n",
+			               idx,
+			               relative_ts.tv_sec, relative_ts.tv_nsec,
 			               event->u.morse_receive.string);
 			break;
 		case etype_reply:
 			{
 				char printable[PRINTABLE_BUFFER_SIZE(sizeof (event->u.reply.bytes))] = { 0 };
-				test_log_debug("Test: event #%02zu: %3ld.%09ld: socket receive: [%s]\n",
-				               e,
-				               diff.tv_sec, diff.tv_nsec,
+				test_log_debug("Test: event #%02zu: %3ld.%09ld: received reply: [%s]\n",
+				               idx,
+				               relative_ts.tv_sec, relative_ts.tv_nsec,
 				               get_printable_string(event->u.reply.bytes, event->u.reply.n_bytes, printable, sizeof (printable)));
 			}
 			break;
 		case etype_sigchld:
-			test_log_debug("Test: event #%02zu: %3ld.%09ld: SIGCHLD: wstatus = 0x%04x\n",
-			               e,
-			               diff.tv_sec, diff.tv_nsec,
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: received SIGCHLD: wstatus = 0x%04x\n",
+			               idx,
+			               relative_ts.tv_sec, relative_ts.tv_nsec,
 			               (unsigned int) event->u.sigchld.wstatus);
 			break;
 		case etype_req_exit:
-			test_log_debug("Test: event #%02zu: %3ld.%09ld: EXIT request\n",
-			               e,
-			               diff.tv_sec, diff.tv_nsec);
+			test_log_debug("Test: event #%02zu: %3ld.%09ld: sent EXIT request\n",
+			               idx,
+			               relative_ts.tv_sec, relative_ts.tv_nsec);
 			break;
 		case etype_none:
 		default:
@@ -121,11 +127,14 @@ void events_print(const events_t * events)
 
 void events_clear(events_t * events)
 {
-	memset(events->events, 0, sizeof (events->events));
-	events->event_idx = 0;
+	pthread_mutex_lock(&events->mutex);
+	{
+		memset(events->events, 0, sizeof (events->events));
+		events->events_cnt = 0;
+	}
+	pthread_mutex_unlock(&events->mutex);
 
-	/* Don't touch events::mutex. */
-
+	/* Don't clear events::mutex in any way. */
 }
 
 
@@ -135,16 +144,20 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 {
 	pthread_mutex_lock(&events->mutex);
 	{
-		event_t * event = &events->events[events->event_idx];
+		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
+		// within bounds.
+		event_t * event = &events->events[events->events_cnt];
 		event->etype = etype_morse;
 		event->tstamp = *last_character_receive_tstamp;
 
+		// TODO (acerion) 2024.04.18: add some error checking if incoming
+		// message is no longer than available space.
 		event_morse_receive_t * morse = &event->u.morse_receive;
 		const size_t n = sizeof (morse->string);
 		strncpy(morse->string, buffer, n);
 		morse->string[n - 1] = '\0';
 
-		events->event_idx++;
+		events->events_cnt++;
 	}
 	pthread_mutex_unlock(&events->mutex);
 
@@ -154,20 +167,22 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 
 
-int events_insert_socket_receive_event(events_t * events, const test_reply_data_t * received)
+int events_insert_reply_received_event(events_t * events, const test_reply_data_t * received)
 {
-	struct timespec spec = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &spec);
+	struct timespec timestamp = { 0 };
+	clock_gettime(CLOCK_MONOTONIC, &timestamp);
 
 	pthread_mutex_lock(&events->mutex);
 	{
-		event_t * event = &events->events[events->event_idx];
+		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
+		// within bounds.
+		event_t * event = &events->events[events->events_cnt];
 		event->etype = etype_reply;
-		event->tstamp = spec;
+		event->tstamp = timestamp;
 
 		memcpy(&event->u.reply, received, sizeof (test_reply_data_t));
 
-		events->event_idx++;
+		events->events_cnt++;
 	}
 	pthread_mutex_unlock(&events->mutex);
 
@@ -181,12 +196,14 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
 {
 	pthread_mutex_lock(&events->mutex);
 	{
-		events->events[events->event_idx].tstamp = exit_info->sigchld_timestamp;
-		events->events[events->event_idx].etype = etype_sigchld;
-		events->events[events->event_idx].u.sigchld.wstatus = exit_info->wstatus;
+		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
+		// within bounds.
+		events->events[events->events_cnt].tstamp = exit_info->sigchld_timestamp;
+		events->events[events->events_cnt].etype = etype_sigchld;
+		events->events[events->events_cnt].u.sigchld.wstatus = exit_info->wstatus;
 
-		events->event_idx++;
-		//qsort(events->events, events->event_idx, sizeof (event_t), event_sort_fn);
+		events->events_cnt++;
+		//qsort(events->events, events->events_cnt, sizeof (event_t), event_sort_fn);
 	}
 	pthread_mutex_unlock(&events->mutex);
 
@@ -195,6 +212,14 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
 
 
 
+
+/// @brief Compare two events by their timestamp
+///
+/// Function used as "compar" argument to qsort().
+///
+/// @reviewed_on{2024.04.18}
+///
+/// @return value expected from "compar" function
 static int cmpevent(const void * p1, const void * p2)
 {
 	const event_t * a = (const event_t *) (const long int *) p1;
@@ -228,7 +253,7 @@ int events_sort(events_t * events)
 		test_log_debug("Test: ^^^^^^^^ %s\n", "");
 	}
 
-	qsort(events->events, (size_t) events->event_idx, sizeof (event_t), cmpevent);
+	qsort(events->events, (size_t) events->events_cnt, sizeof (event_t), cmpevent);
 
 	if (do_debug) {
 		test_log_debug("Test: events after sort: %s\n", "");
@@ -243,10 +268,10 @@ int events_sort(events_t * events)
 
 
 
-int events_find_by_type(const events_t * events, event_type_t type, int * first_idx)
+int events_find_by_type(events_t const * events, event_type_t type, int * first_idx)
 {
 	int found_cnt = 0;
-	for (int i = 0; i < events->event_idx; i++) {
+	for (int i = 0; i < events->events_cnt; i++) {
 		if (events->events[i].etype == type) {
 			found_cnt++;
 			if (1 == found_cnt) {

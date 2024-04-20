@@ -42,8 +42,8 @@ int expect_morse_receive_match(int expectation_idx, const char * received, const
    @brief The end of receiving of Morse message and the time of receiving a
    reply should be separated by close time span
 
-   Evaluate time span between socket receive event and the end of receiving a
-   Morse message
+   Evaluate time span between 'reply' event and the end of receiving a Morse
+   message.
 
    Currently (0.12.0) the time span is ~300ms. TODO acerion 2023.12.31:
    shorten the time span in cwdaemon.
@@ -51,16 +51,16 @@ int expect_morse_receive_match(int expectation_idx, const char * received, const
    @return 0 if expectation is met
    @return -1 otherwise
 */
-int expect_morse_and_socket_events_distance(int expectation_idx, int morse_idx, const event_t * morse_event, int socket_idx, const event_t * socket_event);
+int expect_morse_and_reply_events_distance(int expectation_idx, int morse_idx, const event_t * morse_event, int reply_idx, const event_t * reply_event);
 
 
 
 
 /**
-   @brief End of Morse receive and the moment of receiving a socket reply are in proper order (on time scale)
+   @brief End of Morse receive and the moment of receiving a reply are in proper order (on time scale)
 
    I'm not 100% sure what the correct order should be in perfect
-   implementation of cwdaemon. In 0.12.0 it is "socket receive" first, and
+   implementation of cwdaemon. In 0.12.0 it is "reply" first, and
    then "morse receive" second, unless a message sent to server ends with
    space.
 
@@ -74,7 +74,7 @@ int expect_morse_and_socket_events_distance(int expectation_idx, int morse_idx, 
    @return 0 if expectation is met
    @return -1 otherwise
 */
-int expect_morse_and_socket_event_order(int expectation_idx, int morse_idx, int socket_idx);
+int expect_morse_and_reply_events_order(int expectation_idx, int morse_idx, int reply_idx);
 
 
 

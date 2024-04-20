@@ -85,7 +85,7 @@ static int test_events_sort(void)
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
 		},
-		.event_idx = 5,
+		.events_cnt = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
 	};
 
@@ -97,7 +97,7 @@ static int test_events_sort(void)
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.reply = { .n_bytes = 4, .bytes = "Four" }, },
 		},
-		.event_idx = 5,
+		.events_cnt = 5,
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
 	};
 
@@ -114,7 +114,7 @@ static int test_events_sort(void)
 
 	  ./tests_events.c:109:11: warning: comparing object representation of type 'events_t' which does not have a unique object representation; consider comparing the members of the object manually [bugprone-suspicious-memory-comparison,cert-exp42-c,cert-flp37-c]
 	*/
-	for (int i = 0; i < sorted.event_idx; i++) {
+	for (int i = 0; i < sorted.events_cnt; i++) {
 		if (sorted.events[i].etype != events.events[i].etype) {
 			test_log_err("Unit tests: events_sort() failed at event type in event %d\n", i);
 			return -1;

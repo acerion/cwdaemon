@@ -200,7 +200,7 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 				get_printable_string(client->received_data.bytes, client->received_data.n_bytes, printable, sizeof (printable));
 				test_log_info("cwdaemon client: received %zu/[%s] from cwdaemon server\n",
 				              client->received_data.n_bytes, printable);
-				events_insert_socket_receive_event(client->events, &client->received_data);
+				events_insert_reply_received_event(client->events, &client->received_data);
 			}
 		} else {
 			test_log_err("cwdaemon client: poll() error %s\n", "");

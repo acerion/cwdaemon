@@ -51,13 +51,13 @@ int expect_morse_receive_match(int expectation_idx, const char * received, const
 
 
 
-int expect_morse_and_socket_events_distance(int expectation_idx, int morse_idx, const event_t * morse_event, int socket_idx, const event_t * socket_event)
+int expect_morse_and_reply_events_distance(int expectation_idx, int morse_idx, const event_t * morse_event, int reply_idx, const event_t * reply_event)
 {
 	struct timespec diff = { 0 };
-	if (morse_idx < socket_idx) {
-		timespec_diff(&morse_event->tstamp, &socket_event->tstamp, &diff);
+	if (morse_idx < reply_idx) {
+		timespec_diff(&morse_event->tstamp, &reply_event->tstamp, &diff);
 	} else {
-		timespec_diff(&socket_event->tstamp, &morse_event->tstamp, &diff);
+		timespec_diff(&reply_event->tstamp, &morse_event->tstamp, &diff);
 	}
 
 	/*
@@ -78,9 +78,9 @@ int expect_morse_and_socket_events_distance(int expectation_idx, int morse_idx, 
 
 
 
-int expect_morse_and_socket_event_order(int expectation_idx, int morse_idx, int socket_idx)
+int expect_morse_and_reply_events_order(int expectation_idx, int morse_idx, int reply_idx)
 {
-	if (morse_idx < socket_idx) {
+	if (morse_idx < reply_idx) {
 		/* This would be the correct order of events, but currently
 		   (cwdaemon 0.11.0, 0.12.0) this is not the case: the order of
 		   events is reverse. Right now I'm not willing to fix it yet.

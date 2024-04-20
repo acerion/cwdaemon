@@ -318,7 +318,10 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		}
 	} while (remaining_wait_ms > 0);
 
-	if (last_character_receive_tstamp.tv_sec != 0 && last_character_receive_tstamp.tv_nsec != 0) {
+	const bool something_received = last_character_receive_tstamp.tv_sec != 0 && last_character_receive_tstamp.tv_nsec != 0;
+	// TODO (acerion) 2024.04.18: we could also look at index variable used
+	// to index buffer[] to see if something was received.
+	if (something_received) {
 		events_insert_morse_receive_event(morse_receiver->events, buffer, &last_character_receive_tstamp);
 	}
 

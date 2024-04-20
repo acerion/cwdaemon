@@ -314,9 +314,11 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 		client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0);
 		pthread_mutex_lock(&events->mutex);
 		{
-			clock_gettime(CLOCK_MONOTONIC, &events->events[events->event_idx].tstamp);
-			events->events[events->event_idx].etype = etype_req_exit;
-			events->event_idx++;
+			// TODO (acerion) 2024.04.18: add checking if events_cnt is not
+			// out of bounds.
+			clock_gettime(CLOCK_MONOTONIC, &events->events[events->events_cnt].tstamp);
+			events->events[events->events_cnt].etype = etype_req_exit;
+			events->events_cnt++;
 		}
 		pthread_mutex_unlock(&events->mutex);
 
@@ -419,7 +421,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
+	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
 		return -1;
 	}
 

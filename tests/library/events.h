@@ -83,7 +83,7 @@ typedef struct {
 #define EVENTS_MAX 20
 typedef struct {
 	event_t events[EVENTS_MAX];
-	int event_idx;          /**< Indicates first non-occupied slot in events[]. */
+	int events_cnt;               /**< Count of events in events array. Also indicates first non-occupied slot in events[]. */
 	pthread_mutex_t mutex;
 } events_t;
 
@@ -91,11 +91,13 @@ typedef struct {
 
 
 /**
-   @brief Pretty-print events to stderr
+   @brief Pretty-print events to tests' log output
+
+   @reviewed_on{2024.04.18}
 
    @param[in] events Events structure to print
 */
-void events_print(const events_t * events);
+void events_print(events_t const * events);
 
 
 
@@ -104,6 +106,8 @@ void events_print(const events_t * events);
    @brief Clear events structure
 
    This function can be used to erase old events from @p events structure.
+
+   @reviewed_on{2024.04.18}
 
    @param[in/out] events Events structure to clear
 */
@@ -120,23 +124,26 @@ void events_clear(events_t * events);
    Sometimes the events are inserted in non-chronological order. They need to
    be sorted before being evaluated.
 
-   One example of non-chronological insert is with Morse receiver: the
-   receiver will stop receiving after a break after last character grows into
-   inter-word-space. However the event that should be saved to events array
-   has happened shortly before, when the last character has been received.
+   One example of non-chronological insert is with Morse receiver: Morse
+   receiver remembers the time stamp of last received character, but the
+   receiver is able to recognize that no more characters will come only after
+   a longer time.
 
-   An example sequence of events is this:
-    1. a character is received, timestamp of receiving is saved in temporary
-       variable.
-    2. a space after the character is long enough to be recognized after some
-       time as inter-word-space,
-    3. some event unrelated to Morse code has occurred and is recorded into
-       events array.
-    4. nothing more is received after that time (after the inter-word-space),
-       so receiver decides to save the timestamp from temporary variable into
-       events array.
-    So even though event from point 1 happened earlier, it is added to array
-    of events after event from point 3.
+   An example sequence of events for Morse receiver is this:
+   1. a character is received, timestamp of receiving it is saved in temporary
+      variable.
+   2. a space after the character is long enough to be recognized after some
+      time as inter-word-space,
+   3. some event unrelated to Morse code has occurred and is recorded into
+      events array.
+   4. nothing more is received after that time (after the inter-word-space),
+      so receiver decides to save the timestamp from temporary variable into
+      events array.
+
+   So even though event from point 1 happened earlier, it is added to array
+   of events after event from point 3.
+
+   @reviewed_on{2024.04.18}
 
    @param[in/out] events Events structure in which the events should be sorted.
 
@@ -147,8 +154,41 @@ int events_sort(events_t * events);
 
 
 
+/// @brief Wrapper for easy inserting of "Morse received" event into events store
+///
+/// @reviewed_on{2024.04.18}
+///
+/// @param events Events store into which to insert the event
+/// @param[in] buffer Buffer with received text
+/// @param[in] last_character_receive_tstamp Timestamp at which the end of receiving of the last character has occurred
+///
+/// @return 0
 int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp);
-int events_insert_socket_receive_event(events_t * events, const test_reply_data_t * received);
+
+
+
+
+/// @brief Wrapper for easy inserting of "reply received" event into events store
+///
+/// @reviewed_on{2024.04.18}
+///
+/// @param events Events store into which to insert the event
+/// @param[in] received Received data
+///
+/// @return 0
+int events_insert_reply_received_event(events_t * events, const test_reply_data_t * received);
+
+
+
+
+/// @brief Wrapper for easy inserting of "SIGCHLD received" event into events store
+///
+/// @reviewed_on{2024.04.18}
+///
+/// @param events Events store into which to insert the event
+/// @param[in] exit_info Information about child's exit status
+///
+/// @return 0
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);
 
 
@@ -160,6 +200,8 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
    @p first_idx is updated by the function only if some event(s) of type @p
    type are found.
 
+   @reviewed_on{2024.04.19}
+
    @param[in] events Events array in which to look for events of given type
    @param[in] type Type of event(s) to find in @p events
    @param[out] first_idx Index of first event of given type (if function returns value greater than zero)
@@ -167,7 +209,7 @@ int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exi
    @return count of events of given type (may be zero)
    @return -1 on errors
 */
-int events_find_by_type(const events_t * events, event_type_t type, int * first_idx);
+int events_find_by_type(events_t const * events, event_type_t type, int * first_idx);
 
 
 
@@ -176,6 +218,8 @@ int events_find_by_type(const events_t * events, event_type_t type, int * first_
    @brief Get count of events with event type other than "none"
 
    Function stops counting after finding a first "none" event, or after reaching end of array.
+
+   @reviewed_on{2024.04.19}
 
    @param[in] events Events array in which to count the events
 

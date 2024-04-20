@@ -362,14 +362,14 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->event_idx, expected_events_cnt)) {
+	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
 		return -1;
 	}
 
 
 
 
-	if (0 == events->event_idx) {
+	if (0 == events->events_cnt) {
 		/* No more expectations to fulfill. */
 		test_log_info("Test: evaluation of test events was successful %s\n", "");
 		return 0;
