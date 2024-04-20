@@ -323,8 +323,8 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 	const size_t n_iters = 40;
 	for (size_t iter = 0; iter < n_iters; ) {
 
-		unsigned int lower = 0;
-		unsigned int upper = (unsigned int) n_test_cases - 1;
+		const unsigned int lower = 0;
+		const unsigned int upper = (unsigned int) n_test_cases - 1;
 		unsigned int test_case_number = 0;
 		cwdaemon_random_uint(lower, upper, &test_case_number);
 
@@ -366,8 +366,8 @@ typedef enum value_mode_t {
 
 static int get_value_mode(value_mode_t * value_mode)
 {
-	unsigned int lower = (unsigned int) value_mode_empty;
-	unsigned int upper = (unsigned int) value_mode_random_bytes;
+	const unsigned int lower = (unsigned int) value_mode_empty;
+	const unsigned int upper = (unsigned int) value_mode_random_bytes;
 	unsigned int x = 0;
 	cwdaemon_random_uint(lower, upper, &x);
 	*value_mode = (value_mode_t) x;
@@ -419,11 +419,11 @@ static void test_request_set_random_n_bytes(test_request_t * request)
 {
 	/* Change the value of n_bytes only sometimes, at random. */
 	bool keep_value_size = true;
-	cwdaemon_random_biased_bool(10, &keep_value_size); /* bias = 10 -> very biased towards returning 'false'. */
+	cwdaemon_random_biased_towards_false(10, &keep_value_size); /* bias = 10 -> very biased towards returning 'false'. */
 
 	if (!keep_value_size) {
-		unsigned int lower = request->bytes[0] == ASCII_ESC ? 2 : 0;
-		unsigned int upper = (unsigned int) sizeof (request->bytes);
+		const unsigned int lower = request->bytes[0] == ASCII_ESC ? 2 : 0;
+		const unsigned int upper = (unsigned int) sizeof (request->bytes);
 		unsigned int val = 0;
 		cwdaemon_random_uint(lower, upper, &val);
 
@@ -514,6 +514,9 @@ static int test_request_set_value_int(test_request_t * request, int range_low, i
 			return 0;
 		}
 	case value_mode_in_range:
+		// TODO (acerion) 2024.04.19: cwdaemon's weighting option accepts
+		// also negative values, so this call to _uint() doesn't cover all
+		// range. Use _int() function?
 		cwdaemon_random_uint((unsigned int) range_low, (unsigned int) range_high, &value_in_range);
 		snprintf(val_start, val_size, "%u", value_in_range);
 		request->n_bytes += strlen(val_start) + 1;
@@ -881,7 +884,7 @@ static int test_fn_caret_message(client_t * client, __attribute__((unused)) cons
 			}
 		}
 
-		unsigned int lower = 0;
+		const unsigned int lower = 0;
 		unsigned int upper = (unsigned int) request.n_bytes - 1;
 		if (upper) {
 			/* Be sure to not select index of value[] that would point to

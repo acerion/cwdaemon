@@ -38,6 +38,8 @@
 
 
 /**
+   @file
+
    Wrappers around libc's random number generator functions.
 
    Thanks to the wrappers I can easily handle platform-specific stuff in just
@@ -51,21 +53,21 @@
 uint32_t cwdaemon_srandom(uint32_t seed)
 {
 	if (0 == seed) {
-		/* Naive fix for cert-msc32-c. cwdaemon doesn't require anything
-		   better now. */
+		/* Naive fix for cert-msc32-c. cwdaemon's tests don't require
+		   anything better now. */
 
-		struct timespec spec;
-		clock_gettime(CLOCK_MONOTONIC, &spec);
+		struct timespec timestamp = { 0 };
+		clock_gettime(CLOCK_MONOTONIC, &timestamp);
 		/*
 		  999_999_999 nanoseconds is represented in hex with 8 hex digits as
 		  3b9ac9ff. This means that if I apply 7-digits mask, I will have
 		  7x4=28 random-ish bits.
 		*/
-		const uint32_t nsec = (((uint32_t) spec.tv_nsec) & 0xfffffff) << (32 - 28);
+		const uint32_t nsec = (((uint32_t) timestamp.tv_nsec) & 0xfffffff) << (32 - 28);
 
 		const uint32_t now = (uint32_t) time(NULL);
 		const uint32_t pid = (uint32_t) getpid();
-		const uint32_t local_seed = now ^ pid ^ nsec;
+		const uint32_t local_seed = nsec ^ now ^ pid;
 		srandom((unsigned int) local_seed);
 		return local_seed;
 	} else {
@@ -97,13 +99,13 @@ int cwdaemon_random_uint(unsigned int lower, unsigned int upper, unsigned int * 
 {
 	unsigned int value = (unsigned int) random();
 
-	unsigned int div = ((upper + 1) - lower);
-	if (0 == div) {
+	unsigned int range = ((upper + 1) - lower);
+	if (0 == range) {
 		/* This may happen if client passes INT_MIN and INT_MAX as lower/upper. */
 		test_log_err("Random: trying to divide by zero (calculated from lower = %u, upper = %u)\n", lower, upper);
 		return -1;
 	}
-	value %= div;
+	value %= range;
 	value += lower;
 
 	*result = value;
@@ -118,25 +120,34 @@ int cwdaemon_random_bool(bool * result)
 {
 	const unsigned int lower = 1;
 	const unsigned int upper = 100;
-	unsigned int uint = 0;
-	if (0 != cwdaemon_random_uint(lower, upper, &uint)) {
+	unsigned int val = 0;
+	if (0 != cwdaemon_random_uint(lower, upper, &val)) {
 		return -1;
 	}
 
-	*result = uint % 2;
+	*result = val % 2;
 	return 0;
 }
 
 
 
 
-int cwdaemon_random_biased_bool(unsigned int bias, bool * result)
+int cwdaemon_random_biased_towards_false(unsigned int bias, bool * result)
 {
-	unsigned int b = 0;
-	if (0 != cwdaemon_random_uint(0, bias, &b)) {
+	// bias == 1 is no bias at all. But technically it's valid value.
+	if (bias < 1) {
+		test_log_err("Random: bias can't be that low: %u\n", bias);
 		return -1;
 	}
-	*result = 0 == b;
+
+	unsigned int val = 0;
+	if (0 != cwdaemon_random_uint(0, bias, &val)) {
+		return -1;
+	}
+
+	// With growing value of 'bias' it's less likely for 'val' to be zero, so
+	// we return 'false' more often than 'true'.
+	*result = 0 == val;
 	return 0;
 }
 
@@ -146,8 +157,8 @@ int cwdaemon_random_biased_bool(unsigned int bias, bool * result)
 int cwdaemon_random_bytes(char * buffer, size_t size)
 {
 	for (size_t i = 0; i < size; i++) {
-		unsigned int a = 0x00;
-		unsigned int b = 0xff;
+		const unsigned int a = 0x00;
+		const unsigned int b = 0xff;
 		unsigned int val = 0;
 		if (0 != cwdaemon_random_uint(a, b, &val)) {
 			return -1;

@@ -128,13 +128,11 @@ int find_unused_random_biased_local_udp_port(in_port_t * port)
 	  TODO acerion 2024.01.07: can we somehow test automatically the fact
 	  that sometimes the port is not specified explicitly?
 	*/
-	unsigned int bias_input = 0;
-	const unsigned int bias_min = 0;
-	const unsigned int bias_max = 20;
-	if (0 != cwdaemon_random_uint(bias_min, bias_max, &bias_input)) {
+	bool try_default_port_first = false;
+	if (0 != cwdaemon_random_biased_towards_false(20, &try_default_port_first)) {
+		test_log_err("Test: can't decide if to return default port first %s\n", "");
 		return -1;
 	}
-	const bool try_default_port_first = bias_input == bias_max;
 
 
 	const int n = 1000; /* We should be able to find some unused port in 1000 tries, right? */
