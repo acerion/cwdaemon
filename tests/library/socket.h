@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_SOCKET_H
-#define CWDAEMON_TEST_LIB_SOCKET_H
+#ifndef CWDAEMON_TESTS_LIB_SOCKET_H
+#define CWDAEMON_TESTS_LIB_SOCKET_H
 
 
 
@@ -15,6 +15,8 @@
 /// specification of cwdaemon server either by IP address or domain name.
 /// Make sure to test a case where host running a cwdaemon server is
 /// specified by domain name
+//
+/// @reviewed_on{2024.04.19}
 ///
 /// @param[in] server_ip_address IP address of host running cwdaemon server
 /// @param[in] server_in_port network port on which the cwdaemon server is listening
@@ -26,5 +28,5 @@ int open_socket_to_server(const char * server_ip_address, in_port_t server_in_po
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_SOCKET_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_SOCKET_H */
 
