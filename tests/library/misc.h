@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_MISC_H
-#define CWDAEMON_TEST_LIB_MISC_H
+#ifndef CWDAEMON_TESTS_LIB_MISC_H
+#define CWDAEMON_TESTS_LIB_MISC_H
 
 
 
@@ -34,6 +34,8 @@ typedef struct child_exit_info_t {
 
    Port is returned through @p port function argument.
 
+   @reviewed_on{2024.04.19}
+
    @param[out] port Selected port
 
    @return 0 on success
@@ -49,16 +51,18 @@ int find_unused_random_biased_local_udp_port(in_port_t * port);
 
    On errors, as a fallback, the function returns some sane default value.
 
-   The value is slightly random.
+   The value is random, but within a sane range.
 
    This function should be used to get a value of speed in tests that DO NOT
    test cwdaemon's "speed" parameter - in those tests we want to have some
    valid speed that perhaps varies between tests runs. For tests that do test
    the speed, you should use more specialized code.
 
+   @reviewd_on{2024.04.19}
+
    @return Value of Morse code speed to be used in a test
 */
-int test_get_test_wpm(void);
+int tests_get_test_wpm(void);
 
 
 
@@ -68,19 +72,21 @@ int test_get_test_wpm(void);
 
    On errors, as a fallback, the function returns some sane default value.
 
-   The value is slightly random.
+   The value is random, but within a sane range.
 
    This function should be used to get a value of tone in tests that DO NOT
    test cwdaemon's "tone" parameter - in those tests we want to have some
    valid tone that perhaps varies between tests runs. For tests that do test
    the tone, you should use more specialized code.
 
+   @reviewed_on{2024.04.19}
+
    @return Value of frequency of sound to be used in a test
 */
-int test_get_test_tone(void);
+int tests_get_test_tone(void);
 
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_MISC_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_MISC_H */
 

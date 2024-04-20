@@ -301,10 +301,10 @@ static int save_child_exit_to_events(const child_exit_info_t * child_exit_info, 
 */
 static int server_setup(server_t * server, const test_case_t * test_case, int * wpm, const test_options_t * test_opts)
 {
-	*wpm = test_get_test_wpm();
+	*wpm = tests_get_test_wpm();
 
 	const server_options_t server_opts = {
-		.tone           = test_get_test_tone(),
+		.tone           = tests_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
 		.nofork         = true,
 		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,

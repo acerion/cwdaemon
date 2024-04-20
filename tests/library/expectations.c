@@ -39,7 +39,8 @@
 /// @file
 ///
 /// What is expected of events occurring during tests? Do recorded events
-/// meet the expectations?
+/// meet the expectations planned in test scenarios? Do the recorded events
+/// match expected events?
 
 
 

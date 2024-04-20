@@ -28,9 +28,9 @@
 
 
 
-/**
-   Misc helper functions for cwdaemon tests
-*/
+/// @file
+///
+/// Misc helper functions for cwdaemon tests
 
 
 
@@ -65,6 +65,8 @@
 
 /**
    @brief Test if give local Layer 4 port is used (open) or not
+
+   @reviewed_on{2024.04.19}
 
    @param[in] port port number to test
 
@@ -101,14 +103,17 @@ int find_unused_random_biased_local_udp_port(in_port_t * port)
 	  Be slightly biased towards selecting cwdaemon's default port.
 
 	  This bias is needed to:
+
 	  - make situations where test code doesn't explicitly specify port
 	    option to be more frequent. Test code can recognize that a default
-	    port is requested, and the test code may then decide to not specify
-	    port explicitly. Not specifying port explicitly and relying on
+	    port is selected, and the test code may then decide to not specify
+	    port explicitly (command line option for port won't be passed to test
+	    instance of cwdaemon). Not specifying port explicitly and relying on
 	    implicit/default port number is just another case of functional
 	    testing.
+
 	  - make situations where cwdaemon is tested with its most commonly used
-	    port number more frequent. cwdaemon can be started with any
+	    port number slightly more frequent. cwdaemon can be started with any
 	    unprivileged port, but I believe that in 99.9% of situations it is
 	    listening on default port.
 
@@ -195,23 +200,26 @@ static bool is_remote_port_open_by_cwdaemon(const char * server, in_port_t serve
 
 
 
-int test_get_test_wpm(void)
+int tests_get_test_wpm(void)
 {
-	int wpm = 0;
-	/* Remember that some receive timeouts in tests were selected when the
-	   wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
-	   overrunning the timeouts. */
-	if (0 != cwdaemon_random_uint(TESTS_WPM_MIN, TESTS_WPM_MAX, (unsigned int *) &wpm)) {
+	unsigned int wpm = 0;
+	// Remember that some receive timeouts in tests were selected when the
+	// wpm was hardcoded to 10 wpm. Picking values lower than 10 may lead to
+	// overrunning the timeouts.
+	//
+	// TODO (acerion) 2024.04.19: check if this comment is still valid by
+	// actually using lower value of MIN.
+	if (0 != cwdaemon_random_uint(TESTS_WPM_MIN, TESTS_WPM_MAX, &wpm)) {
 		wpm = TESTS_WPM_DEFAULT;
 	}
 
-	return wpm;
+	return (int) wpm;
 }
 
 
 
 
-int test_get_test_tone(void)
+int tests_get_test_tone(void)
 {
 	/* Values in this range are not too low, and not to high. High enough to
 	   be well heard, low enough to not be unpleasant. */
