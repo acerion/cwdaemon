@@ -496,6 +496,9 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	   was short (definition of "short" is not precise). */
 	expectation_idx = 5;
 	struct timespec diff = { 0 };
+	// TODO (acerion) 2024.04.20: do we have a guarantee that the two events
+	// happened in expected order (i.e. exit request first, and sigchld
+	// second)?
 	timespec_diff(&exit_request->tstamp, &sigchld_event->tstamp, &diff);
 	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
 		test_log_err("Expectation %d: duration of exit was longer than expected: %ld.%09ld [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec);

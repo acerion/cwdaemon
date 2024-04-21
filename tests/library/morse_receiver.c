@@ -70,7 +70,7 @@
 #include "../library/thread.h"
 #include "events.h"
 #include "morse_receiver.h"
-#include "sleep.h"
+#include "tests/library/sleep.h"
 
 
 

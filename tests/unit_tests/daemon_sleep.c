@@ -140,7 +140,19 @@ static int test_millisleep_nonintr(void)
 
 
 
-/* Taken from tests/library/time_utils.c */
+/// @brief Get difference between two time stamps
+///
+/// This function is copied from tests/library/time_utils.c.
+///
+/// Get difference between an earlier timestamp @p first and later timestamp
+/// @p second. Put the difference in @p diff.
+///
+/// Caller must make sure that @p first occurred before @p second, otherwise
+/// the result will be incorrect.
+///
+/// @param[in] first First (earlier) timestamp
+/// @param[in] second Second (later) timestamp
+/// @param[out] diff The difference between @p first and @p second
 static void timespec_diff(const struct timespec * first, const struct timespec * second, struct timespec * diff)
 {
 	diff->tv_sec  = second->tv_sec - first->tv_sec;

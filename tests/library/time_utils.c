@@ -2,7 +2,7 @@
  * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,11 @@
 
 
 
-/**
-   Time functions used in cwdaemon tests.
-*/
+/// @file
+///
+/// Time functions used in cwdaemon tests.
+
+
 
 
 #define _POSIX_C_SOURCE 200809L /* struct timespec */
@@ -34,19 +36,22 @@
 
 
 #include "tests/library/time_utils.h"
-#include "sleep.h"
 
 
 
 
 void timespec_diff(const struct timespec * first, const struct timespec * second, struct timespec * diff)
 {
+	// TODO (acerion) 2024.04.20 add detection of situation where first is
+	// not really first. If there is some error in caller, I need to know
+	// this.
+
 	diff->tv_sec  = second->tv_sec - first->tv_sec;
 	diff->tv_nsec = second->tv_nsec - first->tv_nsec;
 
 	if (diff->tv_nsec < 0) {
 		diff->tv_sec--;
-		diff->tv_nsec += CWDAEMON_NANOSECS_PER_SEC;
+		diff->tv_nsec += TESTS_NANOSECS_PER_SEC;
 	}
 }
 

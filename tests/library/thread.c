@@ -34,7 +34,7 @@
 #include <string.h>
 
 #include "log.h"
-#include "sleep.h"
+#include "tests/library/sleep.h"
 #include "thread.h"
 
 

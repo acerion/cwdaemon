@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_STRING_UTILS_H
-#define CWDAEMON_TEST_LIB_STRING_UTILS_H
+#ifndef CWDAEMON_TESTS_LIB_STRING_UTILS_H
+#define CWDAEMON_TESTS_LIB_STRING_UTILS_H
 
 
 
@@ -10,10 +10,15 @@
 
 
 /**
-   Replace non-printable characters with their printable representations
+   @brief Get a copy of string in which non-printable characters are represented with their printable form
 
    A representation of @bytes with printable characters is placed in @p
    printable.
+
+   Use PRINTABLE_BUFFER_SIZE() macro in code calling this function to define
+   size of @p printable buffer.
+
+   @reviewed_on{2024.04.20}
 
    @param[in] bytes Input array of bytes to convert
    @param[in] n_bytes Count of bytes in @p bytes
@@ -27,5 +32,5 @@ char * get_printable_string(const char * bytes, size_t n_bytes, char * printable
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_STRING_UTILS_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_STRING_UTILS_H */
 

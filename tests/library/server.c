@@ -63,10 +63,10 @@
 #include "misc.h"
 #include "random.h"
 #include "server.h"
-#include "sleep.h"
 #include "socket.h"
 #include "src/cwdaemon.h"
 #include "supervisor.h"
+#include "tests/library/sleep.h"
 
 
 

@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_MORSE_RECEIVER_UTILS_H
-#define CWDAEMON_TEST_LIB_MORSE_RECEIVER_UTILS_H
+#ifndef CWDAEMON_TESTS_LIB_MORSE_RECEIVER_UTILS_H
+#define CWDAEMON_TESTS_LIB_MORSE_RECEIVER_UTILS_H
 
 
 
@@ -17,6 +17,8 @@
    pass to this function strings that only have one letter. The function will
    always return true for such strings.
 
+   @reviewed_on{2024.04.20}
+
    @param[in] received_text Text received by Morse receiver
    @param[in] expected_message The text that we have expected to receive
 
@@ -28,5 +30,5 @@ bool morse_receive_text_is_correct(const char * received_text, const char * expe
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_MORSE_RECEIVER_UTILS_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_MORSE_RECEIVER_UTILS_H */
 

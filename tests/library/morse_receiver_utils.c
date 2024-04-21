@@ -34,14 +34,14 @@
 
 
 
-#include "config.h"
+//#include "config.h"
 
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "../library/log.h"
-#include "../library/morse_receiver_utils.h"
+#include "tests/library/log.h"
+#include "tests/library/morse_receiver_utils.h"
 
 
 
@@ -49,11 +49,10 @@
 bool morse_receive_text_is_correct(const char * received_text, const char * expected_message)
 {
 	/*
-	  When comparing strings, remember that a cw receiver may have received
-	  first characters incorrectly. Text of message passed to
-	  client_send_esc_request() is often prefixed with some startup text that is
-	  allowed to be mis-received, so that the main part of text request is
-	  received correctly and can be recognized with strcasestr().
+	  When comparing strings, remember that a libcw receiver may have
+	  received first characters incorrectly (probably due to some bug in the
+	  receiver). This function disregards differences in first letters of its
+	  arguments.
 
 	  TODO acerion 2024.01.27: the function needs some improvements. The
 	  function should confirm that the expected_message is at the very end of
@@ -84,22 +83,24 @@ bool morse_receive_text_is_correct(const char * received_text, const char * expe
 		return false;
 	}
 
-	/* The condition in the loop is 'x >= 1' on purpose. The loop doesn't go
+	/* The condition in the loop is 'idx >= 1' on purpose. The loop doesn't go
 	   to 0th character because current implementation of cw receiver
 	   incorrectly receives first character. Therefore we skip it, until the
 	   receiver is fixed. TODO acerion 2024.01.27: change the value in
 	   condition to zero once the receiver is fixed. */
-	size_t ri = received_len - 1;
-	size_t ei = expected_len - 1;
-	for (; ri >= 1 && ei >= 1; ri--, ei--) {
-		if (tolower((unsigned char) received_text[ri]) != tolower((unsigned char) expected_message[ei])) {
+	size_t r_idx = received_len - 1;
+	size_t e_idx = expected_len - 1;
+	for (; r_idx >= 1 && e_idx >= 1; r_idx--, e_idx--) {
+		const char r_char = received_text[r_idx];
+		const char e_char = expected_message[e_idx];
+		if (tolower((unsigned char) r_char) != tolower((unsigned char) e_char)) {
 			test_log_err("Morse receiver: mismatch at positions %zu/%zu in [%s]/[%s]: '%c' != '%c'\n",
-			             ri, ei, received_text, expected_message, received_text[ri], expected_message[ei]);
+			             r_idx, e_idx, received_text, expected_message, r_char, e_char);
 			return false;
 		}
 		if (0) { /* Debug. */
 			test_log_debug("Morse receiver: match at positions %zu/%zu in [%s]/[%s]: '%c' == '%c'\n",
-			               ri, ei, received_text, expected_message, received_text[ri], expected_message[ei]);
+			               r_idx, e_idx, received_text, expected_message, r_char, e_char);
 		}
 	}
 

@@ -42,7 +42,7 @@
 #include "cwdevice_observer.h"
 #include "log.h"
 #include "misc.h"
-#include "sleep.h"
+#include "tests/library/sleep.h"
 
 
 

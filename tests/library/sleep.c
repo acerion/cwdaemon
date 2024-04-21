@@ -1,7 +1,7 @@
 /*
  * sleep.c - sleep functions for cwdaemon
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,18 +62,19 @@
 #include <unistd.h>
 
 #include "log.h"
-#include "sleep.h"
+#include "tests/library/sleep.h"
+#include "time_utils.h"
 
 
 
 
 int test_microsleep_nonintr(unsigned int usecs)
 {
-	const unsigned long seconds = usecs / CWDAEMON_MICROSECS_PER_SEC;
-	const unsigned long micros  = usecs % CWDAEMON_MICROSECS_PER_SEC;
+	const unsigned long seconds = usecs / TESTS_MICROSECS_PER_SEC;
+	const unsigned long micros  = usecs % TESTS_MICROSECS_PER_SEC;
 	struct timespec remaining = {
 		.tv_sec  = (long) seconds,
-		.tv_nsec = (long) (micros * CWDAEMON_NANOSECS_PER_MICROSEC)
+		.tv_nsec = (long) (micros * TESTS_NANOSECS_PER_MICROSEC)
 	};
 
 	int retv = 0;
@@ -99,7 +100,7 @@ int test_microsleep_nonintr(unsigned int usecs)
 
 int test_millisleep_nonintr(unsigned int millisecs)
 {
-	return test_microsleep_nonintr(millisecs * CWDAEMON_MICROSECS_PER_MILLISEC);
+	return test_microsleep_nonintr(millisecs * TESTS_MICROSECS_PER_MILLISEC);
 }
 
 
