@@ -115,11 +115,11 @@ static void * morse_receiver_thread_fn(void * receiver_arg);
 
 int morse_receiver_ctor(const morse_receiver_config_t * config, morse_receiver_t * receiver)
 {
-	thread_ctor(&receiver->thread);
-
+	pthread_attr_init(&receiver->thread.thread_attr);
+	receiver->thread.status = thread_not_started;
+	receiver->thread.name = "Morse receiver thread";
 	receiver->thread.thread_fn = morse_receiver_thread_fn;
 	receiver->thread.thread_fn_arg = receiver;
-	receiver->thread.name = "Morse receiver thread";
 
 	receiver->config = *config;
 
@@ -153,7 +153,7 @@ int morse_receiver_start(morse_receiver_t * receiver)
 
 int morse_receiver_wait(morse_receiver_t * receiver)
 {
-	thread_join(&receiver->thread);
+	pthread_join(receiver->thread.thread_id, NULL);
 	return 0;
 }
 

@@ -216,7 +216,8 @@ static void * client_socket_receiver_thread_poll_fn(void * client_arg)
 
 int client_socket_receive_enable(client_t * client)
 {
-	thread_ctor(&client->socket_receiver_thread);
+	pthread_attr_init(&client->socket_receiver_thread.thread_attr);
+	client->socket_receiver_thread.status = thread_not_started;
 	client->socket_receiver_thread.name = "socket receiver thread";
 	client->socket_receiver_thread.thread_fn = client_socket_receiver_thread_poll_fn;
 	client->socket_receiver_thread.thread_fn_arg = client;
@@ -255,7 +256,7 @@ int client_socket_receive_stop(client_t * client)
 	test_log_info("cwdaemon client: stopping %s\n", client->socket_receiver_thread.name);
 	client->socket_receiver_thread.thread_loop_continue = false;
 	test_millisleep_nonintr(RECEIVE_THREAD_STOP_WAIT_MS);
-	thread_join(&client->socket_receiver_thread);
+	pthread_join(client->socket_receiver_thread.thread_id, NULL);
 	test_log_info("cwdaemon client: stopped %s\n", client->socket_receiver_thread.name);
 
 	return 0;

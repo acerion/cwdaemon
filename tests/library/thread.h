@@ -1,5 +1,5 @@
-#ifndef CWDAEMON_TEST_LIB_THREAD_H
-#define CWDAEMON_TEST_LIB_THREAD_H
+#ifndef CWDAEMON_TESTS_LIB_THREAD_H
+#define CWDAEMON_TESTS_LIB_THREAD_H
 
 
 
@@ -40,6 +40,8 @@ typedef struct thread_t {
 /**
    @brief Start a given thread
 
+   @reviewed_on{2024.04.20}
+
    @param thread Preallocated thread structure
 
    @return 0 on success
@@ -50,26 +52,10 @@ int thread_start(thread_t * thread);
 
 
 
-int thread_ctor(thread_t * thread);
-
-
-
-
-/**
-   @brief Stop a given thread
-
-   @param thread Thread to stop
-
-   @return 0 on success
-   @return -1 on error
- */
-int thread_join(thread_t * thread);
-
-
-
-
 /**
    @brief Clean up thread data structure after a thread has been stopped
+
+   @reviewed_on{2024.04.20}
 
    @param thread Thread to clean up after it has been stopped
 
@@ -81,5 +67,5 @@ int thread_dtor(thread_t * thread);
 
 
 
-#endif /* #ifndef CWDAEMON_TEST_LIB_THREAD_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_THREAD_H */
 

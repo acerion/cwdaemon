@@ -2,7 +2,7 @@
  * This file is a part of cwdaemon project.
  *
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,8 @@
 
 
 
-/**
-  Wrappers around pthread functions and data structures.
-*/
+/// @file
+/// Wrappers around pthread functions and data structures.
 
 
 
@@ -36,17 +35,6 @@
 #include "log.h"
 #include "tests/library/sleep.h"
 #include "thread.h"
-
-
-
-
-int thread_ctor(thread_t * thread)
-{
-	pthread_attr_init(&thread->thread_attr);
-	thread->status = thread_not_started;
-
-	return 0;
-}
 
 
 
@@ -66,16 +54,6 @@ int thread_start(thread_t * thread)
 		test_log_err("Test: %s: thread has not started correctly\n", thread->name);
 		return -1;
 	}
-
-	return 0;
-}
-
-
-
-
-int thread_join(thread_t * thread)
-{
-	pthread_join(thread->thread_id, NULL);
 
 	return 0;
 }
