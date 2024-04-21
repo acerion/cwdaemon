@@ -260,8 +260,8 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 
 	if (test_case->send_message_request) {
 		const morse_receiver_config_t morse_config = { .wpm = wpm };
-		if (0 != morse_receiver_ctor(&morse_config, morse_receiver)) {
-			test_log_err("Test: failed to create Morse receiver %s\n", "");
+		if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
+			test_log_err("Test: failed to configure Morse receiver %s\n", "");
 			failure = true;
 		}
 	}
@@ -284,7 +284,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 		/* Send the message to be played. */
 		client_send_request(client, &test_case->full_message);
 
-		morse_receiver_wait(morse_receiver);
+		morse_receiver_wait_for_stop(morse_receiver);
 	} else {
 		/* Sending an EXIT request to a cwdaemon server that has just started
 		   and did nothing else is also a valid case. */
@@ -372,7 +372,7 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
 	   test is to stop the server in main part of the test :) */
 
 	if (test_case->send_message_request) {
-		morse_receiver_dtor(morse_receiver);
+		morse_receiver_deconfigure(morse_receiver);
 	}
 
 	/* Close our socket to cwdaemon server. */

@@ -349,8 +349,8 @@ static int testcase_setup(const server_t * server, client_t * client, morse_rece
 
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	if (0 != morse_receiver_ctor(&morse_config, morse_receiver)) {
-		test_log_err("Test: failed to create Morse receiver %s\n", "");
+	if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
+		test_log_err("Test: failed to configure Morse receiver %s\n", "");
 		failure = true;
 	}
 
@@ -373,7 +373,7 @@ static int testcase_run(const test_case_t * test_case, client_t * client, morse_
 	   specified in test case.. */
 	client_send_request(client, &test_case->full_message);
 
-	morse_receiver_wait(morse_receiver);
+	morse_receiver_wait_for_stop(morse_receiver);
 
 
 	return 0;
@@ -400,7 +400,7 @@ static int testcase_teardown(server_t * server, client_t * client, morse_receive
 		failure = true;
 	}
 
-	morse_receiver_dtor(morse_receiver);
+	morse_receiver_deconfigure(morse_receiver);
 
 	/* Close our socket to cwdaemon server. */
 	client_disconnect(client);

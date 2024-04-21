@@ -253,8 +253,8 @@ static int test_setup(server_t * server, client_t * clients, morse_receiver_t * 
 
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
-	if (0 != morse_receiver_ctor(&morse_config, morse_receiver)) {
-		test_log_err("Test: failed to create Morse receiver %s\n", "");
+	if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
+		test_log_err("Test: failed to configure Morse receiver %s\n", "");
 		failure = true;
 	}
 
@@ -286,7 +286,7 @@ static int test_teardown(server_t * server, client_t * clients, morse_receiver_t
 		failure = true;
 	}
 
-	morse_receiver_dtor(morse_receiver);
+	morse_receiver_deconfigure(morse_receiver);
 
 	for (int i = 0; i < N_CLIENTS; i++) {
 		client_socket_receive_stop(&clients[i]);
@@ -357,7 +357,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			}
 		}
 
-		morse_receiver_wait(morse_receiver);
+		morse_receiver_wait_for_stop(morse_receiver);
 	}
 
 #if 0
