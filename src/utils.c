@@ -37,9 +37,9 @@
 
 
 
-int build_full_device_path(char * path, size_t size, const char * input)
+int build_full_device_path(char * result, size_t size, const char * input)
 {
-	if (!path) {
+	if (!result) {
 		return -EINVAL;
 	}
 	if (!size) {
@@ -52,7 +52,7 @@ int build_full_device_path(char * path, size_t size, const char * input)
 	const char * dir = "/dev/";
 
 	if (0 == strncmp(input, dir, strlen(dir))) {
-		int n = snprintf(path, size, "%s", input);
+		int n = snprintf(result, size, "%s", input);
 		if (n <= 0 || (size_t) n >= size) {
 			/* FIXME 2023.05.02: enable after moving cwdaemon_debug_f* to log.c
 				(currently linking problems prevent me from using functions from
@@ -61,7 +61,7 @@ int build_full_device_path(char * path, size_t size, const char * input)
 			return -ENAMETOOLONG;
 		}
 	} else {
-		int n = snprintf(path, size, "%s%s", dir, input);
+		int n = snprintf(result, size, "%s%s", dir, input);
 		if (n <= 0 || (size_t) n >= size) {
 			/* FIXME 2023.05.02: enable after moving cwdaemon_debug_f* to log.c
 				(currently linking problems prevent me from using functions from
@@ -76,7 +76,7 @@ int build_full_device_path(char * path, size_t size, const char * input)
 		log.c in unit tests). */
 	/* FIXME 2023.05.02: this debug is called too early and is not printed to
 		console. */
-	// cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Device path to try: [%s]", path);
+	// cwdaemon_debug(CWDAEMON_VERBOSITY_D, __func__, __LINE__, "Device path to try: [%s]", result);
 	return 0;
 }
 
