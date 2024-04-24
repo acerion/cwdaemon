@@ -24,11 +24,9 @@
 
 
 
-/**
-   @file
-
-   Unit tests for tests/library/events.c
-*/
+/// @file
+///
+/// Unit tests for tests/library/events.c.
 
 
 
@@ -62,21 +60,23 @@ int main(void)
 	int i = 0;
 	while (g_tests[i]) {
 		if (0 != g_tests[i]()) {
-			fprintf(stderr, "[EE] Test result: failure in test #%d\n", i);
+			test_log_err("Test result: FAIL in test #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "[II] Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
+/// @reviewed_on{2024.04.24}
 static int test_events_sort(void)
 {
+	// Events to be sorted. Their time stamps are not in order.
 	events_t events = {
 		.events = {
 			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
@@ -89,7 +89,8 @@ static int test_events_sort(void)
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
 	};
 
-	events_t sorted = {
+	// This is how events sorted by time stamp look like.
+	const events_t expected = {
 		.events = {
 			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
@@ -101,44 +102,42 @@ static int test_events_sort(void)
 		.mutex = PTHREAD_MUTEX_INITIALIZER,
 	};
 
-	int retv = events_sort(&events);
+	// Function under test.
+	const int retv = events_sort(&events);
 	if (0 != retv) {
 		test_log_err("Unit tests: events_sort() returns non-success: %d\n", retv);
 		return -1;
 	}
 
-	/*
-	  Comparing all members one by one instead of using memcmp() is due to
-	  the fact that clang-tidy complains about usage of memcmp() in this
-	  context:
-
-	  ./tests_events.c:109:11: warning: comparing object representation of type 'events_t' which does not have a unique object representation; consider comparing the members of the object manually [bugprone-suspicious-memory-comparison,cert-exp42-c,cert-flp37-c]
-	*/
-	for (int i = 0; i < sorted.events_cnt; i++) {
-		if (sorted.events[i].etype != events.events[i].etype) {
+	// Comparing all members one by one instead of using memcmp() is due to
+	// the fact that clang-tidy complains about usage of memcmp() in this
+	// context:
+	// ./tests_events.c:109:11: warning: comparing object representation of type 'events_t' which does not have a unique object representation; consider comparing the members of the object manually [bugprone-suspicious-memory-comparison,cert-exp42-c,cert-flp37-c]
+	for (int i = 0; i < expected.events_cnt; i++) {
+		if (expected.events[i].etype != events.events[i].etype) {
 			test_log_err("Unit tests: events_sort() failed at event type in event %d\n", i);
 			return -1;
 		}
-		if (sorted.events[i].tstamp.tv_sec != events.events[i].tstamp.tv_sec
-		    || sorted.events[i].tstamp.tv_nsec != events.events[i].tstamp.tv_nsec) {
+		if (expected.events[i].tstamp.tv_sec != events.events[i].tstamp.tv_sec
+		    || expected.events[i].tstamp.tv_nsec != events.events[i].tstamp.tv_nsec) {
 			test_log_err("Unit tests: events_sort() failed at event timestamp in event %d\n", i);
 			return -1;
 		}
 
-		switch (sorted.events[i].etype) {
+		switch (expected.events[i].etype) {
 		case etype_morse:
-			if (0 != memcmp(&sorted.events[i].u.morse_receive, &events.events[i].u.morse_receive, sizeof (event_morse_receive_t))) {
+			if (0 != memcmp(&expected.events[i].u.morse_receive, &events.events[i].u.morse_receive, sizeof (event_morse_receive_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'morse receive' member in event %d\n", i);
 				return -1;
 			}
 			break;
 		case etype_reply:
 			/* TODO: clang complained about usage of memcmp() for entire struct, so I have to now be careful to compare all members and never miss some member. */
-			if (0 != memcmp(&sorted.events[i].u.reply.bytes, &events.events[i].u.reply.bytes, sizeof (events.events[i].u.reply.bytes))) {
+			if (0 != memcmp(&expected.events[i].u.reply.bytes, &events.events[i].u.reply.bytes, sizeof (events.events[i].u.reply.bytes))) {
 				test_log_err("Unit tests: events_sort() failed at 'reply.bytes' member in event %d\n", i);
 				return -1;
 			}
-			if (sorted.events[i].u.reply.n_bytes != events.events[i].u.reply.n_bytes) {
+			if (expected.events[i].u.reply.n_bytes != events.events[i].u.reply.n_bytes) {
 				test_log_err("Unit tests: events_sort() failed at 'reply.n_bytes' member in event %d\n", i);
 				return -1;
 			}
@@ -148,7 +147,7 @@ static int test_events_sort(void)
 			   make sure to update this part of code. */
 			break;
 		case etype_sigchld:
-			if (0 != memcmp(&sorted.events[i].u.sigchld, &events.events[i].u.sigchld, sizeof (event_sigchld_t))) {
+			if (0 != memcmp(&expected.events[i].u.sigchld, &events.events[i].u.sigchld, sizeof (event_sigchld_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'sigchld' member in event %d\n", i);
 				return -1;
 			}
@@ -158,6 +157,7 @@ static int test_events_sort(void)
 			break;
 		}
 	}
+
 	test_log_info("Unit tests: events_sort() passed test %s\n", "");
 	return 0;
 }

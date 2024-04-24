@@ -24,11 +24,9 @@
 
 
 
-/**
-   @file
-
-   Unit tests for tests/library/morse_receiver.c
-*/
+/// @file
+///
+/// Unit tests for tests/library/morse_receiver.c.
 
 
 
@@ -61,25 +59,26 @@ int main(void)
 	int i = 0;
 	while (g_tests[i]) {
 		if (0 != g_tests[i]()) {
-			fprintf(stderr, "[EE] Test result: failure in test #%d\n", i);
+			test_log_err("Test result: FAIL in test #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "[II] Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
-/*
-  The function talks about receiver's mistakes. Currently Morse receiver may
-  incorrectly receive first letter. Sadly this is currently accepted.
-
-  TODO acerion 2024.01.08 Review the tests once the receiver is improved.
-*/
+/// The comments in the function talk about receiver's mistakes. Currently
+/// Morse receiver may incorrectly receive first letter. Sadly this is
+/// currently accepted.
+///
+/// TODO acerion 2024.01.08 Review the tests once the receiver is improved.
+///
+/// @reviewed_on{2024.04.24}
 static int test_morse_receive_text_is_correct(void)
 {
 	const struct {
@@ -102,7 +101,7 @@ static int test_morse_receive_text_is_correct(void)
 		  .received_text = "x1",
 		  .expected_correct = true, },
 
-		/* Success case. Received string has space at the end. */
+		/* Success case. Received string has space at the end (receiver adds a space - this is expected). */
 		{ .message       = "Hello",
 		  .received_text = "Wello ",
 		  .expected_correct = true, },
@@ -117,10 +116,17 @@ static int test_morse_receive_text_is_correct(void)
 		  .received_text = "Wello ",
 		  .expected_correct = true, },
 
-		/* Success case. More complicated strings. */
+		// Success case. More complicated strings. cwdaemon ignores tab
+		// character in text sent to it.
+		///
+		// TODO (acerion) 2024.04.24: is this a fully valid test case?
+		// Receiver will never return a string with tab at the end.
 		{ .message       = "This is string, after all! \t",
 		  .received_text = "Fhis is string, after all!\t ",
 		  .expected_correct = true, },
+
+
+
 
 		/* Failure case - a mistake of receiver at the beginning of string was too large. */
 		{ .message       = "Hello",

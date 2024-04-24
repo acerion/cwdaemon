@@ -24,16 +24,14 @@
 
 
 
-
-/**
-   @file Unit tests for cwdaemon's functions that handle command line
-   options.
-*/
+/// @file
+///
+/// Unit tests for cwdaemon's functions that handle command line options.
 
 
 
 
-#include <errno.h>
+//#include <errno.h>
 #include <netinet/in.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -79,30 +77,29 @@ int main(void)
 	int i = 0;
 	while (tests[i]) {
 		if (0 != tests[i]()) {
-			fprintf(stdout, "[EE] Test result: failure in tests #%d\n", i);
+			test_log_err("Test result: FAIL in tests #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "[II] Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
+/// @reviewed_on{2024.04.23}
+///
+/// @return 0 on success
+/// @return -1 on failure
 static int test_option_network_port(void)
 {
 	const in_port_t doesnt_matter = 3333; /* Some value in the middle of valid range of port values. */
 
-	/*
-	  All these cases are valid cases. Tested function should succeed in
-	  building *some* path. The path may represent a non-existing device, but
-	  it will always be a valid string starting with "/dev/".
-	*/
 	const struct {
-		const char * opt_value;
+		char const * opt_value;
 		bool expected_success;
 		in_port_t expected_port;
 	} test_data[] = {
@@ -128,9 +125,9 @@ static int test_option_network_port(void)
 
 		{ .opt_value =      "", .expected_success = false, .expected_port = doesnt_matter }, /* Empty value of option. */
 		{ .opt_value = "paris", .expected_success = false, .expected_port = doesnt_matter }, /* Non-digits string. */
-		{ .opt_value = "1024b", .expected_success = false, .expected_port = doesnt_matter }, /* Non-only-digits string. */
+		{ .opt_value = "1024b", .expected_success = false, .expected_port = doesnt_matter }, /* Not-only-digits string. */
 		{ .opt_value = "k1025", .expected_success = false, .expected_port = doesnt_matter }, /* String starting with non-digit. */
-		{ .opt_value =  "ffff", .expected_success = false, .expected_port = doesnt_matter }, /* Hex digit, not acceptable for function expecting a decimal. */
+		{ .opt_value =   "fff", .expected_success = false, .expected_port = doesnt_matter }, /* Hex digit, value in range, but not acceptable for function expecting a decimal. */
 	};
 
 

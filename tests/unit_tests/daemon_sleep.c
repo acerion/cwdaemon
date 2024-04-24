@@ -24,17 +24,18 @@
 
 
 
+/// @file
+///
+/// Unit tests for cwdaemon/src/sleep.c.
 
-/**
-   @file Unit tests for cwdaemon/src/sleep.c
-*/
+
 
 
 #define _POSIX_C_SOURCE 199309L
 
 
-#include <errno.h>
-#include <limits.h>
+//#include <errno.h>
+//#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,6 +43,7 @@
 #include <time.h>
 
 #include "src/sleep.h"
+#include "tests/library/log.h"
 
 
 
@@ -65,19 +67,23 @@ int main(void)
 	int i = 0;
 	while (g_tests[i]) {
 		if (0 != g_tests[i]()) {
-			fprintf(stdout, "Test result: failure in tests #%d\n", i);
+			test_log_err("Test result: FAIL in tests #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
+/// @reviewed_on{2024.04.23}
+///
+/// @return 0 on success
+/// @return -1 on failure
 static int test_millisleep_nonintr(void)
 {
 	const struct {
@@ -101,35 +107,36 @@ static int test_millisleep_nonintr(void)
 
 		int retv = millisleep_nonintr(test_data[i].intended_duration_ms);
 		if (retv != test_data[i].expected_retv) {
-			fprintf(stderr, "[EE] millisleep_nonintr(%u): wrong return value: got %d, expected %d in test %zu\n",
-			        test_data[i].intended_duration_ms, retv, test_data[i].expected_retv, i);
+			test_log_err("millisleep_nonintr(%u): wrong return value: got %d, expected %d in test %zu\n",
+			             test_data[i].intended_duration_ms, retv, test_data[i].expected_retv, i);
 			return -1;
 		}
 
 		struct timespec stop = { 0 };
 		clock_gettime(CLOCK_MONOTONIC, &stop);
 
-		struct timespec duration = { 0 };
-		timespec_diff(&start, &stop, &duration);
+		struct timespec actual_duration = { 0 };
+		timespec_diff(&start, &stop, &actual_duration);
 
-		if (duration.tv_sec > 0) {
+		if (actual_duration.tv_sec > 0) {
 			/* TODO acerion 2024.03.27: add tests that can test sleep longer than second. */
-			fprintf(stderr, "[EE] unexpectedly slept for a second or more in test %zu\n", i);
+			test_log_err("unexpectedly slept for a second or more in test %zu\n", i);
 			return -1;
 		}
 
+		// Accept an actual duration of sleep that is within some range.
 		const long int lower_ms = test_data[i].intended_duration_ms - (long int) (test_data[i].intended_duration_ms * 0.05);
 		const long int upper_ms = test_data[i].intended_duration_ms + (long int) (test_data[i].intended_duration_ms * 0.05);
 
-		const long int actual_duration_ms = duration.tv_nsec / CWDAEMON_NANOSECS_PER_MILLISEC;
+		const long int actual_duration_ms = actual_duration.tv_nsec / CWDAEMON_NANOSECS_PER_MILLISEC;
 		if (actual_duration_ms < lower_ms) {
-			fprintf(stderr, "[EE] duration of sleep is shorter than expected: slept %ld, expected to sleep %ld in test %zu\n",
-			        actual_duration_ms, lower_ms, i);
+			test_log_err("duration of sleep is shorter than expected: slept %ld [ms], expected to sleep %ld [ms] in test %zu\n",
+			             actual_duration_ms, lower_ms, i);
 			return -1;
 		}
 		if (actual_duration_ms > upper_ms) {
-			fprintf(stderr, "[EE] duration of sleep is longer than expected: slept %ld, expected to sleep %ld in test %zu\n",
-			        actual_duration_ms, upper_ms, i);
+			test_log_err("duration of sleep is longer than expected: slept %ld [ms], expected to sleep %ld [ms] in test %zu\n",
+			             actual_duration_ms, upper_ms, i);
 			return -1;
 		}
 	}
@@ -142,7 +149,7 @@ static int test_millisleep_nonintr(void)
 
 /// @brief Get difference between two time stamps
 ///
-/// This function is copied from tests/library/time_utils.c.
+/// This is not a test function, this is just a helper function. This function is copied from tests/library/time_utils.c.
 ///
 /// Get difference between an earlier timestamp @p first and later timestamp
 /// @p second. Put the difference in @p diff.

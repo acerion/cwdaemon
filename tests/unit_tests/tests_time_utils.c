@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 
 
 
-/**
-   @file Unit tests for tests/library/time_utils.c
-*/
+/// @file
+///
+/// Unit tests for tests/library/time_utils.c.
 
 
 
@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tests/library/log.h"
 #include "tests/library/time_utils.h"
 
 
@@ -63,13 +64,13 @@ int main(void)
 	int i = 0;
 	while (tests[i]) {
 		if (0 != tests[i]()) {
-			fprintf(stdout, "Test result: failure in tests #%d\n", i);
+			test_log_err("Test result: FAIL in tests #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
@@ -78,19 +79,14 @@ int main(void)
 
 static int test_timespec_diff(void)
 {
-	/*
-	  All these cases are valid cases. Tested function should succeed in
-	  building *some* path. The path may represent a non-existing device, but
-	  it will always be a valid string starting with "/dev/".
-	*/
 	const long X = (long) 1000 * 1000; /* Helper constant to make numbers shorter. */
 	const struct {
 		const struct timespec first;
 		const struct timespec second;
 		const struct timespec expected;
 	} test_data[] = {
-		/* TODO acerion 2023.12.30: add tests for cases where second is earlier than first. */
-		{ .first = { 0,       0 }, .second = { 0,       0 }, .expected = { 0,       0 } },
+		/* TODO (acerion) 2023.12.30: add tests for cases where second is earlier than first. */
+		{ .first = { 0,   0 * X }, .second = { 0,   0 * X }, .expected = { 0,   0 * X } },
 		{ .first = { 0, 100 * X }, .second = { 0, 400 * X }, .expected = { 0, 300 * X } },
 		{ .first = { 0, 900 * X }, .second = { 1, 200 * X }, .expected = { 0, 300 * X } },
 		{ .first = { 0, 900 * X }, .second = { 1, 950 * X }, .expected = { 1,  50 * X } },
@@ -106,9 +102,9 @@ static int test_timespec_diff(void)
 		struct timespec diff = { 0 };
 		timespec_diff(&test_data[i].first, &test_data[i].second, &diff);
 		if (0 != memcmp(&diff, &test_data[i].expected, sizeof (struct timespec))) {
-			fprintf(stderr, "[EE] timespec_diff() gives wrong return value { %ld:%09ld} in test #%zu / %zu\n",
-			        diff.tv_sec, diff.tv_nsec,
-			        i + 1, n_tests);
+			test_log_err("timespec_diff() gives wrong return value {%ld:%09ld} in test #%zu / %zu\n",
+			             diff.tv_sec, diff.tv_nsec,
+			             i + 1, n_tests);
 			return -1;
 		}
 	}

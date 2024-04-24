@@ -24,14 +24,14 @@
 
 
 
-/**
-   @file Unit tests for tests/library/string_utils.c
-*/
+/// @file
+///
+/// Unit tests for tests/library/string_utils.c.
 
 
 
 
-#include <errno.h>
+//#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -60,30 +60,23 @@ int main(void)
 	int i = 0;
 	while (tests[i]) {
 		if (0 != tests[i]()) {
-			fprintf(stdout, "Test result: failure in tests #%d\n", i);
+			test_log_err("Test result: FAIL in tests #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
-/* TODO acerion 2024.02.18: add test cases that would result in printable
-   string that is larger than output buffer passes as an arg to tested
-   function. */
+/// @reviewed_on{2024.04.24}
 static int test_get_printable_string(void)
 {
 #define OUTPUT_SIZE 55
-	/*
-	  All these cases are valid cases. Tested function should succeed in
-	  building *some* path. The path may represent a non-existing device, but
-	  it will always be a valid string starting with "/dev/".
-	*/
 	const struct {
 		struct {
 			const char bytes[32];
@@ -92,7 +85,7 @@ static int test_get_printable_string(void)
 		const char expected_output[OUTPUT_SIZE];
 	} test_data[] = {
 		/* String that doesn't contain non-printable characters. */
-		{ .data = TESTS_SET_BYTES(""),           .expected_output = ""            },
+		{ .data = TESTS_SET_BYTES(""),            .expected_output = ""            },
 		{ .data = TESTS_SET_BYTES("Hello_WORLD"), .expected_output = "Hello_WORLD" },
 
 		/* \r\n, found in socket reply. */
@@ -101,39 +94,42 @@ static int test_get_printable_string(void)
 		{ .data = TESTS_SET_BYTES("\rHello_WORLD\n"),          .expected_output = "{CR}Hello_WORLD{LF}"                  },
 		{ .data = TESTS_SET_BYTES("\n\r\rHello_WORLD\n\n\r"),  .expected_output = "{LF}{CR}{CR}Hello_WORLD{LF}{LF}{CR}"  },
 
-		/* -1 integer in the middle. Testing -1 because the value was
-            involved in 39fd657fd62942e4d13e198a3dc2d7d7eb6d3920, and I want
-            to be able to nicely print strings with such character. */
-		{ .data = { .bytes = { -1       }, .n_bytes = 1 },                                       .expected_output = "{0xff}"                                                  },
-		{ .data = { .bytes = { -1, '\0' }, .n_bytes = 2 },                                       .expected_output = "{0xff}{NUL}"                                                  },
+		// -1 integer in the middle. I'm using test data with -1 because a
+		// -request containing '-1' triggered a bug in libcw, that I needed
+		// -to work around in 39fd657fd62942e4d13e198a3dc2d7d7eb6d3920.
+		//
+		// Now that I know that this value triggered problems, I need to test
+		// for it, and I need to be able to print '-1' nicely.
+		{ .data = { .bytes = { -1       }, .n_bytes = 1 },    .expected_output = "{0xff}"       },
+		{ .data = { .bytes = { -1, '\0' }, .n_bytes = 2 },    .expected_output = "{0xff}{NUL}"  },
 
-		{ .data = { .bytes = { 'a', ' ', 'b' , 'c', -1, 'd', 'e'       }, .n_bytes = 7, },        .expected_output = "a bc{0xff}de"                                            },
-		{ .data = { .bytes = { 'a', ' ', 'b' , 'c', -1, 'd', 'e', '\0' }, .n_bytes = 8, },        .expected_output = "a bc{0xff}de{NUL}"                                            },
+		{ .data = { .bytes = { 'a', ' ', 'b', 'c', -1, 'd', 'e'       }, .n_bytes = 7, },    .expected_output = "a bc{0xff}de"       },
+		{ .data = { .bytes = { 'a', ' ', 'b', 'c', -1, 'd', 'e', '\0' }, .n_bytes = 8, },    .expected_output = "a bc{0xff}de{NUL}"  },
 
-		{ .data = { .bytes = { -1, 'a', ' ', 'b' , -1, -1, 'd', 'e', -1       }, .n_bytes =  9, }, .expected_output = "{0xff}a b{0xff}{0xff}de{0xff}"                           },
-		{ .data = { .bytes = { -1, 'a', ' ', 'b' , -1, -1, 'd', 'e', -1, '\0' }, .n_bytes = 10, }, .expected_output = "{0xff}a b{0xff}{0xff}de{0xff}{NUL}"                           },
+		{ .data = { .bytes = { -1, 'a', ' ', 'b', -1, -1, 'd', 'e', -1       }, .n_bytes =  9, },    .expected_output = "{0xff}a b{0xff}{0xff}de{0xff}"       },
+		{ .data = { .bytes = { -1, 'a', ' ', 'b', -1, -1, 'd', 'e', -1, '\0' }, .n_bytes = 10, },    .expected_output = "{0xff}a b{0xff}{0xff}de{0xff}{NUL}"  },
 
 		/* NUL characters inside of array. */
-		{ .data = { .bytes = { '\0', 'a', ' ', '\0', -1, -1, 'd', 'e', -1        }, .n_bytes =  9, }, .expected_output = "{NUL}a {NUL}{0xff}{0xff}de{0xff}"                           },
-		{ .data = { .bytes = { '\0', 'a', ' ', '\0', -1, -1, 'd', 'e', -1, '\0'  }, .n_bytes = 10, }, .expected_output = "{NUL}a {NUL}{0xff}{0xff}de{0xff}{NUL}"                     },
+		{ .data = { .bytes = { '\0', 'a', ' ', '\0', -1, -1, 'd', 'e', -1        }, .n_bytes =  9, },    .expected_output = "{NUL}a {NUL}{0xff}{0xff}de{0xff}"       },
+		{ .data = { .bytes = { '\0', 'a', ' ', '\0', -1, -1, 'd', 'e', -1, '\0'  }, .n_bytes = 10, },    .expected_output = "{NUL}a {NUL}{0xff}{0xff}de{0xff}{NUL}"  },
 
-		{ .data = { .bytes = { -1, -1, -1, -1, -1, -1, -1, -1       }, .n_bytes = 8, },       .expected_output = "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"  },
-		{ .data = { .bytes = { -1, -1, -1, -1, -1, -1, -1, -1, '\0' }, .n_bytes = 9, },       .expected_output = "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{NUL}"  },
+		{ .data = { .bytes = { -1, -1, -1, -1, -1, -1, -1, -1       }, .n_bytes = 8, },    .expected_output = "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"       },
+		{ .data = { .bytes = { -1, -1, -1, -1, -1, -1, -1, -1, '\0' }, .n_bytes = 9, },    .expected_output = "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{NUL}"  },
 
 		/* Mix of \r, \n, -1 and other non-printable chars. Plus some printable. */
-		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65       }, .n_bytes =  9, },  .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A"       },
-		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' }, .n_bytes = 10, },  .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A{NUL}"  },
+		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65       }, .n_bytes =  9, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A"       },
+		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' }, .n_bytes = 10, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A{NUL}"  },
 
 		/* Bytes string fully converted into printable form would not fit
 		   into output buffer, so "get printable" function may add '#' at end
 		   of output. */
-		{ .data = { .bytes = {     -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1       }, .n_bytes =  9, },
-		  .expected_output =   "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"
+		{ .data = { .bytes = {      -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1      }, .n_bytes =  9, },
+		  .expected_output =    "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}"
 		},
 		{ .data = { .bytes = { 'a', -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1      }, .n_bytes = 10, },
 		  .expected_output =   "a{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}#####"
 		},
-		{ .data = { .bytes = {   10, 13, 13, 13, 10, 13, 13, 13, 10, 13, 13, 13,'\0',13      }, .n_bytes = 14, },
+		{ .data = { .bytes = {   10, 13, 13, 13, 10, 13, 13, 13, 10, 13, 13, 13,'\0',13     }, .n_bytes = 14, },
 		  .expected_output =   "{LF}{CR}{CR}{CR}{LF}{CR}{CR}{CR}{LF}{CR}{CR}{CR}{NUL}#"
 		},
 	};

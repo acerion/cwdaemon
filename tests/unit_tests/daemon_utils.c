@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,9 @@
 
 
 
-
-/**
-   @file Unit tests for cwdaemon/src/utils.c
-*/
+/// @file
+///
+/// Unit tests for cwdaemon/src/utils.c.
 
 
 
@@ -39,6 +38,7 @@
 #include <sys/param.h>
 
 #include "src/utils.h"
+#include "tests/library/log.h"
 
 
 
@@ -69,31 +69,27 @@ int main(void)
 	int i = 0;
 	while (tests[i]) {
 		if (0 != tests[i]()) {
-			fprintf(stdout, "Test result: failure in tests #%d\n", i);
+			test_log_err("Test result: FAIL in tests #%d\n", i);
 			return -1;
 		}
 		i++;
 	}
 
-	fprintf(stdout, "Test result: success\n");
+	test_log_info("Test result: PASS %s\n", "");
 	return 0;
 }
 
 
 
 
-/*
-  Testing different success cases.
-*/
+/// @brief Testing different success cases.
+///
+/// @reviewed_on{2024.04.23}
 static int test_build_full_device_path_success(void)
 {
-	char buffer[MAXPATHLEN] = { 0 };
-
-	/*
-	  All these cases are valid cases. Tested function should succeed in
-	  building *some* path. The path may represent a non-existing device, but
-	  it will always be a valid string starting with "/dev/".
-	*/
+	// All these cases are valid cases. Tested function should succeed in
+	// building *some* path. The path may represent a non-existing device,
+	// but it will always be a valid string starting with "/dev/".
 	const struct {
 		const char * input;
 		int expected_retv;
@@ -102,22 +98,23 @@ static int test_build_full_device_path_success(void)
 		{ "/dev/ttyUSB0",            0, "/dev/ttyUSB0"       },
 		{ "dev/ttyUSB0",             0, "/dev/dev/ttyUSB0"   },
 		{ "ttyS0",                   0, "/dev/ttyS0"         },
-		{ "/ttyS0",                  0, "/dev//ttyS0"        },
-		{ "../..//ttyS0",            0, "/dev/../..//ttyS0"  },
+		{ "/ttyS0",                  0, "/dev//ttyS0"        }, // The tested function doesn't canonicalize result, hence "//".
+		{ "../..//ttyS0",            0, "/dev/../..//ttyS0"  }, // The tested function doesn't canonicalize result, hence relative path components.
 	};
 
 
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
-		int retv = build_full_device_path(buffer, sizeof (buffer), test_data[i].input);
-		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (success test #%zu)\n",
-					  buffer, sizeof (buffer), test_data[i].input, retv, strerror(-retv), i);
+		char result[MAXPATHLEN] = { 0 };
+		const int retv = build_full_device_path(result, sizeof (result), test_data[i].input);
+		if (retv != test_data[i].expected_retv) {
+			test_log_err("build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (success test #%zu)\n",
+			             result, sizeof (result), test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
 
-		if (0 != strcmp(buffer, test_data[i].expected_path)) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong result [%s] (success test #%zu)\n",
-					  buffer, sizeof (buffer), test_data[i].input, buffer, i);
+		if (0 != strcmp(result, test_data[i].expected_path)) {
+			test_log_err("build_full_device_path(%s, %zu, %s) gives wrong result [%s] (success test #%zu)\n",
+			             result, sizeof (result), test_data[i].input, result, i);
 			return -1;
 		}
 	}
@@ -128,31 +125,32 @@ static int test_build_full_device_path_success(void)
 
 
 
-/*
-  Testing different failure cases.
-*/
+/// @brief Testing different failure cases.
+///
+/// @reviewed_on{2024.04.23}
 static int test_build_full_device_path_failure(void)
 {
 	char small_buffer[4]; /* Buffer too small to fit a result. */
-	char big_buffer[20];  /* Buffer that is big enough to fit a result. */
+	char big_buffer[20];  /* Buffer that is big enough to fit a result. Failure will be caused by something other than size of output buffer */
 	const struct {
+		char * result;
+		size_t result_size;
 		const char * input;
-		char * buffer;
-		size_t buffer_size;
 		int expected_retv;
 	} test_data[] = {
-		{ "/dev/null",  small_buffer, sizeof (small_buffer),   -ENAMETOOLONG },  /* Input is a too long device path. */
-		{ "null",       small_buffer, sizeof (small_buffer),   -ENAMETOOLONG },  /* Input is a too long device name. */
-		{ NULL,         big_buffer,   sizeof (big_buffer),     -EINVAL       },  /* Invalid 'input' arg. */
-		{ "null",       NULL,         sizeof (big_buffer),     -EINVAL       },  /* Invalid 'result' arg. */
-		{ "null",       big_buffer,   0,                       -EINVAL       },  /* Invalid 'size' arg. */
+		{ small_buffer, sizeof (small_buffer),   "/dev/tty0",  -ENAMETOOLONG },  /* Input is a too long device path. */
+		{ small_buffer, sizeof (small_buffer),   "tty0",       -ENAMETOOLONG },  /* Input is a too long device name. */
+
+		{ NULL,         sizeof (big_buffer),     "tty0",       -EINVAL       },  /* Invalid 'result' arg. */
+		{ big_buffer,   0,                       "tty0",       -EINVAL       },  /* Invalid 'size' arg. */
+		{ big_buffer,   sizeof (big_buffer),     NULL,         -EINVAL       },  /* Invalid 'input' arg. */
 	};
 
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
-		int retv = build_full_device_path(test_data[i].buffer, test_data[i].buffer_size, test_data[i].input);
+		int retv = build_full_device_path(test_data[i].result, test_data[i].result_size, test_data[i].input);
 		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (failure test #%zu)\n",
-					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, retv, strerror(-retv), i);
+			test_log_err("build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (failure test #%zu)\n",
+			             test_data[i].result, test_data[i].result_size, test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
 	}
@@ -163,36 +161,42 @@ static int test_build_full_device_path_failure(void)
 
 
 
-/*
-  Tests designed specifically to check for correct handling of too long input.
-*/
+/// Tests designed specifically to check for correct handling of inputs of
+/// different lengths.
+///
+/// @reviewed_on{2024.04.23}
 static int test_build_full_device_path_length(void)
 {
-	char a_buffer[10]; /* If you change size of this buffer, you will need to change test data too. */
+	// Buffer large enough to store "/dev/null", but to truncate
+	// "/dev/null2".
+	char a_buffer[10];
+
 	const struct {
+		char * result;
+		size_t result_size;
 		const char * input;
-		char * buffer;
-		size_t buffer_size;
 		int expected_retv;
 		const char * expected_result;
 	} test_data[] = {
-		{ "/dev/null",  a_buffer, sizeof (a_buffer),   0, "/dev/null" },  /* Input path has 9 characters, it will fit into a_buffer. */
-		{ "null",       a_buffer, sizeof (a_buffer),   0, "/dev/null" },  /* Input name + added prefix will give 9 characters, it will fit into a_buffer. */
+		{ a_buffer, sizeof (a_buffer),   "/dev/null",  0,             "/dev/null" },  /* Input path has 9 characters, it will fit into a_buffer. */
+		{ a_buffer, sizeof (a_buffer),   "null",       0,             "/dev/null" },  /* Input name + added prefix will give 9 characters, it will fit into a_buffer. */
 
-		{ "/dev/null2", a_buffer, sizeof (a_buffer),   -ENAMETOOLONG, "/dev/null" },  /* Input path has 10 characters, it will NOT fit into a_buffer - it will be truncated. */
-		{ "null3",      a_buffer, sizeof (a_buffer),   -ENAMETOOLONG, "/dev/null" },  /* Input name + added prefix will give 10 characters, it will NOT fit into a_buffer - it will be truncated. */
+		{ a_buffer, sizeof (a_buffer),   "/dev/null2", -ENAMETOOLONG, "/dev/null" },  /* Input path has 10 characters, it will NOT fit into a_buffer - it will be truncated. */
+		{ a_buffer, sizeof (a_buffer),   "null3",      -ENAMETOOLONG, "/dev/null" },  /* Input name + added prefix will give 10 characters, it will NOT fit into a_buffer - it will be truncated. */
 	};
 
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
-		int retv = build_full_device_path(test_data[i].buffer, test_data[i].buffer_size, test_data[i].input);
-		if (test_data[i].expected_retv != retv) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (length test #%zu)\n",
-					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, retv, strerror(-retv), i);
+		memset(a_buffer, 0, sizeof (a_buffer));
+
+		const int retv = build_full_device_path(test_data[i].result, test_data[i].result_size, test_data[i].input);
+		if (retv != test_data[i].expected_retv) {
+			test_log_err("build_full_device_path(%s, %zu, %s) gives wrong return value %d/%s (length test #%zu)\n",
+			             test_data[i].result, test_data[i].result_size, test_data[i].input, retv, strerror(-retv), i);
 			return -1;
 		}
-		if (0 != strcmp(test_data[i].buffer, test_data[i].expected_result)) {
-			fprintf(stderr, "[EE] build_full_device_path(%s, %zu, %s) gives wrong result [%s] (length test #%zu)\n",
-					  test_data[i].buffer, test_data[i].buffer_size, test_data[i].input, test_data[i].buffer, i);
+		if (0 != strcmp(test_data[i].result, test_data[i].expected_result)) {
+			test_log_err("build_full_device_path(%s, %zu, %s) gives wrong result [%s] (length test #%zu)\n",
+			             test_data[i].result, test_data[i].result_size, test_data[i].input, test_data[i].result, i);
 			return -1;
 		}
 	}
@@ -203,7 +207,9 @@ static int test_build_full_device_path_length(void)
 
 
 
-/* This function tests both success and failure cases. */
+/// @brief This function tests both success and failure cases
+///
+/// @reviewed_on{2024.04.23}
 static int test_find_opt_value(void)
 {
 	const struct {
@@ -217,7 +223,7 @@ static int test_find_opt_value(void)
 		{ "day=monday",       "day",          opt_success,  "monday" }, /* Basic case. */
 		{ "Ptt=none",         "ptt",          opt_success,  "none"   }, /* Test for case-insensitive-ness. */
 		{ "day=monday",       "DAY",          opt_success,  "monday" }, /* Test for case-insensitive-ness. */
-		{ "q=a",              "q",            opt_success,  "a"      }, /* Short keyword string. */
+		{ "q=a",              "q",            opt_success,  "a"      }, /* Short key string. */
 		{ "empty=",           "empty",        opt_success,  ""       }, /* Empty value string. */
 
 
@@ -238,18 +244,18 @@ static int test_find_opt_value(void)
 
 	for (size_t i = 0; i < sizeof (test_data) / sizeof (test_data[0]); i++) {
 		const char * value = NULL;
-		opt_t retv = find_opt_value(test_data[i].input, test_data[i].searched_key, &value);
+		const opt_t retv = find_opt_value(test_data[i].input, test_data[i].searched_key, &value);
 		if (retv != test_data[i].expected_retv) {
-			fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected retv: retv = %u, expected = %u in test #%zu\n",
-			        test_data[i].input, test_data[i].searched_key,
-			        retv, test_data[i].expected_retv, i);
+			test_log_err("find_opt_value(%s, %s, ...) returns unexpected retv: retv = %u, expected = %u in test #%zu\n",
+			             test_data[i].input, test_data[i].searched_key,
+			             retv, test_data[i].expected_retv, i);
 			return -1;
 		}
 		if (retv == opt_success) {
 			if (0 != strcmp(value, test_data[i].expected_value)) {
-				fprintf(stderr, "[EE] find_opt_value(%s, %s, ...) returns unexpected value: value = [%s], expected = [%s] in test #%zu\n",
-				        test_data[i].input, test_data[i].searched_key,
-				        value, test_data[i].expected_value, i);
+				test_log_err("find_opt_value(%s, %s, ...) returns unexpected value: value = [%s], expected = [%s] in test #%zu\n",
+				             test_data[i].input, test_data[i].searched_key,
+				             value, test_data[i].expected_value, i);
 				return -1;
 			}
 		}
@@ -261,6 +267,7 @@ static int test_find_opt_value(void)
 
 
 
+/// @reviewed_on{2024.04.23}
 static int test_cwdaemon_get_long(void)
 {
 	const long doesnt_matter = 6789;
@@ -284,10 +291,12 @@ static int test_cwdaemon_get_long(void)
 		{ "74Morse",              false, doesnt_matter }, /* Some characters aren't digits. */
 		{ "74ac45",               false, doesnt_matter }, /* Some characters aren't decimal digits. */
 		{ "four",                 false, doesnt_matter }, /* None of characters are decimal digits. */
-		{ "\03345",               false, doesnt_matter }, /* Leading non-digit, non-space character. 033(oct) = 27(dec) = 0x1b = ESC. */
+		{ "\03345",               false, doesnt_matter }, /* Leading non-decimal-digit, non-space character. 033(oct) = 27(dec) = 0x1b = ESC. */
 
 
 		/* Success cases. */
+		// TODO (acerion) 2024.04.23: add more tests of really long values
+		// for 64-bit platforms.
 		{ "-2147483648",          true,  INT_MIN       }, /* INT_MIN, should be handled correctly by function that converts long values. */
 		{ "-01024",               true,  -1024         },
 		{ "-1024",                true,  -1024         },
@@ -308,8 +317,8 @@ static int test_cwdaemon_get_long(void)
 
 		const bool retv = cwdaemon_get_long(tcase->input, &value);
 		if (retv != tcase->expected_retv) {
-			fprintf(stderr, "[EE] Unexpected return value in test case %zu / %zu: %d\n",
-			        i + 1, n_test_cases, retv);
+			test_log_err("Unexpected return value in test case %zu / %zu: %d\n",
+			             i + 1, n_test_cases, retv);
 			return -1;
 		}
 
@@ -320,13 +329,13 @@ static int test_cwdaemon_get_long(void)
 		}
 
 		if (value != tcase->expected_value) {
-			fprintf(stderr, "[EE] Unexpected converted value in test case %zu / %zu: %ld (expected %ld)\n",
-			        i + 1, n_test_cases, value, tcase->expected_value);
+			test_log_err("Unexpected converted value in test case %zu / %zu: %ld (expected %ld)\n",
+			             i + 1, n_test_cases, value, tcase->expected_value);
 			return -1;
 		}
 	}
 
-	fprintf(stderr, "[II] Tests of cwdaemon_get_long() have succeeded\n");
+	test_log_info("Tests of cwdaemon_get_long() have succeeded %s\n", "");
 
 	return 0;
 }
