@@ -32,7 +32,7 @@ struct cw_easy_receiver_t {
 	   events. Without, there's a chance that of a on-off event, one half
 	   will go to one application instance, and the other to another
 	   instance. */
-	volatile int tracked_key_state; /* CW_KEY_STATE_OPEN/CW_KEY_STATE_CLOSED */
+	volatile bool tracked_key_is_down;
 
 	/* Flag indicating if receive polling has received a character, and
 	   may need to augment it with a word space on a later poll. */
@@ -127,13 +127,41 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 
 
 
-/**
-   @brief CW library keying event handler
+/// @brief libcw receiver's callback to be called on change of straight key's state
+///
+/// This is a callback for objects of type cw_easy_receiver_t. It should be
+/// called on each change of state (open/closed, up/down) of straight key.
+///
+/// In the context of cwdaemon, the straight key is the "keying" pin on
+/// cwdevice.
+///
+/// This function is similar to cw_easy_receiver_handle_libcw_keying_event(),
+/// but has a prototype suitable for passing as callback to
+/// cw_register_keying_callback().
+///
+/// @reviewed_on{2024.04.22}
+///
+/// @param[in/out] easy_receiver cw_easy_receiver_t receiver structure
+/// @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
+void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int key_state);
 
-   @param[in/out] easy_receiver Easy receiver structure
-   @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
-*/
-void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_state);
+
+
+
+/// @brief libcw receiver's callback to be called on change of straight key's state
+///
+/// This is a callback for objects of type cw_easy_receiver_t. It should be
+/// called on each change of state (open/closed, up/down) of straight key.
+///
+/// In the context of cwdaemon, the straight key is the "keying" pin on
+/// cwdevice.
+///
+/// @param[in/out] easy_receiver cw_easy_receiver_t receiver structure
+/// @param[in] key_is_down Whether straight key is down or up
+///
+/// @return 0
+int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is_down);
+
 
 
 

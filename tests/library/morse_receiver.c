@@ -182,7 +182,7 @@ int morse_receiver_wait_for_stop(morse_receiver_t * receiver)
 
 /// @brief Configure and start a libcw receiver that is used to do actual decoding of Morse code
 ///
-/// @reviewed_on{2024.04.21}
+/// @reviewed_on{2024.04.22}
 ///
 /// @param easy_receiver Easy receiver to configure and start
 /// @param wpm Expected speed of Morse code to be used for initialization of the receiver
@@ -199,7 +199,7 @@ static int libcw_receiver_configure(cw_easy_receiver_t * easy_receiver, int wpm)
 	cw_generator_new(CW_AUDIO_NULL, NULL);
 	cw_generator_start();
 
-	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event, easy_receiver);
+	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event_void, easy_receiver);
 	cw_easy_receiver_start(easy_receiver);
 	cw_clear_receive_buffer();
 	cw_easy_receiver_clear(easy_receiver);
@@ -235,7 +235,7 @@ static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_receiver_t
 ///
 /// Call helpers_deconfigure() to clean-up the helpers configured in this function
 ///
-/// @reviewed_on{2024.04.21}
+/// @reviewed_on{2024.04.22}
 ///
 /// @param morse_receiver Morse receiver for which to configure the helpers
 static int helpers_configure(morse_receiver_t * morse_receiver)
@@ -279,6 +279,15 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 		test_log_err("Morse receiver thread: failed to set up Morse receiver %s\n", "");
 		return -1;
 	}
+
+	// Make sure that libcw receiver and cwdevice observer are in sync with
+	// regards to *initial* state of keying pin. Both objects store some kind
+	// of "previous state of key" information, and that information must be
+	// the same in both objects.
+	//
+	// Observer learns the initial state of the pin only during a start, in
+	// cwdevice_observer_start_observing().
+	libcw_receiver->tracked_key_is_down = cwdevice_observer->previous_key_is_down;
 
 	return 0;
 }

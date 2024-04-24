@@ -70,6 +70,25 @@ int cwdevice_observer_start_observing(cwdevice_observer_t * observer)
 		}
 	}
 
+	// Get initial state of keying pin. It turns out that on CP1202
+	// UART-to-USB converter it doesn't have to be '0'/'open'.
+	//
+	// TODO (acerion) 2024.04.22: you will want to enable it at some point in
+	// future.
+	//
+#if 0
+	bool key_is_down = false;
+	bool ptt_is_on = false;
+	if (0 != observer->poll_once_fn(observer, &key_is_down, &ptt_is_on)) {
+		test_log_err("cwdevice observer: failed to poll for the first time %s\n", "");
+		if (observer->close_fn) {
+			observer->close_fn(observer);
+		}
+		return -1;
+	}
+	observer->previous_key_is_down = key_is_down;
+#endif
+
 	observer->do_polling = true;
 	const int retv = pthread_create(&observer->thread_id, NULL, cwdevice_observer_poll_thread, observer);
 	if (0 != retv) {

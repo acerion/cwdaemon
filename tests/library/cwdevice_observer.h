@@ -170,6 +170,11 @@ typedef struct cwdevice_observer_t {
 
 /// @brief Configure handler of changes to keying pin that occur on observed cwdevice
 ///
+/// When it comes to observing of keying, currently cwdevice observer is able to
+/// observe only a single pin corresponding to a single electrical contact of
+/// straight key. Therefore the @p cb callback should be dedicated to
+/// handling changes of state of straight key.
+///
 /// @reviewed_on{2024.04.16}
 ///
 /// @param observer Observer of cwdevice, reporting changes of state of keying pin
@@ -203,7 +208,7 @@ int cwdevice_observer_set_ptt_change_handler(cwdevice_observer_t * observer, int
    change handlers (handlers registered with
    cwdevice_observer_set_X_change_handler). .
 
-   @reviewed_on{2024.04.16}
+   @reviewed_on{2024.04.22}
 
    @param observer cwdevice observer that should start observing cwdevice
 

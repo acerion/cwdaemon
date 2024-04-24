@@ -156,6 +156,14 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 
 
 
+void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int key_state)
+{
+	const bool key_is_down = key_state == CW_KEY_STATE_CLOSED;
+	cw_easy_receiver_handle_libcw_keying_event(easy_receiver, key_is_down);
+}
+
+
+
 
 /**
    \brief Handler for the keying callback from the CW library
@@ -179,26 +187,28 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
    care to call only functions that are safe within that context.  In
    particular, it goes out of its way to deliver results by setting
    flags that are later handled by receive polling.
+
+   TODO (acerion) 2024.04.22: review the function and decide when to
+   return success and when to return failure.
 */
-void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_state)
+int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is_down)
 {
 	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) easy_receiver;
+
 	/* Ignore calls where the key state matches our tracked key
 	   state.  This avoids possible problems where this event
 	   handler is redirected between application instances; we
 	   might receive an end of tone without seeing the start of
 	   tone. */
-	if (key_state == easy_rec->tracked_key_state) {
-		//fprintf(stderr, "tracked key state == %d\n", easy_rec->tracked_key_state);
-		return;
-	} else {
-		//fprintf(stderr, "tracked key state := %d\n", key_state);
-		easy_rec->tracked_key_state = key_state;
+	// fprintf(stdout, "[II] incoming 'key is down' = %d, tracked 'key is down' = %d\n", key_is_down, easy_rec->tracked_key_is_down);
+	if (key_is_down == easy_rec->tracked_key_is_down) {
+		return 0; // Not an error, we just don't react to this event.
 	}
+	easy_rec->tracked_key_is_down = key_is_down;
 
 	/* If this is a tone start and we're awaiting an inter-word
 	   space, cancel that wait and clear the receive buffer. */
-	if (key_state == CW_KEY_STATE_CLOSED && easy_rec->is_pending_iws) {
+	if (key_is_down && easy_rec->is_pending_iws) {
 		/* Tell receiver to prepare (to make space) for
 		   receiving new character. */
 		cw_clear_receive_buffer();
@@ -215,13 +225,12 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 
 	/* Pass tone state on to the library.  For tone end, check to
 	   see if the library has registered any receive error. */
-	if (key_state == CW_KEY_STATE_CLOSED) {
-		/* Key down. */
+	if (key_is_down) {
 		// fprintf(stdout, "[II] Easy receiver: key goes down:              %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
 		if (!cw_start_receive_tone(&easy_rec->main_timer)) {
 			// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
 			perror("cw_start_receive_tone");
-			return;
+			return 0;
 		}
 	} else {
 		/* Key up. */
@@ -247,12 +256,12 @@ void cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, int key_st
 			default:
 				perror("cw_end_receive_tone");
 				// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
-				return;
+				return 0;
 			}
 		}
 	}
 
-	return;
+	return 0;
 }
 
 
@@ -519,7 +528,7 @@ void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec)
 	cw_clear_receive_buffer();
 	easy_rec->is_pending_iws = false;
 	easy_rec->libcw_receive_errno = 0;
-	easy_rec->tracked_key_state = CW_KEY_STATE_OPEN;
+	easy_rec->tracked_key_is_down = false;
 }
 
 
