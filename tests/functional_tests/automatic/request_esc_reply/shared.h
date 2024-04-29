@@ -19,7 +19,7 @@ typedef struct test_case_t {
 	const test_reply_data_t expected_reply;   /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
 
 	test_request_t plain_request;                        /**< Text to be sent to cwdaemon server in the plain request - to be keyed by cwdaemon. */
-	const char expected_morse_receive[400];              /**< What is expected to be received by Morse code receiver (without ending space). */
+	const char expected_morse[400];              /**< What is expected to be received by Morse code receiver (without ending space). */
 
 	event_t expected_events[EVENTS_MAX];                 /**< Events that we expect to happen in this test case. */
 } test_case_t;

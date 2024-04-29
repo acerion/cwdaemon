@@ -16,7 +16,7 @@ typedef struct test_case_t {
 	const char * description;                            /**< Tester-friendly description of test case. */
 	test_request_t caret_request;                        /**< Text to be sent to cwdaemon server in the MESSAGE request. Full message, so it SHOULD include caret. */
 	const test_reply_data_t expected_reply;   /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
-	const char expected_morse_receive[400];              /**< What is expected to be received by Morse code receiver (without ending space). */
+	const char expected_morse[400];              /**< What is expected to be received by Morse code receiver (without ending space). */
 	event_t expected_events[EVENTS_MAX];                 /**< Events that we expect to happen in this test case. */
 } test_case_t;
 

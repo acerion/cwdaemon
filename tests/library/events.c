@@ -93,7 +93,7 @@ void events_print(events_t const * events)
 			test_log_debug("Test: event #%02zu: %3ld.%09ld: received Morse: [%s]\n",
 			               idx,
 			               relative_ts.tv_sec, relative_ts.tv_nsec,
-			               event->u.morse_receive.string);
+			               event->u.morse.string);
 			break;
 		case etype_reply:
 			{
@@ -152,7 +152,7 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 		// TODO (acerion) 2024.04.18: add some error checking if incoming
 		// message is no longer than available space.
-		event_morse_receive_t * morse = &event->u.morse_receive;
+		event_morse_receive_t * morse = &event->u.morse;
 		const size_t n = sizeof (morse->string);
 		strncpy(morse->string, buffer, n);
 		morse->string[n - 1] = '\0';

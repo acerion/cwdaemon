@@ -42,8 +42,8 @@
 
 static test_case_t g_test_cases[] = {
 	{ .description = "success case: short plain request",
-	  .plain_request          = TESTS_SET_BYTES("paris abc"),
-	  .expected_morse_receive =                 "paris abc",
+	  .plain_request   = TESTS_SET_BYTES("paris abc"),
+	  .expected_morse  =                 "paris abc",
 	  .expected_events        = { { .etype = etype_morse  }, },
 	},
 };

@@ -64,17 +64,17 @@
 
 static test_case_t g_test_cases[] = {
 	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
-	  .caret_request          = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
-	  .expected_morse_receive =                 "paris 7890" BYTES_11_250 "1234",
-	  .expected_reply         = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n"),
+	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
+	  .expected_morse  =                 "paris 7890" BYTES_11_250 "1234",
+	  .expected_reply  = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n"),
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse  }, },
 	},
 
 	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
-	  .caret_request          = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
-	  .expected_morse_receive =                 "paris 7890" BYTES_11_250 "12345",
-	  .expected_reply         = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n"),
+	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
+	  .expected_morse  =                 "paris 7890" BYTES_11_250 "12345",
+	  .expected_reply  = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n"),
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse  }, },
 	},
@@ -83,9 +83,9 @@ static test_case_t g_test_cases[] = {
 	   code. cwdaemon won't interpret this request as caret request, and
 	   won't send anything over socket (reply is empty). */
 	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
-	  .caret_request          = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
-	  .expected_morse_receive =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_reply         = TESTS_SET_BYTES(""),
+	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
+	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
+	  .expected_reply  = TESTS_SET_BYTES(""),
 	  .expected_events        = { { .etype = etype_morse  }, },
 	},
 };

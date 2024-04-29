@@ -71,7 +71,7 @@ typedef struct {
 	struct timespec tstamp;   /**< Time stamp of the event. */
 
 	union {
-		event_morse_receive_t morse_receive;          /**< Morse code received by observer of cwdevice. */
+		event_morse_receive_t morse;          /**< Morse code registered by cwdevice observer + Morse receiver on 'keying' pin of cwdevice. */
 		test_reply_data_t reply; /**< Data received over socket by cwdaemon client. */
 		event_sigchld_t sigchld;                     /**< Data collected by waitpid() in signal handler for SIGCHLD. */
 	} u;

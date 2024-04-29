@@ -195,7 +195,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	/* While this is not THE feature that needs to be verified by this test,
 	   it's good to know that we received full and correct data. */
 	expectation_idx = 5;
-	if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, test_case->expected_morse_receive)) {
+	if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, test_case->expected_morse)) {
 		return -1;
 	}
 

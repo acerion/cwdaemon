@@ -83,8 +83,8 @@ static test_case_t g_test_cases[] = {
 	// Pins for cwdevice observer are not configured explicitly. The observer
 	// uses implicit default configuration of pins.
 	{ .description             = "success case, setup without tty line options passed to cwdaemon",
-	  .full_message            =                                     TESTS_SET_BYTES("madrit"),
-	  .expected_events         = { { .etype = etype_morse, .u.morse_receive.string = "madrit"  }, },
+	  .full_message            =                             TESTS_SET_BYTES("madrit"),
+	  .expected_events         = { { .etype = etype_morse, .u.morse.string = "madrit"  }, },
 	},
 
 	// This is a SUCCESS case.
@@ -97,8 +97,8 @@ static test_case_t g_test_cases[] = {
 	// uses implicit default configuration of pins.
 	{ .description             = "success case, setup with explicitly setting default tty lines options passed to cwdaemon",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_DTR, .pin_ptt = TIOCM_RTS },
-	  .full_message            =                                     TESTS_SET_BYTES("lisbon"),
-	  .expected_events         = { { .etype = etype_morse, .u.morse_receive.string = "lisbon" }, },
+	  .full_message            =                             TESTS_SET_BYTES("lisbon"),
+	  .expected_events         = { { .etype = etype_morse, .u.morse.string = "lisbon" }, },
 	},
 
 	// This is a FAILURE case.
@@ -133,8 +133,8 @@ static test_case_t g_test_cases[] = {
 	{ .description             = "success case, cwdaemon is keying RTS, cwdevice observer is monitoring RTS",
 	  .server_tty_pins         = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
 	  .observer_tty_pins       = { .explicit = true, .pin_keying = TIOCM_RTS, .pin_ptt = TIOCM_DTR },
-	  .full_message            =                                     TESTS_SET_BYTES("dublin"),
-	  .expected_events         = { { .etype = etype_morse, .u.morse_receive.string = "dublin" }, },
+	  .full_message            =                             TESTS_SET_BYTES("dublin"),
+	  .expected_events         = { { .etype = etype_morse, .u.morse.string = "dublin" }, },
 	},
 };
 
@@ -379,8 +379,8 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 		switch (events->events[i].etype) {
 		case etype_morse:
 			if (0 != expect_morse_match(expectation_idx,
-			                            &events->events[i].u.morse_receive,
-			                            expected_events[i].u.morse_receive.string)) {
+			                            &events->events[i].u.morse,
+			                            expected_events[i].u.morse.string)) {
 				return -1;
 			}
 			break;

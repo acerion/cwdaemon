@@ -81,8 +81,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "1234"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "1234\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -93,8 +93,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "1234\0"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "1234\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -105,8 +105,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "12345"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "12345\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -117,8 +117,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "12345\0"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "12345\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -129,8 +129,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "123456"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -143,8 +143,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "123456\0"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -163,8 +163,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "1234567"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -176,8 +176,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "1234567\0"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -189,8 +189,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "12345678"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request  = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },
@@ -202,8 +202,8 @@ static test_case_t g_test_cases[] = {
 	  .esc_request            = TESTS_SET_BYTES("\033hparis 90" ESC_BYTES_240 "12345678\0"),
 	  .expected_reply         = TESTS_SET_BYTES(    "hparis 90" ESC_BYTES_240 "123456\r\n"),
 
-	  .plain_request          = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
-	  .expected_morse_receive =                 "liverpool0" PLAIN_BYTES_250 "123456",
+	  .plain_request   = TESTS_SET_BYTES("liverpool0" PLAIN_BYTES_250 "123456"),
+	  .expected_morse  =                 "liverpool0" PLAIN_BYTES_250 "123456",
 
 	  .expected_events        = { { .etype = etype_reply },
 	                              { .etype = etype_morse }, },

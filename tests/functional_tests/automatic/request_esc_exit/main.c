@@ -469,7 +469,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	if (test_case->send_message_request) {
 		char expected[1024] = { 0 };
 		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
-		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, expected)) {
+		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, expected)) {
 			return -1;
 		}
 	} else {

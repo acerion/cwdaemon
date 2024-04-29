@@ -120,7 +120,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse_receive);
+	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse);
 	const bool expecting_socket_reply_event = 0 != test_case->expected_reply.n_bytes;
 	const int expected_events_cnt = events_get_count(test_case->expected_events);
 
@@ -194,7 +194,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 	expectation_idx = 5;
 	if (expecting_morse_event) {
-		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, test_case->expected_morse_receive)) {
+		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, test_case->expected_morse)) {
 			return -1;
 		}
 	} else {

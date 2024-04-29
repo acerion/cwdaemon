@@ -79,9 +79,9 @@ static int test_events_sort(void)
 	// Events to be sorted. Their time stamps are not in order.
 	events_t events = {
 		.events = {
-			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse = { .string = "Five" }, },
 			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.reply = { .n_bytes = 4, .bytes = "Four" }, },
-			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse = { .string = "One" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
 		},
@@ -92,9 +92,9 @@ static int test_events_sort(void)
 	// This is how events sorted by time stamp look like.
 	const events_t expected = {
 		.events = {
-			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse_receive = { .string = "One" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 1 }, .u.morse = { .string = "One" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 1, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 3 }, },
-			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse_receive = { .string = "Five" }, },
+			{ .etype = etype_morse,      .tstamp = { .tv_sec = 1, .tv_nsec = 5 }, .u.morse = { .string = "Five" }, },
 			{ .etype = etype_sigchld,    .tstamp = { .tv_sec = 2, .tv_nsec = 4 }, .u.sigchld = { .wstatus = 7 }, },
 			{ .etype = etype_reply,      .tstamp = { .tv_sec = 5, .tv_nsec = 5 }, .u.reply = { .n_bytes = 4, .bytes = "Four" }, },
 		},
@@ -126,7 +126,7 @@ static int test_events_sort(void)
 
 		switch (expected.events[i].etype) {
 		case etype_morse:
-			if (0 != memcmp(&expected.events[i].u.morse_receive, &events.events[i].u.morse_receive, sizeof (event_morse_receive_t))) {
+			if (0 != memcmp(&expected.events[i].u.morse, &events.events[i].u.morse, sizeof (event_morse_receive_t))) {
 				test_log_err("Unit tests: events_sort() failed at 'morse receive' member in event %d\n", i);
 				return -1;
 			}
