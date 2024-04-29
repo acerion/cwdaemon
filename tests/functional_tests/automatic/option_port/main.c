@@ -175,7 +175,7 @@ int main(int argc, char * const * argv)
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {
@@ -499,7 +499,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	if (!test_case->expected_fail) {
 		char expected[1024] = { 0 };
 		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
-		if (0 != expect_morse_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
+		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, expected)) {
 			return -1;
 		}
 	} else {

@@ -72,7 +72,7 @@ int main(int argc, char * const * argv)
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {

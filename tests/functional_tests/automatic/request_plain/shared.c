@@ -92,8 +92,8 @@ int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_opt
 
 
 /**
-   @brief Evaluate events that were reported by objects used during execution
-   of single test case
+   @brief Evaluate events that were recorded during execution of single test
+   case
 
    Look at contents of @p events and check if order and types of events are
    as expected.
@@ -158,7 +158,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 	expectation_idx = 3;
-	if (0 != expect_morse_match(expectation_idx, morse_event->u.morse_receive.string, test_case->expected_morse_receive)) {
+	if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, test_case->expected_morse_receive)) {
 		return -1;
 	}
 

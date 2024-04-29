@@ -42,7 +42,7 @@ int expect_reply_match(int expectation_idx, test_reply_data_t const * received, 
    @return 0 if expectation is met
    @return -1 otherwise
 */
-int expect_morse_match(int expectation_idx, const char * received, const char * expected);
+int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, const char * expected);
 
 
 

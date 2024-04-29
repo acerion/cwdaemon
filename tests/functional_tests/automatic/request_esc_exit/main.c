@@ -163,7 +163,7 @@ int main(int argc, char * const * argv)
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options %s\n", "");
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {
@@ -388,8 +388,8 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
 
 
 /**
-   @brief Evaluate events that were reported by objects used during execution
-   of single test case
+   @brief Evaluate events that were recorded during execution of single test
+   case
 
    Look at contents of @p events and check if order and types of events are
    as expected.
@@ -469,7 +469,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 	if (test_case->send_message_request) {
 		char expected[1024] = { 0 };
 		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
-		if (0 != expect_morse_match(expectation_idx, morse_event->u.morse_receive.string, expected)) {
+		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse_receive, expected)) {
 			return -1;
 		}
 	} else {
