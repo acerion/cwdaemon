@@ -144,5 +144,17 @@
 
 
 
+
+
+/// @brief Set fields of event_morse_receive_t variable
+///
+/// The macro can be used to set contents of event_morse_receive_t.
+///
+///The argument to the macro should be a string literal.
+#define TESTS_SET_MORSE(_str_) { .string = {_str_} }
+
+
+
+
 #endif /* #ifndef TEST_DEFINES_H */
 

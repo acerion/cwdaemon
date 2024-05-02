@@ -24,12 +24,11 @@
 
 
 
-/**
-   @file
-
-   Code shared between basic tests of 'caret' request, and tests testing
-   large 'caret' requests.
-*/
+/// @file
+///
+/// Code shared between different tests of "caret" request:
+///  - tests checking how simple/basic "caret" requests are handled by cwdaemon
+///  - tests checking how large "caret" requests are handled by cwdaemon
 
 
 
@@ -58,12 +57,12 @@
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
 static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int evaluate_events(events_t * events, const test_case_t * test_case);
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case);
 
 
 
 
-int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts)
+int run_test_cases(test_case_t const * test_cases, size_t n_test_cases, test_options_t const  * test_opts, char const * test_name)
 {
 	bool failure = false;
 
@@ -73,24 +72,31 @@ int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const te
 	morse_receiver_t morse_receiver = { .events = &events };
 
 	if (0 != test_setup(&server, &client, &morse_receiver, test_opts)) {
-		test_log_err("Test: failed at test setup %s\n", "");
+		test_log_err("Test: failed at test setup for [%s] test\n", test_name);
 		failure = true;
 		goto cleanup;
 	}
 
 	if (0 != test_run(test_cases, n_test_cases, &client, &morse_receiver, &events)) {
-		test_log_err("Test: failed at running test cases %s\n", "");
+		test_log_err("Test: failed at running test cases for [%s] test\n", test_name);
 		failure = true;
 		goto cleanup;
 	}
 
  cleanup:
 	if (0 != test_teardown(&server, &client, &morse_receiver)) {
-		test_log_err("Test: failed at test tear down %s\n", "");
+		test_log_err("Test: failed at test tear down for [%s] test\n", test_name);
 		failure = true;
 	}
 
-	return failure ? -1 : 0;
+	if (failure) {
+		test_log_err("Test: FAIL ([%s] test)\n", test_name);
+		test_log_newline(); /* Visual separator. */
+		return -1;
+	}
+	test_log_info("Test: PASS ([%s] test)\n", test_name);
+	test_log_newline(); /* Visual separator. */
+	return 0;
 }
 
 
@@ -100,124 +106,44 @@ int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const te
    @brief Evaluate events that were recorded during execution of single test
    case
 
-   Look at contents of @p events and check if order and types of events are
-   as expected.
+   Look at contents of @p recorded_events and check if order and types of the
+   recorded events are as expected. The recorded events are compared with
+   list of expected events defined in @p test_case.
 
-   The events may include
-     - receiving Morse code
-     - receiving reply from cwdaemon server,
-     - changes of state of PTT pin,
-     - exiting of local instance of cwdaemon server process,
+   Array of events in @p recorded_events must be sorted before being passed to this
+   function.
 
-   @return 0 if events are in proper order and of proper type
+   @reviewed_on{2024.05.01}
+
+   @return 0 if recorded events are in proper (expected) order and of proper type
    @return -1 otherwise
 */
-static int evaluate_events(events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case)
 {
-	events_sort(events);
-	events_print(events);
-	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+	events_print(recorded_events); // For debug only.
 
 
-
-	const bool expecting_morse_event = 0 != strlen(test_case->expected_morse);
-	const bool expecting_socket_reply_event = 0 != test_case->expected_reply.n_bytes;
-	const int expected_events_cnt = events_get_count(test_case->expected_events);
-
+	int expectation_idx = 0; // To recognize failing expectations more easily.
+	event_t const * const expected = test_case->expected;
+	event_t const * const recorded = recorded_events->events;
 
 
-
+	// Expectation: correct count, types, order and contents of events.
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
+	if (0 != expect_count_type_order_contents(expectation_idx, expected, recorded)) {
 		return -1;
 	}
-	if (0 == events->events_cnt) {
-		test_log_info("Expectation %d: there are zero events (as expected), so evaluation of events is now completed\n", expectation_idx);
-		return 0;
-	}
 
 
-
-
-	/*
-	  Expectation: events are of correct type.
-	*/
+	// Expectation: recorded Morse event and reply event are close enough to
+	// each other. Check distance of the two events on time axis.
 	expectation_idx = 2;
-	int morse_idx = -1;
-	const int expected_morse_cnt = expecting_morse_event ? 1 : 0;
-	const int morse_cnt = events_find_by_type(events, etype_morse, &morse_idx);
-	if (expected_morse_cnt != morse_cnt) {
-		test_log_err("Expectation %d: incorrect count of Morse receive events: expected 1, got %d\n", expectation_idx, morse_cnt);
+	if (0 != expect_morse_and_reply_events_distance2(expectation_idx, recorded)) {
 		return -1;
 	}
-	const event_t * morse_event = &events->events[morse_idx];
-
-	int reply_idx = -1;
-	const int reply_cnt = events_find_by_type(events, etype_reply, &reply_idx);
-	const int expected_reply_cnt = expecting_socket_reply_event ? 1 : 0;
-	if (expected_reply_cnt != reply_cnt) {
-		test_log_err("Expectation %d: incorrect count of 'reply' events: expected %d, got %d\n", expectation_idx, expected_reply_cnt, reply_cnt);
-		return -1;
-	}
-	const event_t * reply_event = &events->events[reply_idx];
-
-	test_log_info("Expectation %d: types of events are correct\n", expectation_idx);
 
 
-
-
-	expectation_idx = 3;
-	if (expecting_socket_reply_event) {
-		const bool morse_is_earlier = morse_idx < reply_idx;
-		if (0 != expect_morse_and_reply_events_order(expectation_idx, morse_is_earlier)) {
-			return -1;
-		}
-	} else {
-		test_log_info("Expectation %d: skipping checking order of events since there is only one event\n", expectation_idx);
-	}
-
-
-
-
-	expectation_idx = 4;
-	if (expecting_socket_reply_event) {
-		if (0 != expect_reply_match(expectation_idx, &reply_event->u.reply, &test_case->expected_reply)) {
-			test_log_err("Expectation %d: expectation not met\n", expectation_idx);
-			return -1;
-		}
-	} else {
-		test_log_info("Expectation %d: skipping checking contents of socket reply because there is no socket event\n", expectation_idx);
-	}
-
-
-
-
-	expectation_idx = 5;
-	if (expecting_morse_event) {
-		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, test_case->expected_morse)) {
-			return -1;
-		}
-	} else {
-		test_log_notice("Expectation %d: skipping verification of message received by Morse receiver due to short expected string\n", expectation_idx);
-	}
-
-
-
-
-	expectation_idx = 6;
-	if (expecting_socket_reply_event) {
-		const bool morse_is_earlier = morse_idx < reply_idx;
-		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_is_earlier, morse_event, reply_event)) {
-			return -1;
-		}
-	} else {
-		test_log_info("Expectation %d: skipping checking of the expectation because socket event is not present\n", expectation_idx);
-	}
-
-
-
-
-	test_log_info("Test: evaluation of test events was successful %s\n", "");
+	test_log_info("Test: evaluation of events was successful for test case [%s]\n", test_case->description);
 
 	return 0;
 }
@@ -225,16 +151,13 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 
 
-/**
-   @brief Prepare resources used to execute set of test cases
-*/
+/// @brief Prepare resources used to execute set of test cases
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts)
 {
-	bool failure = false;
-
-	/* There may be a lot of characters in test cases. Let's play them quickly to
-	   make the test short. Using "25" because at "30" there are too many
-	   errors. */
+	/* There may be a lot of characters in test cases. Let's play them
+	   quickly to make the test short. Using "25" because at "30" there are
+	   too many errors. TODO (acerion) 2024.05.01: fix receiving and increase
+	   the speed. */
 	const int wpm = 25;
 
 	/* Prepare local test instance of cwdaemon server. */
@@ -248,28 +171,28 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	};
 	if (0 != server_start(&server_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon server %s\n", "");
-		failure = true;
+		return -1;
 	}
 
 
 	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.24: remove casting. */
 		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
-		failure = true;
+		return -1;
 	}
 	client_socket_receive_enable(client);
 	if (0 != client_socket_receive_start(client)) {
 		test_log_err("Test: failed to start socket receiver %s\n", "");
-		failure = true;
+		return -1;
 	}
 
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
 	if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
 		test_log_err("Test: failed to configure Morse receiver %s\n", "");
-		failure = true;
+		return -1;
 	}
 
-	return failure ? -1 : 0;
+	return 0;
 }
 
 
@@ -277,6 +200,8 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 /**
    @brief Clean up resources used to execute set of test cases
+
+   @reviewed_on{2024.05.01}
 */
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
@@ -310,13 +235,15 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 /**
    @brief Run all test cases. Evaluate results (the events) of each test case.
+
+   @reviewed_on{2024.05.01}
 */
 static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	bool failure = false;
 
 	for (size_t i = 0; i < n_test_cases; i++) {
-		const test_case_t * test_case = &test_cases[i];
+		test_case_t const * const test_case = &test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
 		test_log_info("Test: starting test case %zu / %zu: [%s]\n", i + 1, n_test_cases, test_case->description);
@@ -332,9 +259,12 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 			/* Send the message to be played.*/
 			client_send_request(client, &test_case->caret_request);
 
+			// Receive events on cwdevice (Morse code on keying pin AND/OR
+			// ptt events on ptt pin).
 			morse_receiver_wait_for_stop(morse_receiver);
 		}
 
+		events_sort(events);
 		if (0 != evaluate_events(events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;

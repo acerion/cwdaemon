@@ -25,15 +25,17 @@
 
 
 /**
+   @file
+
    Test cases that send to cwdaemon caret requests that have size (count of
    bytes) close to cwdaemon's maximum size of requests. The requests are
    slightly smaller, equal to and slightly larger than the size of cwdaemon's
    buffer.
 
    cwdaemon's buffer that is used to receive requests has
-   CWDAEMON_REQUEST_SIZE_MAX==256 bytes. If a caret request sent to cwdaemon is
-   larger than that, it will be truncated in receive code and the caret may
-   be dropped.
+   CWDAEMON_REQUEST_SIZE_MAX==256 bytes. If a caret request sent to cwdaemon
+   is larger than that, it will be truncated in receive code and the caret
+   character will be dropped.
 */
 
 
@@ -50,8 +52,8 @@
 
 
 
-/* Helper definition to shorten strings in test cases. Bytes at position 21
-   till 250, inclusive. */
+/* Helper definition to shorten strings in test cases. Bytes no. 11-255,
+   inclusive. */
 #define BYTES_11_250 \
 	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -62,50 +64,37 @@
 
 
 
+/// @reviewed_on{2024.05.01}
 static test_case_t g_test_cases[] = {
-	{ .description = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
-	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "1234",
-	  .expected_reply  = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n"),
-	  .expected_events        = { { .etype = etype_reply },
-	                              { .etype = etype_morse  }, },
+	{ .description   = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
+	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
+	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n") },
+	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "1234"),    }, },
 	},
 
-	{ .description = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
-	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "12345",
-	  .expected_reply  = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n"),
-	  .expected_events        = { { .etype = etype_reply },
-	                              { .etype = etype_morse  }, },
+	{ .description   = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
+	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
+	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n") },
+	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "12345"),    }, },
 	},
 
 	/* '^' is a byte no. 257, so it will be dropped by cwdaemon's receive
 	   code. cwdaemon won't interpret this request as caret request, and
-	   won't send anything over socket (reply is empty). */
-	{ .description = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
-	  .caret_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_reply  = TESTS_SET_BYTES(""),
-	  .expected_events        = { { .etype = etype_morse  }, },
+	   won't send any reply. */
+	{ .description   = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
+	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456" ), }, },
 	},
 };
 
 
 
 
+/// @reviewed_on{2024.05.01}
 int request_size_caret_test(const test_options_t * test_opts)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	const int rv = run_test_cases(g_test_cases, n_test_cases, test_opts);
-
-	if (0 != rv) {
-		test_log_err("Test: result of the 'request size' test: FAIL %s\n", "");
-		test_log_newline(); /* Visual separator. */
-		return -1;
-	}
-	test_log_info("Test: result of the 'request size' test: PASS %s\n", "");
-	test_log_newline(); /* Visual separator. */
-	return 0;
+	return run_test_cases(g_test_cases, n_test_cases, test_opts, "caret request - request size");
 }
 
 

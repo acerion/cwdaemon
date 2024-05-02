@@ -24,9 +24,9 @@
 
 
 
-/**
-   Test(s) of caret ('^') request. For now there is just a basic test.
-*/
+/// @file
+///
+/// Test(s) of caret ('^') request.
 
 
 
@@ -63,6 +63,7 @@ static const char * g_test_name = "caret request";
 
 
 
+/// @reviewed_on{2024.05.01}
 int main(int argc, char * const * argv)
 {
 	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
@@ -96,11 +97,11 @@ int main(int argc, char * const * argv)
 	}
 
 	if (failure) {
-		test_log_err("Test: final result of [%s] test: FAIL\n", g_test_name);
+		test_log_err("Test: PASS ([%s] test)\n", g_test_name);
 		test_log_newline(); /* Visual separator. */
 		exit(EXIT_FAILURE);
 	}
-	test_log_info("Test: final result of [%s] test: PASS\n", g_test_name);
+	test_log_info("Test: PASS ([%s] test)\n", g_test_name);
 	test_log_newline(); /* Visual separator. */
 	exit(EXIT_SUCCESS);
 }
