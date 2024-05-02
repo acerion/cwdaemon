@@ -128,6 +128,58 @@ int expect_morse_and_reply_events_distance(int expectation_idx, bool morse_is_ea
 
 
 
+int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const * recorded_events)
+{
+	// First find the two events, and then check their distance on time axis.
+	///
+	// TODO (acerion) 2024.05.01: the code that searches for the two events
+	// can't handle a situation where there is more than one event of given
+	// type. For now we don't have such tests in which we expect to record
+	// more than one Morse event or more than one reply event, so it's not a
+	// huge problem right now.
+	event_t const * morse_event = NULL;
+	event_t const * reply_event = NULL;
+	int morse_idx = -1;
+	int reply_idx = -1;
+
+	for (int i = 0; i < EVENTS_MAX; i++) {
+		switch (recorded_events[i].etype) {
+		case etype_morse:
+			morse_event = &recorded_events[i];
+			morse_idx = i;
+			break;
+		case etype_reply:
+			reply_event = &recorded_events[i];
+			reply_idx = i;
+			break;
+		case etype_none:
+		case etype_req_exit:
+		case etype_sigchld:
+		default:
+			break;
+		}
+	}
+
+	if (morse_event && reply_event) {
+		const bool morse_is_earlier = morse_idx < reply_idx;
+		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_is_earlier, morse_event, reply_event)) {
+			return -1;
+		}
+	} else {
+		// It's ok that one of events is not present. If we have compared
+		// "expected" and "received" events using
+		// expect_count_type_order_contents() before calling this function,
+		// then we know that the events are not present in "recorded" on
+		// purpose.
+		test_log_info("Expectation %d: skipping checking of the expectation because either Morse event or reply event is not present\n", expectation_idx);
+	}
+
+	return 0;
+}
+
+
+
+
 int expect_morse_and_reply_events_order(int expectation_idx, bool morse_is_earlier)
 {
 	// This part implements checking of expectation.
@@ -178,4 +230,69 @@ int expect_count_of_events(int expectation_idx, int n_recorded, int n_expected)
 	return correct ? 0 : -1;
 }
 
+
+
+
+int expect_count_type_order_contents(int expectation_idx, event_t const * expected, event_t const * recorded)
+{
+	// Loop condition uses EVENTS_MAX because we want to detect and compare
+	// also etype_none events. See comment for line comparing event types
+	// ("etype" members) just below.
+	for (int i = 0; i < EVENTS_MAX; i++) {
+
+		// A non-obvious purpose of this comparison is to detect different
+		// count of events in both arrays.
+		//
+		// If one of events is etype_none and the other is not, then we
+		// detected that "expected[]" and "recorded[]" contain different
+		// count of events. That would mean that an error of cwdaemon was
+		// caught.
+		if (expected[i].etype != recorded[i].etype) {
+			test_log_err("Expectation %d: unexpected event at position %d: expected %u, recorded %u\n",
+			             expectation_idx, i,
+			             expected[i].etype,
+			             recorded[i].etype);
+			return -1;
+		}
+
+		switch (recorded[i].etype) {
+		case etype_morse:
+			if (0 != expect_morse_match(expectation_idx,
+			                            &recorded[i].u.morse,
+			                             expected[i].u.morse.string)) {
+				test_log_err("Expectation %d: mismatch of 'Morse' event at position %d\n", expectation_idx, i);
+				return -1;
+			}
+			break;
+
+		case etype_reply:
+			if (0 != expect_reply_match(expectation_idx,
+			                            &recorded[i].u.reply,
+			                            &expected[i].u.reply)) {
+				test_log_err("Expectation %d: mismatch of 'reply' event at position %d\n", expectation_idx, i);
+				return -1;
+			}
+			break;
+
+		case etype_none:
+			// A test at the top of the loop ensured that both "expected" and
+			// "recorded" event has the same type. So if we get into this
+			// "case", this means that both arrays have an empty slot here.
+			// We have now gone beyond last non-empty expected+recorded event
+			// and are safely and correctly comparing empty remainders of
+			// both arrays.
+			break;
+
+		case etype_req_exit:
+		case etype_sigchld:
+		default:
+			test_log_err("Expectation %d: unhandled event type %u at position %d\n",
+			             expectation_idx, recorded[i].etype, i);
+			return -1;
+		}
+	}
+	test_log_info("Expectation %d: found expected count of events, with proper types, in proper order, with proper contents\n", expectation_idx);
+
+	return 0;
+}
 
