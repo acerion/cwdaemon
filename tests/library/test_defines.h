@@ -111,7 +111,7 @@
 
 
 /* For long-running tests select a tone that is easy on ears, i.e. not too
-   high. But not too low either - too low tone may be difficult to hear . */
+   high. But not too low either - too low tone may be difficult to hear. */
 #define TESTS_TONE_EASY 600
 
 

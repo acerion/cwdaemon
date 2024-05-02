@@ -186,7 +186,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 	} else {
-		test_log_info("Expectation %d: skipping checking of the expectation because socket event is not present\n", expectation_idx);
+		test_log_info("Expectation %d: skipping checking of the expectation because reply event is not present\n", expectation_idx);
 	}
 
 
@@ -209,7 +209,7 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 			return -1;
 		}
 	} else {
-		test_log_info("Expectation %d: skipping checking contents of socket reply because there is no socket event\n", expectation_idx);
+		test_log_info("Expectation %d: skipping checking contents of reply because there is no reply event\n", expectation_idx);
 	}
 
 
@@ -345,7 +345,7 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 
 			morse_receiver_wait_for_stop(morse_receiver);
 
-			/* FIXME: shouldn't we wait here also for receipt of socket reply? Maybe some sleep here? */
+			/* FIXME: shouldn't we wait here also for receipt of reply? Maybe some sleep here? */
 		}
 
 

@@ -323,7 +323,7 @@ bool socket_receive_bytes_is_correct(const test_reply_data_t * expected, const t
 			return false;
 		}
 	} else {
-		/* Pass. If a test says "we don't expect any socket reply in this
+		/* Pass. If a test says "we don't expect any reply in this
 		   test case", it may use empty "expected" string to indicate
 		   this. */
 		// TODO (acerion) 2024.04.14: perhaps this function should not be

@@ -61,7 +61,7 @@
   it would give more info to tester.
 
   TODO acerion 2024.02.18: make sure that the description of <ESC>h request
-  contains the information that socket reply includes all characters from
+  contains the information that reply includes all characters from
   requested string, including "invalid" characters.
 
   TODO acerion 2024.02.18: make sure that similar test is added for
@@ -162,7 +162,7 @@ static test_case_t g_test_cases[] = {
 	   '-1'. */
 	{ .description             = "message containing '-1' integer value",
 
-	  .esc_request             = { .n_bytes =  8, .bytes = { 033, 'h', 'l', -1,  'z', 'a', 'r', 'd' } },              /* cwdaemon doesn't validate values of chars (e.g. '-1') that are requested for socket reply. */
+	  .esc_request             = { .n_bytes =  8, .bytes = { 033, 'h', 'l', -1,  'z', 'a', 'r', 'd' } },              /* cwdaemon doesn't validate values of chars (e.g. '-1') that are requested for reply. */
 	  .expected_reply          = { .n_bytes =  9, .bytes =      { 'h', 'l', -1,  'z', 'a', 'r', 'd', '\r', '\n' } },  /* Notice the 'h' char copied from esc request. */
 
 	  .plain_request   = { .n_bytes = 10, .bytes = { 'p', 'a', 's', 's', 'e', 'n', -1, 'e', 'r', '\0' } },   /* Notice '-1' char. */
