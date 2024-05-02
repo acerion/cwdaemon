@@ -415,8 +415,8 @@ static int start_process(const char * cwdaemon_path, const server_options_t * se
 			return -1;
 		}
 
-		if (server_opts->nofork) {
-			argv[argc++] = "-n";
+		if (!server_opts->do_fork) {
+			argv[argc++] = "-n"; // Don't fork -> append "nofork" option.
 		}
 
 		if ('\0' != server_opts->cwdevice_name[0]) {

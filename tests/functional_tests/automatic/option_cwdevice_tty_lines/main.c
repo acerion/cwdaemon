@@ -238,7 +238,6 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 	const server_options_t server_opts = {
 		.tone           = tests_get_test_tone(),
 		.sound_system   = test_opts->sound_system,
-		.nofork         = true,
 		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 		.tty_pins       = test_case->server_tty_pins, /* Server should toggle cwdevice pins according to this config. */
