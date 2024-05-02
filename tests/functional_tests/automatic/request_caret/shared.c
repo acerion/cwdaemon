@@ -261,6 +261,11 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 			// Receive events on cwdevice (Morse code on keying pin AND/OR
 			// ptt events on ptt pin).
 			morse_receiver_wait_for_stop(morse_receiver);
+
+			// A reply has been received implicitly by client for which we
+			// called client_socket_receive_enable/start(). FIXME (acerion)
+			// 2024.05.01: shouldn't we explicitly wait here also for receipt
+			// of reply? Maybe some sleep here?
 		}
 
 		events_sort(events);

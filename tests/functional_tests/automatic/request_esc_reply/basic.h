@@ -10,10 +10,12 @@
 
 
 /**
+   @reviewed_on{2024.05.01}
+
    @return 0 if test passed
    @return -1 otherwise
 */
-int basic_tests(const test_options_t * test_opts);
+int basic_tests(test_options_t const  * test_opts);
 
 
 

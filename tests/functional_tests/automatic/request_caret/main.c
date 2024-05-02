@@ -67,13 +67,13 @@ static const char * g_test_name = "caret request";
 int main(int argc, char * const * argv)
 {
 	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
-		test_log_err("Test: preconditions for testing env are not met, exiting %s\n", "");
+		test_log_err("Test: preconditions for testing env are not met, exiting [%s] test\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process env variables and command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options for [%s] test\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {

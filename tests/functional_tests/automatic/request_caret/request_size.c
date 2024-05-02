@@ -36,6 +36,9 @@
    CWDAEMON_REQUEST_SIZE_MAX==256 bytes. If a caret request sent to cwdaemon
    is larger than that, it will be truncated in receive code and the caret
    character will be dropped.
+
+   Really long requests that have better chance of triggering a crash of
+   cwdaemon are sent to the server in fuzzing test in another directory.
 */
 
 

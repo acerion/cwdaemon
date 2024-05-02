@@ -24,9 +24,9 @@
 
 
 
-/**
-   Tests of "REPLY" escape request.
-*/
+/// @file
+///
+/// Tests of REPLY Escape request.
 
 
 
@@ -61,21 +61,22 @@ static int (*g_tests[])(const test_options_t *) = {
 	request_size_tests,
 };
 
-static const char * g_test_name = "esc reply";
+static const char * g_test_name = "REPLY Escape request";
 
 
 
 
+/// @reviewed_on{2024.05.01}
 int main(int argc, char * const * argv)
 {
 	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
-		test_log_err("Test: preconditions for testing env are not met, exiting %s\n", "");
+		test_log_err("Test: preconditions for testing env are not met, exiting [%s] test\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process env variables and command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options for [%s] test\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {
@@ -99,11 +100,11 @@ int main(int argc, char * const * argv)
 	}
 
 	if (failure) {
-		test_log_err("Test: final result of [%s] test: FAIL\n", g_test_name);
+		test_log_err("Test: FAIL ([%s] test)\n", g_test_name);
 		test_log_newline(); /* Visual separator. */
 		exit(EXIT_FAILURE);
 	}
-	test_log_info("Test: final result of [%s] test: PASS\n", g_test_name);
+	test_log_info("Test: PASS ([%s] test)\n", g_test_name);
 	test_log_newline(); /* Visual separator. */
 	exit(EXIT_SUCCESS);
 }

@@ -13,15 +13,10 @@
 
 
 typedef struct test_case_t {
-	const char * description;                            /**< Tester-friendly description of test case. */
-
-	test_request_t esc_request;                          /**< What is being sent to cwdaemon server as "esc reply" request. */
-	const test_reply_data_t expected_reply;   /**< What is expected to be received through socket from cwdaemon server. Full reply, so it SHOULD include terminating "\r\n". */
-
-	test_request_t plain_request;                        /**< Text to be sent to cwdaemon server in the plain request - to be keyed by cwdaemon. */
-	const char expected_morse[400];              /**< What is expected to be received by Morse code receiver (without ending space). */
-
-	event_t expected_events[EVENTS_MAX];                 /**< Events that we expect to happen in this test case. */
+	char const * description;               ///< Tester-friendly description of test case.
+	const test_request_t esc_request;       ///< What is being sent to cwdaemon server as "esc reply" request.
+	const test_request_t plain_request;     ///< Text to be sent to cwdaemon server in the plain request - to be keyed by cwdaemon.
+	const event_t expected[EVENTS_MAX];     ///< Events that we expect to happen in this test case.
 } test_case_t;
 
 
@@ -30,13 +25,17 @@ typedef struct test_case_t {
 /**
    @brief Top-level function for running test cases
 
+   @reviewed_on{2024.05.01}
+
    @param[in] test_cases Test cases to run
    @param[in] n_test_cases Count of test cases in @p test_cases
+   @param[in] test_opts Testing options collected from command line options and from env variables
+   @param[in] test_name Name of the test
 
    @return 0 if test passed
    @return -1 otherwise
 */
-int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts);
+int run_test_cases(const test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts, char const * test_name);
 
 
 
