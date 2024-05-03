@@ -376,6 +376,7 @@ static int server_setup(server_t * server, const test_case_t * test_case, int * 
 			test_log_err("Test: unexpected success in starting cwdaemon with invalid port %d\n", test_case->port);
 			return -1;
 		}
+		g_child_exit_info.pid = server->pid;
 		return 0; /* Setting up of server has succeeded, as expected. */
 	}
 }

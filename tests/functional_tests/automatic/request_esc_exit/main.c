@@ -27,7 +27,7 @@
 /**
    @file
 
-   Test of EXIT request.
+   Test of EXIT Escape request.
 
    The test only tests exit of cwdaemon in two cases:
     - when cwdaemon was only started (without handling any request),
@@ -83,55 +83,59 @@
 
 
 
+static char const * g_test_name = "EXIT Escape request";
 static child_exit_info_t g_child_exit_info;
 
 
 
 
 typedef struct test_case_t {
-	const char * description;    /**< Human-readable description of the test case. */
-	bool send_message_request;   /**< Whether in this test case we should send MESSAGE request. */
-	test_request_t full_message; /**< Full text of message to be played by cwdaemon. */
-	event_t expected_events[EVENTS_MAX]; /**< Events that we expect to happen in this test case. */
+	char const * description;     /**< Human-readable description of the test case. */
+	bool send_plain_request;      /**< Whether in this test case we should send PLAIN request. */
+	test_request_t plain_request; /**< PLAIN request to be played by cwdaemon. */
+	event_t expected[EVENTS_MAX]; /**< Events that we expect to happen in this test case. */
 } test_case_t;
 
 
 
 
 /*
-  There are two basic test cases: when EXIT request is being sent to cwdaemon
-  that has just started and didn't do anything else, and when EXIT request is
-  being sent to cwdaemon that has handled some request.
+  There are two basic test cases: when EXIT Escape request is being sent to
+  cwdaemon that has just started and didn't do anything else, and when EXIT
+  Escape request is being sent to cwdaemon that has already handled some
+  other request.
 
   I could of course come up with more test cases in which cwdaemon did some
-  complicated stuff before it was asked to handle EXIT request, but that
-  would be duplicating the situations covered by other functional tests. In
-  the other functional tests I plan to check how cwdaemon has handled the
-  final EXIT request too. That should be enough to cover the more complicated
-  situations.
+  complicated stuff before it was asked to handle EXIT Escape request, but
+  that would be duplicating the situations covered by other functional tests.
+  In the other functional tests I plan to check how cwdaemon has handled the
+  final EXIT Escape request too. That should be enough to cover the more
+  complicated situations. TODO (acerion) 2024.05.03: double-check that the "I
+  plan to check" is really happening.
 */
+/// @reviewed_on{2024.05.03}
 static test_case_t g_test_cases[] = {
-	{ .description          = "exiting a cwdaemon server that has just started",
-	  .send_message_request = false,
-	  .expected_events      = { { .etype = etype_req_exit   },
-	                            { .etype = etype_sigchld    }, },
+	{ .description = "exiting a cwdaemon server that has just started",
+	  .send_plain_request = false,
+	  .expected = { { .etype = etype_req_exit },
+	                { .etype = etype_sigchld, .u.sigchld = { .exp_exited = true, .exp_exit_arg = EXIT_SUCCESS, }, }, },
 
 
 	},
 
-	{ .description          = "exiting a cwdaemon server that played some message",
-	  .send_message_request = true,
-	  .full_message         = TESTS_SET_BYTES("paris"),
-	  .expected_events      = { { .etype = etype_morse      },
-	                            { .etype = etype_req_exit   },
-	                            { .etype = etype_sigchld    }, },
+	{ .description = "exiting a cwdaemon server that already handled some request",
+	  .send_plain_request = true,
+	  .plain_request =                                 TESTS_SET_BYTES("paris"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris"), },
+	                { .etype = etype_req_exit },
+	                { .etype = etype_sigchld, .u.sigchld = { .exp_exited = true, .exp_exit_arg = EXIT_SUCCESS, },  }, },
 	},
 };
 
 
 
 
-static int evaluate_events(events_t * events, const test_case_t * test_case);
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case);
 static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case, const test_options_t * test_opts);
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
 static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver);
@@ -139,10 +143,10 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
 
 
 
-/*
-  Since this test is starting a child process, we want to handle SIGCHLD
-  signal.
-*/
+/// Since this test is observing exiting of a child process when the process
+/// detects invalid command line options, we want to handle SIGCHLD signal.
+///
+/// @reviewed_on{2024.05.03}
 static void sighandler(int sig)
 {
 	if (SIGCHLD == sig) {
@@ -154,16 +158,17 @@ static void sighandler(int sig)
 
 
 
+/// @reviewed_on{2024.05.03}
 int main(int argc, char * const * argv)
 {
 	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
-		test_log_err("Test: preconditions for testing env are not met, exiting %s\n", "");
+		test_log_err("Test: preconditions for testing env are not met, exiting test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
-		test_log_err("Test: failed to process env variables and command line options %s\n", "");
+		test_log_err("Test: failed to process env variables and command line options for test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
 	if (test_opts.invoked_help) {
@@ -179,6 +184,8 @@ int main(int argc, char * const * argv)
 
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
 
+
+	bool overall_test_failure = false; // Overall status of test.
 	for (size_t i = 0; i < n_test_cases; i++) {
 
 		const test_case_t * test_case = &g_test_cases[i];
@@ -204,6 +211,7 @@ int main(int argc, char * const * argv)
 			goto cleanup;
 		}
 
+		events_sort(&events);
 		if (0 != evaluate_events(&events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
@@ -218,11 +226,19 @@ int main(int argc, char * const * argv)
 
 		if (failure) {
 			test_log_err("Test: test case #%zu/%zu failed, terminating\n", i + 1, n_test_cases);
-			exit(EXIT_FAILURE);
+			overall_test_failure = true;
+			break;
 		}
 		test_log_info("Test: test case #%zu/%zu succeeded\n\n", i + 1, n_test_cases);
 	}
 
+	if (overall_test_failure) {
+		test_log_err("Test: FAIL ([%s] test)\n", g_test_name);
+		test_log_newline(); /* Visual separator. */
+		exit(EXIT_FAILURE);
+	}
+	test_log_info("Test: PASS ([%s] test)\n", g_test_name);
+	test_log_newline(); /* Visual separator. */
 	exit(EXIT_SUCCESS);
 }
 
@@ -231,11 +247,11 @@ int main(int argc, char * const * argv)
 
 /**
    @brief Prepare resources used to execute single test case
+
+   @reviewed_on{2024.05.03}
 */
 static int testcase_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_case_t * test_case, const test_options_t * test_opts)
 {
-	bool failure = false;
-
 	const int wpm = tests_get_test_wpm();
 
 	const server_options_t server_opts = {
@@ -246,47 +262,51 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 		.supervisor_id  = test_opts->supervisor_id,
 	};
 	if (0 != server_start(&server_opts, server)) {
-		test_log_err("Test: failed to start cwdaemon %s\n", "");
-		failure = true;
+		test_log_err("Test: failed to start cwdaemon for test case [%s]\n", test_case->description);
+		return -1;
 	}
 	g_child_exit_info.pid = server->pid;
 
 
 	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.03.22: remove casting. */
 		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
-		failure = true;
+		return -1;
 	}
 
-	if (test_case->send_message_request) {
+	if (test_case->send_plain_request) {
 		const morse_receiver_config_t morse_config = { .wpm = wpm };
 		if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
 			test_log_err("Test: failed to configure Morse receiver %s\n", "");
-			failure = true;
+			return -1;
 		}
 	}
 
-	return failure ? -1 : 0;
+	return 0;
 }
 
 
 
 
+/// @reviewed_on{2024.05.03}
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
-	if (test_case->send_message_request) {
+	if (test_case->send_plain_request) {
 
 		if (0 != morse_receiver_start(morse_receiver)) {
 			test_log_err("Test: failed to start Morse receiver %s\n", "");
 			return -1;
 		}
 
-		/* Send the message to be played. */
-		client_send_request(client, &test_case->full_message);
+		/* Send the PLAIN request to be played. */
+		client_send_request(client, &test_case->plain_request);
 
+		// Receive events on cwdevice (Morse code on keying pin AND/OR
+		// ptt events on ptt pin).
 		morse_receiver_wait_for_stop(morse_receiver);
 	} else {
-		/* Sending an EXIT request to a cwdaemon server that has just started
-		   and did nothing else is also a valid case. */
+		// Don't send a plain request. Sending an EXIT request to a cwdaemon
+		// server that has just started and did nothing else is also a valid
+		// use case.
 	}
 
 
@@ -299,6 +319,9 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 	  local_server_stop(). In this function we use the code explicitly
 	  because we want to test EXIT request and we want to have it plainly
 	  visible in the test code.
+
+	  TODO (acerion) 2024.05.03: double-check if we really want the
+	  duplication (and to what degree) or not.
 	*/
 
 	{
@@ -336,22 +359,22 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 			return -1;
 		}
 
+		// Give the signal handler for SIGCHLD some extra time to process the
+		// SIGCHLD signal and update g_child_exit_info. Not 100% sure if it's
+		// needed, but shouldn't hurt.
+		test_millisleep_nonintr(100);
+
 		if (0 != g_child_exit_info.sigchld_timestamp.tv_sec) {
-			/*
-			  SIGCHLD was received by test program at some point in time.
-			  Record this in array of events.
-
-			  Signal handler can record a timestamp, but can't add the event
-			  to array of events itself. Let's do this here.
-
-			  My tests show that there is no need to sort (by timestamp) the
-			  array afterwards.
-			*/
+			/// SIGCHLD was received by test program at some point in time.
+			/// Record this in array of events.
+			///
+			/// Signal handler can record a timestamp, but can't add the
+			/// event to global array of events itself. Let's do this here.
 			events_insert_sigchld_event(server->events, &g_child_exit_info);
 		} else {
-			/* There was never a signal from child (at least not in
-			   reasonable time. This will be recognized by
-			   evaluate_events(). */
+			/// There was never a signal from child (at least not in
+			/// reasonable time. This will be recognized by
+			/// evaluate_events().
 		}
 	}
 
@@ -364,13 +387,16 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 
 /**
    @brief Clean up resources used to execute single test case
+
+   @reviewed_on{2024.05.03}
 */
 static int testcase_teardown(const test_case_t * test_case, client_t * client, morse_receiver_t * morse_receiver)
 {
 	/* We don't stop cwdaemon server here because the entire point of this
-	   test is to stop the server in main part of the test :) */
+	   test is to stop the server in main part of the testcase, before a
+	   teardown of testcase is requested :) */
 
-	if (test_case->send_message_request) {
+	if (test_case->send_plain_request) {
 		morse_receiver_deconfigure(morse_receiver);
 	}
 
@@ -390,8 +416,8 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
    @brief Evaluate events that were recorded during execution of single test
    case
 
-   Look at contents of @p events and check if order and types of events are
-   as expected.
+   Look at contents of @p recorded_events and check if order and types of
+   events are as expected.
 
    The events may include
      - receiving Morse code
@@ -399,117 +425,35 @@ static int testcase_teardown(const test_case_t * test_case, client_t * client, m
      - changes of state of PTT pin,
      - exiting of local instance of cwdaemon server process,
 
+   @reviewed_on{2024.05.03}
+
    @return 0 if events are in proper order and of proper type
    @return -1 otherwise
 */
-static int evaluate_events(events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case)
 {
-	events_sort(events);
-	events_print(events);
-	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+	events_print(recorded_events); // For debug only.
 
 
+	int expectation_idx = 0; // To recognize failing expectations more easily.
+	event_t const * const expected = test_case->expected;
+	event_t const * const recorded = recorded_events->events;
 
 
-	const int expected_events_cnt = events_get_count(test_case->expected_events);
-
-
-
-
+	// Expectation: correct count, types, order and contents of events.
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
+	if (0 != expect_count_type_order_contents(expectation_idx, expected, recorded)) {
 		return -1;
 	}
 
-
-
-
-	/* Expectation: correct types and order of events. */
+	// Expectation: server exits soon after receiving EXIT request.
 	expectation_idx = 2;
-	const event_t * morse_event = NULL;
-	const event_t * exit_request = NULL;
-	const event_t * sigchld_event = NULL;
-	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].etype != events->events[i].etype) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
-			return -1;
-		}
-
-		/* Get references to specific events in array of events. */
-		switch (events->events[i].etype) {
-		case etype_morse:
-			morse_event = &events->events[i];
-			break;
-		case etype_sigchld:
-			sigchld_event = &events->events[i];
-			break;
-		case etype_req_exit:
-			exit_request = &events->events[i];
-			break;
-		case etype_none:
-		case etype_reply:
-		default:
-			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].etype, i);
-			return -1;
-		}
-	}
-	if (NULL == sigchld_event) {
-		/*  This test is to satisfy clang-tidy's check for NULL dereference. */
-		test_log_err("Expectation %d: sigchld event was not found\n", expectation_idx);
+	if (0 != expect_exit_and_sigchld_events_distance2(expectation_idx, recorded)) {
 		return -1;
 	}
 
-	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
 
-
-
-
-	expectation_idx = 3;
-	if (test_case->send_message_request) {
-		char expected[1024] = { 0 };
-		snprintf(expected, test_case->full_message.n_bytes + 1, "%s", test_case->full_message.bytes);
-		if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, expected)) {
-			return -1;
-		}
-	} else {
-		test_log_info("Expectation %d: skipping verification of Morse message, because this test doesn't play Morse code\n", expectation_idx);
-	}
-
-
-
-
-	/* Expectation: cwdaemon exited cleanly. */
-	expectation_idx = 4;
-	const int wstatus = sigchld_event->u.sigchld.wstatus;
-	const bool clean_exit = WIFEXITED(wstatus) && 0 == WEXITSTATUS(wstatus);
-	if (!clean_exit) {
-		test_log_err("Expectation %d: cwdaemon server didn't exit cleanly, wstatus = %d\n", expectation_idx, wstatus);
-		return -1;
-	}
-	test_log_info("Expectation %d: exit status of cwdaemon server is correct (expecting 0 / EXIT_SUCCESS): %d\n", expectation_idx, wstatus);
-
-
-
-
-	/* Expectation: time span between request to exit and the actual exit
-	   was short (definition of "short" is not precise). */
-	expectation_idx = 5;
-	struct timespec diff = { 0 };
-	// TODO (acerion) 2024.04.20: do we have a guarantee that the two events
-	// happened in expected order (i.e. exit request first, and sigchld
-	// second)?
-	timespec_diff(&exit_request->tstamp, &sigchld_event->tstamp, &diff);
-	if (diff.tv_sec >= 2) { /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
-		test_log_err("Expectation %d: duration of exit was longer than expected: %ld.%09ld [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec);
-		return -1;
-	}
-	test_log_info("Expectation %d: cwdaemon server exited in expected amount of time: %ld.%09ld [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec);
-
-
-
-
-	test_log_info("Test: Evaluation of test events was successful %s\n", "");
-
+	test_log_info("Test: evaluation of test events was successful for test case [%s]\n", test_case->description);
 	return 0;
 }
 

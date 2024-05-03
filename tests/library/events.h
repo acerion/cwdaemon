@@ -15,10 +15,10 @@
 
 typedef enum {
 	etype_none = 0,         /**< Indicates empty/invalid event. */
-	etype_morse,            /**< Something was received as Morse code by Morse receiver observing a cwdevice. */
+	etype_morse,            /**< Something was received as Morse code by Morse receiver observing a keying pin on cwdevice. */
 	etype_reply,            /**< A reply was received by cwdaemon client over network socket from cwdaemon server. */
-	etype_req_exit,         /**< "EXIT" Escape request has been sent to cwdaemon. */
-	etype_sigchld,          /**< SIGCHLD signal was received from child process. */
+	etype_req_exit,         /**< EXIT Escape request has been sent by test program to tested cwdaemon server. */
+	etype_sigchld,          /**< SIGCHLD signal was received from child process. For now the child process is always the local test instance of cwdaemon, started by test program. */
 } event_type_t;
 
 

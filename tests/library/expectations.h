@@ -97,6 +97,26 @@ int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const *
 
 
 
+/// @brief EXIT request sent to server, and SIGHLD received in test program should be separated by short time span
+///
+/// Find "EXIT request" and reply events in array of recorded events,
+/// Evaluate time span between the two events.
+///
+/// The function should be called only after
+/// expect_count_type_order_contents() returned success.
+///
+/// @reviewed_on{2024.05.03}
+///
+/// @param[in] expectation_idx Index/number of expectation - info to be included in logs
+/// @param[in] recorded_events Array of recorded events
+///
+/// @return 0 if expectation is met
+/// @return -1 otherwise
+int expect_exit_and_sigchld_events_distance2(int expectation_idx, event_t const * recorded_events);
+
+
+
+
 /**
    @brief End of Morse receive and the moment of receiving a reply are in proper order (on time scale)
 

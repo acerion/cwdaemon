@@ -181,6 +181,68 @@ int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const *
 
 
 
+int expect_exit_and_sigchld_events_distance2(int expectation_idx, event_t const * recorded_events)
+{
+	// First find the two events, and then check their distance on time axis.
+	///
+	// TODO (acerion) 2024.05.03: the code that searches for the two events
+	// can't handle a situation where there is more than one event of given
+	// type. For now we don't have such tests in which we expect to record
+	// more than one Morse event or more than one reply event, so it's not a
+	// huge problem right now.
+
+	// This part prepares data for the main part.
+	const event_t * exit_request = NULL;
+	const event_t * sigchld_event = NULL;
+	for (int i = 0; i < EVENTS_MAX; i++) {
+
+		/* Get references to specific events in array of events. */
+		switch (recorded_events[i].etype) {
+		case etype_morse:
+			break;
+		case etype_sigchld:
+			sigchld_event = &recorded_events[i];
+			break;
+		case etype_req_exit:
+			exit_request = &recorded_events[i];
+			break;
+		case etype_none:
+		case etype_reply:
+		default:
+			break;
+		}
+	}
+	if (NULL == sigchld_event) {
+		/*  This test is to satisfy clang-tidy's check for NULL dereference. */
+		test_log_err("Expectation %d: sigchld event was not found\n", expectation_idx);
+		return -1;
+	}
+
+
+	// This part implements checking of expectation.
+	struct timespec diff = { 0 };
+	// TODO (acerion) 2024.04.20: do we have a guarantee that the two events
+	// happened in expected order (i.e. exit request first, and sigchld
+	// second)?
+	timespec_diff(&exit_request->tstamp, &sigchld_event->tstamp, &diff);
+	const int threshold = 2;
+	const bool correct = diff.tv_sec < threshold; /* TODO acerion 2024.01.01: make the comparison more precise. Compare against 1.5 second. */
+
+
+	// This part implements ONLY logging.
+	if (correct) {
+		test_log_info("Expectation %d: cwdaemon server exited in expected amount of time: %ld.%09ld [seconds], threshold is %d.0 [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec, threshold);
+	} else {
+		test_log_err("Expectation %d: duration of exit was longer than expected: %ld.%09ld [seconds], threshold is %d.0 [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec, threshold);
+	}
+
+
+	return correct ? 0 : -1;
+}
+
+
+
+
 int expect_morse_and_reply_events_order(int expectation_idx, bool morse_is_earlier)
 {
 	// This part implements checking of expectation.
@@ -303,6 +365,16 @@ int expect_count_type_order_contents(int expectation_idx, event_t const * expect
 			break;
 
 		case etype_req_exit:
+			// The recorded event comes from test program, not from tested
+			// cwdaemon server.
+			//
+			// Here we just recognize here that we sent an EXIT Escape
+			// request to tested server. There is nothing more to do here
+			// because the event doesn't contain any details (apart from
+			// timestamp may be evaluated in other function).
+			test_log_info("Expectation %d: detected sending of EXIT Escape request to tested cwdaemon server\n", expectation_idx);
+			break;
+
 		default:
 			test_log_err("Expectation %d: unhandled event type %u at position %d\n",
 			             expectation_idx, recorded[i].etype, i);
