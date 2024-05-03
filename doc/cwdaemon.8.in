@@ -54,8 +54,11 @@ sound card ("-x s").
 You can interact with a running instance of cwdaemon through UDP messages
 exchanged between cwdaemon and your program.
 
-cwdaemon accepts requests with size of up to 256 bytes. Any bytes in a
-request beyond that limit are dropped by cwdaemon.
+cwdaemon can receive at most 256 bytes in a single request. Any bytes in a
+request beyond that limit are dropped by cwdaemon. Received bytes are further
+processed inside of cwdaemon. Dropped bytes aren't processed further by
+cwdaemon. Client program that sent an oversized message is not informed about
+the dropping of bytes by cwdaemon.
 
 There are three types of requests that can be sent to cwdaemon:
 
