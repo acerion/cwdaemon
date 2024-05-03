@@ -24,9 +24,9 @@
 
 
 
-/**
-   Basic test cases for "plain request" messages.
-*/
+/// @file
+///
+/// Basic test cases for PLAIN request.
 
 
 
@@ -40,11 +40,12 @@
 
 
 
+/// @reviewed_on{2024.05.01}
+/// TODO (acerion) 2024.05.01: add more test cases.
 static test_case_t g_test_cases[] = {
-	{ .description = "success case: short plain request",
-	  .plain_request   = TESTS_SET_BYTES("paris abc"),
-	  .expected_morse  =                 "paris abc",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "success case: short PLAIN request",
+	  .plain_request =                                 TESTS_SET_BYTES("paris abc"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris abc"), }, },
 	},
 };
 
@@ -54,16 +55,6 @@ static test_case_t g_test_cases[] = {
 int basic_tests(const test_options_t * test_opts)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	const int rv = run_test_cases(g_test_cases, n_test_cases, test_opts);
-
-	if (0 != rv) {
-		test_log_err("Test: result of the 'basic' test: FAIL %s\n", "");
-		test_log_newline(); /* Visual separator. */
-		return -1;
-	}
-	test_log_info("Test: result of the 'basic' test: PASS %s\n", "");
-	test_log_newline(); /* Visual separator. */
-	return 0;
-
+	return run_test_cases(g_test_cases, n_test_cases, test_opts, "PLAIN request - basic");
 }
 

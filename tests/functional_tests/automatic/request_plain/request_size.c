@@ -25,6 +25,8 @@
 
 
 /**
+   @file
+
    Test cases that send to cwdaemon plain requests that have size (count of
    bytes) close to cwdaemon's maximum size of requests. The requests are
    slightly smaller, equal to and slightly larger than the size of cwdaemon's
@@ -33,6 +35,9 @@
    cwdaemon's buffer that is used to receive requests has
    CWDAEMON_REQUEST_SIZE_MAX==256 bytes. If a plain request sent to cwdaemon
    is larger than that, it will be truncated.
+
+   Really long requests that have better chance of triggering a crash of
+   cwdaemon are sent to the server in fuzzing test in another directory.
 */
 
 
@@ -52,7 +57,7 @@
 
 
 
-/* Helper definition to shorten strings in test cases. Bytes at position 21
+/* Helper definition to shorten strings in test cases. Bytes at position 11
    till 250, inclusive. */
 #define BYTES_11_250 \
 	          "kukukukukukukukukukukukukukukukukukukuku" \
@@ -64,64 +69,59 @@
 
 
 
+/// @reviewed_on{2024.05.01}
 static test_case_t g_test_cases[] = {
 	/*
 	  In these cases a full plain request is keyed on cwdevice and received
 	  by Morse code receiver.
 	*/
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "1234",
-	  .expected_events        = { { .etype = etype_morse, }, },
+	{ .description   = "PLAIN request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "1234"), }, },
 	},
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\0"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "1234",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size smaller than cwdaemon's receive buffer - 254+1 bytes (with NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\0"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "1234"),  }, },
 	},
-	{ .description = "plain request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "12345",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "12345"),  }, },
 	},
 
 
 
 	/*
-	  In these cases a full plain request is keyed on cwdevice and received
+	  In these cases a full PLAIN request is keyed on cwdevice and received
 	  by Morse code receiver.
 	*/
-	{ .description = "plain request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\0"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "12345",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size equal to cwdaemon's receive buffer - 255+1 bytes (with NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\0"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "12345"),  }, },
 	},
-	{ .description = "plain request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456"),  }, },
 	},
 
 
 
 	/*
-	  In this case a full plain request is keyed on cwdevice and received by
+	  In this case a full PLAIN request is keyed on cwdevice and received by
 	  Morse code receiver.
 
 	  In this case cwdaemon's receive code will drop only the terminating
 	  NUL. The non-present NUL will have no impact on further actions of
 	  cwdaemon or on contents of keyed Morse message.
 	*/
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456\0"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size larger than cwdaemon's receive buffer - 256+1 bytes (with NUL)",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456\0"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456"),  }, },
 	},
 
 
 
 	/*
-	  In these cases only a truncated plain request is keyed on cwdevice and
+	  In these cases only a truncated PLAIN request is keyed on cwdevice and
 	  received by Morse code receiver. Request's bytes that won't fit into
 	  cwdaemon's receive buffer will be dropped by cwdaemon's receive code
 	  and won't be keyed on cwdevice.
@@ -129,7 +129,7 @@ static test_case_t g_test_cases[] = {
 	  These cases could be described as "failure cases" because Morse
 	  receiver will return something else than what client has sent to
 	  cwdaemon server. But we know that cwdaemon server will drop extra
-	  byte(s) from the plain request, and we know what cwdaemon server will
+	  byte(s) from the PLAIN request, and we know what cwdaemon server will
 	  key on cwdevice. And these test cases are expecting and testing exactly
 	  this behaviour.
 
@@ -139,15 +139,13 @@ static test_case_t g_test_cases[] = {
 	  receive buffer has space for 256 bytes). The last byte(s) from request
 	  will be dropped by cwdaemon's receive code.
 	*/
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL); TRUNCATION of Morse receive",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234567"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL); TRUNCATION of Morse receive",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234567"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456"),  }, },
 	},
-	{ .description = "plain request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL); TRUNCATION of Morse receive",
-	  .plain_request   = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234567\0"),
-	  .expected_morse  =                 "paris 7890" BYTES_11_250 "123456",
-	  .expected_events        = { { .etype = etype_morse  }, },
+	{ .description   = "PLAIN request with size larger than cwdaemon's receive buffer - 257+1 bytes (with NUL); TRUNCATION of Morse receive",
+	  .plain_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234567\0"),
+	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456"),  }, },
 	},
 };
 
@@ -157,15 +155,6 @@ static test_case_t g_test_cases[] = {
 int request_size_tests(const test_options_t * test_opts)
 {
 	const size_t n_test_cases = sizeof (g_test_cases) / sizeof (g_test_cases[0]);
-	const int rv = run_test_cases(g_test_cases, n_test_cases, test_opts);
-
-	if (0 != rv) {
-		test_log_err("Test: result of the 'request size' test: FAIL %s\n", "");
-		test_log_newline(); /* Visual separator. */
-		return -1;
-	}
-	test_log_info("Test: result of the 'request size' test: PASS %s\n", "");
-	test_log_newline(); /* Visual separator. */
-	return 0;
+	return run_test_cases(g_test_cases, n_test_cases, test_opts, "PLAIN request - request size");
 }
 

@@ -24,10 +24,11 @@
 
 
 
-/**
-   Code shared between basic tests of plain request message, and tests
-   testing large plain request messages.
-*/
+/// @file
+///
+/// Code shared between basic tests of PLAIN requests, and tests testing
+/// large PLAIN requests.
+
 
 
 
@@ -53,13 +54,13 @@
 
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
-static int evaluate_events(events_t * events, const test_case_t * test_case);
+static int test_run(test_case_t const * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case);
 
 
 
 
-int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_options_t * test_opts)
+int run_test_cases(test_case_t const * test_cases, size_t n_test_cases, test_options_t const * test_opts, char const * test_name)
 {
 	bool failure = false;
 	events_t events = { .mutex = PTHREAD_MUTEX_INITIALIZER };
@@ -68,24 +69,31 @@ int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_opt
 	morse_receiver_t morse_receiver = { .events = &events };
 
 	if (0 != test_setup(&server, &client, &morse_receiver, test_opts)) {
-		test_log_err("Test: failed at test setup %s\n", "");
+		test_log_err("Test: failed at test setup for [%s] test\n", test_name);
 		failure = true;
 		goto cleanup;
 	}
 
 	if (0 != test_run(test_cases, n_test_cases, &client, &morse_receiver, &events)) {
-		test_log_err("Test: failed at running test cases %s\n", "");
+		test_log_err("Test: failed at running test cases for test [%s]\n", test_name);
 		failure = true;
 		goto cleanup;
 	}
 
  cleanup:
 	if (0 != test_teardown(&server, &client, &morse_receiver)) {
-		test_log_err("Test: failed at test tear down %s\n", "");
+		test_log_err("Test: failed at test tear down for test [%s]\n", test_name);
 		failure = true;
 	}
 
-	return failure ? -1 : 0;
+	if (failure) {
+		test_log_err("Test: FAIL ([%s] test)\n", test_name);
+		test_log_newline(); /* Visual separator. */
+		return -1;
+	}
+	test_log_info("Test: PASS ([%s] test)\n", test_name);
+	test_log_newline(); /* Visual separator. */
+	return 0;
 }
 
 
@@ -104,68 +112,37 @@ int run_test_cases(test_case_t * test_cases, size_t n_test_cases, const test_opt
      - changes of state of PTT pin,
      - exiting of local instance of cwdaemon server process,
 
+   @reviewed_on{2024.05.01}
+
    @return 0 if events are in proper order and of proper type
    @return -1 otherwise
 */
-static int evaluate_events(events_t * events, const test_case_t * test_case)
+static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case)
 {
-	events_sort(events);
-	events_print(events);
-	int expectation_idx = 0; /* To recognize failing expectations more easily. */
+	events_print(recorded_events); // For debug only.
 
 
+	int expectation_idx = 0; // To recognize failing expectations more easily.
+	event_t const * const expected = test_case->expected;
+	event_t const * const recorded = recorded_events->events;
 
 
-	const int expected_events_cnt = events_get_count(test_case->expected_events);
-
-
-
-
+	// Expectation: correct count, types, order and contents of events.
 	expectation_idx = 1;
-	if (0 != expect_count_of_events(expectation_idx, events->events_cnt, expected_events_cnt)) {
+	if (0 != expect_count_type_order_contents(expectation_idx, expected, recorded)) {
 		return -1;
 	}
 
 
-
-
-	/* Expectation: correct types and order of events. */
+	// Expectation: recorded Morse event and reply event are close enough to
+	// each other. Check distance of the two events on time axis.
 	expectation_idx = 2;
-	const event_t * morse_event = NULL;
-	for (int i = 0; i < expected_events_cnt; i++) {
-		if (test_case->expected_events[i].etype != events->events[i].etype) {
-			test_log_err("Expectation %d: unexpected event %u at position %d\n", expectation_idx, events->events[i].etype, i);
-			return -1;
-		}
-
-		/* Get references to specific events in array of events. */
-		switch (events->events[i].etype) {
-		case etype_morse:
-			morse_event = &events->events[i];
-			break;
-		case etype_none:
-		case etype_reply:
-		case etype_req_exit:
-		case etype_sigchld:
-		default:
-			test_log_err("Expectation %d: unhandled event type %u at position %d\n", expectation_idx, events->events[i].etype, i);
-			return -1;
-		}
-	}
-	test_log_info("Expectation %d: found expected types of events, in proper order\n", expectation_idx);
-
-
-
-
-	expectation_idx = 3;
-	if (0 != expect_morse_match(expectation_idx, &morse_event->u.morse, test_case->expected_morse)) {
+	if (0 != expect_morse_and_reply_events_distance2(expectation_idx, recorded)) {
 		return -1;
 	}
 
 
-
-
-	test_log_info("Test: evaluation of test events was successful %s\n", "");
+	test_log_info("Test: evaluation of test events was successful for test case [%s]\n", test_case->description);
 
 	return 0;
 }
@@ -175,11 +152,11 @@ static int evaluate_events(events_t * events, const test_case_t * test_case)
 
 /**
    @brief Prepare resources used to execute set of test cases
+
+   @reviewed_on{2024.05.01}
 */
 static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, const test_options_t * test_opts)
 {
-	bool failure = false;
-
 	/* There is a lot of characters in test cases. Let's play them quickly to
 	   make the test short. */
 	const int wpm = TESTS_WPM_MAX;
@@ -194,28 +171,28 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	};
 	if (0 != server_start(&server_opts, server)) {
 		test_log_err("Test: failed to start cwdaemon server %s\n", "");
-		failure = true;
+		return -1;
 	}
 
 
 	if (0 != client_connect_to_server(client, server->ip_address, (in_port_t) server->l4_port)) { /* TODO acerion 2024.01.24: remove casting. */
 		test_log_err("Test: can't connect cwdaemon client to cwdaemon server at [%s:%d]\n", server->ip_address, server->l4_port);
-		failure = true;
+		return -1;
 	}
 	client_socket_receive_enable(client);
 	if (0 != client_socket_receive_start(client)) {
 		test_log_err("Test: failed to start socket receiver %s\n", "");
-		failure = true;
+		return -1;
 	}
 
 
 	const morse_receiver_config_t morse_config = { .wpm = wpm };
 	if (0 != morse_receiver_configure(&morse_config, morse_receiver)) {
 		test_log_err("Test: failed to configure Morse receiver %s\n", "");
-		failure = true;
+		return -1;
 	}
 
-	return failure ? -1 : 0;
+	return 0;
 }
 
 
@@ -223,6 +200,8 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 
 /**
    @brief Clean up resources used to execute set of test cases
+
+   @reviewed_on{2024.05.01}
 */
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver)
 {
@@ -256,13 +235,15 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 /**
    @brief Run all test cases. Evaluate results (the events) of each test case.
+
+   @reviewed_on{2024.05.01}
 */
-static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+static int test_run(test_case_t const * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	bool failure = false;
 
 	for (size_t i = 0; i < n_test_cases; i++) {
-		const test_case_t * test_case = &test_cases[i];
+		test_case_t const * const test_case = &test_cases[i];
 
 		test_log_newline(); /* Visual separator. */
 		test_log_info("Test: starting test case %zu / %zu: [%s]\n", i + 1, n_test_cases, test_case->description);
@@ -278,9 +259,12 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			/* Send the message to be played. */
 			client_send_request(client, &test_case->plain_request);
 
+			// Receive events on cwdevice (Morse code on keying pin AND/OR
+			// ptt events on ptt pin).
 			morse_receiver_wait_for_stop(morse_receiver);
 		}
 
+		events_sort(events);
 		if (0 != evaluate_events(events, test_case)) {
 			test_log_err("Test: evaluation of events has failed for test case %zu / %zu\n", i + 1, n_test_cases);
 			failure = true;
@@ -294,7 +278,5 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 
 	return failure ? -1 : 0;
 }
-
-
 
 
