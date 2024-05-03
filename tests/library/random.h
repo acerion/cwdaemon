@@ -71,7 +71,7 @@ int cwdaemon_random_bool(bool * result);
    The random value is returned through @p result.
 
    The higher the value of @p bias, the more the function is likely to return
-   'false' (it's more biased towards returning zero). Keep the value higher
+   'false' (it's more biased towards returning false). Keep the value higher
    than zero.
 
    @reviewed_on{2024.04.19}
