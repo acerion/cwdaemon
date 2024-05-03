@@ -60,7 +60,18 @@ typedef struct test_reply_data_t {
 
 
 typedef struct {
-	int wstatus;
+	int wstatus; ///< Recorded exit status of process. Obtained through "wstatus" argument from call to waitpid().
+
+	/// @brief Expectation: whether process terminated through call to exit().
+	///
+	/// It is expected that exp_exited == WIFEXITED(wstatus).
+	bool exp_exited;
+
+	/// @brief Expectation: if process terminated through call to exit(),
+	/// what was the argument passed to exit().
+	///
+	/// It is expected that exp_exit_arg == WEXITSTATUS(wstatus).
+	int exp_exit_arg;
 } event_sigchld_t;
 
 

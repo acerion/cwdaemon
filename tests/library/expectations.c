@@ -25,6 +25,7 @@
 
 
 #include <stdio.h>
+#include <sys/wait.h>
 
 #include "events.h"
 #include "expectations.h"
@@ -283,8 +284,25 @@ int expect_count_type_order_contents(int expectation_idx, event_t const * expect
 			// both arrays.
 			break;
 
-		case etype_req_exit:
 		case etype_sigchld:
+			if (WIFEXITED(recorded[i].u.sigchld.wstatus) != expected[i].u.sigchld.exp_exited) {
+				test_log_err("Expectation %d: failure case: mismatch about exit(): expected %d, recorded %d\n",
+				             expectation_idx,
+				             WIFEXITED(recorded[i].u.sigchld.wstatus), expected[i].u.sigchld.exp_exited);
+				return -1;
+			}
+			if (WIFEXITED(recorded[i].u.sigchld.wstatus)) {
+				if (WEXITSTATUS(recorded[i].u.sigchld.wstatus) != expected[i].u.sigchld.exp_exit_arg) {
+					test_log_err("Expectation %d: failure case: process exited, but exit status doesn't match: expected %d, recorded %d\n",
+					             expectation_idx,
+					             WEXITSTATUS(recorded[i].u.sigchld.wstatus), expected[i].u.sigchld.exp_exit_arg);
+					return -1;
+				}
+			}
+			test_log_info("Expectation %d: processes' exit status is as expected (0x%04x)\n", expectation_idx, (unsigned int) recorded[i].u.sigchld.wstatus);
+			break;
+
+		case etype_req_exit:
 		default:
 			test_log_err("Expectation %d: unhandled event type %u at position %d\n",
 			             expectation_idx, recorded[i].etype, i);
