@@ -448,7 +448,7 @@ static int evaluate_events(events_t const * recorded_events, test_case_t const *
 
 	// Expectation: server exits soon after receiving EXIT request.
 	expectation_idx = 2;
-	if (0 != expect_exit_and_sigchld_events_distance2(expectation_idx, recorded)) {
+	if (0 != expect_exit_and_sigchld_events_distance(expectation_idx, recorded)) {
 		return -1;
 	}
 

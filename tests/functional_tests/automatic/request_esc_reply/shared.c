@@ -141,7 +141,7 @@ static int evaluate_events(events_t const * recorded_events, test_case_t const *
 	// Expectation: recorded Morse event and reply event are close enough to
 	// each other. Check distance of the two events on time axis.
 	expectation_idx = 2;
-	if (0 != expect_morse_and_reply_events_distance2(expectation_idx, recorded)) {
+	if (0 != expect_morse_and_reply_events_distance(expectation_idx, recorded)) {
 		return -1;
 	}
 

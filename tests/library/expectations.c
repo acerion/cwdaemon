@@ -46,6 +46,12 @@
 
 
 
+static int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, event_morse_receive_t const * expected);
+static int expect_morse_and_reply_events_distance_inner(int expectation_idx, bool morse_is_earlier, const event_t * morse_event, const event_t * reply_event);
+
+
+
+
 int expect_reply_match(int expectation_idx, const test_reply_data_t * received, const test_reply_data_t * expected)
 {
 	// This part implements checking of expectation.
@@ -78,7 +84,22 @@ int expect_reply_match(int expectation_idx, const test_reply_data_t * received, 
 
 
 
-int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, event_morse_receive_t const * expected)
+/**
+   @brief Text keyed on cwdevice and received by Morse receiver must match text sent to cwdaemon for keying
+
+   Receiving of message by Morse receiver should not be verified if the
+   expected message is too short (the problem with "warm-up" of receiver).
+
+   @reviewed_on{2024.05.05}
+
+   @param[in] expectation_idx Index/number of expectation - info to be included in logs
+   @param[in] received Morse message keyed by cwdaemon and received on cwdevice by Morse receiver
+   @param[in] expected Expected Morse message - what test expects to be keyed by tested cwdaemon server
+
+   @return 0 if expectation is met
+   @return -1 otherwise
+*/
+static int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, event_morse_receive_t const * expected)
 {
 	// This part implements checking of expectation.
 	const bool correct = morse_receive_text_is_correct(received->string, expected->string);
@@ -100,7 +121,27 @@ int expect_morse_match(int expectation_idx, event_morse_receive_t const * receiv
 
 
 
-int expect_morse_and_reply_events_distance(int expectation_idx, bool morse_is_earlier, const event_t * morse_event, const event_t * reply_event)
+/**
+   @brief The end of receiving of Morse message and the time of receiving a
+   reply should be separated by short time span
+
+   Evaluate time span between 'reply' event and the end of receiving a Morse
+   message.
+
+   Currently (0.12.0) the time span is ~300ms. TODO acerion 2023.12.31:
+   shorten the time span in cwdaemon.
+
+   @reviewed_on{2024.02.19}
+
+   @param[in] expectation_idx Index/number of expectation - info to be included in logs
+   @param[in] morse_is_earlier Whether Morse event is earlier than reply event
+   @param[in] morse_event Event describing receiving of Morse message on cwdevice
+   @param[in] reply_event Event describing receiving a reply from tested cwdaemon server
+
+   @return 0 if expectation is met
+   @return -1 otherwise
+*/
+static int expect_morse_and_reply_events_distance_inner(int expectation_idx, bool morse_is_earlier, const event_t * morse_event, const event_t * reply_event)
 {
 	struct timespec diff = { 0 };
 	if (morse_is_earlier) {
@@ -129,7 +170,7 @@ int expect_morse_and_reply_events_distance(int expectation_idx, bool morse_is_ea
 
 
 
-int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const * recorded_events)
+int expect_morse_and_reply_events_distance(int expectation_idx, event_t const * recorded_events)
 {
 	// First find the two events, and then check their distance on time axis.
 	///
@@ -163,7 +204,7 @@ int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const *
 
 	if (morse_event && reply_event) {
 		const bool morse_is_earlier = morse_idx < reply_idx;
-		if (0 != expect_morse_and_reply_events_distance(expectation_idx, morse_is_earlier, morse_event, reply_event)) {
+		if (0 != expect_morse_and_reply_events_distance_inner(expectation_idx, morse_is_earlier, morse_event, reply_event)) {
 			return -1;
 		}
 	} else {
@@ -181,7 +222,7 @@ int expect_morse_and_reply_events_distance2(int expectation_idx, event_t const *
 
 
 
-int expect_exit_and_sigchld_events_distance2(int expectation_idx, event_t const * recorded_events)
+int expect_exit_and_sigchld_events_distance(int expectation_idx, event_t const * recorded_events)
 {
 	// First find the two events, and then check their distance on time axis.
 	///
@@ -236,59 +277,6 @@ int expect_exit_and_sigchld_events_distance2(int expectation_idx, event_t const 
 		test_log_err("Expectation %d: duration of exit was longer than expected: %ld.%09ld [seconds], threshold is %d.0 [seconds]\n", expectation_idx, diff.tv_sec, diff.tv_nsec, threshold);
 	}
 
-
-	return correct ? 0 : -1;
-}
-
-
-
-
-int expect_morse_and_reply_events_order(int expectation_idx, bool morse_is_earlier)
-{
-	// This part implements checking of expectation.
-	const bool correct = morse_is_earlier;
-
-	// This part implements ONLY logging.
-	{
-		if (correct) {
-			// This would be the correct order of events, but currently
-			// (cwdaemon 0.11.0, 0.12.0) this is not the case: the order of
-			// events is reverse. Right now I'm not willing to fix it yet.
-			//
-			// TODO (acerion) 2023.12.30: fix the order of the two events in
-			// cwdaemon. At the very least decrease the time difference
-			// between the events from current ~300ms to few ms.
-			test_log_warn("Expectation %d: unexpected order of events: Morse -> socket\n", expectation_idx);
-		} else {
-			// This is the current incorrect behaviour that is accepted for
-			// now.
-			test_log_warn("Expectation %d: incorrect (but currently expected) order of events: socket -> Morse\n", expectation_idx);
-		}
-	}
-
-	// Always return zero because I don't know what is the truly correct
-	// result. TODO (acerion) 2024.01.26: start returning -1 at some point in
-	// the future, after your are certain of correct order of events.
-	return 0;
-}
-
-
-
-
-int expect_count_of_events(int expectation_idx, int n_recorded, int n_expected)
-{
-	// This part implements checking of expectation.
-	const bool correct = n_recorded == n_expected;
-
-	// This part implements ONLY logging.
-	{
-		if (correct) {
-			test_log_info("Expectation %d: found expected count of events: %d\n", expectation_idx, n_recorded);
-		} else {
-			test_log_err("Expectation %d: unexpected count of events: recorded %d events, expected %d events\n",
-			             expectation_idx, n_recorded, n_expected);
-		}
-	}
 
 	return correct ? 0 : -1;
 }
