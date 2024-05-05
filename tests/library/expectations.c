@@ -78,19 +78,19 @@ int expect_reply_match(int expectation_idx, const test_reply_data_t * received, 
 
 
 
-int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, const char * expected)
+int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, event_morse_receive_t const * expected)
 {
 	// This part implements checking of expectation.
-	const bool correct = morse_receive_text_is_correct(received->string, expected);
+	const bool correct = morse_receive_text_is_correct(received->string, expected->string);
 
 	// This part implements ONLY logging.
 	{
 		if (correct) {
 			test_log_info("Expectation %d: received Morse message [%s] matches expected Morse message [%s] (ignoring the first character)\n",
-			              expectation_idx, received->string, expected);
+			              expectation_idx, received->string, expected->string);
 		} else {
 			test_log_err("Expectation %d: received Morse message [%s] doesn't match expected Morse message [%s]\n",
-			             expectation_idx, received->string, expected);
+			             expectation_idx, received->string, expected->string);
 		}
 	}
 
@@ -322,7 +322,7 @@ int expect_count_type_order_contents(int expectation_idx, event_t const * expect
 		case etype_morse:
 			if (0 != expect_morse_match(expectation_idx,
 			                            &recorded[i].u.morse,
-			                             expected[i].u.morse.string)) {
+			                            &expected[i].u.morse)) {
 				test_log_err("Expectation %d: mismatch of 'Morse' event at position %d\n", expectation_idx, i);
 				return -1;
 			}
