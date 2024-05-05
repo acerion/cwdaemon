@@ -105,5 +105,26 @@ int cwdaemon_random_bytes(char * buffer, size_t size);
 
 
 
+/**
+   @brief Get an array of printable characters
+
+   Put @p size random printable characters into @p buffer.
+
+   Printable characters are defined as ASCII characters with value between
+   0x20 (SPACE) and 0x7e ('~' character), inclusive.
+
+   @reviewed_on{2024.05.04}
+
+   @param[out] buffer Buffer into which to put random characters
+   @param[out] size Size of the buffer, count of characters to put into buffer
+
+   @return 0 on success
+   @return -1 on failure
+*/
+int cwdaemon_random_printable_string(char * buffer, size_t size);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TESTS_LIB_RANDOM_H */
 

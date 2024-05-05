@@ -168,3 +168,19 @@ int cwdaemon_random_bytes(char * buffer, size_t size)
 	return 0;
 }
 
+
+
+int cwdaemon_random_printable_string(char * buffer, size_t size)
+{
+	for (size_t i = 0; i < size; i++) {
+		const unsigned int lower = 0x20; // SPACE
+		const unsigned int upper = 0x7e; // '~' character
+		unsigned int val = 0;
+		if (0 != cwdaemon_random_uint(lower, upper, &val)) {
+			return -1;
+		}
+		buffer[i] = (char) val;
+	}
+	return 0;
+}
+
