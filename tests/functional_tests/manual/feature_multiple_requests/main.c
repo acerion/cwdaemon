@@ -25,6 +25,8 @@
 
 
 /**
+   @file
+
    Use several clients to send messages from different sources.
 
    See how cwdaemon handles message Y while message X is still being played.

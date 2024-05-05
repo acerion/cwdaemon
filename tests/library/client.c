@@ -29,6 +29,8 @@
 
 
 /**
+   @file
+
    Code for cwdaemon client - an entity connecting to local or remote
    cwdaemon server over network socket.
 

@@ -23,7 +23,9 @@
 
 
 /**
-   @file Top-level code for observing state of pins on cwdaemon's cwdevice
+   @file
+
+   Top-level code for observing state of pins on cwdaemon's cwdevice
 */
 
 
