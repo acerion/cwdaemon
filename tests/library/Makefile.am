@@ -37,6 +37,7 @@ lib_tests_a_SOURCES = client.c             \
                       cwdevice_observer_serial.c  \
                       events.c             \
                       expectations.c       \
+                      log.c                \
                       misc.c               \
                       morse_receiver.c     \
                       morse_receiver_utils.c \
