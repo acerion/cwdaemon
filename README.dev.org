@@ -93,6 +93,17 @@ You SHOULD start debug messages with capital letters. Example ("Invalid" is the 
   Good: "send Escape request"
   Bad:  "send escape request"
 
+- Type of request SHOULD be in ALL CAPS:
+
+  Good: CWDEVICE Escape request
+  Bad:  cwdevice Escape request
+
+  Good: PLAIN request
+  Bad:  plain request
+
+  Good: CARET request
+  Bad:  Caret request
+
 * Bugs, features
 ** TODO [#C] R0001: Bug: PulseAudio for system services
 
