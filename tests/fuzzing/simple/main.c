@@ -194,7 +194,7 @@ int main(int argc, char * const * argv)
 	}
 
 	const uint32_t seed = cwdaemon_srandom(test_opts.random_seed);
-	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_info("Test: random seed: 0x%08x (%u)\n", seed, seed);
 	// There may be a lot of strange chars printed to console during this
 	// test. Some of them may erase initial logs. Better save the info about
 	// seed to some safe place.

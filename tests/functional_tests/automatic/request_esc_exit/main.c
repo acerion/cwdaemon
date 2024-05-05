@@ -177,7 +177,7 @@ int main(int argc, char * const * argv)
 	}
 
 	const uint32_t seed = cwdaemon_srandom(test_opts.random_seed);
-	test_log_debug("Test: random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_info("Test: random seed: 0x%08x (%u)\n", seed, seed);
 
 	signal(SIGCHLD, sighandler);
 

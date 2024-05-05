@@ -62,7 +62,7 @@ static int (*tests[])(void) = {
 int main(void)
 {
 	const uint32_t seed = cwdaemon_srandom(0);
-	test_log_debug("Random seed: 0x%08x (%u)\n", seed, seed);
+	test_log_info("Random seed: 0x%08x (%u)\n", seed, seed);
 
 	int i = 0;
 	while (tests[i]) {
