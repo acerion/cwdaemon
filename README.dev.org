@@ -447,3 +447,14 @@ file.
 You don't have to specify any pin assignment in the file, but add enough code
 to the file to make it easy and fast to change default assignments.
 
+
+** TODO [#C] R0029: interrupt in fuzzing test
+
+Fuzzing test can take a long time to run. If I want to interrupt it, I want
+to do it in a "nice" way that won't leave neither the test nor tested server
+in bad state.
+
+Especially the state of the server is important: it must exit in clean manner
+to be able to release all resources properly.
+
+Write a good handler of Ctrl-C in the fuzzing test.
