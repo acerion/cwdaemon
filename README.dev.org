@@ -447,8 +447,7 @@ file.
 You don't have to specify any pin assignment in the file, but add enough code
 to the file to make it easy and fast to change default assignments.
 
-
-** TODO [#C] R0029: interrupt in fuzzing test
+** TODO [#C] R0029: Feature: interrupt in fuzzing test
 
 Fuzzing test can take a long time to run. If I want to interrupt it, I want
 to do it in a "nice" way that won't leave neither the test nor tested server
@@ -458,3 +457,51 @@ Especially the state of the server is important: it must exit in clean manner
 to be able to release all resources properly.
 
 Write a good handler of Ctrl-C in the fuzzing test.
+
+** TODO [#A] R0030: Bug: <ESC>f disables keying on cwdevice
+
+When sound system is changed through <ESC>f Escape request, the cwdaemon
+stops toggling keying pin on cwdevice.
+
+Problem reported by a user.
+
+Steps to replicate.
+
+1. Start cwdaemon
+    ./src/cwdaemon --nofork --system p --cwdevice /dev/ttyUSB0 -iii -p 7777
+
+2. Start monitoring pins of cwdevice using your preferred method.
+   Pay attention to keying pin.
+
+3. Start nc through which you will be sending requests to server.
+
+   nc -u 127.0.0.1 7777
+
+4. In nc send any string to be played and keyed by cwdaemon
+
+5. Observe that:
+   1. Morse code is played on sound card,
+   2. Morse code is keyed on keying pin of cwdevice,
+   3. cwdaemon logs info about toggling of keying pin:
+	  [INFO ] cwdaemon: keying event "1"
+      [INFO ] cwdaemon: keying event "0"
+      [INFO ] cwdaemon: keying event "1"
+      [INFO ] cwdaemon: keying event "0"
+
+6. In nc send an Escape request to change sound system to Soundcard:
+
+   <press and release Escape key>
+   <press and release 'f' key>
+   <press and release 's' key>
+
+7. In nc send any string to be played and keyed by cwdaemon.
+
+8. Observe that:
+   1. Morse code is played on sound card,
+   2. Morse code is NOT keyed on keying pin of cwdevice,          <---- This is an error
+   3. cwdaemon DOES NOT log info about toggling of keying pin.    <---- This is an indication of error
+
+
+Also observe that sending RESET Escape request seems to restore proper
+toggling of keying pin.
+
