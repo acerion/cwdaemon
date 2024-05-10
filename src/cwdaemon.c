@@ -390,7 +390,7 @@ void cwdaemon_catch_sigint(int signal);
 static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, uint32_t flags);
 
 
-// Will be initialized by tty_init_global_cwdevice().
+// Will be initialized by tty_init_cwdevice().
 cwdevice cwdevice_ttys = { 0 };
 
 cwdevice cwdevice_null = {
@@ -2320,7 +2320,7 @@ bool cwdaemon_cwdevices_init(void)
 #endif
 
 
-	if (0 != tty_init_global_cwdevice(&cwdevice_ttys)) {
+	if (0 != tty_init_cwdevice(&cwdevice_ttys)) {
 		log_error("Failed to initialize tty cwdevice %s", "");
 		return false;
 	}

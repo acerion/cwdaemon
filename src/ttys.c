@@ -71,7 +71,7 @@
 
 
 static int ttys_init(cwdevice * dev, int fd);
-static int ttys_free(cwdevice * dev);
+static int ttys_close(cwdevice * dev);
 static int ttys_reset_pins_state(cwdevice * dev);
 static int ttys_cw(cwdevice * dev, int onoff);
 static int ttys_ptt(cwdevice * dev, int onoff);
@@ -120,12 +120,13 @@ out:
 
 
 
-int tty_init_global_cwdevice(cwdevice * dev)
+// @reviewed_on{2024.05.09}
+int tty_init_cwdevice(cwdevice * dev)
 {
 	memset(dev, 0, sizeof (cwdevice));
 
 	dev->init                  = ttys_init;
-	dev->free                  = ttys_free;
+	dev->free                  = ttys_close; // The function name on the right is correct. The cwdevice::free method will be renamed to cwdevice::close in the future.
 	dev->reset_pins_state      = ttys_reset_pins_state;
 	dev->cw                    = ttys_cw;
 	dev->ptt                   = ttys_ptt;
@@ -140,7 +141,9 @@ int tty_init_global_cwdevice(cwdevice * dev)
 
 	// Default name of device file in /dev/.
 #if defined(__linux__)
-	dev->desc = strdup("ttyS0"); // This is not a "ttyUSB0" for legacy reasons.
+	// "ttyUSB0" seems more likely these days, but I keep "ttyS0" for legacy
+	// reasons.
+	dev->desc = strdup("ttyS0");
 #elif defined(__FreeBSD__)
 	dev->desc = strdup("ttyd0");
 #elif defined(__OpenBSD__)
@@ -155,10 +158,10 @@ int tty_init_global_cwdevice(cwdevice * dev)
 
 
 
-/**
-   Use cwdevice::free() to de-init device that was initialized with this
-   function.
-*/
+/// Use cwdevice::free() to de-init device that was initialized with this
+/// function.
+///
+/// @revewed_on{2024.05.09}
 static int ttys_init(cwdevice * dev, int fd)
 {
 	dev->fd = fd;
@@ -167,22 +170,35 @@ static int ttys_init(cwdevice * dev, int fd)
 	return 0;
 }
 
-/**
-   Use this function to de-initialize a device that was initialized with
-   cwdevice::init().
-*/
-static int ttys_free(cwdevice * dev)
+
+
+
+/// @brief Close tty cwdevice
+///
+/// Use this function to de-initialize a device that was initialized with
+/// cwdevice::init().
+///
+/// @reviewed_on{2024.05.10}
+static int ttys_close(cwdevice * dev)
 {
+	// We will no longer use this device, so let's make sure that its pins
+	// are in the same state as they were initially.
 	dev->reset_pins_state(dev);
-	close (dev->fd);
+
+	close(dev->fd);
+	dev->fd = -1;
 
 	return 0;
 }
 
 
-/// @brief Reset pins of cwdevice to known states
+
+
+/// @brief Reset pins of cwdevice to initial states
 ///
-/// @param dev cwdevice to reset
+/// @reviewed_on{2024.05.09}
+///
+/// @param dev cwdevice to for which to reset the pins
 ///
 /// @return 0
 static int ttys_reset_pins_state(cwdevice * dev)
@@ -193,10 +209,17 @@ static int ttys_reset_pins_state(cwdevice * dev)
 }
 
 
-/* CW keying on pin indicated by dev->key. */
+
+
+/// @brief Set "keying" pin of cwdevice according to @p onoff
+///
+/// @param dev cwdevice on which to change state of "keying" pin
+/// @param[in] onoff
+///
+/// return 0
 static int ttys_cw(cwdevice * dev, int onoff)
 {
-	tty_driver_options * dropt = &dev->options.u.tty_options;
+	tty_driver_options const * const dropt = &dev->options.u.tty_options;
 
 	if (dropt->key == 0) {
 		// CW keying opted out
@@ -206,15 +229,25 @@ static int ttys_cw(cwdevice * dev, int onoff)
 	int result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->key);
 	if (result < 0) {
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
-		exit (1);
+		exit (1); // TODO (acerion) 2024.05.09: we shouldn't exit here. Maybe in cwdaemon.c, but not here.
 	}
 	return 0;
 }
 
-/* SSB PTT keying - 0 bit (pin 7 for DB-9) */
+
+
+
+/// @brief Set "ptt" pin of cwdevice according to @p onoff
+///
+/// @reviewed_on{2024.05.09}
+///
+/// @param dev cwdevice on which to change state of "ptt" pin
+/// @param[in] onoff
+///
+/// return 0
 static int ttys_ptt(cwdevice * dev, int onoff)
 {
-	tty_driver_options * dropt = &dev->options.u.tty_options;
+	tty_driver_options const * const dropt = &dev->options.u.tty_options;
 
 	if (dropt->ptt == 0) {
 		// PTT opted out
@@ -224,7 +257,7 @@ static int ttys_ptt(cwdevice * dev, int onoff)
 	int result = ioctl (dev->fd, onoff ? TIOCMBIS : TIOCMBIC, &dropt->ptt);
 	if (result < 0) {
 		cwdaemon_errmsg("Ioctl serial port %s", dev->desc);
-		exit (1);
+		exit (1); // TODO (acerion) 2024.05.09: we shouldn't exit here. Maybe in cwdaemon.c, but not here.
 	}
 	return 0;
 }
@@ -232,10 +265,18 @@ static int ttys_ptt(cwdevice * dev, int onoff)
 
 
 
-/* Parse -o <option> invocation */
+/// @brief Parse value passed to "-o" command line option
+///
+/// Parse the value into configuration of device's pins.
+///
+/// @param dev cwdevice in which to store parsed configuration
+/// @param option string that is a value of "-o" command line option
+///
+/// @return 0 if option was parsed successfully
+/// @return -1 otherwise
 static int ttys_optparse(cwdevice * dev, const char * option)
 {
-	tty_driver_options * dropt = &dev->options.u.tty_options;
+	tty_driver_options * const dropt = &dev->options.u.tty_options;
 
 	/* find_opt_value() may be called twice in this function, and each time
 	   it will try to find '=' character in 'option'. It's a bit sub-optimal,
@@ -277,18 +318,30 @@ static int ttys_optparse(cwdevice * dev, const char * option)
 
 
 
-/**
-   @brief Validate parsed driver options
-*/
+
+/// @brief Validate parsed driver options
+///
+/// This function should be called only after all command line options have
+/// been parsed. It's possible that configuration of cwdevice was passed in
+/// two invocations of "-o" command line option. So only after the parsing of
+/// all occurrences of "-o" is done, we may have a full new configuration of
+/// cwdevice, and only then we can validate it using this function.
+///
+/// @reviewed_on{2024.05.09}
+///
+/// @param dev cwdevice for which to validate configuration of cwdevice
+///
+/// @return 0 if validation found no errors in the configuration
+/// @return -1 if validation found some errors in the configuration
 static int ttys_optvalidate(cwdevice * dev)
 {
-	tty_driver_options * dropt = &dev->options.u.tty_options;
+	tty_driver_options const * const dropt = &dev->options.u.tty_options;
 
 	if (0 != dropt->key
 	    && 0 != dropt->ptt
 	    && dropt->key == dropt->ptt) {
 		/* You can't use the same tty pin for two purposes. */
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "key pin and ptt pin have the same value %u", dropt->key);
+		log_error("keying pin and ptt pin have the same value 0x%02x", dropt->key);
 		return -1;
 	}
 

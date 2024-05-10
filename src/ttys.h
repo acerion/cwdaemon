@@ -18,13 +18,13 @@ typedef struct tty_driver_options {
 
 
 
-/// @brief Initialize cwdaemon's global tty cwdevice structure
+/// @brief Initialize "struct cwdev_s" variable for tty cwdevice
 ///
 /// @param[in/out] dev tty cwdevice structure to initialize
 ///
 /// @return 0 on success
 /// @return -1 on failure
-int tty_init_global_cwdevice(struct cwdev_s * dev);
+int tty_init_cwdevice(struct cwdev_s * dev);
 
 
 

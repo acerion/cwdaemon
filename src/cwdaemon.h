@@ -148,12 +148,12 @@ typedef struct cwdev_s {
 	int (*init) (struct cwdev_s *, int fd);
 	int (*free) (struct cwdev_s *);
 
-	/// Reset pins of cwdevice to known states
+	/// Reset pins of cwdevice to initial states
 	///
-	/// In theory a function may have to do more resetting than just a reset
-	/// of pins, but in practice this is all the device functions do. So in
-	/// order to have a good idea on what's going on, I'm explicitly adding
-	/// "pins" in function name. */
+	/// In theory a function may have to do more resetting of a cwdevice than
+	/// just a reset of its pins, but in practice this is all that the
+	/// function does. So in order to have a good idea about what is being
+	/// done, I'm explicitly adding "pins" in function name. */
 	int (* reset_pins_state)(struct cwdev_s *);
 
 	int (*cw) (struct cwdev_s *, int onoff);
@@ -165,7 +165,7 @@ typedef struct cwdev_s {
 	/// Options of driver controlling a cwdevice. Not all cwdevice types
 	/// support changing options through command line.
 	struct {
-		int (*optparse) (struct cwdev_s *, const char *);
+		int (*optparse) (struct cwdev_s *, const char * opt_arg);
 		int (*optvalidate) (struct cwdev_s *);
 
 		union {
@@ -184,7 +184,7 @@ int dev_get_parport(const char *fname);
 
 int null_init (cwdevice * dev, int fd);
 int null_free (cwdevice * dev);
-/// Reset pins of cwdevice to known states
+/// Reset pins of cwdevice to initial states
 int null_reset_pins_state(cwdevice * dev);
 int null_cw (cwdevice * dev, int onoff);
 int null_ptt (cwdevice * dev, int onoff);

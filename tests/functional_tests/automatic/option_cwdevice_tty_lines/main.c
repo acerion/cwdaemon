@@ -73,6 +73,11 @@ typedef struct test_case_t {
 
 
 
+/// TODO (acerion) 2024.05.09 add a case in which cwdaemon is not started due
+/// to set of options that don't pass a validation made with
+/// cwdevice->options->optvalidate. Example call with such invalid set of
+/// options: "./src/cwdaemon -n -d /dev/ttyUSB0 -o key=dtr -o ptt=dtr".
+///
 /// @reviewed_on{2024.05.05}
 static test_case_t g_test_cases[] = {
 	// This is a SUCCESS case.
