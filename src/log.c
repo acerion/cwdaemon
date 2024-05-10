@@ -52,23 +52,26 @@ extern options_t g_current_options;
 
 /**
    @brief Get string label corresponding to given log priority
+
+   @reviewed_on{2024.05.10}
 */
-const char * log_get_priority_label(int priority)
+char const * log_get_priority_label(int priority)
 {
-   switch (priority) {
-   case LOG_ERR:
-      return "ERROR";
-   case LOG_WARNING:
-      return "WARN";
-   case LOG_INFO:
-      return "INFO";
-   case LOG_DEBUG:
-      return "DEBUG";
-   case LOG_CRIT:    /* == None (don't display logs). */
-   case LOG_NOTICE:  /* == None (don't display logs). */
-   default:
-      return "--";
-   }
+	switch (priority) {
+	case LOG_ERR:
+		return "EE";
+	case LOG_WARNING:
+		return "WW";
+	case LOG_NOTICE:
+		return "NN";
+	case LOG_INFO:
+		return "II";
+	case LOG_DEBUG:
+		return "DD";
+	default:
+	case LOG_CRIT:    // == None (don't display logs).
+		return "??";
+	}
 }
 
 
@@ -108,38 +111,21 @@ void cwdaemon_errmsg(const char *format, ...)
 
 
 
-void log_message(int priority, const char * format, ...)
+// @reviewed_on{2024.05.10}
+void log_message(int priority, char const * format, ...)
 {
-	if (!g_forking && !cwdaemon_debug_f) {
-		/* No output file defined. */
+	// If we fork and detach from console, we can't log to
+	// stdout/stderr/other file, and we can log only to syslog.
+	const bool to_syslog = g_forking;
+
+	if (!to_syslog && NULL == cwdaemon_debug_f) {
+		// We don't want to log to either syslog or to file.
 		return;
 	}
 
-	/* LOG_EMERG == 0, ... LOG_DEBUG == 7. */
+	// LOG_EMERG == 0, ... LOG_DEBUG == 7.
 	if (priority > g_current_options.log_threshold) {
 		return;
-	}
-
-	const char * prio_str = NULL;
-	switch (priority) {
-	case LOG_ERR:
-		prio_str = "EE";
-		break;
-	case LOG_WARNING:
-		prio_str = "WW";
-		break;
-	case LOG_NOTICE:
-		prio_str = "NN";
-		break;
-	case LOG_INFO:
-		prio_str = "II";
-		break;
-	case LOG_DEBUG:
-		prio_str = "DD";
-		break;
-	default:
-		prio_str = "??";
-		break;
 	}
 
 	va_list ap;
@@ -148,12 +134,14 @@ void log_message(int priority, const char * format, ...)
 	vsnprintf(buf, sizeof (buf), format, ap);
 	va_end(ap);
 
-	if (g_forking) {
+	if (to_syslog) {
+		// TODO (acerion) 2024.05.10: double-check if "\n" is allowed for
+		// syslog messages.
 		syslog(priority, "%s\n", buf);
 	} else {
-		if (cwdaemon_debug_f) {
-			fprintf(cwdaemon_debug_f, "[%s] %s: %s\n", prio_str, PACKAGE, buf);
-		}
+		// If not to syslog then the other option is to log to file.
+		char const * prio_str = log_get_priority_label(priority);
+		fprintf(cwdaemon_debug_f, "[%s] %s: %s\n", prio_str, PACKAGE, buf);
 	}
 
 	return;
@@ -177,6 +165,8 @@ void log_message(int priority, const char * format, ...)
    argument (\p format), and a set of optional arguments to be
    inserted into the formatting string.
 
+   @reviewed_on{2024.05.10}
+
    \param verbosity - verbosity level of given debug string
    \param format - formatting string of a debug string being printed
 */
@@ -197,7 +187,7 @@ void cwdaemon_debug(int verbosity, __attribute__((unused)) const char *func, __a
 	vsnprintf(s, sizeof (s), format, ap);
 	va_end(ap);
 
-	fprintf(cwdaemon_debug_f, "[%-5s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
+	fprintf(cwdaemon_debug_f, "[%s] %s: %s\n", log_get_priority_label(verbosity), PACKAGE, s);
 	// fprintf(cwdaemon_debug_f, "cwdaemon:        %s(): %d\n", func, line);
 	fflush(cwdaemon_debug_f);
 
