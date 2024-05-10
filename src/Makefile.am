@@ -29,6 +29,11 @@ cwdaemon_SOURCES = cwdaemon.c cwdaemon.h log.c log.h lp.c lp.h ttys.c ttys.h nul
 # target-specific preprocessor flags (#defs and include dirs)
 cwdaemon_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 
+# Target-specific linker flags (objects to link). Order is important: first
+# static libraries then dynamic. Otherwise linker may not find symbols from
+# the dynamic library.
+cwdaemon_LDADD = ${LIBCW_LIBS}
+
 
 
 
@@ -42,12 +47,4 @@ gcov:
 gcov-clean:
 	rm -f *.gcda *.gcno
 endif
-
-
-
-
-# Target-specific linker flags (objects to link). Order is important: first
-# static libraries then dynamic. Otherwise linker may not find symbols from
-# the dynamic library.
-cwdaemon_LDADD = ${LIBCW_LIBS}
 
