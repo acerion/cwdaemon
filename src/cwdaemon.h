@@ -58,7 +58,7 @@
 #define SOUNDCARD 1
 
 
-/** ASCII character ESC (escape). */
+/// ASCII character ESC (escape).
 #define ASCII_ESC 27
 
 
@@ -89,14 +89,14 @@
 
 /*
   Each message sent as a reply to a request is longer than the request by one
-  byte. The replies are sent in response to either caret request or "esc
-  reply" request.
+  byte. The replies are sent in response to either CARET request or REPLY
+  Escape request.
 
-  Caret request:       "ABCDE^"              -> 6 bytes (5 chars + caret)
-  Reply:               "ABCDE\r\n            -> 7 bytes (5 chars + '\r' + '\n')
+  CARET request:         "ABCDE^"              -> 6 bytes (5 chars + caret)
+  Reply:                 "ABCDE\r\n            -> 7 bytes (5 chars + '\r' + '\n')
 
-  esc reply request:   "\033hABCDE"          -> 7 bytes (ESC + code + 5 chars)
-  Reply:                   "hABCDE\r\n"      -> 8 bytes (code + 5 chars + '\r' + '\n')
+  REPLY Escape request:  "\033hABCDE"          -> 7 bytes (ESC + code + 5 chars)
+  Reply:                     "hABCDE\r\n"      -> 8 bytes (code + 5 chars + '\r' + '\n')
 
   In order to correctly store and send replies, the buffer for the replies
   must be larger by one byte than the buffer for requests.
@@ -111,11 +111,9 @@
 
 
 
-/*
-  Codes of Escape requests supported by cwdaemon.
-
-  Values of the defines are treated by cwdaemon in case-sensitive way.
-*/
+// Codes of Escape requests supported by cwdaemon.
+//
+// Values of the defines are treated by cwdaemon in case-sensitive way.
 #define CWDAEMON_ESC_REQUEST_RESET        '0' /**< ``'0'`` character == 0x30; reset some of parameters of cwdaemon. */
 #define CWDAEMON_ESC_REQUEST_SPEED        '2' /**< ``'2'`` character == 0x32; set Morse speed [wpm]. */
 #define CWDAEMON_ESC_REQUEST_TONE         '3' /**< ``'3'`` character == 0x33; set tone/frequency [Hz]. */
@@ -192,13 +190,11 @@ int null_ptt (cwdevice * dev, int onoff);
 
 
 
-/**
-   Instance of a cwdaemon
-*/
+/// Instance of a cwdaemon server
 typedef struct cwdaemon_t {
 	int socket_descriptor;
 
-	/** UDP port the server listens on. */
+	/// @brief UDP port the server listens on.
 	in_port_t network_port;
 
 	/* cwdaemon usually receives requests from client, but on occasions
