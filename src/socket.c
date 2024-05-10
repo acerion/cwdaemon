@@ -108,9 +108,11 @@ void cwdaemon_close_socket(cwdaemon_t * cwdaemon)
 
 ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 {
+	// TODO (acerion) 2025.05.10 count of bytes to be sent should be a part
+	// of "reply" struct.
 	size_t len = strlen(reply);
 
-#if 0 /* For debugs only. */
+#if 0 // For debugs only.
 	char printable[PRINTABLE_BUFFER_SIZE(CWDAEMON_REPLY_SIZE_MAX + 1)] = { 0 };
 	get_printable_string(reply, printable, sizeof (printable));
 
@@ -120,7 +122,7 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 		log_error("reply[n - 1] = 0x%02x / '%c'", reply[len - 1], reply[len - 1]);
 	}
 #endif
-	log_info("sending back %zu bytes", len);
+	log_debug("sending back reply with %zu bytes", len);
 
 	assert(reply[len - 2] == '\r' && reply[len - 1] == '\n');
 
@@ -138,23 +140,6 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char *reply)
 
 
 
-/**
-   \brief Receive request sent through socket
-
-   Received request is returned through \p request.
-
-   Possible trailing '\r' and '\n' characters are replaced with '\0'. Other
-   than that, the function doesn't add terminating NUL.
-
-   \param cwdaemon cwdaemon instance
-   \param[out] request buffer for received request
-   \param[in] size size of the buffer
-
-   \return -2 if peer has performed an orderly shutdown
-   \return -1 if an error occurred during call to recvfrom
-   \return  0 if no request has been received
-   \return length of received request otherwise
- */
 ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, size_t size)
 {
 	ssize_t recv_rc = recvfrom(cwdaemon->socket_descriptor,
@@ -197,9 +182,7 @@ ssize_t cwdaemon_recvfrom(cwdaemon_t * cwdaemon, char *request, size_t size)
 	          recv_rc, size, terminating_nul ? "is" : "is not");
 #endif
 
-	/* Remove CRLF if present. TCP buffer may end with '\n', so make
-	   sure that every request is consistently ended with NUL only.
-	   Do it early, do it now. */
+	// Remove trailing CRLF if present.
 	char z = 0;
 	while (recv_rc > 0
 	       && ( (z = request[recv_rc - 1]) == '\n' || z == '\r') ) {

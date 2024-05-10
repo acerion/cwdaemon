@@ -884,8 +884,6 @@ int cwdaemon_receive(void)
 		; /* pass */
 	}
 
-	/* TODO acerion 2024.02.11: this duplicates an operation already done by
-	   cwdaemon_recvfrom(). */
 	request_buffer[recv_rc] = '\0';
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "-------------------");
