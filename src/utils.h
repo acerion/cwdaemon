@@ -78,18 +78,21 @@ opt_t find_opt_value(const char * input, const char * keyword, const char ** val
 
 
 
-/**
-   \brief Parse a string with 'long' integer
-
-   Parse a string with digits, convert it to a long integer
-
-   \param[in] buf input buffer with a string
-   \param[out] lvp pointer to output long int variable
-
-   \return false on failure
-   \return true on success
-*/
-bool cwdaemon_get_long(const char *buf, long *lvp);
+/// @brief Parse a string as long integer
+///
+/// Parse a string @p buf with digits, convert it to a long integer.
+///
+/// If @p buf contains something more than just decimal digits, this is
+/// considered an error.
+///
+/// If @p buf is empty, this is considered an error.
+///
+/// @param[in] buf input buffer with a string
+/// @param[out] value pointer to output long int variable
+///
+/// @return false on failure
+/// @return true on success
+bool cwdaemon_get_long(char const * buf, long int * value);
 
 
 

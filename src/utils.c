@@ -2,7 +2,7 @@
  * cwdaemon - morse sounding daemon for the parallel or serial port
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,25 +129,30 @@ opt_t find_opt_value(const char * input, const char * keyword, const char ** val
 
 
 
-bool cwdaemon_get_long(const char * buf, long * lvp)
+// @reviewed_on{2024.05.08}
+bool cwdaemon_get_long(char const * buf, long int * value)
 {
 	if (NULL == buf) {
+		return false;
+	}
+	if ('\0' == buf[0]) {
+		// Empty input string is not acceptable.
 		return false;
 	}
 
 	errno = 0;
 
-	char *ep = NULL;
+	char * ep = NULL;
 	const long lv = strtol(buf, &ep, 10);
-	if (buf[0] == '\0' || *ep != '\0') {
+	if (*ep != '\0') {
+		// Non-decimal-digits are not acceptable.
 		return false;
 	}
-
 	if (errno == ERANGE && (lv == LONG_MAX || lv == LONG_MIN)) {
 		return false;
 	}
 
-	*lvp = lv;
+	*value = lv;
 	return true;
 }
 

@@ -288,8 +288,8 @@ static int test_cwdaemon_get_long(void)
 #endif
 		{ "0x05",                 false, doesnt_matter }, /* Non-decimal notation. */
 		{ "4e5",                  false, doesnt_matter }, /* Non-decimal notation. */
-		{ "74Morse",              false, doesnt_matter }, /* Some characters aren't digits. */
-		{ "74ac45",               false, doesnt_matter }, /* Some characters aren't decimal digits. */
+		{ "74Morse",              false, doesnt_matter }, /* Characters in the front are decimal digits, but the rest of characters aren't digits. */
+		{ "74ac45",               false, doesnt_matter }, /* Characters in the front are decimal digits, but the rest of characters aren't decimal digits. */
 		{ "four",                 false, doesnt_matter }, /* None of characters are decimal digits. */
 		{ "\03345",               false, doesnt_matter }, /* Leading non-decimal-digit, non-space character. 033(oct) = 27(dec) = 0x1b = ESC. */
 
