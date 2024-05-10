@@ -20,11 +20,6 @@
 
 
 
-#include <stdbool.h>
-
-
-
-
 #define CWDAEMON_MICROSECS_PER_MILLISEC               1000 /* Microseconds in millisecond. */
 #define CWDAEMON_MICROSECS_PER_SEC                 1000000 /* Microseconds in second. */
 #define CWDAEMON_NANOSECS_PER_MICROSEC                1000 /* Nanoseconds in microsecond. */
@@ -37,14 +32,15 @@
 /**
    @brief Non-interruptible micro-seconds-sleep
 
-   Sleep for given value of @p usecs microseconds. Notify caller through
-   return value if any signal tried to interrupt the sleep (but function
-   continues to sleep for entire duration of @p usecs microseconds).
+   Sleep for given value of @p usecs microseconds. Continue the sleep even
+   when signal was received by a calling process.
+
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] usecs Microseconds to sleep
 
    @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
-   @return -1 on errors (interrupts by signal are not treated as errors)
+   @return -1 on errors
 */
 int microsleep_nonintr(unsigned int usecs);
 
@@ -54,14 +50,15 @@ int microsleep_nonintr(unsigned int usecs);
 /**
    @brief Non-interruptible milli-seconds-sleep
 
-   Sleep for given value of @p millisecs milliseconds. Notify caller through return value
-   if any signal tried to interrupt the sleep (but function continues to
-   sleep for entire duration of @p millisecs milliseconds).
+   Sleep for given value of @p millisecs milliseconds. Continue the sleep
+   even when signal was received by a calling process.
+
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] millisecs Milliseconds to sleep
 
    @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
-   @return -1 on errors (interrupts by signal are not treated as errors)
+   @return -1 on errors
 */
 int millisleep_nonintr(unsigned int millisecs);
 
@@ -72,14 +69,15 @@ int millisleep_nonintr(unsigned int millisecs);
 /**
    @brief Non-interruptible seconds-sleep
 
-   Sleep for given value of @p secs seconds. Notify caller through return
-   value if any signal tried to interrupt the sleep (but function continues
-   to sleep for entire duration of @p secs seconds).
+   Sleep for given value of @p secs seconds. Continue the sleep even when
+   signal was received by a calling process.
+
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] secs Seconds to sleep
 
    @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
-   @return -1 on errors (interrupts by signal are not treated as errors)
+   @return -1 on errors
 */
 int sleep_nonintr(unsigned int secs);
 

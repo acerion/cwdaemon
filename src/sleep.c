@@ -1,7 +1,7 @@
 /*
  * sleep.c - sleep functions for cwdaemon
  * Copyright (C) 2003, 2006 Joop Stakenborg <pg4i@amsat.org>
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 
 
 /**
+   @file
+
    Sleep functions.
 
    The same file exists in two places:
@@ -66,6 +68,7 @@
 
 
 
+// @reviewed_on{2024.05.10}
 int microsleep_nonintr(unsigned int usecs)
 {
 	const unsigned long seconds = usecs / CWDAEMON_MICROSECS_PER_SEC;
@@ -77,7 +80,9 @@ int microsleep_nonintr(unsigned int usecs)
 
 	int retv = 0;
 	do {
-		struct timespec req = { .tv_sec = remaining.tv_sec, .tv_nsec = remaining.tv_nsec };
+		struct timespec req = { .tv_sec  = remaining.tv_sec,
+		                        .tv_nsec = remaining.tv_nsec };
+		errno = 0;
 		retv = nanosleep(&req, &remaining);
 		if (0 != retv) {
 			switch (errno) {
@@ -96,6 +101,7 @@ int microsleep_nonintr(unsigned int usecs)
 
 
 
+// @reviewed_on{2024.05.10}
 int millisleep_nonintr(unsigned int millisecs)
 {
 	return microsleep_nonintr(millisecs * CWDAEMON_MICROSECS_PER_MILLISEC);
@@ -104,6 +110,7 @@ int millisleep_nonintr(unsigned int millisecs)
 
 
 
+// @reviewed_on{2024.05.10}
 int sleep_nonintr(unsigned int secs)
 {
 	/*
@@ -119,7 +126,9 @@ int sleep_nonintr(unsigned int secs)
 
 	int retv = 0;
 	do {
-		struct timespec req = { .tv_sec = remaining.tv_sec, .tv_nsec = remaining.tv_nsec };
+		struct timespec req = { .tv_sec  = remaining.tv_sec,
+		                        .tv_nsec = remaining.tv_nsec };
+		errno = 0;
 		retv = nanosleep(&req, &remaining);
 		if (0 != retv) {
 			switch (errno) {

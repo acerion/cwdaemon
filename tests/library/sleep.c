@@ -70,6 +70,7 @@
 
 
 
+// @reviewed_on{2024.05.10}
 int test_microsleep_nonintr(unsigned int usecs)
 {
 	const unsigned long seconds = usecs / TESTS_MICROSECS_PER_SEC;
@@ -81,7 +82,9 @@ int test_microsleep_nonintr(unsigned int usecs)
 
 	int retv = 0;
 	do {
-		struct timespec req = { .tv_sec = remaining.tv_sec, .tv_nsec = remaining.tv_nsec };
+		struct timespec req = { .tv_sec  = remaining.tv_sec,
+		                        .tv_nsec = remaining.tv_nsec };
+		errno = 0;
 		retv = nanosleep(&req, &remaining);
 		if (0 != retv) {
 			switch (errno) {
@@ -100,6 +103,7 @@ int test_microsleep_nonintr(unsigned int usecs)
 
 
 
+// @reviewed_on{2024.05.10}
 int test_millisleep_nonintr(unsigned int millisecs)
 {
 	return test_microsleep_nonintr(millisecs * TESTS_MICROSECS_PER_MILLISEC);
@@ -108,6 +112,7 @@ int test_millisleep_nonintr(unsigned int millisecs)
 
 
 
+// @reviewed_on{2024.05.10}
 int test_sleep_nonintr(unsigned int secs)
 {
 	/*
@@ -123,7 +128,9 @@ int test_sleep_nonintr(unsigned int secs)
 
 	int retv = 0;
 	do {
-		struct timespec req = { .tv_sec = remaining.tv_sec, .tv_nsec = remaining.tv_nsec };
+		struct timespec req = { .tv_sec  = remaining.tv_sec,
+		                        .tv_nsec = remaining.tv_nsec };
+		errno = 0;
 		retv = nanosleep(&req, &remaining);
 		if (0 != retv) {
 			switch (errno) {

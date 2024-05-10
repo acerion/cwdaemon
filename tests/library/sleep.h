@@ -1,10 +1,5 @@
-#ifndef CWDAEMON_LIB_SLEEP_H
-#define CWDAEMON_LIB_SLEEP_H
-
-
-
-
-#include <stdbool.h>
+#ifndef CWDAEMON_TESTS_LIB_SLEEP_H
+#define CWDAEMON_TESTS_LIB_SLEEP_H
 
 
 
@@ -12,7 +7,7 @@
 /**
    @file
 
-   Sleep functions for cwdaemon
+   Sleep functions for cwdaemon's tests
 
    Three separate functions for microseconds, milliseconds and for seconds.
 
@@ -28,14 +23,15 @@
 /**
    @brief Non-interruptible micro-seconds-sleep
 
-   Sleep for given value of @p usecs microseconds.
+   Sleep for given value of @p usecs microseconds. Continue the sleep even
+   when signal was received by a calling process.
 
-   @reviewed_on{2024.04.17}
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] usecs Microseconds to sleep
 
-   @return 0 if sleep was completed without errors (interrupts by EINTR signal may or may not have happened)
-   @return -1 on errors (interrupts by EINTR signal are not treated as errors)
+   @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
+   @return -1 on errors
 */
 int test_microsleep_nonintr(unsigned int usecs);
 
@@ -45,14 +41,15 @@ int test_microsleep_nonintr(unsigned int usecs);
 /**
    @brief Non-interruptible milli-seconds-sleep
 
-   Sleep for given value of @p millisecs milliseconds.
+   Sleep for given value of @p millisecs milliseconds. Continue the sleep
+   even when signal was received by a calling process.
 
-   @reviewed_on{2024.04.17}
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] millisecs Milliseconds to sleep
 
-   @return 0 if sleep was completed without errors (interrupts by EINTR signal may or may not have happened)
-   @return -1 on errors (interrupts by EINTR signal are not treated as errors)
+   @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
+   @return -1 on errors
 */
 int test_millisleep_nonintr(unsigned int millisecs);
 
@@ -63,19 +60,20 @@ int test_millisleep_nonintr(unsigned int millisecs);
 /**
    @brief Non-interruptible seconds-sleep
 
-   Sleep for given value of @p secs seconds.
+   Sleep for given value of @p secs seconds. Continue the sleep even when
+   signal was received by a calling process.
 
-   @reviewed_on{2024.04.17}
+   Interrupts of sleep by signal are not treated as errors.
 
    @param[in] secs Seconds to sleep
 
-   @return 0 if sleep was completed without errors (interrupts by EINTR signal may or may not have happened)
-   @return -1 on errors (interrupts by EINTR signal are not treated as errors)
+   @return 0 if sleep was completed without errors (interrupts by signal may or may not have happened)
+   @return -1 on errors
 */
 int test_sleep_nonintr(unsigned int secs);
 
 
 
 
-#endif /* #ifndef CWDAEMON_LIB_SLEEP_H */
+#endif /* #ifndef CWDAEMON_TESTS_LIB_SLEEP_H */
 
