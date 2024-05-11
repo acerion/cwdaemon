@@ -28,6 +28,7 @@ TESTS += functional_tests/automatic/option_port/test_program
 TESTS += functional_tests/automatic/reset_register_callback/test_program
 TESTS += functional_tests/automatic/request_caret/test_program
 TESTS += functional_tests/automatic/request_esc_exit/test_program
+TESTS += functional_tests/automatic/request_esc_cwdevice/test_program
 TESTS += functional_tests/automatic/request_esc_reply/test_program
 TESTS += functional_tests/automatic/request_plain/test_program
 

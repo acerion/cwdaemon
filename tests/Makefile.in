@@ -100,6 +100,7 @@ host_triplet = @host@
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/reset_register_callback/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_caret/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_exit/test_program \
+@FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_cwdevice/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_esc_reply/test_program \
 @FUNCTIONAL_TESTS_TRUE@	functional_tests/automatic/request_plain/test_program
 subdir = tests
@@ -875,6 +876,13 @@ functional_tests/automatic/request_caret/test_program.log: functional_tests/auto
 functional_tests/automatic/request_esc_exit/test_program.log: functional_tests/automatic/request_esc_exit/test_program
 	@p='functional_tests/automatic/request_esc_exit/test_program'; \
 	b='functional_tests/automatic/request_esc_exit/test_program'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+functional_tests/automatic/request_esc_cwdevice/test_program.log: functional_tests/automatic/request_esc_cwdevice/test_program
+	@p='functional_tests/automatic/request_esc_cwdevice/test_program'; \
+	b='functional_tests/automatic/request_esc_cwdevice/test_program'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

@@ -6838,7 +6838,7 @@ ac_config_files="$ac_config_files Makefile src/Makefile doc/Makefile examples/Ma
 
 
 if test "x$enable_functional_tests" = xyes ; then
-   ac_config_files="$ac_config_files tests/library/Makefile tests/functional_tests/Makefile tests/functional_tests/automatic/Makefile tests/functional_tests/automatic/option_cwdevice_tty_lines/Makefile tests/functional_tests/automatic/option_port/Makefile tests/functional_tests/automatic/request_caret/Makefile tests/functional_tests/automatic/request_esc_exit/Makefile tests/functional_tests/automatic/request_esc_reply/Makefile tests/functional_tests/automatic/request_plain/Makefile tests/functional_tests/automatic/reset_register_callback/Makefile tests/functional_tests/manual/Makefile tests/functional_tests/manual/feature_multiple_requests/Makefile tests/fuzzing/Makefile tests/fuzzing/simple/Makefile"
+   ac_config_files="$ac_config_files tests/library/Makefile tests/functional_tests/Makefile tests/functional_tests/automatic/Makefile tests/functional_tests/automatic/option_cwdevice_tty_lines/Makefile tests/functional_tests/automatic/option_port/Makefile tests/functional_tests/automatic/request_caret/Makefile tests/functional_tests/automatic/request_esc_exit/Makefile tests/functional_tests/automatic/request_esc_cwdevice/Makefile tests/functional_tests/automatic/request_esc_reply/Makefile tests/functional_tests/automatic/request_plain/Makefile tests/functional_tests/automatic/reset_register_callback/Makefile tests/functional_tests/manual/Makefile tests/functional_tests/manual/feature_multiple_requests/Makefile tests/fuzzing/Makefile tests/fuzzing/simple/Makefile"
 
 fi
 
@@ -7595,6 +7595,7 @@ do
     "tests/functional_tests/automatic/option_port/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/option_port/Makefile" ;;
     "tests/functional_tests/automatic/request_caret/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_caret/Makefile" ;;
     "tests/functional_tests/automatic/request_esc_exit/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_esc_exit/Makefile" ;;
+    "tests/functional_tests/automatic/request_esc_cwdevice/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_esc_cwdevice/Makefile" ;;
     "tests/functional_tests/automatic/request_esc_reply/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_esc_reply/Makefile" ;;
     "tests/functional_tests/automatic/request_plain/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/request_plain/Makefile" ;;
     "tests/functional_tests/automatic/reset_register_callback/Makefile") CONFIG_FILES="$CONFIG_FILES tests/functional_tests/automatic/reset_register_callback/Makefile" ;;

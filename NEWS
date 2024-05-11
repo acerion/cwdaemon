@@ -136,6 +136,15 @@ New release. Changes since previous release:
 
       The test is located in tests/functional_tests/automatic/request_caret/.
 
+    * Adding functional test for CWDEVICE Escape request (<ESC>8)
+
+      The test was created to confirm presence of a problem reported by user,
+      and to confirm a proper handling of the request in fixed code. The bug
+      is described above in "Bug fixes" section.
+
+      The test is located in
+      tests/functional_tests/automatic/request_esc_cwdevice/.
+
     * Unit tests have been added for following existing code:
 
       - cwdaemon_get_long() function
