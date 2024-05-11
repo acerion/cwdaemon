@@ -134,6 +134,7 @@ int cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * ke
 
 
 
+// @reviewed_on{2024.05.11}
 int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, const tty_pins_t * observer_pins_config)
 {
 	memset(observer, 0, sizeof (cwdevice_observer_t));
@@ -144,10 +145,12 @@ int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, const tty_pins_t
 		observer->tty_pins_config = *observer_pins_config;
 	}
 
-	// TODO (acerion) 2024.04.17: be ready to support TESTS_TTY_CWDEVICE_NAME
-	// being a full path to cwdevice. Currently TESTS_TTY_CWDEVICE_NAME can
-	// be only something like "ttyUSB0".
-	snprintf(observer->source_path, sizeof (observer->source_path), "%s", "/dev/" TESTS_TTY_CWDEVICE_NAME);
+	char const * dev_dir = "/dev/";
+	if (0 == strncmp(TESTS_TTY_CWDEVICE_NAME, dev_dir, strlen(dev_dir))) {
+		snprintf(observer->source_path, sizeof (observer->source_path), "%s", TESTS_TTY_CWDEVICE_NAME);
+	} else {
+		snprintf(observer->source_path, sizeof (observer->source_path), "%s%s", dev_dir, TESTS_TTY_CWDEVICE_NAME);
+	}
 
 	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
 

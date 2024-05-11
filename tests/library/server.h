@@ -47,7 +47,7 @@ typedef struct server_t {
 
 
 // TODO (acerion) 2024.04.19: this size should be defined in cwdaemon.h.
-// See also comment for SOURCE_PATH_SIZE.
+// See also comment for CWDEVICE_PATH_SIZE.
 #define CWDEVICE_NAME_SIZE 16
 
 typedef struct {

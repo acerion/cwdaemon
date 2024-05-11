@@ -61,8 +61,6 @@ int cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * ke
 /// If @p observer_pins_config is NULL, the observer will use default
 /// assignment of functions (key, ptt) to tty's pins.
 ///
-/// @reviewed_on{2024.04.17}
-///
 /// @param observer cwdevice observer to be configured
 /// @param[in] observer_pins_config Configuration of pins on the cwdevice
 ///

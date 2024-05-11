@@ -45,7 +45,7 @@ typedef int (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * key
 
 // TODO (acerion) 2024.04.15: this size should be defined in cwdaemon.h.
 // See also comment for CWDEVICE_NAME_SIZE.
-#define SOURCE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
+#define CWDEVICE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
 
 
 
@@ -129,7 +129,7 @@ typedef struct cwdevice_observer_t {
 
 	/* String representation of cwdevice. For regular devices it will
 	   be a path (e.g. "/dev/ttyS0"). */
-	char source_path[SOURCE_PATH_SIZE];
+	char source_path[CWDEVICE_PATH_SIZE];
 
 	/*
 	  Low-level parameters specifying where in a cwdevice to find information
