@@ -91,6 +91,10 @@ typedef struct {
 	/** Type of supervisor the local instance of cwdaemon process is running
 	    under. */
 	supervisor_id_t supervisor_id;
+
+	/// syslog's LOG_ERR and related constants. Leave as zero to not pass
+	/// command line option to started server.
+	int log_threshold;
 } server_options_t;
 
 

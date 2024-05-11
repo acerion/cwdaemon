@@ -79,6 +79,7 @@
 
 static int append_option_port(server_options_t const * server_opts, const char ** argv, int * argc, int * port);
 static int append_option_sound_system(server_options_t const * server_opts, const char ** argv, int * argc);
+static int append_option_verbosity(server_options_t const * server_opts, const char ** argv, int * argc);
 static int append_option_tty_pins(server_options_t const * server_opts, const char ** argv, int * argc);
 static int start_process(const char * path, const server_options_t * server_opts, server_t * server);
 static int prepare_env(char * env[ENV_MAX_COUNT + 1]);
@@ -307,6 +308,58 @@ static int append_option_sound_system(server_options_t const * server_opts, cons
 
 
 
+/// @brief Conditionally append to @p argv the "verbosity" option
+///
+/// @reviewed_on{2024.05.11}
+///
+/// @param[in] server_opts cwdaemon's configuration options
+/// @param[out] argv processes' argv vector to which to append the option
+/// @param[in/out] argc Index to @p argv, incremented by this function
+///
+/// @return 0 on success
+/// @return -1 on failure
+static int append_option_verbosity(server_options_t const * server_opts, const char ** argv, int * argc)
+{
+	if (0 == server_opts->log_threshold) {
+		// Test code didn't specify the threshold, so don't append it.
+		return 0;
+	}
+
+	char const * value = "";
+
+	switch (server_opts->log_threshold) {
+	case LOG_CRIT:
+		value = "n"; // "None"
+		break;
+	case LOG_ERR:
+		value = "e";
+		break;
+	case LOG_WARNING:
+	case LOG_NOTICE:
+		value = "w";
+		break;
+	case LOG_INFO:
+		value = "i";
+		break;
+	case LOG_DEBUG:
+		value = "d";
+		break;
+	default:
+		test_log_err("Test: unsupported log threshold in server options: %d\n", server_opts->log_threshold);
+		return -1;
+	}
+
+	if (0 != append_option_short_long("-y", "--verbosity", value, argv, argc)) {
+		test_log_err("Test: failed to append 'verbosity' option [%s]\n", value);
+		return -1;
+	}
+
+	return 0;
+}
+
+
+
+
 /**
    @brief Conditionally append to @p argv the "tty pins" option
 
@@ -430,6 +483,9 @@ static int start_process(const char * cwdaemon_path, const server_options_t * se
 			argv[argc++] = g_arg_wpm;
 		}
 
+		if (0 != append_option_verbosity(server_opts, argv, &argc)) {
+			return -1;
+		}
 		append_option_tty_pins(server_opts, argv, &argc);
 
 		// Debug print-out of the options array.
