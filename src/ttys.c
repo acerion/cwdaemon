@@ -82,7 +82,7 @@ static int ttys_optvalidate(cwdevice * dev);
 
 
 
-int tty_get_file_descriptor(const char * fname)
+int tty_probe_cwdevice(const char * fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;

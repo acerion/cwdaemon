@@ -29,14 +29,14 @@ int tty_init_cwdevice(struct cwdev_s * dev);
 
 
 
-/// @brief Get file descriptor for serial port
+/// @brief Try opening a serial console cwdevice with given device name
 ///
 /// Check to see whether @p fname is a tty type character device capable of
 /// TIOCM*. This should be platform independent.
 ///
 /// @return -1 if the device isn't a suitable tty device
 /// @return a file descriptor if the device is a suitable tty device
-int tty_get_file_descriptor(const char * fname);
+int tty_probe_cwdevice(const char * fname);
 
 
 

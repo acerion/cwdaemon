@@ -2396,12 +2396,12 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		return false;
 	}
 
-	int fd = tty_get_file_descriptor(desc);
+	int fd = tty_probe_cwdevice(desc);
 	if (fd != -1) {
 		*device = &cwdevice_ttys;
 	}
 #if defined (HAVE_LINUX_PPDEV_H) || defined (HAVE_DEV_PPBUS_PPI_H)
-	else if ((fd = dev_get_parport(desc)) != -1) {
+	else if ((fd = lp_probe_cwdevice(desc)) != -1) {
 		if (geteuid()) {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 				       "you must run this program as root to use parallel port");
@@ -2410,7 +2410,7 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		*device = &cwdevice_lp;
 	}
 #endif
-	else if ((fd = dev_get_null(desc)) != -1) {
+	else if ((fd = null_probe_cwdevice(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
 		log_warning("no valid device found, setting cwdevice to null device %s", "");

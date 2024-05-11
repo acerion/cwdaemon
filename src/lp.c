@@ -86,7 +86,7 @@
    \return -1 if the device is not suitable for use as parallel port based keyer
    \return a file descriptor if the device is suitable for use as a parallel port based keyer
 */
-int dev_get_parport(const char *fname)
+int lp_probe_cwdevice(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
@@ -122,7 +122,7 @@ out:
 
 #elif defined(HAVE_DEV_PPBUS_PPI_H)    /* FreeBSD (ppbus/ppi) */
 
-int dev_get_parport(const char *fname)
+int lp_probe_cwdevice(const char *fname)
 {
 	char nm[MAXPATHLEN];
 	struct stat st;
@@ -158,7 +158,7 @@ out:
 
 #else                                  /* Fallback (nothing) */
 
-int dev_get_parport(const char *fname)
+int lp_probe_cwdevice(const char *fname)
 {
 	return (-1);
 }

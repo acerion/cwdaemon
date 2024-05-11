@@ -38,10 +38,7 @@
    placeholder.
 */
 
-/**
-   \brief Check to see whether \p fname is a null type device.
-*/
-int dev_get_null(const char *fname)
+int null_probe_cwdevice(const char *fname)
 {
 	if (strcmp(fname, "null") != 0) {
 		return -1;

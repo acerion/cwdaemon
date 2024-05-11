@@ -185,8 +185,11 @@ typedef struct cwdev_s {
 cwdevice;
 
 
-int dev_get_null(const char *fname);
-int dev_get_parport(const char *fname);
+/// @brief Try opening a null cwdevice with given device name
+int null_probe_cwdevice(const char *fname);
+
+/// @brief Try opening a parallel port cwdevice with given device name
+int lp_probe_cwdevice(const char *fname);
 
 int null_init (cwdevice * dev, int fd);
 int null_free (cwdevice * dev);
