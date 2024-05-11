@@ -164,6 +164,14 @@ typedef struct cwdev_s {
 	/// support changing options through command line.
 	struct {
 		int (*optparse) (struct cwdev_s *, const char * opt_arg);
+
+		/// This function should be called only after all command line
+		/// options of cwdaemon have been parsed. It's possible that
+		/// configuration of cwdevice was passed in two or more invocations
+		/// of "-o" command line option. So only after the parsing of all
+		/// occurrences of "-o" is done, we may have a full new configuration
+		/// of cwdevice, and only then we can validate it using this
+		/// function.
 		int (*optvalidate) (struct cwdev_s *);
 
 		union {

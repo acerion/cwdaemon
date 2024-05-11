@@ -114,8 +114,8 @@ void cwdaemon_errmsg(const char *format, ...)
 // @reviewed_on{2024.05.10}
 void log_message(int priority, char const * format, ...)
 {
-	// If we fork and detach from console, we can't log to
-	// stdout/stderr/other file, and we can log only to syslog.
+	// If we fork and detach from console, we can't log to stdout/stderr, and
+	// we can log only to syslog.
 	const bool to_syslog = g_forking;
 
 	if (!to_syslog && NULL == cwdaemon_debug_f) {

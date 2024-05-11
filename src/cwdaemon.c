@@ -156,31 +156,27 @@
 */
 
 
-/*
-  This flag is necessary until I'm done with writing a good test for the
-  ticket. It may be necessary even afterwards, just to be able to quickly
-  restore faulty behaviour and run a test against it.
-
-  https://github.com/acerion/cwdaemon/issues/6
-*/
+// This flag is necessary until I'm done with writing a good test for the
+// ticket. It may be necessary even afterwards, just to be able to quickly
+// restore faulty behaviour and run a test against it.
+//
+// https://github.com/acerion/cwdaemon/issues/6
 #define CWDAEMON_GITHUB_ISSUE_6_FIXED
 
 
 /* cwdaemon constants. */
 #define CWDAEMON_AUDIO_SYSTEM_DEFAULT      CW_AUDIO_CONSOLE /* Console buzzer, from libcw.h. */
-#define CWDAEMON_LOG_THRESHOLD_DEFAULT LOG_WARNING /* Threshold of priority of debug message. */
+#define CWDAEMON_LOG_THRESHOLD_DEFAULT LOG_WARNING // Default threshold of priority of debug messages.
 
 #define CWDAEMON_REQUEST_QUEUE_SIZE_MAX 4000 /* Maximal size of common buffer/fifo where requests may be pushed to. */
 
 #define CWDAEMON_TUNE_SECONDS_MAX  10 /* Maximal time of tuning. TODO: why the limitation to 10 s? Is it enough? */
 
 
-/* For debugging of libcw used by cwdaemon. */
-extern cw_debug_t cw_debug_object;
 
 
-/* Default values of parameters for current cwdaemon process. May be only set
-   once from command line options passed to cwdaemon.
+/* Default values of parameters for current cwdaemon process. May be changed
+   only once, at the start, from command line options passed to cwdaemon.
 
    After setting these variables with values passed in command line,
    these become the default state of cwdaemon.  Values of default_*
@@ -231,16 +227,15 @@ static const int tq_low_watermark = 1;
 static bool has_audio_output = false;
 
 
-/*
-  Internally (but outside sendto() code) cwdaemon treats contents of reply
-  buffer as C string, therefore we need +1 for terminating NUL.
-
-  TODO acerion 2024.03.10: start treating the reply buffer always (in entire
-  code) as array of bytes with explicit count of bytes.
-*/
+// Internally (but outside sendto() code) cwdaemon treats contents of reply
+// buffer as C string, therefore we need +1 for terminating NUL.
+//
+// TODO (acerion) 2024.03.10: start treating the reply buffer always (in
+// entire code) as array of bytes with explicit count of bytes.
 static char reply_buffer[CWDAEMON_REPLY_SIZE_MAX + 1];
 
 
+// There is only one instance of cwdaemon object per process.
 static cwdaemon_t g_cwdaemon = {
 	.socket_descriptor = -1,
 	.network_port = CWDAEMON_NETWORK_PORT_DEFAULT,
@@ -257,9 +252,13 @@ FILE *cwdaemon_debug_f = NULL;
 char *cwdaemon_debug_f_path = NULL;
 
 
-/* An integer that is a result of ORing libcw's debug flags. See CW_DEBUG_*
-   symbols in libcw.h for numeric values of the flags. */
+// An integer that is a result of ORing libcw's debug flags. See CW_DEBUG_*
+// symbols in libcw.h for numeric values of the flags.
 static uint32_t g_libcw_debug_flags;
+
+// For debugging of libcw used by cwdaemon.
+extern cw_debug_t cw_debug_object;
+
 
 
 
@@ -309,8 +308,8 @@ static unsigned char ptt_flag = 0;
 
    This flag is set whenever client sends request for sending back a reply
    through one of the two mechanisms:
-   - using "<ESC>h",
-   - using caret ('^') request.
+   - using REPLY Escape request (<ESC>h),
+   - using CARET request ('^').
 
    This flag is re-set whenever such reply is sent (to be more
    precise: after playing a requested text, but just before sending to
@@ -391,7 +390,7 @@ static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, ui
 
 
 // Will be initialized by tty_init_cwdevice().
-cwdevice cwdevice_ttys = { 0 };
+static cwdevice cwdevice_ttys;
 
 cwdevice cwdevice_null = {
 	.init       = null_init,
@@ -560,8 +559,6 @@ void cwdaemon_set_ptt_on(cwdevice * dev, const char *info)
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 				       "cw_queue_tone() failed: rv=%d errno=\"%s\", using udelay() instead",
 				       rv, strerror(errno));
-			/* TODO: wouldn't it be simpler to not to call
-			   cw_queue_tone() and use only millisleep_nonintr()? */
 			millisleep_nonintr(g_current_ptt_delay_ms);
 		}
 #else
@@ -859,13 +856,12 @@ void cwdaemon_prepare_reply(cwdaemon_t * cwdaemon, char *reply, const char *requ
 */
 int cwdaemon_receive(void)
 {
-	/*
-	  Internally (but outside of recvfrom() code) cwdaemon treats contents of
-	  request buffer as C string, therefore we need +1 for terminating NUL.
-
-	  TODO acerion 2024.03.10: start treating the request buffer always (in
-	  entire code) as array of bytes with explicit count of bytes.
-	*/
+	// Internally (but outside of recvfrom() code) cwdaemon treats contents
+	// of request buffer as C string, therefore we need +1 for terminating
+	// NUL.
+	//
+	// TODO (acerion) 2024.03.10: start treating the request buffer always
+	// (in entire code) as array of bytes with explicit count of bytes.
 	char request_buffer[CWDAEMON_REQUEST_SIZE_MAX + 1] = { 0 };
 
 	ssize_t recv_rc = cwdaemon_recvfrom(&g_cwdaemon, request_buffer, CWDAEMON_REQUEST_SIZE_MAX);
@@ -897,17 +893,15 @@ int cwdaemon_receive(void)
 		   correctly handled by cwdaemon_play_request(). */
 		log_info("received request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
-			/*
-			  TODO acerion 2024.02.11: initial tests with
-			  tests/functional_tests/manual/feature_multiple_requests/ show
-			  that the 'request_queue' buffer never holds more than one
-			  request.
-
-			  At this point in code, before 'request_buffer' is copied into
-			  'request_queue', the 'request_queue' is empty, so we can
-			  eliminate it and just pass 'request_buffer' to
-			  cwdaemon_play_request().
-			*/
+			// TODO (acerion) 2024.02.11: initial tests with
+			// tests/functional_tests/manual/feature_multiple_requests/ show
+			// that the 'request_queue' buffer never holds more than one
+			// request.
+			//
+			// At this point in code, before 'request_buffer' is copied into
+			// 'request_queue', the 'request_queue' is empty, so we can
+			// eliminate it and just pass 'request_buffer' to
+			// cwdaemon_play_request().
 			const size_t len = strlen(request_queue);
 			snprintf(request_queue + len, sizeof (request_queue) - len, "%s", request_buffer);
 			cwdaemon_play_request(request_queue);
@@ -933,13 +927,13 @@ void cwdaemon_handle_escaped_request(char *request)
 	cwdevice * dev = global_cwdevice;
 	long lv = 0;
 
-	/* Don't print literal escape value, use <ESC> symbol. First reason is
-	   that the literal value doesn't look good in console (some
-	   non-printable glyph), second reason is that printing <ESC>c to
-	   terminal makes funny things with the lines already printed to the
-	   terminal (tested in xfce4-terminal and xterm). */
+	// Don't print literal escape character, use <ESC> symbol. First reason
+	// is that the literal value doesn't look good in console (some
+	// non-printable glyph), second reason is that printing <ESC>c to
+	// terminal makes funny things with the lines already printed to the
+	// terminal (tested in xfce4-terminal and xterm).
 	const char escape_code = request[1];
-	log_debug("received escaped request: \"<ESC>%c\" / \"<ESC>0x%02x\"", escape_code, (unsigned char) escape_code);
+	log_info("received Escape request: \"<ESC>%c\" / \"<ESC>0x%02x\"", escape_code, (unsigned char) escape_code);
 
 	/* Take action depending on Escape code. */
 	switch ((int) escape_code) { /* TODO acerion 2024.03.17: remove casting. */
@@ -1306,16 +1300,15 @@ void cwdaemon_play_request(char *request)
 			/* PTT is now in AUTO. It will be turned off on low
 			   tone queue, in cwdaemon_tone_queue_low_callback(). */
 
-			/*
-			  libcw 8.0.0 from unixcw 3.6.1 contains an error which has been
-			  fixed in commit c4fff9622c4e86c798703d637be7cf7e9ab84a06.
-			  Signed value -1 (unsigned value 255) triggers SIGSEGV in libcw.
-			  Therefore don't allow passing the value to cw_send_character().
-
-			  TODO acerion 2024.02.18: remove this (is_valid) condition
-			  after cwdaemon starts to have a hard dependency on a library
-			  with a fix.
-			*/
+			// libcw 8.0.0 from unixcw 3.6.1 contains an error which has been
+			// fixed in commit c4fff9622c4e86c798703d637be7cf7e9ab84a06.
+			// Signed value -1 (unsigned value 255) triggers SIGSEGV in
+			// libcw. Therefore don't allow passing the value to
+			// cw_send_character().
+			//
+			// TODO (acerion) 2024.02.18: remove this (is_valid) condition
+			// after cwdaemon starts to have a hard dependency on a library
+			// with a fix.
 			const bool is_valid = 0xff != (unsigned char) *x;
 			if (is_valid) {
 				cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "Morse character \"%c\" to be queued in libcw", *x);
@@ -1452,16 +1445,14 @@ void cwdaemon_tone_queue_low_callback(__attribute__((unused)) void *arg)
 
 
 		cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "low TQ callback: echoing \"%s\" back to client             <----------", reply_buffer);
-		/* TODO acerion 2024.02.11: appending "\r\n" could/should be moved to
-		   cwdaemon_prepare_reply(). */
+		// TODO (acerion) 2024.02.11: appending "\r\n" could/should be moved
+		// to cwdaemon_prepare_reply().
 		const size_t rbl = strlen(reply_buffer);
 		snprintf(reply_buffer + rbl, sizeof (reply_buffer) - rbl, "\r\n"); /* Ensure exactly one CRLF */
 
-		/*
-		  TODO acerion 2024.02.11: evaluate if this is a good idea to do a
-		  (potentially costly) network write operation inside of libcw's "low
-		  tone queue" callback.
-		*/
+		// TODO (acerion) 2024.02.11: evaluate if this is a good idea to do a
+		// (potentially costly) network write operation inside of libcw's
+		// "low tone queue" callback.
 		cwdaemon_sendto(&g_cwdaemon, reply_buffer);
 		/* If this line is uncommented, the callback erases a valid
 		   reply that should be sent back to client. Commenting the
@@ -1614,7 +1605,7 @@ void cwdaemon_args_process_long(options_t * defaults, int argc, char *argv[])
 				}
 
 			} else {
-				; /* All long options have been already handled. */
+				; // All long options have been already handled.
 			}
 		} else {
 			cwdaemon_args_process_short(defaults, c, optarg);
@@ -1959,7 +1950,7 @@ bool cwdaemon_params_tone(int *tone, const char *optarg)
 bool cwdaemon_params_debugfile(const char *optarg)
 {
 	if (NULL == optarg) {
-		log_message(LOG_ERR, "Invalid arg while setting debug file");
+		log_error("Invalid arg while setting debug file %s", "");
 		return false;
 	}
 
@@ -1986,7 +1977,7 @@ bool cwdaemon_params_debugfile(const char *optarg)
 bool cwdaemon_params_system(int *system, const char *optarg)
 {
 	if (NULL == system || NULL == optarg) {
-		log_message(LOG_ERR, "Invalid arg while setting sound system: %d, %d", !!system, !!optarg);
+		log_error("Invalid arg while setting sound system: %d, %d", !!system, !!optarg);
 		return false;
 	}
 
@@ -2095,9 +2086,10 @@ bool cwdaemon_params_options(cwdevice * dev, const char *optarg)
 
 
 /**
-   \brief Get and parse command line options
+   \brief Get and parse and validate command line options
 
-   Scan program's arguments, check for command line options, parse them.
+   Scan program's arguments, check for command line options, parse them. If
+   applicable, validate options for driver of cwdevice.
 
    \param[out] defaults Set of program's default options, to be modified by command line options
    \param argc - main()'s argc argument
@@ -2114,6 +2106,9 @@ void cwdaemon_args_parse(options_t * defaults, int argc, char *argv[])
 	}
 #endif
 
+	// The call to this function makes sense only after all instances of "-o"
+	// option have been successfully parsed and there is a full and final set
+	// of cwdevice options to be validated as a whole.
 	if (global_cwdevice && global_cwdevice->options.optvalidate) {
 		if (0 != global_cwdevice->options.optvalidate(global_cwdevice)) {
 			cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__, "cw device options are not valid");
@@ -2226,7 +2221,9 @@ int main(int argc, char *argv[])
 
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	if (process_priority != 0) {
-		if (setpriority(PRIO_PROCESS, (id_t) getpid(), process_priority) < 0) { /* TODO acerion 2024.03.22: replace getpid() with zero (see 'man setpriority'). */
+		// TODO (acerion) 2024.03.22: replace getpid() with zero (see 'man
+		// setpriority').
+		if (setpriority(PRIO_PROCESS, (id_t) getpid(), process_priority) < 0) {
 			cwdaemon_errmsg("Setting process priority: \"%s\"", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
@@ -2243,7 +2240,8 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	if (0 != g_libcw_debug_flags) { /* We are debugging libcw as well. */
+	if (0 != g_libcw_debug_flags) {
+		// We are debugging libcw as well.
 		set_libcw_debugging(&cw_debug_object, g_current_options.log_threshold, g_libcw_debug_flags);
 	}
 
@@ -2304,7 +2302,8 @@ int main(int argc, char *argv[])
    The strings can be later deallocated with
    cwdaemon_cwdevices_free().
 
-   \return true
+   \return true on success
+   \return false on failure
 */
 bool cwdaemon_cwdevices_init(void)
 {
@@ -2414,7 +2413,7 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	else if ((fd = dev_get_null(desc)) != -1) {
 		*device = &cwdevice_null;
 	} else {
-		log_message(LOG_NOTICE, "no valid device found, setting cwdevice to null device");
+		log_warning("no valid device found, setting cwdevice to null device %s", "");
 		/* It's better to have null device than NULL
 		   pointer. */
 		*device = &cwdevice_null;
@@ -2528,6 +2527,8 @@ void cwdaemon_close_socket_wrapper(void)
 
 /// @brief Configure debugging of libcw
 ///
+/// @reviewed_on{2024.05.10}
+///
 /// @param debug_object libcw's debug object
 /// @param log_threshold[in] cwdaemon's log threshold
 /// @param flags[in] libcw debug flags from command line options
@@ -2535,12 +2536,16 @@ static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, ui
 {
 	cw_debug_set_flags(debug_object, flags);
 
-	/* Use the same verbosity for libcw as is configured for cwdaemon. */
+	// Use the same verbosity for libcw as is configured for cwdaemon.
 	switch (log_threshold) {
 	case LOG_ERR:
 		debug_object->level = CW_DEBUG_ERROR;
 		break;
 	case LOG_WARNING:
+	case LOG_NOTICE:
+		// Comment about "NOTICE": while it's not possible to set NOTICE as
+		// threshold through "--verbosity" option, it's possible to set it
+		// through "-i" option. So we have to handle NOTICE here.
 		debug_object->level = CW_DEBUG_WARNING;
 		break;
 	case LOG_INFO:
@@ -2549,7 +2554,7 @@ static void set_libcw_debugging(cw_debug_t * debug_object, int log_threshold, ui
 	case LOG_DEBUG:
 		debug_object->level = CW_DEBUG_DEBUG;
 		break;
-	case LOG_CRIT: /* == NONE. */
+	case LOG_CRIT: // == NONE.
 	default:
 		debug_object->level = CW_DEBUG_NONE;
 		break;

@@ -80,10 +80,11 @@ opt_t find_opt_value(const char * input, const char * keyword, const char ** val
 
 /// @brief Parse a string as long integer
 ///
-/// Parse a string @p buf with digits, convert it to a long integer.
+/// Parse a string @p buf containing decimal digits, convert it to a long
+/// integer.
 ///
-/// If @p buf contains something more than just decimal digits, this is
-/// considered an error.
+/// If @p buf contains something more than just decimal digits (even at the
+/// end of string), this is considered an error.
 ///
 /// If @p buf is empty, this is considered an error.
 ///

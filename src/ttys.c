@@ -158,6 +158,8 @@ int tty_init_cwdevice(cwdevice * dev)
 
 
 
+/// @brief Initialize tty device
+///
 /// Use cwdevice::free() to de-init device that was initialized with this
 /// function.
 ///
@@ -320,12 +322,6 @@ static int ttys_optparse(cwdevice * dev, const char * option)
 
 
 /// @brief Validate parsed driver options
-///
-/// This function should be called only after all command line options have
-/// been parsed. It's possible that configuration of cwdevice was passed in
-/// two invocations of "-o" command line option. So only after the parsing of
-/// all occurrences of "-o" is done, we may have a full new configuration of
-/// cwdevice, and only then we can validate it using this function.
 ///
 /// @reviewed_on{2024.05.09}
 ///

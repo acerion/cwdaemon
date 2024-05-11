@@ -44,8 +44,9 @@ ssize_t cwdaemon_sendto(cwdaemon_t * cwdaemon, const char * reply);
 ///
 /// Possible trailing '\r' and '\n' characters are replaced with '\0'. Other
 /// than that, the function doesn't add terminating NUL to @p request. When
-/// the replacement happens, the function returns length of trimmed request,
-/// and the length doesn't include the inserted NUL character(s).
+/// the replacement happens, the length returned by the function is a length
+/// of trimmed request, and the length doesn't include the inserted NUL
+/// character(s).
 ///
 /// @param cwdaemon cwdaemon instance
 /// @param[out] request buffer for received request
