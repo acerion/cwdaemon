@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <stdint.h>
 
+#include "cwdaemon.h"
+
 
 
 
@@ -40,6 +42,25 @@ void cwdaemon_option_inc_verbosity(int * threshold);
 
 
 int cwdaemon_option_set_verbosity(int * threshold, char const * opt_value);
+
+
+
+
+/// @brief Set new cwdevice described by device's name or path from @p opt_value
+///
+/// Release old cwdevice. Assign to @p device a new cwdevice. Select the new
+/// cwdevice by interpreting device's name or path from @p opt_value. Fall
+/// back to null device in case of problems with probing for new cwdevice.
+///
+/// @p opt_value can be a value either from command line option
+/// ("-d"/"--device") or from CWDEVICE Escape request.
+///
+/// @param[in/out] device Old cwdevice to be released, new cwdevice to be returned
+/// @param[in] opt_value String with name or path to new cwdevice
+///
+/// @return 0 on successful change of cwdevice,
+/// @return -1 on failure
+int cwdaemon_option_cwdevice(cwdevice ** device, char const * opt_value);
 
 
 

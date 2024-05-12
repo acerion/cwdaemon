@@ -137,3 +137,21 @@ int cwdaemon_option_set_verbosity(int * threshold, char const * opt_value)
 
 
 
+// @reviewed_on{2024.05.12}
+int cwdaemon_option_cwdevice(cwdevice ** device, char const * opt_value)
+{
+	if (!opt_value || !strlen(opt_value)) {
+		log_error("Invalid cwdevice name/path [%s]", opt_value);
+		return -1;
+	}
+
+	if (!cwdaemon_cwdevice_set(device, opt_value)) {
+		log_error("Unrecognized requested cwdevice [%s]", opt_value);
+		return -1;
+	}
+
+	log_info("Requested cwdevice [%s]", opt_value);
+	return 0;
+}
+
+

@@ -332,7 +332,7 @@ void cwdaemon_tone_queue_low_callback(void *arg);
 
 void cwdaemon_close_socket_wrapper(void);
 int  cwdaemon_receive(void);
-void cwdaemon_handle_escaped_request(char *request);
+void cwdaemon_handle_escaped_request(cwdevice ** device, char *request);
 
 void cwdaemon_reset_almost_all(cwdevice * dev);
 
@@ -340,7 +340,6 @@ void cwdaemon_reset_almost_all(cwdevice * dev);
 bool cwdaemon_cwdevices_init(void);
 void cwdaemon_cwdevices_free(void);
 void cwdaemon_cwdevice_init(void);
-bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc);
 void cwdaemon_cwdevice_free(void);
 
 /* Functions managing libcw output. */
@@ -365,7 +364,6 @@ static void cwdaemon_args_process_long(options_t * defaults, int argc, char *arg
 static void cwdaemon_params_version(void);
 static void cwdaemon_params_nofork(void);
 
-static bool cwdaemon_params_cwdevice(const char *optarg);
 static bool cwdaemon_params_priority(int *priority, const char *optarg);
 static bool cwdaemon_params_wpm(int *wpm, const char *optarg);
 static bool cwdaemon_params_tune(uint32_t *seconds, const char *optarg);
@@ -910,7 +908,7 @@ int cwdaemon_receive(void)
 		}
 		return 1;
 	} else {
-		cwdaemon_handle_escaped_request(request_buffer);
+		cwdaemon_handle_escaped_request(&global_cwdevice, request_buffer);
 		return 0;
 	}
 }
@@ -922,7 +920,7 @@ int cwdaemon_receive(void)
    The function may call exit() if a request from client asks the
    daemon to exit.
 */
-void cwdaemon_handle_escaped_request(char *request)
+void cwdaemon_handle_escaped_request(cwdevice ** device, char *request)
 {
 	cwdevice * dev = global_cwdevice;
 	long lv = 0;
@@ -932,8 +930,9 @@ void cwdaemon_handle_escaped_request(char *request)
 	// non-printable glyph), second reason is that printing <ESC>c to
 	// terminal makes funny things with the lines already printed to the
 	// terminal (tested in xfce4-terminal and xterm).
-	const char escape_code = request[1];
+	char const escape_code = request[1];
 	log_info("received Escape request: \"<ESC>%c\" / \"<ESC>0x%02x\"", escape_code, (unsigned char) escape_code);
+	const char * const payload = request + 2; // The main part of the request.
 
 	/* Take action depending on Escape code. */
 	switch ((int) escape_code) { /* TODO acerion 2024.03.17: remove casting. */
@@ -1033,14 +1032,15 @@ void cwdaemon_handle_escaped_request(char *request)
 			cw_set_weighting((int) (current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
 		}
 		break;
-	case '8': {
-		/* Set type of keying device. */
-		if (cwdaemon_params_cwdevice(request + 2)) {
-			cw_register_keying_callback(cwdaemon_keyingevent, global_cwdevice);
-		}
 
+	case CWDAEMON_ESC_REQUEST_CWDEVICE:
+		// Set new cwdevice.
+		cw_register_keying_callback(NULL, NULL); // First cancel old registration.
+		if (0 == cwdaemon_option_cwdevice(device, payload)) {
+			cw_register_keying_callback(cwdaemon_keyingevent, *device);
+		}
 		break;
-	}
+
 	case '9':
 		/* Change network port number.
 		   TODO: why this is obsolete? */
@@ -1547,7 +1547,7 @@ void cwdaemon_args_process_long(options_t * defaults, int argc, char *argv[])
 			const char *optname = cwdaemon_args_long[option_index].name;
 
 			if (!strcmp(optname, "cwdevice")) {
-				if (!cwdaemon_params_cwdevice(optarg)) {
+				if (0 != cwdaemon_option_cwdevice(&global_cwdevice, optarg)) {
 					exit(EXIT_FAILURE);
 				}
 
@@ -1632,7 +1632,7 @@ void cwdaemon_args_process_short(options_t * defaults, int c, const char *optarg
 		cwdaemon_args_help();
 		exit(EXIT_SUCCESS);
 	case 'd':
-		if (!cwdaemon_params_cwdevice(optarg)) {
+		if (0 != cwdaemon_option_cwdevice(&global_cwdevice, optarg)) {
 			exit(EXIT_FAILURE);
 		}
 		break;
@@ -1723,17 +1723,6 @@ void cwdaemon_args_process_short(options_t * defaults, int c, const char *optarg
 }
 
 
-bool cwdaemon_params_cwdevice(const char *optarg)
-{
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__,
-		       "requested cwdevice \"%s\"", optarg);
-
-	if (!cwdaemon_cwdevice_set(&global_cwdevice, optarg)) {
-		return false;
-	} else {
-		return true;
-	}
-}
 
 
 void cwdaemon_params_nofork(void)
@@ -2398,12 +2387,6 @@ void cwdaemon_cwdevices_free(void)
 bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
 	cwdevice * const old_device = *device;
-
-	if (!desc || !strlen(desc)) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "invalid device description \"%s\"", desc);
-		return false;
-	}
 
 	int fd = tty_probe_cwdevice(desc);
 	if (fd != -1) {

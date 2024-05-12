@@ -198,6 +198,8 @@ int null_reset_pins_state(cwdevice * dev);
 int null_cw (cwdevice * dev, int onoff);
 int null_ptt (cwdevice * dev, int onoff);
 
+bool cwdaemon_cwdevice_set(cwdevice ** device, char const * desc)  __attribute__((nonnull(1, 2)));
+
 
 
 
