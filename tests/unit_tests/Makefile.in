@@ -115,7 +115,8 @@ am_daemon_options_OBJECTS =  \
 	../../src/daemon_options-options.$(OBJEXT) \
 	../../src/daemon_options-log.$(OBJEXT) \
 	../../src/daemon_options-utils.$(OBJEXT) \
-	./daemon_options-daemon_options.$(OBJEXT)
+	./daemon_options-daemon_options.$(OBJEXT) \
+	./daemon_options-daemon_stubs.$(OBJEXT)
 daemon_options_OBJECTS = $(am_daemon_options_OBJECTS)
 daemon_options_LDADD = $(LDADD)
 daemon_options_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -185,6 +186,7 @@ am__depfiles_remade = $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_uti
 	../library/$(DEPDIR)/tests_random-random.Po \
 	../library/$(DEPDIR)/tests_time_utils-time_utils.Po \
 	./$(DEPDIR)/daemon_options-daemon_options.Po \
+	./$(DEPDIR)/daemon_options-daemon_stubs.Po \
 	./$(DEPDIR)/daemon_sleep-daemon_sleep.Po \
 	./$(DEPDIR)/daemon_utils-daemon_utils.Po \
 	./$(DEPDIR)/tests_events-tests_events.Po \
@@ -373,7 +375,7 @@ top_srcdir = @top_srcdir@
 daemon_utils_SOURCES = ../../src/utils.c ./daemon_utils.c
 daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_utils_LDFLAGS = $(gcov_LD_FLAGS)
-daemon_options_SOURCES = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
+daemon_options_SOURCES = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c ./daemon_stubs.c
 daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_options_LDFLAGS = $(gcov_LD_FLAGS)
 daemon_sleep_SOURCES = ../../src/sleep.c ./daemon_sleep.c
@@ -451,6 +453,8 @@ $(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) ./$(DEPDIR)
 	@: > $(DEPDIR)/$(am__dirstamp)
 ./daemon_options-daemon_options.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+./daemon_options-daemon_stubs.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
 daemon_options$(EXEEXT): $(daemon_options_OBJECTS) $(daemon_options_DEPENDENCIES) $(EXTRA_daemon_options_DEPENDENCIES) 
@@ -560,6 +564,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_options.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_stubs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_sleep-daemon_sleep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_utils-daemon_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tests_events-tests_events.Po@am__quote@ # am--include-marker
@@ -645,6 +650,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_options.c' object='./daemon_options-daemon_options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_options.obj `if test -f './daemon_options.c'; then $(CYGPATH_W) './daemon_options.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_options.c'; fi`
+
+./daemon_options-daemon_stubs.o: ./daemon_stubs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_options-daemon_stubs.o -MD -MP -MF $(DEPDIR)/daemon_options-daemon_stubs.Tpo -c -o ./daemon_options-daemon_stubs.o `test -f './daemon_stubs.c' || echo '$(srcdir)/'`./daemon_stubs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_options-daemon_stubs.Tpo $(DEPDIR)/daemon_options-daemon_stubs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_stubs.c' object='./daemon_options-daemon_stubs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_stubs.o `test -f './daemon_stubs.c' || echo '$(srcdir)/'`./daemon_stubs.c
+
+./daemon_options-daemon_stubs.obj: ./daemon_stubs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_options-daemon_stubs.obj -MD -MP -MF $(DEPDIR)/daemon_options-daemon_stubs.Tpo -c -o ./daemon_options-daemon_stubs.obj `if test -f './daemon_stubs.c'; then $(CYGPATH_W) './daemon_stubs.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_stubs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/daemon_options-daemon_stubs.Tpo $(DEPDIR)/daemon_options-daemon_stubs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='./daemon_stubs.c' object='./daemon_options-daemon_stubs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_stubs.obj `if test -f './daemon_stubs.c'; then $(CYGPATH_W) './daemon_stubs.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_stubs.c'; fi`
 
 ../../src/daemon_sleep-sleep.o: ../../src/sleep.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_sleep-sleep.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_sleep-sleep.Tpo -c -o ../../src/daemon_sleep-sleep.o `test -f '../../src/sleep.c' || echo '$(srcdir)/'`../../src/sleep.c
@@ -1030,6 +1049,7 @@ distclean: distclean-am
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
+	-rm -f ./$(DEPDIR)/daemon_options-daemon_stubs.Po
 	-rm -f ./$(DEPDIR)/daemon_sleep-daemon_sleep.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
 	-rm -f ./$(DEPDIR)/tests_events-tests_events.Po
@@ -1096,6 +1116,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
 	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
+	-rm -f ./$(DEPDIR)/daemon_options-daemon_stubs.Po
 	-rm -f ./$(DEPDIR)/daemon_sleep-daemon_sleep.Po
 	-rm -f ./$(DEPDIR)/daemon_utils-daemon_utils.Po
 	-rm -f ./$(DEPDIR)/tests_events-tests_events.Po

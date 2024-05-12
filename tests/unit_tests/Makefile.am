@@ -71,7 +71,7 @@ daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_utils_LDFLAGS  = $(gcov_LD_FLAGS)
 
 
-daemon_options_SOURCES  = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c
+daemon_options_SOURCES  = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c ./daemon_stubs.c
 daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_options_LDFLAGS  = $(gcov_LD_FLAGS)
 
