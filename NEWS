@@ -84,6 +84,13 @@ New release. Changes since previous release:
 
       git commit: 43d150247534e26e1116af3d973b31923c6dbc86
 
+    * Fixing resource leak when handling a CWDEVICE Escape request (<ESC>8)
+
+      cwdaemon didn't close a file descriptor for old cwdevice while
+      switching to new cwdevice specified in the request.
+
+      git commit: a59f9669c337e0d31ff0d3cea083fb03edd4c65e
+
 
 * Quality Assurance
 
