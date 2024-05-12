@@ -82,6 +82,7 @@ New release. Changes since previous release:
       Tests suite now includes a functionality test that verifies correctness
       of handling of the request by cwdaemon.
 
+      git commit: 43d150247534e26e1116af3d973b31923c6dbc86
 
 
 * Quality Assurance
