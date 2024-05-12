@@ -82,12 +82,14 @@
 
 
 
+// @reviewed_on{2024.05.12}
 int append_options_valgrind(const char ** argv, int * argc)
 {
 	argv[(*argc)++] = "valgrind";
 	argv[(*argc)++] = "-s";
 	argv[(*argc)++] = "--leak-check=full";
 	argv[(*argc)++] = "--show-leak-kinds=all";
+	argv[(*argc)++] = "--track-fds=yes"; // File descriptors.
 
 	return 0;
 }

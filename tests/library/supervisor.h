@@ -37,8 +37,6 @@ typedef enum supervisor_id_t {
 
    Function increments @p argc for each inserted value.
 
-   @reviewed_on{2024.04.20}
-
    @param argv Vector of arguments to execv() into which
    @param argc Counter of arguments in @p argv
 
