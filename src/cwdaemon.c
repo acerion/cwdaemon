@@ -1035,7 +1035,9 @@ void cwdaemon_handle_escaped_request(char *request)
 		break;
 	case '8': {
 		/* Set type of keying device. */
-		cwdaemon_params_cwdevice(request + 2);
+		if (cwdaemon_params_cwdevice(request + 2)) {
+			cw_register_keying_callback(cwdaemon_keyingevent, global_cwdevice);
+		}
 
 		break;
 	}

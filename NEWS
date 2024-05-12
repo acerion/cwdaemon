@@ -72,6 +72,17 @@ New release. Changes since previous release:
       This leak was found by running fuzzing tests. It could have been found
       also by using appropriately crafted functional test.
 
+    * Fixing not switching of cwdevice when handling of CWDEVICE Escape
+      request (<ESC>8)
+
+      Switching of keying device was not functioning correctly. As a result,
+      the old device (device used before issuing the request) was used for
+      keying and ptt.
+
+      Tests suite now includes a functionality test that verifies correctness
+      of handling of the request by cwdaemon.
+
+
 
 * Quality Assurance
 
