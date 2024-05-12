@@ -2382,16 +2382,23 @@ void cwdaemon_cwdevices_free(void)
    The function copies \p desc to 'global device'->desc , you will have to
    deallocate the copied desc with cwdaemon_cwdevices_free().
 
-   The function can be called with \p device to which some other device
-   has been already assigned.
+   The function MUST be called with @p device already pointing to current
+   cwdevice. Before the call is made, @p device is set by caller to current
+   cwdevice. When the call returns, the @p device is set by this function to
+   new cwdevice.
 
-   \param device - pointer to device variable - guessed device will be
+   When a new device is properly detected and set, the previous cwdevice is
+   closed by this function.
+
+   \param[in/out] device cwdaemon's current cwdevice, to be updated by this function
 
    \return false if \p desc describes invalid device, or if memory allocation error happens
    \return true otherwise
 */
 bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 {
+	cwdevice * const old_device = *device;
+
 	if (!desc || !strlen(desc)) {
 		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
 			       "invalid device description \"%s\"", desc);
@@ -2427,6 +2434,17 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 		return false;
 	}
 
+	// Close old cwdevice and release its resources.
+	if (old_device) {
+		if (old_device->free) {
+			old_device->free(old_device);
+		}
+		if (old_device->desc) {
+			free(old_device->desc);
+			old_device->desc = NULL;
+		}
+	}
+
 	/* Replace default description of device with actual
 	   description provided by caller.
 
@@ -2438,6 +2456,7 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 	   fallback device "null"? */
 	if ((*device)->desc) {
 		free((*device)->desc);
+		(*device)->desc = NULL;
 	}
 	(*device)->desc = strdup(desc);
 	if (!(*device)->desc) {
@@ -2445,9 +2464,6 @@ bool cwdaemon_cwdevice_set(cwdevice **device, const char *desc)
 			       "memory allocation error");
 		return false;
 	}
-
-	// TODO (acerion) 2024.04.11 shouldn't we call reset_pins_state() and free() on
-	// old cwdevice before we initialize new cwdevice?
 
 	if ((*device)->init) {
 		(*device)->init(*device, fd);
