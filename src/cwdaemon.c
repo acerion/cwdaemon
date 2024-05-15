@@ -1181,6 +1181,14 @@ void cwdaemon_handle_escaped_request(cwdevice ** device, char *request)
 
 			if (has_audio_output) {
 
+				// TODO (acerion) 2024.05.13 code in this code block should
+				// be shared with cwdaemon_reset_libcw_output(). libcw SHOULD
+				// be (re)set in the same way (with the same steps) in all
+				// situations: start of daemon, handling of RESET Escape
+				// request, handling of SOUND_SYSTEM Escape request. Call to
+				// cw_register_keying_callback() should be a part of that
+				// shared code.
+
 				/* Tone queue is bound to a
 				   generator. Creating new generator
 				   requires re-registering the
@@ -1200,6 +1208,10 @@ void cwdaemon_handle_escaped_request(cwdevice ** device, char *request)
 				cw_set_gap(0);
 
 				cw_set_weighting((int) (current_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
+
+#if 1 // Enabling this fixes problem from ticket R0030
+				cw_register_keying_callback(cwdaemon_keyingevent, *device);
+#endif
 			}
 		}
 		break;
