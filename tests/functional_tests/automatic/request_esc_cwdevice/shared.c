@@ -243,7 +243,7 @@ static int test_run(test_case_t const * test_cases, size_t n_test_cases, client_
 		const unsigned int upper = n_test_cases - 1;
 		unsigned int tc_idx = 0;
 		if (0 != cwdaemon_random_uint(lower, upper, &tc_idx)) {
-			test_log_err("Test: failed to select random index for test case (%u = %u)\n", lower, upper);
+			test_log_err("Test: failed to select random index for test case (%u - %u)\n", lower, upper);
 			return -1;
 		}
 		const test_case_t * test_case = &test_cases[tc_idx];
