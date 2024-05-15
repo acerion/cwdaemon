@@ -84,6 +84,22 @@ New release. Changes since previous release:
 
       git commit: 43d150247534e26e1116af3d973b31923c6dbc86
 
+    * Fixing problem where switching to different sound system using SOUND
+      SYSTEM Escape request resulted in no keying on cwdevice's keying pin
+
+      Sending SOUND SYSTEM Escape request (<ESC>f) to change sound system
+      (none/OSS/ALSA/PulseAudio) used by cwdaemon disabled toggling of keying
+      pin on a cwdevice.
+
+      See ticket R0030 in README.dev.org for more info.
+
+      git commit: e1598cb736aa169e48df89ed3b3b2ba12fb0f706
+
+      A workaround for this problem in versions before a fix is to send RESET
+      Escape request (<ESC>0). Be aware that the request resets selected
+      parameters of cwdaemon to their initial state (as they were configured
+      at startup, perhaps with command line options).
+
     * Fixing resource leak when handling a CWDEVICE Escape request (<ESC>8)
 
       cwdaemon didn't close a file descriptor for old cwdevice while
@@ -230,23 +246,6 @@ New release. Changes since previous release:
 
     * man page now has "Quick start" section that has been added to make
       introduction to cwdaemon easier.
-
-
-* Known problems
-
-    * Sending SOUND SYSTEM Escape request (<ESC>f) to change sound system
-      (none/OSS/ALSA/PulseAudio) used by cwdaemon disables toggling of keying
-      pin on a cwdevice.
-
-      I don't consider this to be a blocker because I don't think that
-      changing a sound system throug Escape request is a frequent use case.
-
-      A workaround for this problem is to send RESET Escape request (<ESC>0).
-      Be aware that the request resets selected parameters of cwdaemon to
-      their initial state (as they were configured at startup, perhaps with
-      command line options).
-
-      This problem will be fixed in next release.
 
 
 ----

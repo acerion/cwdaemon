@@ -458,7 +458,7 @@ to be able to release all resources properly.
 
 Write a good handler of Ctrl-C in the fuzzing test.
 
-** TODO [#A] R0030: Bug: <ESC>f disables keying on cwdevice
+** DONE [#A] R0030: Bug: <ESC>f disables keying on cwdevice
 
 When sound system is changed through <ESC>f Escape request, the cwdaemon
 stops toggling keying pin on cwdevice.
