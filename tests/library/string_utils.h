@@ -18,8 +18,6 @@
    Use PRINTABLE_BUFFER_SIZE() macro in code calling this function to define
    size of @p printable buffer.
 
-   @reviewed_on{2024.04.20}
-
    @param[in] bytes Input array of bytes to convert
    @param[in] n_bytes Count of bytes in @p bytes
    @param[out] printable Preallocated output string

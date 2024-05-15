@@ -51,6 +51,8 @@
   of characters because these two characters aren't in a set of Morse code
   characters. This means that they can't be easily mistaken with valid
   characters processed during regular tests.
+
+  @reviewed_on{2024.05.14}
 */
 char * get_printable_string(const char * bytes, size_t n_bytes, char * printable, size_t size)
 {
@@ -99,6 +101,18 @@ char * get_printable_string(const char * bytes, size_t n_bytes, char * printable
 					goto L_NO_SPACE;
 				}
 				break;
+			case '\033': // ESC
+				if (e_idx < size - 5) {
+					printable[e_idx++] = '{';
+					printable[e_idx++] = 'E';
+					printable[e_idx++] = 'S';
+					printable[e_idx++] = 'C';
+					printable[e_idx++] = '}';
+				} else {
+					goto L_NO_SPACE;
+				}
+				break;
+
 			default:
 				if (e_idx < size - 6) {
 					e_idx += snprintf(printable + e_idx, size - e_idx, "{0x%02x}", (unsigned char) character);

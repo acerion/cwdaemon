@@ -117,8 +117,8 @@ static int test_get_printable_string(void)
 		{ .data = { .bytes = { -1, -1, -1, -1, -1, -1, -1, -1, '\0' }, .n_bytes = 9, },    .expected_output = "{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{0xff}{NUL}"  },
 
 		/* Mix of \r, \n, -1 and other non-printable chars. Plus some printable. */
-		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65       }, .n_bytes =  9, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A"       },
-		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' }, .n_bytes = 10, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{0x1b}{0xff}A{NUL}"  },
+		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65       }, .n_bytes =  9, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{ESC}{0xff}A"       },
+		{ .data = { .bytes = { '\r', '\n', '\b', -1, 127, '\a', 27, -1, 65, '\0' }, .n_bytes = 10, },    .expected_output = "{CR}{LF}{0x08}{0xff}{0x7f}{0x07}{ESC}{0xff}A{NUL}"  },
 
 		/* Bytes string fully converted into printable form would not fit
 		   into output buffer, so "get printable" function may add '#' at end
