@@ -8,6 +8,8 @@
 #include <sys/types.h> /* pid_t */
 #include <time.h>
 
+#include <libcw.h>
+
 
 
 
@@ -84,6 +86,28 @@ int tests_get_test_wpm(void);
    @return Value of frequency of sound to be used in a test
 */
 int tests_get_test_tone(void);
+
+
+
+
+/// @brief Get single-letter string corresponding to given sound system
+///
+/// @param sound_system Sound system for which to return the string/label.
+///
+/// @return pointer to static string literal on success
+/// @return NULL pointer for invalid value of @p sound_system or for NONE sound system
+char const * tests_get_sound_system_label_short(enum cw_audio_systems sound_system);
+
+
+
+
+/// @brief Get string corresponding to given sound system
+///
+/// @param sound_system Sound system for which to return the string/label.
+///
+/// @return pointer to static string literal on success
+/// @return NULL pointer for invalid value of @p sound_system or for NONE sound system
+char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_system);
 
 
 

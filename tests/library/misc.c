@@ -51,8 +51,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <libcw.h>
-
 #include "client.h"
 #include "log.h"
 #include "misc.h"
@@ -230,5 +228,84 @@ int tests_get_test_tone(void)
 	}
 
 	return (int) freq;
+}
+
+
+
+
+// @reviewed_on{2024.05.14}
+char const * tests_get_sound_system_label_short(enum cw_audio_systems sound_system)
+{
+	char const * sound_system_label = NULL;
+
+	switch (sound_system) {
+	case CW_AUDIO_NONE:
+		test_log_err("Test: can't return sound system label for NONE sound system %s\n", "");
+		break;
+	case CW_AUDIO_NULL:
+		sound_system_label = "n";
+		break;
+	case CW_AUDIO_CONSOLE:
+		sound_system_label = "c";
+		break;
+	case CW_AUDIO_OSS:
+		sound_system_label = "o";
+		break;
+	case CW_AUDIO_ALSA:
+		sound_system_label = "a";
+		break;
+	case CW_AUDIO_PA:
+		sound_system_label = "p";
+		break;
+	case CW_AUDIO_SOUNDCARD:
+		sound_system_label = "s";
+		break;
+	default:
+		test_log_err("Test: unexpected sound system %u\n", sound_system);
+		break;
+	}
+
+	return sound_system_label;
+}
+
+
+
+
+// @reviewed_on{2024.05.14}
+//
+// TODO (acerion) 2024.05.15 switch to function from libcw when you finally
+// get to improve the function from libcw.
+char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_system)
+{
+	char const * sound_system_label = NULL;
+
+	switch (sound_system) {
+	case CW_AUDIO_NONE:
+		test_log_err("Test: can't return sound system label for NONE sound system %s\n", "");
+		break;
+	case CW_AUDIO_NULL:
+		sound_system_label = "Null";
+		break;
+	case CW_AUDIO_CONSOLE:
+		sound_system_label = "Console";
+		break;
+	case CW_AUDIO_OSS:
+		sound_system_label = "OSS";
+		break;
+	case CW_AUDIO_ALSA:
+		sound_system_label = "ALSA";
+		break;
+	case CW_AUDIO_PA:
+		sound_system_label = "PulseAudio";
+		break;
+	case CW_AUDIO_SOUNDCARD:
+		sound_system_label = "SoundCard";
+		break;
+	default:
+		test_log_err("Test: unexpected sound system %u\n", sound_system);
+		break;
+	}
+
+	return sound_system_label;
 }
 
