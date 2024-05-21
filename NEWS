@@ -180,6 +180,15 @@ New release. Changes since previous release:
       The test is located in
       tests/functional_tests/automatic/request_esc_cwdevice/.
 
+    * Adding functional test for SOUND_SYSTEM Escape request (<ESC>f)
+
+      The test was created to confirm presence of a problem reported by user,
+      and to confirm a proper handling of the request in fixed code. The bug
+      is described above in "Bug fixes" section.
+
+      The test is located in
+      tests/functional_tests/manual/request_esc_sound_system/.
+
     * Unit tests have been added for following existing code:
 
       - cwdaemon_get_long() function

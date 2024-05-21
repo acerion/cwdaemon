@@ -36,7 +36,8 @@ TESTS += functional_tests/automatic/request_plain/test_program
 # TESTS += fuzzing/simple/test_program
 
 # We build manual tests, but we don't run them on "make check".
-# TESTS += functional_tests/manual/test_rpogram
+# TESTS += functional_tests/manual/feature_multiple_requests/test_program
+# TESTS += functional_tests/manual/request_esc_sound_system/test_program
 
 endif
 
