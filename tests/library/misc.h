@@ -112,5 +112,51 @@ char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_syste
 
 
 
+typedef struct tests_sound_systems_available_t {
+	bool null_available;          //< CW_AUDIO_NULL sound system is available on this machine.
+	bool console_available;       //< CW_AUDIO_CONSOLE sound system is available on this machine.
+	bool oss_available;           //< CW_AUDIO_OSS sound system is available on this machine.
+	bool alsa_available;          //< CW_AUDIO_ALSA sound system is available on this machine.
+	bool pa_available;            //< CW_AUDIO_PA sound system is available on this machine.
+	bool sound_card_available;    //< CW_AUDIO_SOUNDCARD sound system is available on this machine.
+} tests_sound_systems_available_t;
+
+
+
+
+/// @brief See which sound systems are available
+///
+/// Function probes for availability of sound systems supported by libcw on
+/// this machine. The function applies additional condition to results of
+/// probing: if both ALSA and PulseAudio can be used, ALSA is marked as not
+/// available due to bad experiences with emulating ALSA through PulseAudio.
+///
+/// @param[out] avail Structure holding results of probing.
+///
+/// @return 0
+int tests_sound_systems_availability(tests_sound_systems_available_t * avail);
+
+
+
+
+/// @brief Pick a sound system at random
+///
+/// Select at random one of sound systems available on current test machine.
+/// The randomization is necessary to test different transitions/paths in
+/// switching of sound system.
+///
+/// Function's @p avail argument needs to be filled by caller through a call
+/// to tests_sound_systems_availability().
+///
+/// @param[in] avail Structure describing availability of sound systems on given machine
+/// @param[out] result Picked sound system
+///
+/// @return 0 when picking of a sound system was done without any problems,
+/// @return -1 otherwise
+int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TESTS_LIB_MISC_H */
 

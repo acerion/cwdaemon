@@ -309,3 +309,105 @@ char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_syste
 	return sound_system_label;
 }
 
+
+
+
+// @reviewed_on{2024.05.19}
+int tests_sound_systems_availability(tests_sound_systems_available_t * avail)
+{
+	avail->null_available = cw_is_null_possible(NULL);
+	avail->console_available = cw_is_console_possible(NULL);
+
+	avail->pa_available = cw_is_pa_possible(NULL);
+	if (!avail->pa_available) {
+		// If PA is available, then don't probe for PulseAudio's emulation of
+		// ALSA because that usually doesn't work well.
+		avail->alsa_available = cw_is_alsa_possible(NULL);
+	}
+
+	if (!avail->pa_available && !avail->alsa_available) {
+		// If the condition is true, there is a high probability that pure
+		// OSS is available.
+		avail->oss_available = cw_is_oss_possible(NULL);
+	}
+
+	avail->sound_card_available = avail->oss_available || avail->alsa_available || avail->pa_available;
+
+	return 0;
+}
+
+
+
+
+/// @reviewed_on{2024.05.19}
+int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result)
+{
+	bool found = false;
+	enum cw_audio_systems sound_system = CW_AUDIO_NONE;
+	int iters = 0;
+
+	while (!found && iters++ < 100) {
+		// Per definition of "enum cw_audio_systems" in libcw.h, these two
+		// values are first and last possible sound systems that can be used
+		// by libcw.
+		const unsigned int lower = CW_AUDIO_NULL;
+		const unsigned int upper = CW_AUDIO_SOUNDCARD;
+
+		unsigned int val = 0;
+		if (0 != cwdaemon_random_uint(lower, upper, &val)) {
+			test_log_err("Test: failed to select sound system at random (%u - %u)\n", lower, upper);
+			return -1;
+		}
+
+		sound_system = (enum cw_audio_systems) val;
+		switch (sound_system) {
+		case CW_AUDIO_NONE:
+			break;
+		case CW_AUDIO_NULL:
+			if (avail->null_available) {
+				found = true;
+			}
+			break;
+		case CW_AUDIO_CONSOLE:
+			if (avail->console_available) {
+				found = true;
+			}
+			break;
+		case CW_AUDIO_OSS:
+			if (avail->oss_available) {
+				found = true;
+			}
+			break;
+		case CW_AUDIO_ALSA:
+			if (avail->alsa_available) {
+				found = true;
+			}
+			break;
+		case CW_AUDIO_PA:
+			if (avail->pa_available) {
+				found = true;
+			}
+			break;
+		case CW_AUDIO_SOUNDCARD:
+			if (avail->sound_card_available) {
+				found = true;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (!found) {
+		test_log_err("Test: was unable to pick at random a sound system [%s]\n", "");
+		return -1;
+	}
+
+	*result = sound_system;
+	test_log_info("Test: picked at random a [%s] sound system\n", tests_get_sound_system_label_long(sound_system));
+	return 0;
+}
+
+
+
+
