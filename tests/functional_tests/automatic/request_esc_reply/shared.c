@@ -172,7 +172,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 		.supervisor_id  = test_opts->supervisor_id,
 	};
 	if (0 != server_start(&server_opts, server)) {
-		test_log_err("Test: tailed to start cwdaemon server %s\n", "");
+		test_log_err("Test: failed to start cwdaemon server %s\n", "");
 		return -1;
 	}
 
