@@ -233,14 +233,16 @@ int tests_get_test_tone(void)
 
 
 
-// @reviewed_on{2024.05.14}
+// @reviewed_on{2024.05.21}
 char const * tests_get_sound_system_label_short(enum cw_audio_systems sound_system)
 {
 	char const * sound_system_label = NULL;
 
 	switch (sound_system) {
 	case CW_AUDIO_NONE:
-		test_log_err("Test: can't return sound system label for NONE sound system %s\n", "");
+		 // When used in SOUND_SYSTEM Escape request, that would be an
+		 // invalid value.
+		sound_system_label = "?";
 		break;
 	case CW_AUDIO_NULL:
 		sound_system_label = "n";
@@ -271,7 +273,7 @@ char const * tests_get_sound_system_label_short(enum cw_audio_systems sound_syst
 
 
 
-// @reviewed_on{2024.05.14}
+// @reviewed_on{2024.05.21}
 //
 // TODO (acerion) 2024.05.15 switch to function from libcw when you finally
 // get to improve the function from libcw.
@@ -281,7 +283,7 @@ char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_syste
 
 	switch (sound_system) {
 	case CW_AUDIO_NONE:
-		test_log_err("Test: can't return sound system label for NONE sound system %s\n", "");
+		sound_system_label = "<NONE>";
 		break;
 	case CW_AUDIO_NULL:
 		sound_system_label = "Null";
@@ -312,7 +314,7 @@ char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_syste
 
 
 
-// @reviewed_on{2024.05.19}
+// @reviewed_on{2024.05.22}
 int tests_sound_systems_availability(tests_sound_systems_available_t * avail)
 {
 	avail->null_available = cw_is_null_possible(NULL);
@@ -322,16 +324,23 @@ int tests_sound_systems_availability(tests_sound_systems_available_t * avail)
 	if (!avail->pa_available) {
 		// If PA is available, then don't probe for PulseAudio's emulation of
 		// ALSA because that usually doesn't work well.
+		//
+		// TODO (acerion) 2024.05.22: re-consider not probing ALSA when PA is
+		// available. Current code makes it impossible to test an important
+		// case.
 		avail->alsa_available = cw_is_alsa_possible(NULL);
 	}
 
-	if (!avail->pa_available && !avail->alsa_available) {
-		// If the condition is true, there is a high probability that pure
-		// OSS is available.
-		avail->oss_available = cw_is_oss_possible(NULL);
-	}
+	avail->oss_available = cw_is_oss_possible(NULL);
 
 	avail->sound_card_available = avail->oss_available || avail->alsa_available || avail->pa_available;
+
+	test_log_debug("Test: Sound system Null is:       %s\n", avail->null_available ? "available" : "NOT available");
+	test_log_debug("Test: Sound system Console is:    %s\n", avail->console_available ? "available" : "NOT available");
+	test_log_debug("Test: Sound system OSS is:        %s\n", avail->oss_available ? "available" : "NOT available");
+	test_log_debug("Test: Sound system ALSA is:       %s\n", avail->alsa_available ? "available" : "NOT available");
+	test_log_debug("Test: Sound system PulseAudio is: %s\n", avail->pa_available ? "available" : "NOT available");
+	test_log_debug("Test: Sound system SoundCard is:  %s\n", avail->sound_card_available ? "available" : "NOT available");
 
 	return 0;
 }
@@ -339,18 +348,20 @@ int tests_sound_systems_availability(tests_sound_systems_available_t * avail)
 
 
 
-/// @reviewed_on{2024.05.19}
-int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result)
+/// @reviewed_on{2024.05.21}
+int tests_pick_random_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result)
 {
 	bool found = false;
 	enum cw_audio_systems sound_system = CW_AUDIO_NONE;
 	int iters = 0;
 
 	while (!found && iters++ < 100) {
-		// Per definition of "enum cw_audio_systems" in libcw.h, these two
-		// values are first and last possible sound systems that can be used
-		// by libcw.
-		const unsigned int lower = CW_AUDIO_NULL;
+
+		// Depending on a test, we may want to include CW_AUDIO_NONE as
+		// indicator of "invalid" sound system.
+		const unsigned int lower = avail->none_available ? CW_AUDIO_NONE : CW_AUDIO_NULL;
+		// Per definition of "enum cw_audio_systems" in libcw.h, this value
+		// is last possible sound system that can be used by libcw.
 		const unsigned int upper = CW_AUDIO_SOUNDCARD;
 
 		unsigned int val = 0;
@@ -362,6 +373,9 @@ int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum c
 		sound_system = (enum cw_audio_systems) val;
 		switch (sound_system) {
 		case CW_AUDIO_NONE:
+			if (avail->none_available) {
+				found = true;
+			}
 			break;
 		case CW_AUDIO_NULL:
 			if (avail->null_available) {
@@ -399,7 +413,7 @@ int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum c
 	}
 
 	if (!found) {
-		test_log_err("Test: was unable to pick at random a sound system [%s]\n", "");
+		test_log_err("Test: was unable to pick at random a sound system %s\n", "");
 		return -1;
 	}
 

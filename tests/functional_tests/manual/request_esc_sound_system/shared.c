@@ -53,15 +53,15 @@
 
 
 
-static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, test_options_t const * test_opts, tests_sound_systems_available_t const * avail);
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, test_options_t const * test_opts, enum cw_audio_systems initial_sound_system);
 static int test_teardown(server_t * server, client_t * client, morse_receiver_t * morse_receiver);
-static int test_run(tests_sound_systems_available_t const * avail, test_case_t const * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events);
+static int test_run(tests_sound_systems_available_t const * avail, test_case_t const * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events, enum cw_audio_systems initial_sound_system);
 static int evaluate_events(events_t const * recorded_events, test_case_t const * test_case);
 
 
 
 
-// @reviewed_on{2024.05.20}
+// @reviewed_on{2024.05.22}
 int run_test_cases(test_case_t const * test_cases, size_t n_test_cases, test_options_t const * test_opts, char const * test_name)
 {
 	tests_sound_systems_available_t avail = { 0 };
@@ -82,13 +82,29 @@ int run_test_cases(test_case_t const * test_cases, size_t n_test_cases, test_opt
 	client_t client = { .events = &events };
 	morse_receiver_t morse_receiver = { .events = &events };
 
-	if (0 != test_setup(&server, &client, &morse_receiver, test_opts, &avail)) {
+	// Sound system with which cwdaemon will be started. cwdaemon won't be
+	// playing Morse code with this particular sound system because another
+	// sound system will be picked at random at the beginning of each test
+	// cycle.
+	enum cw_audio_systems initial_sound_system = test_opts->sound_system;
+	if (CW_AUDIO_NONE == initial_sound_system) {
+		// Initial sound system was not specified through command line
+		// option, so pick the initial sound system here.
+		if (0 != tests_pick_random_sound_system(&avail, &initial_sound_system)) {
+			test_log_err("Test: failed to pick initial sound system %s\n", "");
+			return -1;
+		}
+	}
+	test_log_info("Test: initial sound system is [%s]\n", tests_get_sound_system_label_long(initial_sound_system));
+
+
+	if (0 != test_setup(&server, &client, &morse_receiver, test_opts, initial_sound_system)) {
 		test_log_err("Test: failed at test setup for [%s] test\n", test_name);
 		failure = true;
 		goto cleanup;
 	}
 
-	if (0 != test_run(&avail, test_case, &client, &morse_receiver, &events)) {
+	if (0 != test_run(&avail, test_case, &client, &morse_receiver, &events, initial_sound_system)) {
 		test_log_err("Test: failed at running test cases for [%s] test\n", test_name);
 		failure = true;
 		goto cleanup;
@@ -162,29 +178,15 @@ static int evaluate_events(events_t const * recorded_events, test_case_t const *
 
 /// @brief Prepare resources used to execute set of test cases
 ///
-/// @reviewed_on{2024.05.20}
-static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, test_options_t const * test_opts, tests_sound_systems_available_t const * avail)
+/// @reviewed_on{2024.05.22}
+static int test_setup(server_t * server, client_t * client, morse_receiver_t * morse_receiver, test_options_t const * test_opts, enum cw_audio_systems initial_sound_system)
 {
 	const int wpm = tests_get_test_wpm();
-
-	// Sound system with which cwdaemon will be started. cwdaemon won't be
-	// playing Morse code with this particular sound system because a sound
-	// system will be picked at random at the beginning of each test cycle.
-	enum cw_audio_systems sound_system = test_opts->sound_system;
-	if (CW_AUDIO_NONE == sound_system) {
-		// Initial sound system was not specified through command line
-		// options, so pick the initial sound system here.
-		if (0 != test_pick_sound_system(avail, &sound_system)) {
-			test_log_err("Test: failed to pick initial sound system %s\n", "");
-			return -1;
-		}
-	}
-	test_log_info("Test: initial sound system is [%s]\n", tests_get_sound_system_label_long(sound_system));
 
 	// Prepare local test instance of cwdaemon server.
 	const server_options_t server_opts = {
 		.tone           = tests_get_test_tone(),
-		.sound_system   = sound_system,
+		.sound_system   = initial_sound_system,
 		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
 		.supervisor_id  = test_opts->supervisor_id,
@@ -259,8 +261,9 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 /// request. Put there a value that will make cwdaemon switch to sound system
 /// specified by @p sound_system.
 ///
-/// The value (a string) is or is not terminated by NUL - this is decided at
-/// random. cwdaemon server should be able to safely handle both cases.
+/// The value (an array of bytes) is or is not terminated by NUL - this is
+/// decided at random. cwdaemon server should be able to safely handle both
+/// cases.
 ///
 /// 'n_bytes' member of @p request is set according to count of bytes (with
 /// or without NUL) put into the request.
@@ -275,7 +278,33 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 static int build_request(enum cw_audio_systems sound_system, test_request_t * request)
 {
 	// Generate value.
-	char const * const sound_system_label = tests_get_sound_system_label_short(sound_system);
+	char const * sound_system_label = tests_get_sound_system_label_short(sound_system);
+	char random_invalid_label[16] = { 0 };
+	if (sound_system == CW_AUDIO_NONE) {
+		// NONE -> send request with invalid sound system
+		bool random_invalid = false;
+		if (0 != cwdaemon_random_bool(&random_invalid)) {
+			test_log_err("Test: failed to generate random boolean for 'random invalid' flag %s\n", "");
+			return -1;
+		}
+		if (random_invalid) {
+			// FIXME (acerion) 2024.05.22: if random chars array generated
+			// here begins with n/c/o/a/p/s character, then such random array
+			// will be interpreted by cwdaemon as valid sound system name -
+			// because of that first character. So an array of random
+			// characters isn't always invalid.
+			size_t const n = sizeof (random_invalid_label);
+			if (0 != cwdaemon_random_printable_characters(random_invalid_label, n)) {
+				test_log_err("Test: failed to generate array of printable characters for 'random invalid label' %s\n", "");
+				return -1;
+			}
+			random_invalid_label[n - 1] = '\0';
+			sound_system_label = random_invalid_label;
+		} else {
+			// Use a constant, non-random, hardcoded short value returned by
+			// tests_get_sound_system_label_short().
+		}
+	}
 
 	// Generate count of bytes in value.
 	size_t val_n_bytes = strlen(sound_system_label);
@@ -312,38 +341,56 @@ static int build_request(enum cw_audio_systems sound_system, test_request_t * re
 
 /// @brief Run all test cases. Evaluate results (the events) of each test case.
 ///
-/// @reviewed_on{2024.05.20}
-static int test_run(tests_sound_systems_available_t const * avail, test_case_t const * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
+/// @reviewed_on{2024.05.22}
+static int test_run(tests_sound_systems_available_t const * avail, test_case_t const * test_case, client_t * client, morse_receiver_t * morse_receiver, events_t * events, enum cw_audio_systems initial_sound_system)
 {
 	bool failure = false;
 
-	const size_t n_iterations = 10;
+	// We want to allow generating Escape requests with invalid sound system
+	// "none" to see how cwdaemon will handle the requests.
+	tests_sound_systems_available_t avail_with_none = *avail;
+	avail_with_none.none_available = true;
+
+	// Sound system from which we move away in this test case. Sometimes a
+	// new requested sound system will be invalid (CW_AUDIO_NONE/"x") -
+	// cwdaemon should ignore such requests and continue with its current
+	// sound system.
+	enum cw_audio_systems old_sound_system = initial_sound_system;
+
+	const size_t n_iterations = 20;
 
 	for (size_t iter = 0; iter < n_iterations; iter++) {
 		test_log_newline(); // Visual separator.
 		test_log_info("Test: starting iteration %zu / %zu\n\n", iter + 1, n_iterations);
 
-		enum cw_audio_systems sound_system = CW_AUDIO_NONE;
-		if (0 != test_pick_sound_system(avail, &sound_system)) {
+		enum cw_audio_systems new_sound_system = CW_AUDIO_NONE;
+		if (0 != tests_pick_random_sound_system(&avail_with_none, &new_sound_system)) {
 			return -1;
 		}
 
 		test_request_t request = { 0 };
-		if (0 != build_request(sound_system, &request)) {
+		if (0 != build_request(new_sound_system, &request)) {
 			return -1;
 		}
 
-		char const * const sound_system_label = tests_get_sound_system_label_long(sound_system);
-		if (NULL == sound_system_label) {
+		char const * const old_sound_system_label = tests_get_sound_system_label_long(old_sound_system);
+		if (NULL == old_sound_system_label) {
 			return -1;
 		}
+
+		char const * const new_sound_system_label = tests_get_sound_system_label_long(new_sound_system);
+		if (NULL == new_sound_system_label) {
+			return -1;
+		}
+
 
 		// This is needed to give tester possibility to recognize if/when to
 		// expect sound and where from. Sometimes there will be a Null sound
 		// system, and sometimes there will be a sound generated by PC
 		// buzzer. Tester must know when to expect a sound, and when to
 		// expect no sound.
-		test_log_info("Test: will now test with sound system [%s], press any key to start the test\n", sound_system_label);
+		test_log_info("Test: this test case will try switching sound system: [%s] ----> [%s]\n", old_sound_system_label, new_sound_system_label);
+		test_log_info("Test: press any key to run the test case %s\n", "");
 		getchar();
 
 		// This is the actual test.
@@ -355,7 +402,7 @@ static int test_run(tests_sound_systems_available_t const * avail, test_case_t c
 
 			// Tell cwdaemon server to switch to a new sound system.
 			if (0 != client_send_request(client, &request)) {
-				test_log_err("Test: failed to send SOUND_SYSTEM Escape request with sound system [%s]\n", sound_system_label);
+				test_log_err("Test: failed to send SOUND_SYSTEM Escape request with sound system [%s]\n", new_sound_system_label);
 				return -1;
 			}
 
@@ -401,6 +448,12 @@ static int test_run(tests_sound_systems_available_t const * avail, test_case_t c
 		events_clear(events);
 
 		test_log_info("Test: iteration %zu / %zu: test case [%s] has succeeded\n\n", iter + 1, n_iterations, test_case->description);
+
+		if (new_sound_system != CW_AUDIO_NONE) {
+			// cwademon switched to new sound system only if the new
+			// system is valid (i.e. is not CW_AUDIO_NONE).
+			old_sound_system = new_sound_system;
+		}
 	}
 
 	return failure ? -1 : 0;

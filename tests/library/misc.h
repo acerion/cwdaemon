@@ -113,6 +113,7 @@ char const * tests_get_sound_system_label_long(enum cw_audio_systems sound_syste
 
 
 typedef struct tests_sound_systems_available_t {
+	bool none_available;          //< Test code may try to use NONE for purposes of tests (e.g. to test response of cwdaemon to invalid sound system).
 	bool null_available;          //< CW_AUDIO_NULL sound system is available on this machine.
 	bool console_available;       //< CW_AUDIO_CONSOLE sound system is available on this machine.
 	bool oss_available;           //< CW_AUDIO_OSS sound system is available on this machine.
@@ -153,7 +154,7 @@ int tests_sound_systems_availability(tests_sound_systems_available_t * avail);
 ///
 /// @return 0 when picking of a sound system was done without any problems,
 /// @return -1 otherwise
-int test_pick_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result);
+int tests_pick_random_sound_system(tests_sound_systems_available_t const * avail, enum cw_audio_systems * result);
 
 
 
