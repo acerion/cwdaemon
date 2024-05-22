@@ -170,7 +170,9 @@ int cwdaemon_random_bytes(char * buffer, size_t size)
 
 
 
-int cwdaemon_random_printable_string(char * buffer, size_t size)
+
+// @reviewed_on{2024.05.22}
+int cwdaemon_random_printable_characters(char * buffer, size_t size)
 {
 	for (size_t i = 0; i < size; i++) {
 		const unsigned int lower = 0x20; // SPACE

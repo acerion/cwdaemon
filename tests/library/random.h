@@ -113,7 +113,8 @@ int cwdaemon_random_bytes(char * buffer, size_t size);
    Printable characters are defined as ASCII characters with value between
    0x20 (SPACE) and 0x7e ('~' character), inclusive.
 
-   @reviewed_on{2024.05.04}
+   Function DOES NOT put terminating NUL in @p buffer. This function returns
+   an array of characters, not a proper C string.
 
    @param[out] buffer Buffer into which to put random characters
    @param[out] size Size of the buffer, count of characters to put into buffer
@@ -121,7 +122,7 @@ int cwdaemon_random_bytes(char * buffer, size_t size);
    @return 0 on success
    @return -1 on failure
 */
-int cwdaemon_random_printable_string(char * buffer, size_t size);
+int cwdaemon_random_printable_characters(char * buffer, size_t size);
 
 
 

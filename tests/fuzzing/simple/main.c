@@ -725,7 +725,7 @@ static int test_request_set_value_string(test_request_t * request)
 	case value_generation_mode_in_range:
 		// "in range" is interpreted here as "string of printable
 		// characters".
-		if (0 != cwdaemon_random_printable_string(val_start, val_n_bytes)) {
+		if (0 != cwdaemon_random_printable_characters(val_start, val_n_bytes)) {
 			test_log_err("Test: failed to get random printable characters in %s\n", __func__);
 			return -1;
 		}
