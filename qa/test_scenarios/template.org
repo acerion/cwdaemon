@@ -273,20 +273,6 @@ Test passes
 *Actual result*
 
 
-
-***** TODO tests/cwtest_escf.pl
-
-For this test you may want to start cwdaemon with "info" log level, to see
-information about switching of sound system:
-./src/cwdaemon -n -x p -y i
-
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
 ***** TODO tests/cwtest_escg.pl
 *Expected result*
 Test passes

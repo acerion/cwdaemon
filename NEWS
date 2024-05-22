@@ -207,14 +207,22 @@ New release. Changes since previous release:
       - make gcov-clean
 
     * Removing ./tests/cwtest_esc5.pl functional test. There is no need to
-      keep the test written in Perl when testing of handling of EXIT request
-      is now by tests/functional_tests/automatic/request_esc_exit/ test that
-      is more detailed.
+      keep the test written in Perl when testing of handling of EXIT Escape
+      request is now tested by
+      tests/functional_tests/automatic/request_esc_exit/ test that is more
+      detailed.
 
       Handling of EXIT request is also indirectly tested by other functional
       tests written in C. In each such test the test instance of cwdaemon is
       asked to EXIT at the end of test or test case, and proper exiting is
       monitored and verified in the tests.
+
+    * Removing ./tests/cwtest_escf.pl functional test. There is no need to
+      keep the test written in Perl when testing of handling of SOUND SYSTEM
+      Escape request is now tested by
+      tests/functional_tests/manual/request_esc_sound_system/ test that is
+      more detailed (it allows automatic receiving of Morse code on
+      cwdevice).
 
     * Adding simple fuzzing test
 
