@@ -187,7 +187,7 @@ New release. Changes since previous release:
       is described above in "Bug fixes" section.
 
       The test is located in
-      tests/functional_tests/manual/request_esc_sound_system/.
+      tests/functional_tests/supervised/request_esc_sound_system/.
 
     * Unit tests have been added for following existing code:
 
@@ -220,7 +220,7 @@ New release. Changes since previous release:
     * Removing ./tests/cwtest_escf.pl functional test. There is no need to
       keep the test written in Perl when testing of handling of SOUND SYSTEM
       Escape request is now tested by
-      tests/functional_tests/manual/request_esc_sound_system/ test that is
+      tests/functional_tests/supervised/request_esc_sound_system/ test that is
       more detailed (it allows automatic receiving of Morse code on
       cwdevice).
 

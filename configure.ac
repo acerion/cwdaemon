@@ -265,9 +265,9 @@ if test "x$enable_functional_tests" = xyes ; then
    tests/functional_tests/unattended/request_esc_reply/Makefile
    tests/functional_tests/unattended/request_plain/Makefile
    tests/functional_tests/unattended/reset_register_callback/Makefile
-   tests/functional_tests/manual/Makefile
-   tests/functional_tests/manual/feature_multiple_requests/Makefile
-   tests/functional_tests/manual/request_esc_sound_system/Makefile
+   tests/functional_tests/supervised/Makefile
+   tests/functional_tests/supervised/feature_multiple_requests/Makefile
+   tests/functional_tests/supervised/request_esc_sound_system/Makefile
    tests/fuzzing/Makefile
    tests/fuzzing/simple/Makefile
    ])

@@ -487,7 +487,7 @@ running under control of valgrind.
 
 *Steps*
 
-1. Enable compilation of manual functional tests
+1. Enable compilation of supervised functional tests
 
    ./configure --enable-functional-tests --enable-long-functional-tests
 
@@ -527,17 +527,17 @@ running under control of valgrind.
 
 *Actual result*
 
-**** TODO memory tests with valgrind for functional/manual tests
+**** TODO memory tests with valgrind for functional/supervised tests
 
 *Goal*
 
-Run selected cwdaemon's manual functional tests in a setup where cwdaemon is
+Run selected cwdaemon's supervised functional tests in a setup where cwdaemon is
 running under control of valgrind.
 
 
 *Steps*
 
-1. Enable compilation of manual functional tests
+1. Enable compilation of supervised functional tests
 
    ./configure --enable-functional-tests --enable-long-functional-tests
 
@@ -547,7 +547,7 @@ running under control of valgrind.
 
 3. Run the test. Use command line options necessary to enable and use valgrind
 
-   ./tests/functional_tests/manual/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
+   ./tests/functional_tests/supervised/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
 
 4. After test is completed:
 

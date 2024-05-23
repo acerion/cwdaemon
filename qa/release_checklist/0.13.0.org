@@ -328,7 +328,7 @@ need to repeat some tests on different software/hardware platforms. Write
 down bugs that you have found and fixed, you may want to check for them when
 testing next release, to see if you haven't reintroduced them.
 
-The test scenarios describe both manual and unattended tests.
+The test scenarios describe both supervised and unattended tests.
 
 * TODO Make sure that debug and optimization compiler flags are correct (again)
 

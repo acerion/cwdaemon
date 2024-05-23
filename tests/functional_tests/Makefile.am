@@ -9,7 +9,7 @@
 	unattended/reset_register_callback.dummy
 
 
-SUBDIRS = unattended manual
+SUBDIRS = unattended supervised
 
 
 

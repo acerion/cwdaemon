@@ -892,7 +892,7 @@ int cwdaemon_receive(void)
 		log_info("received request: \"%s\"", request_buffer);
 		if ((strlen(request_buffer) + strlen(request_queue)) <= CWDAEMON_REQUEST_QUEUE_SIZE_MAX - 1) {
 			// TODO (acerion) 2024.02.11: initial tests with
-			// tests/functional_tests/manual/feature_multiple_requests/ show
+			// tests/functional_tests/supervised/feature_multiple_requests/ show
 			// that the 'request_queue' buffer never holds more than one
 			// request.
 			//
