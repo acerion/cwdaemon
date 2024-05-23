@@ -1,15 +1,15 @@
 .PHONY: check                                     \
-	automatic/option_cwdevice_tty_lines.dummy     \
-	automatic/option_port.dummy                   \
-	automatic/request_caret.dummy                 \
-	automatic/request_esc_exit.dummy              \
-	automatic/request_esc_cwdevice.dummy          \
-	automatic/request_esc_reply.dummy             \
-	automatic/request_plain.dummy                 \
-	automatic/reset_register_callback.dummy
+	unattended/option_cwdevice_tty_lines.dummy     \
+	unattended/option_port.dummy                   \
+	unattended/request_caret.dummy                 \
+	unattended/request_esc_exit.dummy              \
+	unattended/request_esc_cwdevice.dummy          \
+	unattended/request_esc_reply.dummy             \
+	unattended/request_plain.dummy                 \
+	unattended/reset_register_callback.dummy
 
 
-SUBDIRS = automatic manual
+SUBDIRS = unattended manual
 
 
 
@@ -18,14 +18,14 @@ if ENABLE_GCOV
 
 # Target for building coverage report for functional tests.
 gcov:
-	make automatic/option_cwdevice_tty_lines.gcov
-	make automatic/option_port.gcov
-	make automatic/request_caret.gcov
-	make automatic/request_esc_exit.gcov
-	make automatic/request_esc_cwdevice.gcov
-	make automatic/request_esc_reply.gcov
-	make automatic/request_plain.gcov
-	make automatic/reset_register_callback.gcov
+	make unattended/option_cwdevice_tty_lines.gcov
+	make unattended/option_port.gcov
+	make unattended/request_caret.gcov
+	make unattended/request_esc_exit.gcov
+	make unattended/request_esc_cwdevice.gcov
+	make unattended/request_esc_reply.gcov
+	make unattended/request_plain.gcov
+	make unattended/reset_register_callback.gcov
 
 
 

@@ -256,15 +256,15 @@ if test "x$enable_functional_tests" = xyes ; then
    AC_CONFIG_FILES([
    tests/library/Makefile
    tests/functional_tests/Makefile
-   tests/functional_tests/automatic/Makefile
-   tests/functional_tests/automatic/option_cwdevice_tty_lines/Makefile
-   tests/functional_tests/automatic/option_port/Makefile
-   tests/functional_tests/automatic/request_caret/Makefile
-   tests/functional_tests/automatic/request_esc_exit/Makefile
-   tests/functional_tests/automatic/request_esc_cwdevice/Makefile
-   tests/functional_tests/automatic/request_esc_reply/Makefile
-   tests/functional_tests/automatic/request_plain/Makefile
-   tests/functional_tests/automatic/reset_register_callback/Makefile
+   tests/functional_tests/unattended/Makefile
+   tests/functional_tests/unattended/option_cwdevice_tty_lines/Makefile
+   tests/functional_tests/unattended/option_port/Makefile
+   tests/functional_tests/unattended/request_caret/Makefile
+   tests/functional_tests/unattended/request_esc_exit/Makefile
+   tests/functional_tests/unattended/request_esc_cwdevice/Makefile
+   tests/functional_tests/unattended/request_esc_reply/Makefile
+   tests/functional_tests/unattended/request_plain/Makefile
+   tests/functional_tests/unattended/reset_register_callback/Makefile
    tests/functional_tests/manual/Makefile
    tests/functional_tests/manual/feature_multiple_requests/Makefile
    tests/functional_tests/manual/request_esc_sound_system/Makefile

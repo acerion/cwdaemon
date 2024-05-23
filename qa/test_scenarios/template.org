@@ -123,7 +123,7 @@ to ./configure or not. Test both cases.
 Run simple fuzzing test: tests/fuzzing/simple/test_program.
 
 Run the test early in testing phase, certainly before doing manual tests. Let
-an automatic test detect problems early.
+an unattended test detect problems early.
 
 
 
@@ -477,11 +477,11 @@ All expectations from above steps are met.
 *Actual result*
 
 *** TODO memory tests with valgrind
-**** TODO memory tests with valgrind for functional/automatic tests
+**** TODO memory tests with valgrind for functional/unattended tests
 
 *Goal*
 
-Run all of cwdaemon's automatic functional tests in a setup where cwdaemon is
+Run all of cwdaemon's unattended functional tests in a setup where cwdaemon is
 running under control of valgrind.
 
 

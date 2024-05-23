@@ -88,7 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = test_program$(EXEEXT)
-subdir = tests/functional_tests/automatic/reset_register_callback
+subdir = tests/functional_tests/unattended/request_esc_cwdevice
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -98,7 +98,8 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_test_program_OBJECTS = test_program-main.$(OBJEXT)
+am_test_program_OBJECTS = test_program-main.$(OBJEXT) \
+	test_program-basic.$(OBJEXT) test_program-shared.$(OBJEXT)
 test_program_OBJECTS = $(am_test_program_OBJECTS)
 am__DEPENDENCIES_1 =
 test_program_DEPENDENCIES = $(top_builddir)/tests/library/lib_tests.a \
@@ -120,7 +121,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/test_program-main.Po
+am__depfiles_remade = ./$(DEPDIR)/test_program-basic.Po \
+	./$(DEPDIR)/test_program-main.Po \
+	./$(DEPDIR)/test_program-shared.Po
 am__mv = mv -f
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -279,7 +282,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
 # Source code files used to build "test_program".
-test_program_SOURCES = main.c
+test_program_SOURCES = main.c basic.c basic.h shared.c shared.h
 
 # Target-specific preprocessor flags (#defs and include dirs).
 test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
@@ -302,9 +305,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/functional_tests/automatic/reset_register_callback/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/functional_tests/unattended/request_esc_cwdevice/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu tests/functional_tests/automatic/reset_register_callback/Makefile
+	  $(AUTOMAKE) --gnu tests/functional_tests/unattended/request_esc_cwdevice/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -336,7 +339,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-basic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-main.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program-shared.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -373,6 +378,34 @@ test_program-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='main.c' object='test_program-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+test_program-basic.o: basic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-basic.o -MD -MP -MF $(DEPDIR)/test_program-basic.Tpo -c -o test_program-basic.o `test -f 'basic.c' || echo '$(srcdir)/'`basic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-basic.Tpo $(DEPDIR)/test_program-basic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='basic.c' object='test_program-basic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-basic.o `test -f 'basic.c' || echo '$(srcdir)/'`basic.c
+
+test_program-basic.obj: basic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-basic.obj -MD -MP -MF $(DEPDIR)/test_program-basic.Tpo -c -o test_program-basic.obj `if test -f 'basic.c'; then $(CYGPATH_W) 'basic.c'; else $(CYGPATH_W) '$(srcdir)/basic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-basic.Tpo $(DEPDIR)/test_program-basic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='basic.c' object='test_program-basic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-basic.obj `if test -f 'basic.c'; then $(CYGPATH_W) 'basic.c'; else $(CYGPATH_W) '$(srcdir)/basic.c'; fi`
+
+test_program-shared.o: shared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-shared.o -MD -MP -MF $(DEPDIR)/test_program-shared.Tpo -c -o test_program-shared.o `test -f 'shared.c' || echo '$(srcdir)/'`shared.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-shared.Tpo $(DEPDIR)/test_program-shared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='shared.c' object='test_program-shared.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-shared.o `test -f 'shared.c' || echo '$(srcdir)/'`shared.c
+
+test_program-shared.obj: shared.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -MT test_program-shared.obj -MD -MP -MF $(DEPDIR)/test_program-shared.Tpo -c -o test_program-shared.obj `if test -f 'shared.c'; then $(CYGPATH_W) 'shared.c'; else $(CYGPATH_W) '$(srcdir)/shared.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_program-shared.Tpo $(DEPDIR)/test_program-shared.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='shared.c' object='test_program-shared.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_program_CPPFLAGS) $(CPPFLAGS) $(test_program_CFLAGS) $(CFLAGS) -c -o test_program-shared.obj `if test -f 'shared.c'; then $(CYGPATH_W) 'shared.c'; else $(CYGPATH_W) '$(srcdir)/shared.c'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -498,7 +531,9 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/test_program-main.Po
+		-rm -f ./$(DEPDIR)/test_program-basic.Po
+	-rm -f ./$(DEPDIR)/test_program-main.Po
+	-rm -f ./$(DEPDIR)/test_program-shared.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -544,7 +579,9 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/test_program-main.Po
+		-rm -f ./$(DEPDIR)/test_program-basic.Po
+	-rm -f ./$(DEPDIR)/test_program-main.Po
+	-rm -f ./$(DEPDIR)/test_program-shared.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

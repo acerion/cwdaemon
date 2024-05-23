@@ -289,7 +289,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = automatic manual
+SUBDIRS = unattended manual
 
 # POSIX-compliant "suffix rules" are SO MUCH FUN!
 @ENABLE_GCOV_TRUE@SUFFIXES = .gcov .dummy
@@ -601,25 +601,25 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 .PHONY: check                                     \
-	automatic/option_cwdevice_tty_lines.dummy     \
-	automatic/option_port.dummy                   \
-	automatic/request_caret.dummy                 \
-	automatic/request_esc_exit.dummy              \
-	automatic/request_esc_cwdevice.dummy          \
-	automatic/request_esc_reply.dummy             \
-	automatic/request_plain.dummy                 \
-	automatic/reset_register_callback.dummy
+	unattended/option_cwdevice_tty_lines.dummy     \
+	unattended/option_port.dummy                   \
+	unattended/request_caret.dummy                 \
+	unattended/request_esc_exit.dummy              \
+	unattended/request_esc_cwdevice.dummy          \
+	unattended/request_esc_reply.dummy             \
+	unattended/request_plain.dummy                 \
+	unattended/reset_register_callback.dummy
 
 # Target for building coverage report for functional tests.
 @ENABLE_GCOV_TRUE@gcov:
-@ENABLE_GCOV_TRUE@	make automatic/option_cwdevice_tty_lines.gcov
-@ENABLE_GCOV_TRUE@	make automatic/option_port.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_caret.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_esc_exit.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_esc_cwdevice.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_esc_reply.gcov
-@ENABLE_GCOV_TRUE@	make automatic/request_plain.gcov
-@ENABLE_GCOV_TRUE@	make automatic/reset_register_callback.gcov
+@ENABLE_GCOV_TRUE@	make unattended/option_cwdevice_tty_lines.gcov
+@ENABLE_GCOV_TRUE@	make unattended/option_port.gcov
+@ENABLE_GCOV_TRUE@	make unattended/request_caret.gcov
+@ENABLE_GCOV_TRUE@	make unattended/request_esc_exit.gcov
+@ENABLE_GCOV_TRUE@	make unattended/request_esc_cwdevice.gcov
+@ENABLE_GCOV_TRUE@	make unattended/request_esc_reply.gcov
+@ENABLE_GCOV_TRUE@	make unattended/request_plain.gcov
+@ENABLE_GCOV_TRUE@	make unattended/reset_register_callback.gcov
 @ENABLE_GCOV_TRUE@.dummy.gcov: gcov_clean_old_artifacts
 # Be careful to not remove entire OUTPUT_DIR, in which reports of other tests
 # are stored.

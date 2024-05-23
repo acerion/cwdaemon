@@ -339,7 +339,7 @@ Quality Assurance
     - Automatic (and unattended) tests written in C that cover to some degree
       a small (but growing) set of functionalities.
 
-      The tests are located in tests/functional_tests/automatic/ dir.
+      The tests are located in tests/functional_tests/unattended/ dir.
 
       The tests are disabled by default. They can be enabled at compile time
       by passing '--enable-functional-tests' flag to './configure'.
@@ -375,8 +375,8 @@ Quality Assurance
 
       The tests are not executed automatically by build system.
 
-      The tests are slowly phased out in favour of automatic tests written in
-      C.
+      The tests are slowly phased out in favour of unattended tests written
+      in C.
 
 - Fuzzing test
 

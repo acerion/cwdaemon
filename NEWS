@@ -161,7 +161,7 @@ New release. Changes since previous release:
       cwdaemon through "-p"/"--port" command line option. The test verifies
       if cwdaemon starts (or doesn't start) as expected.
 
-      The test is located in tests/functional_tests/automatic/option_port/.
+      The test is located in tests/functional_tests/unattended/option_port/.
 
     * Adding functional test for "caret" request.
 
@@ -169,7 +169,7 @@ New release. Changes since previous release:
       request is being sent. More complicated scenarios are not being tested
       (yet).
 
-      The test is located in tests/functional_tests/automatic/request_caret/.
+      The test is located in tests/functional_tests/unattended/request_caret/.
 
     * Adding functional test for CWDEVICE Escape request (<ESC>8)
 
@@ -178,7 +178,7 @@ New release. Changes since previous release:
       is described above in "Bug fixes" section.
 
       The test is located in
-      tests/functional_tests/automatic/request_esc_cwdevice/.
+      tests/functional_tests/unattended/request_esc_cwdevice/.
 
     * Adding functional test for SOUND_SYSTEM Escape request (<ESC>f)
 
@@ -209,7 +209,7 @@ New release. Changes since previous release:
     * Removing ./tests/cwtest_esc5.pl functional test. There is no need to
       keep the test written in Perl when testing of handling of EXIT Escape
       request is now tested by
-      tests/functional_tests/automatic/request_esc_exit/ test that is more
+      tests/functional_tests/unattended/request_esc_exit/ test that is more
       detailed.
 
       Handling of EXIT request is also indirectly tested by other functional
