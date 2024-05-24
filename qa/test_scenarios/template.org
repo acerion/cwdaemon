@@ -232,24 +232,6 @@ Test passes
 
 
 
-***** TODO tests/cwtest_esc8.pl
-
-*Notes*
-
-Make sure that user with which cwdaemon is running is in a group which has
-"rw" permissions for /dev/ttyS0. The test checks different devices, and one
-of devices should be a valid, accessible tty device. ttyS0 is such a device
-(unless you plugged in an USB-to-UART converter and ttyUSB0 is also
-available).
-
-*Expected result*
-
-1. cwdaemon doesn't crash when is asked to access different keying devices,
-   including non-existent ones.
-2. Test program passes.
-
-*Actual result*
-
 ***** TODO tests/cwtest_esca.pl
 *Expected result*
 Test passes

@@ -224,6 +224,13 @@ New release. Changes since previous release:
       more detailed (it allows automatic receiving of Morse code on
       cwdevice).
 
+    * Removing ./tests/cwtest_esc8.pl functional test. There is no need to
+      keep the test written in Perl when testing of handling of CWDEVICE
+      Escape request is now tested by
+      tests/functional_tests/supervised/request_esc_cwdevice/ test that is
+      more detailed (it allows automatic receiving of Morse code on
+      cwdevice).
+
     * Adding simple fuzzing test
 
       A simple fuzzing test is sending random requests to cwdaemon's network
