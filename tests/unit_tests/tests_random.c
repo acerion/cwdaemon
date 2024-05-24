@@ -86,6 +86,10 @@ static struct test_data_uint {
 	unsigned int upper;
 	int expected_retv;
 } test_data_uint[] = {
+	// Sometimes we will need to pick an item from array generated on the
+	// fly, and it may happen that the array will have only one item.
+	{ .lower = 0,      .upper = 0,       .expected_retv = 0 },
+
 	{ .lower = 0,      .upper = 1000,    .expected_retv = 0 },
 	{ .lower = 100,    .upper = 101,     .expected_retv = 0 },
 	{ .lower = 1000,   .upper = 2000,    .expected_retv = 0 }
