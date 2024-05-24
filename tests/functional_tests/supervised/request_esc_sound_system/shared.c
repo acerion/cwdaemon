@@ -268,7 +268,7 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 /// 'n_bytes' member of @p request is set according to count of bytes (with
 /// or without NUL) put into the request.
 ///
-/// @reviewed_on{2024.05.15}
+/// @reviewed_on{2024.05.24}
 ///
 /// @param[in] sound_system Sound system which should be requested by this request
 /// @param[out] request SOUND_SYSTEM Escape request built by this function
@@ -279,6 +279,10 @@ static int build_request(enum cw_audio_systems sound_system, test_request_t * re
 {
 	// Generate value.
 	char const * sound_system_label = tests_get_sound_system_label_short(sound_system);
+
+#if 0
+	// TODO (acerion) 2024.05.24: enable this block of code, but only after
+	// you address a FIXME inside of it.
 	char random_invalid_label[16] = { 0 };
 	if (sound_system == CW_AUDIO_NONE) {
 		// NONE -> send request with invalid sound system
@@ -305,6 +309,7 @@ static int build_request(enum cw_audio_systems sound_system, test_request_t * re
 			// tests_get_sound_system_label_short().
 		}
 	}
+#endif
 
 	// Generate count of bytes in value.
 	size_t val_n_bytes = strlen(sound_system_label);
