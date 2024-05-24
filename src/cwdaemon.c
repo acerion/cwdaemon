@@ -1385,6 +1385,8 @@ void cwdaemon_play_request(char *request)
 */
 void cwdaemon_keyingevent(void * arg, int keystate)
 {
+	log_debug("keying event %d", keystate);
+
 	cwdevice * dev = (cwdevice *) arg;
 	if (keystate == 1) {
 		dev->cw(dev, ON);
@@ -1393,8 +1395,6 @@ void cwdaemon_keyingevent(void * arg, int keystate)
 	}
 
 	inactivity_seconds = 0;
-
-	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "keying event \"%d\"", keystate);
 
 	return;
 }
