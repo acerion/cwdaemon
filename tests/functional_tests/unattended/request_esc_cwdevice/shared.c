@@ -48,6 +48,9 @@
 ///
 /// Code shared between basic tests of CWDEVICE Escape request and (in the
 /// future) non-basic tests of the request.
+///
+/// TODO (acerion) 2024.05.24: add tests for valid tty or lpt devices for
+/// which the test program doesn't have permissions.
 
 
 
@@ -228,7 +231,7 @@ static int test_teardown(server_t * server, client_t * client, morse_receiver_t 
 
 /// @brief Run all test cases. Evaluate results (the events) of each test case.
 ///
-/// @reviewed_on{2024.05.11}
+/// @reviewed_on{2024.05.24}
 static int test_run(test_case_t const * test_cases, size_t n_test_cases, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	bool failure = false;
@@ -250,7 +253,17 @@ static int test_run(test_case_t const * test_cases, size_t n_test_cases, client_
 
 		test_log_newline(); /* Visual separator. */
 
-		char const * cwdevice_name = test_case->get_cwdevice_name();
+		char const * const cwdevice_name = test_case->get_cwdevice_name();
+		if (NULL == cwdevice_name) {
+			// Test case working on non-default cwdevices may not find any
+			// valid non-default cwdevices. This didn't happen to me on Linux
+			// yet, but maybe on BSD this will happen.
+			//
+			// TODO (acerion) 2024.05.24: re-think the approach for machines
+			// on which you can't find a valid, but non-default cwdevice.
+			test_log_err("Test: can't obtain name of cwdevice for the test case [%s]\n", test_case->description);
+			return -1;
+		}
 		test_log_info("Test: starting test case %u in iteration %zu / %zu: [%s], cwdevice name = [%s]\n",
 		              tc_idx, iter + 1, n_iterations, test_case->description, cwdevice_name);
 
@@ -347,8 +360,77 @@ char const * get_invalid_cwdevice_name(void)
 
 
 
+// @reviewed_on{2024.05.24}
+char const * get_valid_non_default_cwdevice_name(void)
+{
+#define MAX_CWDEVICES 10
+
+	// List of found valid non-default devices, from which this function will
+	// pick a result.
+	static char const * devices[MAX_CWDEVICES] = { 0 };
+	static size_t n_devices = 0;
+
+	if (0 == n_devices) {
+		// TTY devices that perhaps exist on current machine and may be used
+		// as cwdevices. TODO (acerion) 2024.05.24: what about lpt devices?
+		static char const * const candidates[MAX_CWDEVICES + 1 /* 1 for guard */] = {
+			"/dev/ttyS0",
+			"/dev/ttyS1",
+			"/dev/tty0",
+			"/dev/tty1",
+			"/dev/cuau0",    // From FreeBSD
+			"/dev/ttyUSB0",
+			NULL,            // Guard
+		};
+
+		size_t i = 0;
+		while (candidates[i]) {
+			const char * const candidate = candidates[i];
+			i++;
+
+			// TODO (acerion) 2024.05.24: usage of TESTS_TTY_CWDEVICE_NAME
+			// limits the function to tty devices only.
+			if (NULL != strstr(candidate, TESTS_TTY_CWDEVICE_NAME)) {
+				// Don't use THE default cwdevice used by test. We are looking
+				// for non-default cwdevices.
+				continue;
+			}
+			if (0 != access(candidate, R_OK | W_OK)) {
+				// Don't use devices that we can't access.
+				continue;
+			}
+			// TODO (acerion) 2024.05.24: add better tests that confirm that
+			// a device is a valid tty or lpt device. Copy the code from
+			// cwdaemon/src/{ttys.c|lp.c}?
+			devices[n_devices++] = candidate;
+		}
+	}
+
+	if (0 == n_devices) {
+		test_log_err("Test: failed to build a list of valid non-default cwdevices %s\n", "");
+		return NULL;
+	}
+
+	unsigned int const lower = 0;
+	unsigned int const upper = n_devices - 1;
+	unsigned int device_idx = 0;
+	if (0 != cwdaemon_random_uint(lower, upper, &device_idx)) {
+		test_log_err("Test: failed to pick an index of valid non-default cwdevice in range %u - %u\n", lower, upper);
+		return NULL;
+	}
+
+	char const * const name = devices[device_idx];
+	test_log_debug("Test: returning [%s] as valid non-default cwdevice name (device index = %u)\n", name, device_idx);
+	return name;
+
+#undef MAX_CWDEVICES
+}
+
+
+
+
 // @reviewed_on{2024.05.11}
-char const * get_valid_non_null_cwdevice_name(void)
+char const * get_test_default_cwdevice_name(void)
 {
 	char const * cwdevice_name = TESTS_TTY_CWDEVICE_NAME;
 	char const * dev_dir = "/dev/";

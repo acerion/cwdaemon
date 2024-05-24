@@ -882,7 +882,9 @@ static int test_fn_esc_bool(client_t * client, const test_case_t * test_case, __
 /// @brief Send CWDEVICE Escape request
 ///
 /// TODO (acerion) 2024.02.11: implement properly: "cwdevice" may require
-/// some especial cases for values, e.g. a list of valid device paths.
+/// some especial cases for values, e.g. a list of valid device paths. Look
+/// at code in tests/functional_tests/unattended/request_esc_cwdevice/ that
+/// "discovers" cwdevices and share the code between the two tests.
 ///
 /// @reviewed_on{2024.05.04}
 ///

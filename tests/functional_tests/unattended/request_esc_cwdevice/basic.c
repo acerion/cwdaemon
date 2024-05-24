@@ -41,12 +41,12 @@
 
 
 
-/// @reviewed_on{2024.05.11}
+/// @reviewed_on{2024.05.24}
 static const test_case_t g_test_cases[] = {
 	// In this test case there is no text received on cwdevice because we
 	// explicitly ask for "null" device. And "null" cwdevice's purpose is to
 	// provide no real action on neither keying nor ptt pins.
-	{ .description = "requested 'null' cwdevice",
+	{ .description = "Requesting 'null' cwdevice",
 	  .get_cwdevice_name = get_null_cwdevice_name,
 	  .reply_esc_request =                             TESTS_SET_BYTES("\033h"),
 	  .plain_request =                                 TESTS_SET_BYTES("paris"),
@@ -58,18 +58,28 @@ static const test_case_t g_test_cases[] = {
 	// requesting an invalid cwdevice the cwdaemon server falls back to
 	// "null" device. And "null" cwdevice's purpose is to provide no real
 	// action on neither keying nor ptt pins.
-	{ .description = "fall-back 'null' cwdevice",
+	{ .description = "Falling back to 'null' cwdevice",
 	  .get_cwdevice_name = get_invalid_cwdevice_name,
 	  .reply_esc_request =                             TESTS_SET_BYTES("\033h"),
 	  .plain_request =                                 TESTS_SET_BYTES("paris"),
 	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES(    "h\r\n") }, },
 
 	},
-
-	// In this test case we are using some real cwdevice with keying and ptt
+	// In this test case we are requesting cwdaemon to use a cwdevice that is
+	// present on a machine and in theory can be used as cwdevice, but is not
+	// being observed by cwdevice observer.
+	{ .description = "Requesting valid non-default cwdevice",
+	  .get_cwdevice_name = get_valid_non_default_cwdevice_name,
+	  .reply_esc_request =                             TESTS_SET_BYTES("\033h\0"),
+	  .plain_request =                                 TESTS_SET_BYTES("paris"),
+	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES(    "h\r\n") }, },
+	},
+	// In this test case we are asking cwdaemon to use a cwdevice that was
+	// passed to the test as THE cwdevice to be used by this test. This is a
+	// real cwdevice observed by the cwdevice observer, with keying and ptt
 	// pins, so we expect some Morse receive on a keying pin.
-	{ .description = "Requested valid non-'null' cwdevice",
-	  .get_cwdevice_name = get_valid_non_null_cwdevice_name,
+	{ .description = "Requesting test-default cwdevice",
+	  .get_cwdevice_name = get_test_default_cwdevice_name,
 	  .reply_esc_request =                             TESTS_SET_BYTES("\033h\0"),
 	  .plain_request =                                 TESTS_SET_BYTES("paris"),
 	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES(    "h\r\n") },

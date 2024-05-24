@@ -63,10 +63,24 @@ char const * get_invalid_cwdevice_name(void);
 
 
 
-/// @brief Get cwdevice name for a valid cwdevice that is not a "null" cwdevice
+/// @brief Get cwdevice name for some cwdevice other than the default cwdevice
+///
+/// The name returned by this function is a valid cwdevice, but is not the
+/// default device used or observed by test.
 ///
 /// Returned pointer is a pointer to a static buffer inside of the function.
-char const * get_valid_non_null_cwdevice_name(void);
+char const * get_valid_non_default_cwdevice_name(void);
+
+
+
+
+/// @brief Get cwdevice name for the default cwdevice used during tests
+///
+/// The name returned by this function is for cwdevice that was passed to the
+/// test as the default cwdevice to be used by this test.
+///
+/// Returned pointer is a pointer to a static buffer inside of the function.
+char const * get_test_default_cwdevice_name(void);
 
 
 
