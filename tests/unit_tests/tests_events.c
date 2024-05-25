@@ -113,6 +113,10 @@ static int test_events_sort(void)
 	// the fact that clang-tidy complains about usage of memcmp() in this
 	// context:
 	// ./tests_events.c:109:11: warning: comparing object representation of type 'events_t' which does not have a unique object representation; consider comparing the members of the object manually [bugprone-suspicious-memory-comparison,cert-exp42-c,cert-flp37-c]
+	//
+	// TODO (acerion) 2024.05.25: bring back memcmp() here and use
+	// "__attribute__((packed))" on a struct definition to get rid of the
+	// warning.
 	for (int i = 0; i < expected.events_cnt; i++) {
 		if (expected.events[i].etype != events.events[i].etype) {
 			test_log_err("Unit tests: events_sort() failed at event type in event %d\n", i);

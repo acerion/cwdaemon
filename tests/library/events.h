@@ -59,19 +59,22 @@ typedef struct test_reply_data_t {
 
 
 
-typedef struct {
+// Struct is packed to allow usage of memcmp(). See
+// https://wiki.sei.cmu.edu/confluence/display/c/EXP42-C.+Do+not+compare+padding+data
+// for more info.
+typedef struct __attribute__((packed)) {
 	int wstatus; ///< Recorded exit status of process. Obtained through "wstatus" argument from call to waitpid().
-
-	/// @brief Expectation: whether process terminated through call to exit().
-	///
-	/// It is expected that exp_exited == WIFEXITED(wstatus).
-	bool exp_exited;
 
 	/// @brief Expectation: if process terminated through call to exit(),
 	/// what was the argument passed to exit().
 	///
 	/// It is expected that exp_exit_arg == WEXITSTATUS(wstatus).
 	int exp_exit_arg;
+
+	/// @brief Expectation: whether process terminated through call to exit().
+	///
+	/// It is expected that exp_exited == WIFEXITED(wstatus).
+	bool exp_exited;
 } event_sigchld_t;
 
 
