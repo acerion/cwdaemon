@@ -13,6 +13,7 @@
 
 
 #include "cw_easy_receiver.h"
+#include "cwdevice.h"
 
 
 
@@ -39,13 +40,6 @@
 
 struct cwdevice_observer_t;
 typedef int (* poll_once_fn_t)(struct cwdevice_observer_t * observer, bool * key_is_down, bool * ptt_is_on);
-
-
-
-
-// TODO (acerion) 2024.04.15: this size should be defined in cwdaemon.h.
-// See also comment for CWDEVICE_NAME_SIZE.
-#define CWDEVICE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
 
 
 

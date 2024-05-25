@@ -162,7 +162,8 @@ static int evaluate_events(events_t const * recorded_events, test_case_t const *
 /// @reviewed_on{2024.04.05}
 int main(int argc, char * const * argv)
 {
-	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
+	if (!testing_env_is_usable(testing_env_libcw_without_signals
+	                           | testing_env_real_cwdevice_is_present)) {
 		test_log_err("Test: preconditions for testing env are not met, exiting test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}

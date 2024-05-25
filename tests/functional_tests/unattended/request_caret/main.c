@@ -66,7 +66,8 @@ static const char * g_test_name = "caret request";
 /// @reviewed_on{2024.05.01}
 int main(int argc, char * const * argv)
 {
-	if (!testing_env_is_usable(testing_env_libcw_without_signals)) {
+	if (!testing_env_is_usable(testing_env_libcw_without_signals
+	                           | testing_env_real_cwdevice_is_present)) {
 		test_log_err("Test: preconditions for testing env are not met, exiting [%s] test\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}

@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,18 +24,24 @@
 
 
 
+#include "config.h"
+
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <libcw.h>
 
+#include "cwdevice.h"
 #include "log.h"
 #include "test_env.h"
 
 
 
 
+// @reviewed_on{2024.05.25}
 bool testing_env_is_usable(testing_env_flags_t flags)
 {
 	if (flags & testing_env_libcw_without_signals) {
@@ -44,6 +50,17 @@ bool testing_env_is_usable(testing_env_flags_t flags)
 		const uint32_t revision =  v & 0x0000ffff;
 		if (current < 7) {
 			test_log_err("Test: libcw version %"PRIu32".%"PRIu32" is too low\n", current, revision);
+			return false;
+		}
+	}
+
+	if (flags & testing_env_real_cwdevice_is_present) {
+		char path[CWDEVICE_PATH_SIZE] = { 0 };
+		cwdevice_get_full_path(TESTS_TTY_CWDEVICE_NAME, path, sizeof (path));
+		// TODO (acerion) 2024.05.25: do we need to do some more
+		// sophisticated tests?
+		if (0 != access(path, R_OK)) {
+			test_log_err("Test: can't find cwdevice [%s]\n", path);
 			return false;
 		}
 	}

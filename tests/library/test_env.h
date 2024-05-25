@@ -13,6 +13,13 @@ typedef enum {
 	/* Confirm that linked libcw doesn't use signals internally. Signals
 	   interrupt sleep functions used in tests. */
 	testing_env_libcw_without_signals        = 0x00000001,
+
+	/// @brief A real cwdevice is present on test machine
+	///
+	/// The cwdevice that was configured at compile time and that should be
+	/// used as the default cwdevice during tests is present on test machine,
+	/// in /dev/ directory. The device is "real", i.e. it has a keying pin.
+	testing_env_real_cwdevice_is_present     = 0x00000002,
 } testing_env_flags_t;
 
 
@@ -20,8 +27,6 @@ typedef enum {
 
 /**
    @brief Confirm that tests environment meets some expectations
-
-   @reviewed_on{2024.04.19}
 
    @param[in] flags Flags indicating which expectations to check
 

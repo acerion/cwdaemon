@@ -9,6 +9,13 @@
 
 
 
+// TODO (acerion) 2024.04.15: this size should be defined in cwdaemon.h.
+// See also comment for CWDEVICE_NAME_SIZE.
+#define CWDEVICE_PATH_SIZE (sizeof ("/some/long/path/to/device/used/for/keying"))
+
+
+
+
 /// @brief Get absolute path to cwdevice with given @p name
 ///
 /// Function returns an absolute path to a device in /dev dir. The function
