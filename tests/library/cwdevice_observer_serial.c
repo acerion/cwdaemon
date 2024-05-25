@@ -145,12 +145,8 @@ int cwdevice_observer_tty_setup(cwdevice_observer_t * observer, const tty_pins_t
 		observer->tty_pins_config = *observer_pins_config;
 	}
 
-	char const * dev_dir = "/dev/";
-	if (0 == strncmp(TESTS_TTY_CWDEVICE_NAME, dev_dir, strlen(dev_dir))) {
-		snprintf(observer->source_path, sizeof (observer->source_path), "%s", TESTS_TTY_CWDEVICE_NAME);
-	} else {
-		snprintf(observer->source_path, sizeof (observer->source_path), "%s%s", dev_dir, TESTS_TTY_CWDEVICE_NAME);
-	}
+	// "name" -> "/dev/name"
+	cwdevice_get_full_path(TESTS_TTY_CWDEVICE_NAME, observer->source_path, sizeof (observer->source_path));
 
 	cwdevice_observer_configure_polling(observer, 0, cwdevice_observer_serial_poll_once);
 
