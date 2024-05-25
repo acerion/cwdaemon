@@ -9,6 +9,7 @@
 # no header from this dir should be installed
 check_HEADERS = client.h             \
                 cw_easy_receiver.h   \
+                cwdevice.h           \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
                 events.h             \
@@ -33,6 +34,7 @@ check_LIBRARIES = lib_tests.a
 
 lib_tests_a_SOURCES = client.c             \
                       cw_easy_receiver.c   \
+                      cwdevice.c           \
                       cwdevice_observer.c  \
                       cwdevice_observer_serial.c  \
                       events.c             \

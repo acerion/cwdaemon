@@ -114,6 +114,7 @@ lib_tests_a_AR = $(AR) $(ARFLAGS)
 lib_tests_a_LIBADD =
 am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-cw_easy_receiver.$(OBJEXT) \
+	lib_tests_a-cwdevice.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer.$(OBJEXT) \
 	lib_tests_a-cwdevice_observer_serial.$(OBJEXT) \
 	lib_tests_a-events.$(OBJEXT) \
@@ -146,6 +147,7 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-cw_easy_receiver.Po \
+	./$(DEPDIR)/lib_tests_a-cwdevice.Po \
 	./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po \
 	./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po \
 	./$(DEPDIR)/lib_tests_a-events.Po \
@@ -323,6 +325,7 @@ top_srcdir = @top_srcdir@
 # no header from this dir should be installed
 check_HEADERS = client.h             \
                 cw_easy_receiver.h   \
+                cwdevice.h           \
                 cwdevice_observer.h  \
                 cwdevice_observer_serial.h  \
                 events.h             \
@@ -347,6 +350,7 @@ check_HEADERS = client.h             \
 check_LIBRARIES = lib_tests.a
 lib_tests_a_SOURCES = client.c             \
                       cw_easy_receiver.c   \
+                      cwdevice.c           \
                       cwdevice_observer.c  \
                       cwdevice_observer_serial.c  \
                       events.c             \
@@ -417,6 +421,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-client.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cw_easy_receiver.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-events.Po@am__quote@ # am--include-marker
@@ -485,6 +490,20 @@ lib_tests_a-cw_easy_receiver.obj: cw_easy_receiver.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cw_easy_receiver.c' object='lib_tests_a-cw_easy_receiver.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cw_easy_receiver.obj `if test -f 'cw_easy_receiver.c'; then $(CYGPATH_W) 'cw_easy_receiver.c'; else $(CYGPATH_W) '$(srcdir)/cw_easy_receiver.c'; fi`
+
+lib_tests_a-cwdevice.o: cwdevice.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice.o -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice.Tpo -c -o lib_tests_a-cwdevice.o `test -f 'cwdevice.c' || echo '$(srcdir)/'`cwdevice.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice.Tpo $(DEPDIR)/lib_tests_a-cwdevice.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice.c' object='lib_tests_a-cwdevice.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice.o `test -f 'cwdevice.c' || echo '$(srcdir)/'`cwdevice.c
+
+lib_tests_a-cwdevice.obj: cwdevice.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice.Tpo -c -o lib_tests_a-cwdevice.obj `if test -f 'cwdevice.c'; then $(CYGPATH_W) 'cwdevice.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-cwdevice.Tpo $(DEPDIR)/lib_tests_a-cwdevice.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cwdevice.c' object='lib_tests_a-cwdevice.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-cwdevice.obj `if test -f 'cwdevice.c'; then $(CYGPATH_W) 'cwdevice.c'; else $(CYGPATH_W) '$(srcdir)/cwdevice.c'; fi`
 
 lib_tests_a-cwdevice_observer.o: cwdevice_observer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-cwdevice_observer.o -MD -MP -MF $(DEPDIR)/lib_tests_a-cwdevice_observer.Tpo -c -o lib_tests_a-cwdevice_observer.o `test -f 'cwdevice_observer.c' || echo '$(srcdir)/'`cwdevice_observer.c
@@ -864,6 +883,7 @@ clean-am: clean-checkLIBRARIES clean-generic mostlyclean-am
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cw_easy_receiver.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
@@ -929,6 +949,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/lib_tests_a-client.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cw_easy_receiver.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-cwdevice_observer_serial.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-events.Po
