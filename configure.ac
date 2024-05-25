@@ -111,14 +111,20 @@ if test "${ac_cv_c_compiler_gnu}" = "yes"; then
   CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
   CFLAGS="${CFLAGS} -Wundef"
   CFLAGS="${CFLAGS} -Wunused -Wunused-macros -Wunused-result"
-  CFLAGS="${CFLAGS} -Wmisleading-indentation -Walloc-zero -Wformat-signedness"
+  CFLAGS="${CFLAGS} -Wmisleading-indentation"
   CFLAGS="${CFLAGS} -Wuninitialized -Winit-self -Wstrict-aliasing -Wattributes -Wmain"
   CFLAGS="${CFLAGS} -Wincompatible-pointer-types -Wold-style-definition"
 
   # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
-  CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
-  CFLAGS="${CFLAGS} -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion"
+  CFLAGS="${CFLAGS} -Wnull-dereference -Wdouble-promotion"
   CFLAGS="${CFLAGS} -Wshadow -Wformat=2"
+fi
+
+# clang 14.0.6 on Debian 12 doesn't recognize these options.
+if test "$CC" = "gcc" ; then
+  CFLAGS="${CFLAGS} -Walloc-zero -Wformat-signedness"
+  # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
+  CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wjump-misses-init"
 fi
 
 
