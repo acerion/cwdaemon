@@ -395,7 +395,7 @@ The following events must be evaluated and expectations for them must be met:
  - Reply received over socket from server is correct (for caret request and
    REPLY Escape request).
 
-** TODO [#C] R0023: Feature: Fail functional tests early when cwdevice is not present
+** DONE [#C] R0023: Feature: Fail functional tests early when cwdevice is not present
 
 Some functional tests require presence of cwdevice. Currently the presence of
 the device is not checked explicitly, the test start running, and fails only
@@ -439,7 +439,7 @@ There is a file called BUGS that is located in my local dir - it is not a
 part of repo. Review its contents and include the contents in the repo -
 perhaps in this file, as new bug items.
 
-** TODO [#B] R0028: ptt pin functions in cwdaemon.init
+** TODO [#B] R0028: Feature: ptt pin functions in cwdaemon.init
 
 Add basic support for specifying ptt pin functions (KEY/PTT) to cwdaemon.init
 file.
@@ -505,3 +505,28 @@ Steps to replicate.
 Also observe that sending RESET Escape request seems to restore proper
 toggling of keying pin.
 
+
+** TODO [#C] R0031: Bug: range of values for priority
+cwdaemon.c specifies that priority can be in range -20..20, inclusive.
+
+According to Linux's man page of setpriority(), the range is -20..19.
+
+** TODO [#C] R0032: Bug: long time of waiting for OSS
+
+acerion@cwdaemon 27 $ src/cwdaemon  -n --tone 200 -x o
+cwdaemon: Not forking...
+debug output: stdout
+Press ^C to quit                                                     <---- The long waiting for OSS happens here.
+cwdaemon:EE: failed to create generator with sound system "OSS"
+cwdaemon:        cwdaemon_open_libcw_output(): 836
+
+** TODO [#C] R0033: Feature: print more info when failing to start second instance of cwdaemon
+
+When a second instance of cwdaemon is started and cdwdaemon can't bind to the
+default port (because it's already used by the first instance), cwdaemon
+should print more info indicating a possible cause of the problem.
+
+** TODO [#C] R0034: Bug: allowed values of <ESC>a
+
+In theory the request should accept only "0" or "1". In practice it accepts
+any numerical value.
