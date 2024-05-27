@@ -242,38 +242,27 @@ options to cppcheck.
 
 SKIPPED: cppcheck linting is not yet implemented.
 
-* TODO Come up with new version numbers
+* STARTED Come up with new version number
 Based on scope of changes that you did, come up with new version number of
-unixcw package and of libcw.
+the package.
 
-For libcw library remember to obey the rules from
-http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html.
-
-** TODO Update the unixcw package number throughout unixcw package
+** DONE Update the package number throughout the repo
  - configure.ac/AC_INIT
- - NEWS + README files
- - unixcw-x.y.z.lsm (file name and contents)
+ - NEWS + README + INSTALL files
  - ./qa/build_debian_packages.sh/VERSION
- - man pages of cw, cwgen, cwcp, xcwcp
- - help text in src/cwcp/cwcp.c
+ - man page
 
-** TODO Update the libcw version number throughout unixcw package
-Also come up with new version number of libcw library and update the number
-in following places:
- - NEWS + README files
- - configure.ac/LIBCW_VERSION
- - contents of misc files in debian dir
- - names of misc files in debian dir
- - libcw's man page (or page's template): ./src/libcw/libcw.3.m4
- - libcw's pkg-config file (or file's template): ./src/libcw/libcw.pc.in
+** STARTED Build Debian packages
 
-** TODO Build Debian packages
-
-Use a script for building Debian packages (qa/build_debian_packages.sh) to
+Use a script for building Debian package (qa/build_debian_packages.sh) to
 catch places that weren't updated correctly.
 
-Inspect the built .deb packages, confirm that version numbers of unixcw and
-of libcw are correct.
+Inspect the built .deb package and auxiliary files, confirm that version
+number on the package and files are correct.
+
+* TODO Update info about dependency on unixcw/libcw
+
+Update INSTALL file with details about required unixcw/libcw versions.
 
 * TODO New test scenarios document
 

@@ -1,4 +1,4 @@
-cwdaemon-0.12.0
+cwdaemon-0.13.0
 ===============
 
 cwdaemon is a small daemon which uses an USB-to-UART converter or PC parallel or
@@ -291,10 +291,8 @@ Example programs are located in examples/ directory.
 
 Platforms
 ---------
-cwdaemon 0.12.0 has been compiled and tested on following platforms:
- - Debian GNU/Linux 11.7, x86_64, gcc 10.2.1, libcw 6.6.1 (unixcw 3.5.1-4)
- - Alpine Linux 3.17, x86_64, gcc 12.2.1, libcw 7.0.0 (unixcw 3.6.0)
- - FreeBSD 13.2-RELEASE, amd64, gcc 12.2.0, libcw 7.0.0 (unixcw 3.6.0)
+cwdaemon 0.13.0 has been compiled and tested on following platforms:
+ - Debian GNU/Linux 12, x86_64, gcc 12.2.0, libcw 8:0:0 (unixcw 3.6.1)
 
 
 
