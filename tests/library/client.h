@@ -13,7 +13,7 @@
 
 #include <netinet/in.h>
 
-#include <src/cwdaemon.h>
+#include "src/cwdaemon.h"
 
 #include "events.h"
 #include "test_defines.h"

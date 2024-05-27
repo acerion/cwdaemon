@@ -248,6 +248,10 @@ AC_SUBST(GZIP_ENV, $my_gzip_env)
 
 
 
+# Makefiles for functional tests are included unconditionally because those
+# Makefiles need to be executed for "make dist". Distribution archive needs
+# to always include functionality tests, even if "./configure" was executed
+# without "--enable-functional-tests".
 AC_CONFIG_FILES([Makefile
 	src/Makefile
 	doc/Makefile
@@ -256,28 +260,23 @@ AC_CONFIG_FILES([Makefile
 	cwdaemon.spec
 	tests/Makefile
 	tests/unit_tests/Makefile
+	tests/library/Makefile
+	tests/functional_tests/Makefile
+	tests/functional_tests/unattended/Makefile
+	tests/functional_tests/unattended/option_cwdevice_tty_lines/Makefile
+	tests/functional_tests/unattended/option_port/Makefile
+	tests/functional_tests/unattended/request_caret/Makefile
+	tests/functional_tests/unattended/request_esc_exit/Makefile
+	tests/functional_tests/unattended/request_esc_cwdevice/Makefile
+	tests/functional_tests/unattended/request_esc_reply/Makefile
+	tests/functional_tests/unattended/request_plain/Makefile
+	tests/functional_tests/unattended/reset_register_callback/Makefile
+	tests/functional_tests/supervised/Makefile
+	tests/functional_tests/supervised/feature_multiple_requests/Makefile
+	tests/functional_tests/supervised/request_esc_sound_system/Makefile
+	tests/fuzzing/Makefile
+	tests/fuzzing/simple/Makefile
 	])
-
-if test "x$enable_functional_tests" = xyes ; then
-   AC_CONFIG_FILES([
-   tests/library/Makefile
-   tests/functional_tests/Makefile
-   tests/functional_tests/unattended/Makefile
-   tests/functional_tests/unattended/option_cwdevice_tty_lines/Makefile
-   tests/functional_tests/unattended/option_port/Makefile
-   tests/functional_tests/unattended/request_caret/Makefile
-   tests/functional_tests/unattended/request_esc_exit/Makefile
-   tests/functional_tests/unattended/request_esc_cwdevice/Makefile
-   tests/functional_tests/unattended/request_esc_reply/Makefile
-   tests/functional_tests/unattended/request_plain/Makefile
-   tests/functional_tests/unattended/reset_register_callback/Makefile
-   tests/functional_tests/supervised/Makefile
-   tests/functional_tests/supervised/feature_multiple_requests/Makefile
-   tests/functional_tests/supervised/request_esc_sound_system/Makefile
-   tests/fuzzing/Makefile
-   tests/fuzzing/simple/Makefile
-   ])
-fi
 
 AC_OUTPUT
 

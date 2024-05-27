@@ -11,5 +11,5 @@ test_program_CPPFLAGS = ${AM_CFLAGS} ${LIBCW_CFLAGS}
 test_program_LDADD = $(top_builddir)/tests/library/lib_tests.a ${LIBCW_LIBS}
 
 # Target-specific compiler flags.
-test_program_CFLAGS = -pthread
+test_program_CFLAGS = -I$(top_srcdir) -pthread
 

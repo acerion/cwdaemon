@@ -242,6 +242,43 @@ options to cppcheck.
 
 SKIPPED: cppcheck linting is not yet implemented.
 
+* DONE Confirm that "make dist" and "make distcheck" works
+** DONE "make dist"
+
+1. Run "make distclean" in main directory of repo.
+2. Run "autoreconf && automake && ./configure" in main directory of repo.
+3. Run "make dist" in main directory of repo.
+4. If "make dist" fails to build a release archive, fix the problems, and go
+   to #1.
+5. Confirm that there are no unnecessary files in release archive. If there
+   are, fix the problem and go to #1.
+6. Confirm that all necessary files (e.g. READMEs, examples, tests) are
+   present in release archive. If any file is missing, fix the problem and go
+   to #1.
+
+** DONE "make distcheck"
+
+1. Run "make distcheck" in main dir of repo.
+2. If "make distcheck" fails to build a release archive, fix the problems,
+   and restart this entire top-level bullet point by re-testing "make dist"
+   first.
+3. If "make distcheck" fails to compile code from release archive, fix the
+   problem and restart this entire top-level bullet point by re-testing "make
+   dist" first.
+4. If "make distcheck" fails to successfully execute unit or functionality
+   tests, fix the problem and restart this entire top-level bullet point by
+   re-testing "make dist" first.
+5. Re-run steps 1-4, but this time with the following change:
+
+   Export options that will be used by ./configure executed during "make
+   distcheck":
+
+   export DISTCHECK_CONFIGURE_FLAGS="--enable-functional-tests"
+
+   See
+   https://www.gnu.org/software/automake/manual/html_node/Checking-the-Distribution.html
+   for more info.
+
 * STARTED Come up with new version number
 Based on scope of changes that you did, come up with new version number of
 the package.

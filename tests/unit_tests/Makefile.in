@@ -148,7 +148,7 @@ am_tests_random_OBJECTS = ../library/tests_random-random.$(OBJEXT) \
 	./tests_random-tests_random.$(OBJEXT)
 tests_random_OBJECTS = $(am_tests_random_OBJECTS)
 tests_random_LDADD = $(LDADD)
-am_tests_string_utils_OBJECTS = $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.$(OBJEXT) \
+am_tests_string_utils_OBJECTS = $(top_builddir)/tests/library/tests_string_utils-string_utils.$(OBJEXT) \
 	./tests_string_utils-tests_string_utils.$(OBJEXT)
 tests_string_utils_OBJECTS = $(am_tests_string_utils_OBJECTS)
 tests_string_utils_LDADD = $(LDADD)
@@ -172,7 +172,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po \
+am__depfiles_remade = $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po \
 	../../src/$(DEPDIR)/daemon_options-log.Po \
 	../../src/$(DEPDIR)/daemon_options-options.Po \
 	../../src/$(DEPDIR)/daemon_options-utils.Po \
@@ -383,8 +383,8 @@ daemon_sleep_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_sleep_LDFLAGS = $(gcov_LD_FLAGS)
 
 # Below are unit tests for code used in functional tests.
-tests_string_utils_SOURCES = $(abs_top_srcdir)/tests/library/string_utils.c ./tests_string_utils.c
-tests_string_utils_CPPFLAGS = -I$(abs_top_srcdir)
+tests_string_utils_SOURCES = $(top_srcdir)/tests/library/string_utils.c ./tests_string_utils.c
+tests_string_utils_CPPFLAGS = -I$(top_srcdir)
 tests_time_utils_SOURCES = ../library/time_utils.c ./tests_time_utils.c
 tests_time_utils_CPPFLAGS = -I$(top_srcdir)
 tests_random_SOURCES = ../library/random.c ../library/random.h ./tests_random.c
@@ -515,15 +515,15 @@ tests_morse_receiver$(EXEEXT): $(tests_morse_receiver_OBJECTS) $(tests_morse_rec
 tests_random$(EXEEXT): $(tests_random_OBJECTS) $(tests_random_DEPENDENCIES) $(EXTRA_tests_random_DEPENDENCIES) 
 	@rm -f tests_random$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_random_OBJECTS) $(tests_random_LDADD) $(LIBS)
-$(abs_top_srcdir)/tests/library/$(am__dirstamp):
-	@$(MKDIR_P) $(abs_top_srcdir)/tests/library
-	@: > $(abs_top_srcdir)/tests/library/$(am__dirstamp)
-$(abs_top_srcdir)/tests/library/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) $(abs_top_srcdir)/tests/library/$(DEPDIR)
-	@: > $(abs_top_srcdir)/tests/library/$(DEPDIR)/$(am__dirstamp)
-$(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.$(OBJEXT):  \
-	$(abs_top_srcdir)/tests/library/$(am__dirstamp) \
-	$(abs_top_srcdir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/tests/library
+	@: > $(top_builddir)/tests/library/$(am__dirstamp)
+$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/tests/library/$(DEPDIR)
+	@: > $(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_string_utils-string_utils.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
 ./tests_string_utils-tests_string_utils.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
@@ -542,7 +542,7 @@ tests_time_utils$(EXEEXT): $(tests_time_utils_OBJECTS) $(tests_time_utils_DEPEND
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f $(abs_top_srcdir)/tests/library/*.$(OBJEXT)
+	-rm -f $(top_builddir)/tests/library/*.$(OBJEXT)
 	-rm -f ../../src/*.$(OBJEXT)
 	-rm -f ../library/*.$(OBJEXT)
 	-rm -f ./*.$(OBJEXT)
@@ -550,7 +550,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-log.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
@@ -847,19 +847,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_random-tests_random.obj `if test -f './tests_random.c'; then $(CYGPATH_W) './tests_random.c'; else $(CYGPATH_W) '$(srcdir)/./tests_random.c'; fi`
 
-$(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.o: $(abs_top_srcdir)/tests/library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.o -MD -MP -MF $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo -c -o $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.o `test -f '$(abs_top_srcdir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(abs_top_srcdir)/tests/library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(abs_top_srcdir)/tests/library/string_utils.c' object='$(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_string_utils-string_utils.o: $(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_string_utils-string_utils.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo -c -o $(top_builddir)/tests/library/tests_string_utils-string_utils.o `test -f '$(top_builddir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/string_utils.c' object='$(top_builddir)/tests/library/tests_string_utils-string_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.o `test -f '$(abs_top_srcdir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(abs_top_srcdir)/tests/library/string_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_string_utils-string_utils.o `test -f '$(top_builddir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/string_utils.c
 
-$(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.obj: $(abs_top_srcdir)/tests/library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.obj -MD -MP -MF $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo -c -o $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.obj `if test -f '$(abs_top_srcdir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(abs_top_srcdir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(abs_top_srcdir)/tests/library/string_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(abs_top_srcdir)/tests/library/string_utils.c' object='$(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_string_utils-string_utils.obj: $(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_string_utils-string_utils.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo -c -o $(top_builddir)/tests/library/tests_string_utils-string_utils.obj `if test -f '$(top_builddir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/string_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/string_utils.c' object='$(top_builddir)/tests/library/tests_string_utils-string_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(abs_top_srcdir)/tests/library/tests_string_utils-string_utils.obj `if test -f '$(abs_top_srcdir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(abs_top_srcdir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(abs_top_srcdir)/tests/library/string_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_string_utils-string_utils.obj `if test -f '$(top_builddir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/string_utils.c'; fi`
 
 ./tests_string_utils-tests_string_utils.o: ./tests_string_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_string_utils-tests_string_utils.o -MD -MP -MF $(DEPDIR)/tests_string_utils-tests_string_utils.Tpo -c -o ./tests_string_utils-tests_string_utils.o `test -f './tests_string_utils.c' || echo '$(srcdir)/'`./tests_string_utils.c
@@ -1024,8 +1024,8 @@ distclean-generic:
 	-rm -f ../library/$(am__dirstamp)
 	-rm -f ./$(am__dirstamp)
 	-test -z "$(DEPDIR)/$(am__dirstamp)" || rm -f $(DEPDIR)/$(am__dirstamp)
-	-test -z "$(abs_top_srcdir)/tests/library/$(DEPDIR)/$(am__dirstamp)" || rm -f $(abs_top_srcdir)/tests/library/$(DEPDIR)/$(am__dirstamp)
-	-test -z "$(abs_top_srcdir)/tests/library/$(am__dirstamp)" || rm -f $(abs_top_srcdir)/tests/library/$(am__dirstamp)
+	-test -z "$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/tests/library/$(am__dirstamp)" || rm -f $(top_builddir)/tests/library/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1035,7 +1035,7 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+		-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
@@ -1102,7 +1102,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f $(abs_top_srcdir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+		-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
 	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po

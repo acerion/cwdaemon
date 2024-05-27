@@ -7,14 +7,13 @@ CLEANFILES = *~ \
 	./tests/cwdaemon/test/*~
 
 EXTRA_DIST = cwdaemon.spec.in \
-	examples \
-	tests \
 	patches \
 	doc/schematics \
+	examples/example.pl \
+	examples/example.sh \
 	cwdaemon.png TODO README cwsetup.sh \
 	debian \
-	Doxyfile \
-	tests/unit_tests/README
+	Doxyfile
 
 dist-hook:
 	find $(distdir) -type d -name ".deps" | xargs rm -rf

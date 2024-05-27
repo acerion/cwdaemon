@@ -85,8 +85,8 @@ daemon_sleep_LDFLAGS  = $(gcov_LD_FLAGS)
 
 # Below are unit tests for code used in functional tests.
 
-tests_string_utils_SOURCES  = $(abs_top_srcdir)/tests/library/string_utils.c ./tests_string_utils.c
-tests_string_utils_CPPFLAGS = -I$(abs_top_srcdir)
+tests_string_utils_SOURCES  = $(top_srcdir)/tests/library/string_utils.c ./tests_string_utils.c
+tests_string_utils_CPPFLAGS = -I$(top_srcdir)
 
 tests_time_utils_SOURCES  = ../library/time_utils.c ./tests_time_utils.c
 tests_time_utils_CPPFLAGS = -I$(top_srcdir)

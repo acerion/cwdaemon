@@ -33,10 +33,10 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "src/cwdaemon.h"
-#include "src/log.h"
-#include "src/options.h"
-#include "src/utils.h"
+#include "cwdaemon.h"
+#include "log.h"
+#include "options.h"
+#include "utils.h"
 
 
 

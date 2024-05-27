@@ -24,6 +24,7 @@ check_HEADERS = client.h             \
                 socket.h             \
                 string_utils.h       \
                 supervisor.h         \
+                test_defines.h       \
                 test_env.h           \
                 test_options.h       \
                 time_utils.h         \
@@ -54,5 +55,5 @@ lib_tests_a_SOURCES = client.c             \
                       time_utils.c         \
                       thread.c
 
-lib_tests_a_CFLAGS = $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
+lib_tests_a_CFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS) -pthread -DLIBCW_LIBDIR=\"$(LIBCW_LIBDIR)\"
 
