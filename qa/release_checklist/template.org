@@ -108,7 +108,7 @@ root dir.
 
 2. Run clang-tidy:
 
-    run-clang-tidy-11
+    ./qa/lint_clang_tidy.sh <path>
 
 3. Fix reported issues.
 

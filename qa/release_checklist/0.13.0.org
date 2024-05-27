@@ -169,7 +169,7 @@ reviewing code, you need to be able to say "This is where I need to stop".
 Constant making changes in code won't help you "freeze" your code and make a
 release.
 
-* STARTED Review changes - quality check
+* DONE Review changes - quality check
 
 Review changes in code, documentation and other files to catch and fix
 problems, and to do last-minute necessary minor improvements.
@@ -190,7 +190,7 @@ may affect end user.
 Note down (as "tickets" in README.dev.org or as TODO/FIXME notes in code) any
 problems that won't be fixed in this release.
 
-* TODO Static code analysis
+* DONE Static code analysis
 
 TODO: some functionalities in the package are disabled by default (mostly the
 debug functionalities). You may want to enable them through ./configure
@@ -201,7 +201,7 @@ These checks should be a part of Continuous Integration pipeline, but:
 2. an additional 'manual' check of results should ensure that no serious
    issues have crept in.
 
-** TODO clang-tidy
+** DONE clang-tidy
 
 Use "run-clang-tidy" wrapper program (should be installed from some Linux
 package). The wrapper will use .clang-tidy config file present in package's
@@ -217,11 +217,11 @@ root dir.
 
 2. Run clang-tidy:
 
-    run-clang-tidy-11
+    ./qa/lint_clang_tidy.sh <path>
 
 3. Fix reported issues.
 
-** TODO cppcheck
+** SKIPPED cppcheck
 
 Use ./qa/lint_cppcheck.sh script to run cppcheck. The script passes some
 options to cppcheck.
@@ -239,6 +239,8 @@ options to cppcheck.
     ./qa/lint_cppcheck.sh
 
 3. Fix reported issues.
+
+SKIPPED: cppcheck linting is not yet implemented.
 
 * TODO Come up with new version numbers
 Based on scope of changes that you did, come up with new version number of
