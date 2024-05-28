@@ -186,15 +186,6 @@ catch places that weren't updated correctly.
 Inspect the built .deb package and auxiliary files, confirm that version
 number on the package and files are correct.
 
-* TODO Update info about dependency on unixcw/libcw
-
-Update INSTALL file with details about required unixcw/libcw versions.
-
-* TODO New test scenarios document
-
-Make a properly named copy of qa/test_scenarios/template.org. The name of the
-copy should reflect new version number of the package.
-
 * TODO Synchronize with Debian
 ** TODO Get *debian.tar.xz archive
 
@@ -221,6 +212,14 @@ more or less correctly. Fix any issues you will find.
 
 While running qa/build_debian_packages.sh, pay attention to compiler
 warnings. Debian's build scripts may use different complier flags.
+* TODO Update info about dependency on unixcw/libcw
+
+Update INSTALL file with details about required unixcw/libcw versions.
+
+* TODO New test scenarios document
+
+Make a properly named copy of qa/test_scenarios/template.org. The name of the
+copy should reflect new version number of the package.
 
 * TODO Remove -Werror from CFLAGS
 At this stage of this list there should be no more changes in code. Remove

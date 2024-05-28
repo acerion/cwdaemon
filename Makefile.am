@@ -12,7 +12,6 @@ EXTRA_DIST = cwdaemon.spec.in \
 	examples/example.pl \
 	examples/example.sh \
 	cwdaemon.png TODO README cwsetup.sh \
-	debian \
 	Doxyfile
 
 dist-hook:
