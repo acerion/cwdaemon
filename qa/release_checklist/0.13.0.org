@@ -297,32 +297,42 @@ catch places that weren't updated correctly.
 Inspect the built .deb package and auxiliary files, confirm that version
 number on the package and files are correct.
 
-* STARTED Synchronize with Debian
-** TODO Get *debian.tar.xz archive
+* DONE Synchronize with Debian
+** DONE Get *debian.tar.xz archive
 
-Go to https://packages.debian.org/sid/cw, Download *debian.tar.xz archive.
+Go to https://packages.debian.org/sid/cwdaemon, Download *debian.tar.xz archive.
 
-** TODO Evaluate patches from the archive
+** DONE Evaluate patches from the archive
 
 You may want to apply them to the package. Update NEWS file with information
 that the patches were applied. This will let Debian team know about it
 because it may affect their workflow.
 
-** TODO Merge debian/
+DONE: patches have been evaluated.
+
+** DONE Merge debian/
 
 Merge current version of files from debian/ dir in the archive into project's
 repo. Let the configuration of the package in the repo be in sync with
 Debian.
 
-** TODO Run qa/build_debian_packages.sh
+** DONE Run qa/build_debian_packages.sh
 
 Run qa/build_debian_packages.sh to confirm that Debian packages can be built
 more or less correctly. Fix any issues you will find.
 
-** TODO Fix compiler warnings
+DONE: lintian reports only those two items:
+E: cwdaemon: depends-on-obsolete-package Depends: lsb-base (>= 3.0-6)
+W: cwdaemon: missing-systemd-service-for-init.d-script cwdaemon [etc/init.d/cwdaemon]
+
+** DONE Fix compiler warnings
 
 While running qa/build_debian_packages.sh, pay attention to compiler
 warnings. Debian's build scripts may use different complier flags.
+
+DONE: the compilation reported no errors or warnings that weren't already
+known.
+
 * TODO Update info about dependency on unixcw/libcw
 
 Update INSTALL file with details about required unixcw/libcw versions.
