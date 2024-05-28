@@ -1,5 +1,7 @@
 You will need to have the the libcw8 library and header files from unixcw
-3.6.1 package installed to compile and install cwdaemon 0.13.0.
+3.6.1 package installed to compile and install cwdaemon 0.13.0. libcw7 from
+unixcw 3.6.0 may also work, but I didn't test cwdaemon with that version of
+libcw.
 
 libcw is a part of unixcw package which can be found here:
 http://unixcw.sourceforge.net/
@@ -24,5 +26,3 @@ After installing libcw development files do:
 
 The cwdaemon program is installed in /usr/local/sbin.
 
-See the provided README for more details. The manual page will tell you
-some more about startup options, you could also type "cwdaemon -h".

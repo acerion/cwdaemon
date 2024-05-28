@@ -333,7 +333,7 @@ warnings. Debian's build scripts may use different complier flags.
 DONE: the compilation reported no errors or warnings that weren't already
 known.
 
-* TODO Update info about dependency on unixcw/libcw
+* DONE Update info about dependency on unixcw/libcw
 
 Update INSTALL file with details about required unixcw/libcw versions.
 
