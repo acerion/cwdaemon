@@ -275,7 +275,7 @@ Make sure that:
  - the sentences and paragraphs are logically correct.
  - the structures of documents are valid.
 
-* TODO Review initial oscope of the release
+* TODO Review initial scope of the release
 
 Some items from initial scope of the release may not have been implemented
 for one reason or another.
