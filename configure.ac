@@ -97,35 +97,88 @@ esac
 # CFLAGS=`echo "$CFLAGS" | sed 's/-O2/-O0/g'`
 
 # TODO acerion 2024.04.12: include these flags and fix warnings:
-#   CFLAGS="${CFLAGS} -Wconversion -Wsign-conversion -Wint-conversion"
+# -Wconversion
+# -Wformat-truncation=2
+# -Wint-conversion
+# -Wsign-conversion
+# -Wtraditional-conversion
 
-CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
+# TODO acerion 2024.05.30: to be considered:
+# -D_FORTIFY_SOURCE=3
+# -Walloca
+# -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,separate-code
+# -Wstack-protector
+# -fPIE
+# -fsanitize-undefined-trap-on-error
+# -fsanitize=bounds
+# -fstack-clash-protection
+# -fstack-protector-strong
+
+# Some of the flags come from:
+# https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
+
 CFLAGS="${CFLAGS} -std=c99"
-if test "${ac_cv_c_compiler_gnu}" = "yes"; then
-  CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
-  CFLAGS="${CFLAGS} -Wswitch-default -Wswitch-enum"
-  CFLAGS="${CFLAGS} -Wimplicit-function-declaration -Wimplicit-int"
-  CFLAGS="${CFLAGS} -Wpointer-arith -Wpointer-sign"
-  CFLAGS="${CFLAGS} -Wfloat-equal -Wcast-qual -Wwrite-strings"
-  CFLAGS="${CFLAGS} -Wmissing-prototypes -Wstrict-prototypes"
-  CFLAGS="${CFLAGS} -Wmissing-declarations -Wredundant-decls"
-  CFLAGS="${CFLAGS} -Wundef"
-  CFLAGS="${CFLAGS} -Wunused -Wunused-macros -Wunused-result"
-  CFLAGS="${CFLAGS} -Wmisleading-indentation"
-  CFLAGS="${CFLAGS} -Wuninitialized -Winit-self -Wstrict-aliasing -Wattributes -Wmain"
-  CFLAGS="${CFLAGS} -Wincompatible-pointer-types -Wold-style-definition"
+CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
+CFLAGS="${CFLAGS} -Wattributes"
+CFLAGS="${CFLAGS} -Wcast-qual"
+CFLAGS="${CFLAGS} -Wdouble-promotion"
+CFLAGS="${CFLAGS} -Wfloat-equal"
+CFLAGS="${CFLAGS} -Wformat=2"
+CFLAGS="${CFLAGS} -Wformat-nonliteral"
+CFLAGS="${CFLAGS} -Wformat-security"
+CFLAGS="${CFLAGS} -Wformat-y2k"
+CFLAGS="${CFLAGS} -Wimplicit-function-declaration"
+CFLAGS="${CFLAGS} -Wimplicit-int"
+CFLAGS="${CFLAGS} -Wincompatible-pointer-types"
+CFLAGS="${CFLAGS} -Winit-self"
+CFLAGS="${CFLAGS} -Wmain"
+CFLAGS="${CFLAGS} -Wmisleading-indentation"
+CFLAGS="${CFLAGS} -Wmissing-declarations"
+CFLAGS="${CFLAGS} -Wmissing-include-dirs"
+CFLAGS="${CFLAGS} -Wmissing-prototypes"
+CFLAGS="${CFLAGS} -Wnested-externs"
+CFLAGS="${CFLAGS} -Wnull-dereference"
+CFLAGS="${CFLAGS} -Wold-style-definition"
+CFLAGS="${CFLAGS} -Wpointer-arith"
+CFLAGS="${CFLAGS} -Wpointer-sign"
+CFLAGS="${CFLAGS} -Wredundant-decls"
+CFLAGS="${CFLAGS} -Wshadow"
+CFLAGS="${CFLAGS} -Wstrict-aliasing"
+CFLAGS="${CFLAGS} -Wstrict-overflow=4"
+CFLAGS="${CFLAGS} -Wstrict-prototypes"
+CFLAGS="${CFLAGS} -Wswitch-default"
+CFLAGS="${CFLAGS} -Wswitch-enum"
+CFLAGS="${CFLAGS} -Wundef"
+CFLAGS="${CFLAGS} -Wuninitialized"
+CFLAGS="${CFLAGS} -Wunused"
+CFLAGS="${CFLAGS} -Wunused-macros"
+CFLAGS="${CFLAGS} -Wunused-parameter"
+CFLAGS="${CFLAGS} -Wunused-result"
+CFLAGS="${CFLAGS} -Wvla"
+CFLAGS="${CFLAGS} -Wwrite-strings"
 
-  # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
-  CFLAGS="${CFLAGS} -Wnull-dereference -Wdouble-promotion"
-  CFLAGS="${CFLAGS} -Wshadow -Wformat=2"
-fi
 
 # clang 14.0.6 on Debian 12 doesn't recognize these options.
 if test "$CC" = "gcc" ; then
-  CFLAGS="${CFLAGS} -Walloc-zero -Wformat-signedness"
-  # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
-  CFLAGS="${CFLAGS} -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wjump-misses-init"
+  CFLAGS="${CFLAGS} -Walloc-zero"
+  CFLAGS="${CFLAGS} -Warith-conversion"
+  CFLAGS="${CFLAGS} -Warray-bounds=2"
+  CFLAGS="${CFLAGS} -Wcast-align=strict"
+  CFLAGS="${CFLAGS} -Wduplicated-branches"
+  CFLAGS="${CFLAGS} -Wduplicated-cond"
+  CFLAGS="${CFLAGS} -Wformat-overflow=2"
+  CFLAGS="${CFLAGS} -Wformat-signedness"
+  CFLAGS="${CFLAGS} -Wimplicit-fallthrough=3"
+  CFLAGS="${CFLAGS} -Wjump-misses-init"
+  CFLAGS="${CFLAGS} -Wlogical-op"
+  CFLAGS="${CFLAGS} -Wrestrict"
+  CFLAGS="${CFLAGS} -Wshift-overflow=2"
+  CFLAGS="${CFLAGS} -Wstack-usage=1000000"
+  CFLAGS="${CFLAGS} -Wstringop-overflow=4"
+  CFLAGS="${CFLAGS} -Wtrampolines"
 fi
+
+CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
 
 
 

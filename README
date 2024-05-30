@@ -302,7 +302,12 @@ Quality Assurance
 
 - Compile-time flags
 
+    - -std=c99
+    - -Wall -Wextra -pedantic
+    - a long list of additional warning flags for compiler (see configure.ac)
     - -D_FORTIFY_SOURCE=2
+
+    Only a handful of enabled compiler warnings aren't fixed yet.
 
 - Static analysis of code
 
