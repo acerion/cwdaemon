@@ -337,7 +337,7 @@ known.
 
 Update INSTALL file with details about required unixcw/libcw versions.
 
-* TODO New test scenarios document
+* STARTED New test scenarios document
 
 Make a properly named copy of qa/test_scenarios/template.org. The name of the
 copy should reflect new version number of the package.

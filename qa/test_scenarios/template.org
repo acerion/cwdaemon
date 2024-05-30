@@ -61,7 +61,6 @@ The shell script may not work on systems without bash.
 
 *Actual result*
 
-
 **** TODO regresion with make distcheck
 
 Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
@@ -101,6 +100,8 @@ Tests implemented in tests/unit_tests.
 *Steps*
 1. ./configure --enable-functional-tests
 2. make check
+3. Wait for all unit tests to be executed. You can terminate the tests as
+   soon as unit tests complete, and functional tests start being executed.
 
 *Expected result*
 All unit tests should have "PASS" status in output of "make check" command.
@@ -116,204 +117,263 @@ Count of unit tests depends on whether you pass "--enable-functional-tests"
 to ./configure or not. Test both cases.
 
 *Actual result*
-
-*** TODO fuzzing tests
-**** TODO simple fuzzing test
-
-Run simple fuzzing test: tests/fuzzing/simple/test_program.
-
-Run the test early in testing phase, certainly before doing manual tests. Let
-an unattended test detect problems early.
-
-
-
-*Preconditions*
-
-1. Be sure to use large count of iterations in the test: set value of
-   "n_iters" in test_run() to high value.
-
-2. Be sure to run the test under valgrind: set "supervisor_id" to
-   "supervisor_id_valgrind" in options passed to server_start().
-
-3. Be sure to have all tests enabled in "g_test_cases[]".
-
-
-
-*Expected result*
-
-1. valgrind reports no memory leaks (with possible exception of memory leak
-   described in ticket R0018.
-
-2. valgrind reports no memory errors of other types.
-
-3. cwdaemon's test framework doesn't report any errors on its own
-
-
-
-*Actual result*
-
-*** TODO gcov/lcov
-
-Purpose: confirm that it's possible to generate a coverage report for unit
-tests.
-
-*Steps*
-
-The steps are copied from relevant sections in top-level README file:
-
-1. ./configure --enable-gcov
-2. make gcov
-3. <web browser> tests/unit_tests/coverage/index.html
-4. make gcov-clean
-
-*Expected results*
-1. Summary of configuration step correctly shows enabled gcov,
-2. There are no errors during generation of gcov/lcov report,
-3. Contents of the report looks correct (no obvious problems with the
-   report).
-4. There are no errors during cleanup step.
-
 *** TODO functional tests
 
-**** TODO Tests written in Perl
-
-
-Execute each and every perl script in tests/ directory.
-
 *Preconditions*
 
-cwdaemon must be started (automatically or manually), running on default
-port, with <platform's preferred sound system>.
-
-./src/cwdaemon -n -x p
-
-*Expected result*
-All tests pass
-
-*Actual result*
-
-***** TODO tests/cwtest.pl
-
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-***** TODO tests/cwtest_esc2.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_esc3.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_esc64.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_esc7.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_esca.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_escc.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_escd.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-***** TODO tests/cwtest_escg.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-
-
-***** TODO tests/cwtest_short_space.pl
-*Expected result*
-Test passes
-
-*Actual result*
-
-**** TODO Tests written in C
-
-Execute each and every binary in tests/test_00X*. Run each of them manually
-to see the debugs printed in console.
-
-*Preconditions*
 1. Plug in USB-to-UART converter to USB socket.
-2. ./configure --enable-functional-tests
-3. make check (fix compiler error about files from unixcw)
+2. ./configure --enable-functional-tests --enable-long-functional-tests
 
 
-*Expected result*
-All tests pass
+*Steps*
+1. Run "make check"
+2. Let the unattended tests run and complete
+
+*Expectations*
+
+The unattended tests executed through "make check" pass. We can now safely
+continue to manual tests.
 
 *Actual result*
 
 
+**** TODO PLAIN request
 
-***** TODO tests/test_001_basic_process_control
+*Test program*
+tests/functional_tests/unattended/request_plain
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO CARET request
+
+*Test program*
+tests/functional_tests/unattended/request_caret
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO Escape requests
+
+***** TODO RESET        '0'
+***** TODO SPEED        '2'
+
+*Test program*
+tests/cwtest_esc2.pl
+
 *Expected result*
 Test passes
 
 *Actual result*
 
+***** TODO TONE         '3'
 
+*Test program*
+tests/cwtest_esc3.pl
 
-***** TODO tests/test_002_reset_register_callback
 *Expected result*
 Test passes
 
 *Actual result*
 
+***** TODO ABORT        '4'
 
+*Test program*
+tests/cwtest_esc64.pl
 
-***** TODO tests/test_003_cwdevice_tty_line_options
 *Expected result*
 Test passes
 
 *Actual result*
 
-**** TODO Manual tests of cwdaemon
+***** TODO EXIT         '5'
 
-***** TODO Command-line options
+*Test program*
+tests/functional_tests/unattended/request_esc_exit
 
-****** TODO '-I'/'--libcwflags'
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO WORD_MODE    '6'
+
+*Test program*
+tests/cwtest_esc64.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO WEIGHTING    '7'
+
+*Test program*
+tests/cwtest_esc7.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO CWDEVICE     '8'
+
+*Test program*
+tests/functional_tests/unattended/request_esc_cwdevice
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO PORT         '9'
+***** TODO PTT_STATE    'a'
+
+*Test program*
+tests/cwtest_esca.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO SSB_WAY      'b'
+***** TODO TUNE         'c'
+
+*Test program*
+tests/cwtest_escc.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO TX_DELAY     'd'
+
+*Test program*
+tests/cwtest_escd.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO BAND_SWITCH  'e'
+***** TODO SOUND_SYSTEM 'f'
+
+*Test program*
+functional_tests/supervised/request_esc_sound_system
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO VOLUME       'g'
+
+*Test program*
+tests/cwtest_escg.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO REPLY        'h'
+
+*Test program*
+tests/functional_tests/unattended/request_esc_reply
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO Command line options
+
+***** TODO -h, --help
+
+***** TODO -V, --version
+
+***** TODO -d, --cwdevice <device>
+
+***** TODO -o, --options <option>
+
+*Test program*
+tests/functional_tests/unattended/option_cwdevice_tty_lines
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO -n, --nofork
+
+***** TODO -p, --port <port>
+
+*Test program*
+tests/functional_tests/unattended/option_port
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO -s, --wpm <speed>
+
+***** TODO -t, --pttdelay <time>
+
+***** TODO -x, --system <sound system>
+***** TODO -v, --volume <volume>
+***** TODO -w, --weighting <weight>
+***** TODO -T, --tone <tone>
+***** TODO -i
+***** TODO -y, --verbosity <threshold>
+***** TODO -I, --libcwflags <flags>
 
 Confirm that option that specifies debug flags for libcw is working.
 
@@ -365,6 +425,25 @@ In this test cwdaemon is executed:
    flag is used
 
 2. Threshold for libcw logs depends on value of '-y' flag.
+
+*Actual result*
+
+***** TODO -f, --debugfile <output>
+
+**** TODO Misc tests
+
+***** TODO reset register callback
+
+*Test program*
+tests/functional_tests/unattended/reset_register_callback
+
+*Steps*
+1. Manually start the test
+2. Observe the log
+3. Wait for final status of the test.
+
+*Expectations*
+Final result of the test is a "PASS"
 
 *Actual result*
 
@@ -457,6 +536,96 @@ pins.
 All expectations from above steps are met.
 
 *Actual result*
+
+***** TODO tests/cwtest.pl
+
+*Test program*
+tests/cwtest.pl
+
+*Preconditions*
+
+cwdaemon must be started (automatically or manually), running on default
+port, with <platform's preferred sound system>.
+
+./src/cwdaemon -n -x p
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO tests/cwtest_short_space.pl
+
+*Test program*
+tests/cwtest_short_space.pl
+
+*Preconditions*
+
+cwdaemon must be started (automatically or manually), running on default
+port, with <platform's preferred sound system>.
+
+./src/cwdaemon -n -x p
+
+
+*Expected result*
+Test passes
+
+*Actual result*
+*** TODO fuzzing tests
+**** TODO simple fuzzing test
+
+Run simple fuzzing test: tests/fuzzing/simple/test_program.
+
+Run the test early in testing phase, certainly before doing manual tests. Let
+an unattended test detect problems early.
+
+
+
+*Preconditions*
+
+1. Be sure to use large count of iterations in the test: set value of
+   "n_iters" in test_run() to high value.
+
+2. Be sure to run the test under valgrind: set "supervisor_id" to
+   "supervisor_id_valgrind" in options passed to server_start().
+
+3. Be sure to have all tests enabled in "g_test_cases[]".
+
+
+
+*Expected result*
+
+1. valgrind reports no memory leaks (with possible exception of memory leak
+   described in ticket R0018.
+
+2. valgrind reports no memory errors of other types.
+
+3. cwdaemon's test framework doesn't report any errors on its own
+
+
+
+*Actual result*
+
+*** TODO gcov/lcov
+
+Purpose: confirm that it's possible to generate a coverage report for unit
+tests.
+
+*Steps*
+
+The steps are copied from relevant sections in top-level README file:
+
+1. ./configure --enable-gcov
+2. make gcov
+3. <web browser> tests/unit_tests/coverage/index.html
+4. make gcov-clean
+
+*Expected results*
+1. Summary of configuration step correctly shows enabled gcov,
+2. There are no errors during generation of gcov/lcov report,
+3. Contents of the report looks correct (no obvious problems with the
+   report).
+4. There are no errors during cleanup step.
 
 *** TODO memory tests with valgrind
 **** TODO memory tests with valgrind for functional/unattended tests
