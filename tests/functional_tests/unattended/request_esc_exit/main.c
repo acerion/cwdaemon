@@ -288,7 +288,7 @@ static int testcase_setup(server_t * server, client_t * client, morse_receiver_t
 
 
 
-/// @reviewed_on{2024.05.03}
+/// @reviewed_on{2024.06.02}
 static int testcase_run(const test_case_t * test_case, server_t * server, client_t * client, morse_receiver_t * morse_receiver, events_t * events)
 {
 	if (test_case->send_plain_request) {
@@ -332,15 +332,7 @@ static int testcase_run(const test_case_t * test_case, server_t * server, client
 
 		/* First ask nicely for a clean exit. */
 		client_send_esc_request(client, CWDAEMON_ESC_REQUEST_EXIT, "", 0);
-		pthread_mutex_lock(&events->mutex);
-		{
-			// TODO (acerion) 2024.04.18: add checking if events_cnt is not
-			// out of bounds.
-			clock_gettime(CLOCK_MONOTONIC, &events->events[events->events_cnt].tstamp);
-			events->events[events->events_cnt].etype = etype_req_exit;
-			events->events_cnt++;
-		}
-		pthread_mutex_unlock(&events->mutex);
+		events_insert_exit_escape_request_event(events);
 
 		/* Give cwdaemon some time to exit cleanly. cwdaemon needs ~1.3
 		   second. */

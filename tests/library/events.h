@@ -170,7 +170,7 @@ int events_sort(events_t * events);
 
 /// @brief Wrapper for easy inserting of "Morse received" event into events store
 ///
-/// @reviewed_on{2024.04.18}
+/// @exception assert(0) when there is no space available for the event in events
 ///
 /// @param events Events store into which to insert the event
 /// @param[in] buffer Buffer with received text
@@ -184,7 +184,7 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 /// @brief Wrapper for easy inserting of "reply received" event into events store
 ///
-/// @reviewed_on{2024.04.18}
+/// @exception assert(0) when there is no space available for the event in events
 ///
 /// @param events Events store into which to insert the event
 /// @param[in] received Received data
@@ -197,13 +197,25 @@ int events_insert_reply_received_event(events_t * events, const test_reply_data_
 
 /// @brief Wrapper for easy inserting of "SIGCHLD received" event into events store
 ///
-/// @reviewed_on{2024.04.18}
+/// @exception assert(0) when there is no space available for the event in events
 ///
 /// @param events Events store into which to insert the event
 /// @param[in] exit_info Information about child's exit status
 ///
 /// @return 0
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info);
+
+
+
+
+/// @brief Wrapper for easy inserting of "EXIT Escape request was sent" event into events store
+///
+/// @exception assert(0) when there is no space available for the event in events
+///
+/// @param events Events store into which to insert the event
+///
+/// @return 0
+int events_insert_exit_escape_request_event(events_t * events);
 
 
 

@@ -51,6 +51,7 @@
 
 
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -140,24 +141,28 @@ void events_clear(events_t * events)
 
 
 
+// @reviewed_on{2024.06.02}
 int events_insert_morse_receive_event(events_t * events, const char * buffer, struct timespec * last_character_receive_tstamp)
 {
 	pthread_mutex_lock(&events->mutex);
 	{
-		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
-		// within bounds.
-		event_t * event = &events->events[events->events_cnt];
-		event->etype = etype_morse;
-		event->tstamp = *last_character_receive_tstamp;
+		if (events->events_cnt >= EVENTS_MAX) {
+			test_log_err("Test: trying to record too many events (Morse receive): current count of stored events = %d, limit = %d\n", events->events_cnt, EVENTS_MAX);
+			assert(0);
+		} else {
+			event_t * event = &events->events[events->events_cnt];
+			event->etype = etype_morse;
+			event->tstamp = *last_character_receive_tstamp;
 
-		// TODO (acerion) 2024.04.18: add some error checking if incoming
-		// message is no longer than available space.
-		event_morse_receive_t * morse = &event->u.morse;
-		const size_t n = sizeof (morse->string);
-		strncpy(morse->string, buffer, n);
-		morse->string[n - 1] = '\0';
+			// TODO (acerion) 2024.04.18: add some error checking if incoming
+			// message is no longer than available space.
+			event_morse_receive_t * morse = &event->u.morse;
+			const size_t n = sizeof (morse->string);
+			strncpy(morse->string, buffer, n);
+			morse->string[n - 1] = '\0';
 
-		events->events_cnt++;
+			events->events_cnt++;
+		}
 	}
 	pthread_mutex_unlock(&events->mutex);
 
@@ -167,22 +172,26 @@ int events_insert_morse_receive_event(events_t * events, const char * buffer, st
 
 
 
+// @reviewed_on{2024.06.02}
 int events_insert_reply_received_event(events_t * events, const test_reply_data_t * received)
 {
-	struct timespec timestamp = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &timestamp);
-
 	pthread_mutex_lock(&events->mutex);
 	{
-		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
-		// within bounds.
-		event_t * event = &events->events[events->events_cnt];
-		event->etype = etype_reply;
-		event->tstamp = timestamp;
+		if (events->events_cnt >= EVENTS_MAX) {
+			test_log_err("Test: trying to record too many events (reply receive): current count of stored events = %d, limit = %d\n", events->events_cnt, EVENTS_MAX);
+			assert(0);
+		} else {
+			struct timespec timestamp = { 0 };
+			clock_gettime(CLOCK_MONOTONIC, &timestamp);
 
-		memcpy(&event->u.reply, received, sizeof (test_reply_data_t));
+			event_t * event = &events->events[events->events_cnt];
+			event->etype = etype_reply;
+			event->tstamp = timestamp;
 
-		events->events_cnt++;
+			memcpy(&event->u.reply, received, sizeof (test_reply_data_t));
+
+			events->events_cnt++;
+		}
 	}
 	pthread_mutex_unlock(&events->mutex);
 
@@ -192,18 +201,44 @@ int events_insert_reply_received_event(events_t * events, const test_reply_data_
 
 
 
+// @reviewed_on{2024.06.02}
 int events_insert_sigchld_event(events_t * events, const child_exit_info_t * exit_info)
 {
 	pthread_mutex_lock(&events->mutex);
 	{
-		// TODO (acerion) 2024.04.18: add checking if events_cnt will still be
-		// within bounds.
-		events->events[events->events_cnt].tstamp = exit_info->sigchld_timestamp;
-		events->events[events->events_cnt].etype = etype_sigchld;
-		events->events[events->events_cnt].u.sigchld.wstatus = exit_info->wstatus;
+		if (events->events_cnt >= EVENTS_MAX) {
+			test_log_err("Test: trying to record too many events (sigchld): current count of stored events = %d, limit = %d\n", events->events_cnt, EVENTS_MAX);
+			assert(0);
+		} else {
+			events->events[events->events_cnt].tstamp = exit_info->sigchld_timestamp;
+			events->events[events->events_cnt].etype = etype_sigchld;
+			events->events[events->events_cnt].u.sigchld.wstatus = exit_info->wstatus;
 
-		events->events_cnt++;
-		//qsort(events->events, events->events_cnt, sizeof (event_t), event_sort_fn);
+			events->events_cnt++;
+			//qsort(events->events, events->events_cnt, sizeof (event_t), event_sort_fn);
+		}
+	}
+	pthread_mutex_unlock(&events->mutex);
+
+	return 0;
+}
+
+
+
+
+// @reviewed_on{2024.06.02}
+int events_insert_exit_escape_request_event(events_t * events)
+{
+	pthread_mutex_lock(&events->mutex);
+	{
+		if (events->events_cnt >= EVENTS_MAX) {
+			test_log_err("Test: trying to record too many events (EXIT Escape request): current count of stored events = %d, limit = %d\n", events->events_cnt, EVENTS_MAX);
+			assert(0);
+		} else {
+			clock_gettime(CLOCK_MONOTONIC, &events->events[events->events_cnt].tstamp);
+			events->events[events->events_cnt].etype = etype_req_exit;
+			events->events_cnt++;
+		}
 	}
 	pthread_mutex_unlock(&events->mutex);
 
