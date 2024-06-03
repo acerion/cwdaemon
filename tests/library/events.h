@@ -94,7 +94,20 @@ typedef struct {
 
 
 
-#define EVENTS_MAX 20
+// Increased from 20 to 100 after long-running fuzzing test tried to add 21st
+// event.
+//
+// On one hand I could/should make it a (doubly)linked list, but I don't want
+// the hassle.
+//
+// On the other hand none of the current and foreseeable tests should insert
+// more than few events.
+//
+// The fact that fuzzing test inserts 21+ events is only a result of the fact
+// that fuzzing sub-tests don't clear events table after they complete. This
+// will be addressed in the future.
+#define EVENTS_MAX 100
+
 typedef struct {
 	event_t events[EVENTS_MAX];
 	int events_cnt;               /**< Count of events in events array. Also indicates first non-occupied slot in events[]. */

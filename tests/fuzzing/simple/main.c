@@ -115,6 +115,14 @@ static char const * g_test_name = "fuzzing - simple";
 
 
 
+// TODO (acerion) 2024.06.03: each of these test functions should clear
+// events table. Otherwise the events will keep accumulating and will finally
+// go beyond EVENTS_MAX. Alternatively there should be a switch in events
+// container saying "ignore events for this test".
+
+
+
+
 /*
   TODO acerion 2024.03.24: add a function that sends the following special
   cases:
@@ -241,7 +249,7 @@ int main(int argc, char * const * argv)
 
 /// @brief Prepare resources used to execute set of test cases
 ///
-/// @reviewed_on{2024.05.04}
+/// @reviewed_on{2024.06.02}
 ///
 /// @return 0 on success
 /// @return -1 on failure
@@ -255,7 +263,16 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 		.sound_system   = test_opts->sound_system,
 		.cwdevice_name  = TESTS_TTY_CWDEVICE_NAME,
 		.wpm            = wpm,
-		.supervisor_id =  test_opts->supervisor_id,
+		.supervisor_id  = test_opts->supervisor_id,
+		// cwdaemon may echo back non-printable bytes to console, which
+		// breaks tests's output. Let's prevent printing errors by raising
+		// log severity to CRIT.
+		//
+		// TODO (acerion) 2024.06.02: not calling the logging functions skips
+		// some code from being executed. This decreases amount of code
+		// tested here. Do something to have verbose logs and not show them
+		// on console.
+		.log_threshold  = LOG_CRIT,
 	};
 	if (0 != server_start(&server_opts, server)) {
 		test_log_err("Test: tailed to start cwdaemon server %s\n", "");
@@ -346,7 +363,11 @@ static int test_run(const test_case_t * test_cases, size_t n_test_cases, client_
 	bool failure = false;
 
 
-	const size_t n_iters = 40;
+	// 100 iterations takes in 0.13.0 ~30 minutes. Enough iterations to get
+	// an absolute minimum level of confidence, short enough to be acceptable
+	// for a single test session.
+	const size_t n_iters = 100;
+
 	for (size_t iter = 0; iter < n_iters; ) {
 
 		const unsigned int lower = 0;
@@ -921,7 +942,7 @@ static int test_fn_esc_cwdevice(client_t * client, __attribute__((unused)) const
 /// TODO (acerion) 2024.02.11: implement properly: "sound system" may require
 /// some especial cases for values, e.g. a list of valid sound systems.
 ///
-/// @reviewed_on{2024.05.04}
+/// @reviewed_on{2024.06.02}
 ///
 /// @param client cwdaemon client to use for sending of the request
 /// @param[in] test_case Current test case
@@ -935,6 +956,24 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) c
 	if (0 != test_request_set_value_string(&request)) {
 		test_log_err("Test: failed to set value of request in test case [%s]\n", test_case->description);
 		return -1;
+	}
+
+	// Don't let the test switch to sound systems using ALSA or PulseAudio
+	// libs. Using such libs by cwdaemon/libcw would add a lot of info to
+	// valgrind's final logs, and I'm not ready yet to handle that.
+	//
+	// TODO (acerion) 2024.06.02: remove this code in the future. Allow
+	// switching to any supported sound system.
+	const char head[] = { 033, 'f', '\0' };
+	if (request.n_bytes > strlen(head)) { // There is more data in request than Escape character (033) and Escape code ('f').
+		switch (request.bytes[2]) {
+		case 'a': // ALSA
+		case 'p': // PulseAudio
+		case 's': // SoundCard: ALSA or PulseAudio (or OSS)
+			request.bytes[2] = 'n';
+		default:
+			break;
+		}
 	}
 
 	if (0 != client_send_request(client, &request)) {
