@@ -530,3 +530,19 @@ should print more info indicating a possible cause of the problem.
 
 In theory the request should accept only "0" or "1". In practice it accepts
 any numerical value.
+
+** TODO [#C] R0035: Feature: hex format for libcw debug flags
+
+Value passed to cwdaemon through "--libcwflags=" command line option should
+support decimal values in HEX format (values with "0x" prefix).
+
+This should be supported: "--libcwflags=0xabcff04".
+
+** TODO [#C] R0036: Feature: tests should display git commit
+
+In order to know which version of tests code is being run (e.g. by users that
+report problems), I need to have an easy way to detect version of code in
+logs of tests.
+
+So the logs must show git hash of commit compiled and used for tests
+
