@@ -1,0 +1,724 @@
+#+TODO: TODO STARTED FAILED | DONE SKIPPED
+# The vertical bar indicates which states are final states.
+
+* TODO Template for tests plan for cwdaemon version 0.13.0
+Version of template: 2023.05.16.
+** TODO <Machine/OS identifier>
+<Additional info about machine, OS, libs, compiler>
+OS:
+C compiler:
+libc:
+unixcw/libcw:
+
+*** TODO Build system tests
+**** TODO make distcheck
+*Steps*
+Run "make distcheck" in main directory of the project.
+
+*Expected result*
+1. Distribution package is built correctly (no errors during creation of
+   archive).
+2. Automatic tests executed during 'make distcheck' pass.
+3. The distribution package contains all files intended for distribution (use
+   your best judgement here).
+
+*Actual result*
+
+**** TODO ./configure flags
+
+Test that all flags supported by ./configure script produce "buildable" code.
+
+*Steps*
+1. Run "./configure && make",
+2. Run "./configure --enable-functional-tests && make",
+3. Run "./configure --enable-long-functional-tests && make",
+
+*Expected result*
+
+Each of the above tests results in correct build (binaries are built
+correctly).
+
+*Actual result*
+
+**** TODO regresion with make distcheck
+
+Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
+
+On Alpine 3.17 and with certain version of tests/unit_tests/Makefile.am, the
+steps ended with compilation error, and distribution package was not created.
+
+The error message was:
+
+gcc  -g -O2 -Wall -Wextra -pedantic -Wswitch-default -Wimplicit-function-declaration -Wswitch-enum -Wfloat-equal -Wpointer-arith -Wcast-qual -Wwrite-strings -Wmissing-prototypes -Wstrict-prototypes -Wmissing-declarations -Wredundant-decls -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference -Wjump-misses-init -Wdouble-promotion -Wshadow -Wformat=2 -std=c99   -o utils ../../src/utils-utils.o utils-utils.o  
+/usr/lib/gcc/x86_64-alpine-linux-musl/12.2.1/../../../../x86_64-alpine-linux-musl/bin/ld: cannot find utils-utils.o: No such file or directory
+collect2: error: ld returned 1 exit status
+make[4]: *** [Makefile:328: utils] Error 1
+make[4]: Leaving directory '/home/acerion/cwdaemon/git_repo/cwdaemon-0.12.0/_build/sub/tests/unit_tests'
+
+
+
+*Steps*
+make distclean
+autoreconf
+automake
+./configure
+make
+make check
+make distcheck  # <---- In this step a compilation error was occurring
+
+
+*Expected result*
+Distribution archive is created correctly.
+
+*Actual result*
+
+*** TODO unit tests
+
+Tests implemented in tests/unit_tests.
+
+*Steps*
+1. ./configure --enable-functional-tests
+2. make check
+3. Wait for all unit tests to be executed. You can terminate the tests as
+   soon as unit tests complete, and functional tests start being executed.
+
+*Expected result*
+All unit tests should have "PASS" status in output of "make check" command.
+
+This shows examples of logs for unit tests (notice the "unit_tests"
+directory):
+PASS: unit_tests/daemon_utils
+PASS: unit_tests/daemon_options
+PASS: unit_tests/tests_random
+PASS: unit_tests/tests_time_utils
+
+*Notes*
+
+Count of unit tests depends on whether you pass "--enable-functional-tests"
+to ./configure or not. Test both cases.
+
+*Actual result*
+
+*** TODO fuzzing tests
+**** TODO simple fuzzing test
+
+Run simple fuzzing test: tests/fuzzing/simple/test_program.
+
+Run the test early in testing phase, certainly before doing manual tests. Let
+an unattended test detect problems early.
+
+*Preconditions*
+
+1. Be sure to use large count of iterations in the test: set value of
+   "n_iters" in test_run() to high value.
+
+2. Be sure to run the test under valgrind: set "supervisor_id" to
+   "supervisor_id_valgrind" in options passed to server_start().
+
+3. Be sure to have all tests enabled in "g_test_cases[]".
+
+
+*Expected result*
+
+1. valgrind reports no memory leaks (with possible exception of memory leak
+   described in ticket R0018).
+
+2. valgrind reports no memory errors of other types.
+
+3. cwdaemon's test framework doesn't report any errors on its own
+
+*Actual result*
+
+*** TODO functional tests
+
+*Preconditions*
+
+1. Plug in USB-to-UART converter to USB socket.
+2. ./configure --enable-functional-tests --enable-long-functional-tests
+
+**** TODO Simple run of unattended tests
+
+Run unattended tests. Just look at final result to have some indication of
+general status of tests before delving deeper into testing procedures that
+require more attention.
+
+*Steps*
+1. Run "make check"
+2. Let the unattended tests run and complete
+
+*Expectations*
+
+The unattended tests executed through "make check" pass. We can now perform
+tests that require more attention from tester.
+
+*Actual result*
+
+**** TODO PLAIN request
+
+*Test program*
+tests/functional_tests/unattended/request_plain
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO CARET request
+
+*Test program*
+tests/functional_tests/unattended/request_caret
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO Escape requests
+
+***** TODO RESET        '0'
+***** TODO SPEED        '2'
+
+*Test program*
+tests/cwtest_esc2.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO TONE         '3'
+
+*Test program*
+tests/cwtest_esc3.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO ABORT        '4'
+
+*Test program*
+tests/cwtest_esc64.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO EXIT         '5'
+
+*Test program*
+tests/functional_tests/unattended/request_esc_exit
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO WORD_MODE    '6'
+
+*Test program*
+tests/cwtest_esc64.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO WEIGHTING    '7'
+
+*Test program*
+tests/cwtest_esc7.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO CWDEVICE     '8'
+
+*Test program*
+tests/functional_tests/unattended/request_esc_cwdevice
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO PORT         '9'
+***** TODO PTT_STATE    'a'
+
+*Test program*
+tests/cwtest_esca.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO SSB_WAY      'b'
+***** TODO TUNE         'c'
+
+*Test program*
+tests/cwtest_escc.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO TX_DELAY     'd'
+
+*Test program*
+tests/cwtest_escd.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO BAND_SWITCH  'e'
+***** TODO SOUND_SYSTEM 'f'
+
+*Test program*
+functional_tests/supervised/request_esc_sound_system
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO VOLUME       'g'
+
+*Test program*
+tests/cwtest_escg.pl
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO REPLY        'h'
+
+*Test program*
+tests/functional_tests/unattended/request_esc_reply
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+**** TODO Command line options
+
+***** TODO -h, --help
+
+***** TODO -V, --version
+
+***** TODO -d, --cwdevice <device>
+
+***** TODO -o, --options <option>
+
+*Test program*
+tests/functional_tests/unattended/option_cwdevice_tty_lines
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO -n, --nofork
+
+***** TODO -p, --port <port>
+
+*Test program*
+tests/functional_tests/unattended/option_port
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO -s, --wpm <speed>
+
+***** TODO -t, --pttdelay <time>
+
+***** TODO -x, --system <sound system>
+***** TODO -v, --volume <volume>
+***** TODO -w, --weighting <weight>
+***** TODO -T, --tone <tone>
+***** TODO -i
+***** TODO -y, --verbosity <threshold>
+***** TODO -I, --libcwflags <flags>
+
+Confirm that option that specifies debug flags for libcw is working.
+
+In this test cwdaemon is executed:
+ - in non-daemonized mode to observe console logs;
+ - with null keying device because cwdevice is not essential for this test.
+
+
+*Steps*
+
+1. Open connection to cwdaemon.
+
+   nc -u localhost 6789
+   OR
+   nc -u 127.0.0.1 6789
+
+2. Run cwdaemon without the tested flag. Notice the 'd' (DEBUG) threshold for
+   cwdaemon.
+
+   ./src/cwdaemon -d null -n -x p -y d
+
+3. Send some characters to cwdaemon with nc.
+
+4. Confirm that cwdaemon's log output shows cwdaemon logs, but doesn't show
+   any libcw logs (because '--libcwflags' option is not provided).
+
+5. Kill cwdaemon started in step 2. Start cwdaemon with '--libcwflags'
+   option. Notice the 'd' (DEBUG) threshold for cwdaemon.
+
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y d
+
+6. Send characters to cwdaemon using nc.
+
+7. Confirm that cwdaemon's log output shows cwdaemon logs and show libcw logs
+   with severity DEBUG or higher.
+
+8. Kill cwdaemon started in step 4. Start cwdaemon with '--libcwflags'
+   option. Notice the 'w' (WARNING) threshold for cwdaemon.
+
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y w
+
+9. Send characters to cwdaemon using nc.
+
+10. Confirm that cwdaemon's log output shows cwdaemon logs. If there are any
+	libcw logs, the logs have severity only WARNING or ERROR.
+
+*Expected result*
+
+1. libcw logs are visible in cwdaemon's log output only if `--libcwflags`
+   flag is used
+
+2. Threshold for libcw logs depends on value of '-y' flag.
+
+*Actual result*
+
+***** TODO -f, --debugfile <output>
+
+**** TODO Misc tests
+
+***** TODO reset register callback
+
+*Test program*
+tests/functional_tests/unattended/reset_register_callback
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+
+*Expectations*
+Final result of the test is a "PASS"
+
+*Actual result*
+
+***** TODO State of tty DTR and RTS pins during inactivity
+
+*Purpose*
+
+Confirm that cwdaemon doesn't change initial state of tty cwdevice's DTR and
+RTS pins right after start.
+
+Incorrect initialization of tty device has led to
+https://github.com/acerion/cwdaemon/issues/12.
+
+You can use cwdaemon 0.10.2 as a baseline. In a version following 0.10.2 a
+change in ttys_init() was made that introduced an undesired behaviour of the
+pins.
+
+
+*Prerequisites*
+
+1. USB-to-UART converter that exposes DTR pin and RTS pin.
+2. A device capable of showing a logical state on converter's pins: a
+   multimeter or logical state analyzer.
+
+
+*Steps*
+
+1. Connect USB-to-UART converter to USB port.
+
+2. Measure initial state of DTR and RTS pins
+
+   Expectation: the state should be "high".
+
+3. Start cwdaemon, specify a proper cwdevice through "-d" option
+
+   ./src/cwdaemon -n -x s -ii -d ttyUSB0
+
+4. Measure again the state of DTR and RTS pins.
+
+   Expectation: cwdaemon should not change the state of the pins during start
+   of cwdaemon and initialization of the cwdevice. The state on both pins
+   should be "high".
+
+5. Send some text to be played by cwdaemon
+
+   nc -u 127.0.0.1 6789
+   <Enter some text>
+
+   After text is played and keyed on cwdevice, measure state of DTR and RTS
+   pins.
+
+   Expectation: after the text is played and keyed on cwdevice, the state of
+   both pins should be "high".
+
+6. Send "reset" command to cwdaemon
+
+   Send "<ESC>0" Escape request to cwdaemon.
+
+   nc -u 127.0.0.1 6789
+   <Press ESC key>
+   <Press "0" key>
+   <Press Enter key>
+
+
+   In cwdaemon's logs look for confirmation that reset is being performed:
+
+   [INFO ] cwdaemon: requested resetting of parameters
+   [INFO ] cwdaemon: resetting completed
+
+
+   Wait for 2 seconds for the end of reset, then measure state of DTR and RTS
+   pins.
+
+   Expectation: after a reset is completed, the state of both pins should be
+   "high".
+
+7. Terminate cwdaemon
+
+   Either press Ctrl-C while cwdaemon is running in foreground, or send
+   "<ESC>5" Escape request to cwdaemon.
+
+   Then measure state of DTR and RTS pins.
+
+   Expectation: after an exit is performed, the state of both pins should be
+   "high".
+
+
+*Expected result*
+
+All expectations from above steps are met.
+
+*Actual result*
+
+***** TODO tests/cwtest.pl
+
+*Test program*
+tests/cwtest.pl
+
+*Preconditions*
+
+cwdaemon must be started (automatically or manually), running on default
+port, with <platform's preferred sound system>.
+
+./src/cwdaemon -n -x p
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+***** TODO tests/cwtest_short_space.pl
+
+*Test program*
+tests/cwtest_short_space.pl
+
+*Preconditions*
+
+cwdaemon must be started (automatically or manually), running on default
+port, with <platform's preferred sound system>.
+
+./src/cwdaemon -n -x p
+
+
+*Expected result*
+Test passes
+
+*Actual result*
+
+*** TODO gcov/lcov
+
+Purpose: confirm that it's possible to generate a coverage report for unit
+tests.
+
+*Steps*
+
+The steps are copied from relevant sections in top-level README file:
+
+1. ./configure --enable-gcov
+2. make gcov
+3. <web browser> tests/unit_tests/coverage/index.html
+4. make gcov-clean
+
+*Expected results*
+1. Summary of configuration step correctly shows enabled gcov,
+2. There are no errors during generation of gcov/lcov report,
+3. Contents of the report looks correct (no obvious problems with the
+   report).
+4. There are no errors during cleanup step.
+
+*** TODO memory tests with valgrind
+**** TODO memory tests with valgrind for functional/unattended tests
+
+*Goal*
+
+Run all of cwdaemon's unattended functional tests in a setup where cwdaemon is
+running under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of supervised functional tests
+
+   ./configure --enable-functional-tests --enable-long-functional-tests
+
+2. Compile cwdaemon
+
+   make && make check
+
+3. Prepare environment variables that will be used by all test programs
+   executed with "make check"
+
+   export CWDAEMON_TEST_SOUND_SYSTEM=null
+   export CWDAEMON_TEST_SUPERVISOR=valgrind
+
+4. Compile and run the tests.
+
+   make check
+
+5. After tests are completed:
+
+   1. Look for sections in test logs that contain valgrind's summary of memory leaks.
+
+	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers in *.log
+      files.
+
+   2. Look for sections in test logs that contain valgrind's summary of
+      memory errors.
+
+	  Look for "ERROR SUMMARY" section header in *.log files
+
+   3. Confirm that no memory leaks or memory errors were reported by
+      valgrind.
+
+
+*Expected result*
+
+1. no memory leaks or memory errors were reported by valgrind.
+
+*Actual result*
+
+**** TODO memory tests with valgrind for functional/supervised tests
+
+*Goal*
+
+Run selected cwdaemon's supervised functional tests in a setup where cwdaemon is
+running under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of supervised functional tests
+
+   ./configure --enable-functional-tests --enable-long-functional-tests
+
+2. Compile
+
+   make && make check
+
+3. Run the test. Use command line options necessary to enable and use valgrind
+
+   ./tests/functional_tests/supervised/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
+
+4. After test is completed:
+
+   1. Confirm that cwdaemon has exited correctly, without errors.
+
+   2. Confirm that there are no memory leaks or memory errors reported in
+      valgrind's log.
+
+	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers the log.
+	  Look for "ERROR SUMMARY" section header in the log.
+
+
+*Expected result*
+
+1. cwdaemon didn't crash.
+
+2. no memory leaks or memory errors were reported by valgrind.
+
+*Actual result*
+
+**** TODO memory tests with valgrind for fuzzing tests
+
+*Goal*
+
+Run all of cwdaemon's fuzzing tests in a setup where cwdaemon is running
+under control of valgrind.
+
+
+*Steps*
+
+1. Confirm that fuzzing tests done few sections above were already executed
+   with cwdaemon being under control of valgrind.
+
+*Expected result*
+
+No additional test is needed here because the primary fuzzing tests already
+use valgrind.
+
+*Actual result*
+
