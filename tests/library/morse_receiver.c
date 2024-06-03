@@ -166,15 +166,23 @@ int morse_receiver_start(morse_receiver_t * receiver)
 
 
 
+// @reviewed_on{2024.06.02}
 int morse_receiver_wait_for_stop(morse_receiver_t * receiver)
 {
+	bool success = true;
+
 	pthread_join(receiver->thread.thread_id, NULL);
+	if (receiver->thread.status != thread_stopped_ok) {
+		test_log_err("Morse receiver: thread's status is not OK: %u\n", receiver->thread.status);
+		success = false;
+	}
 
 	// Helpers aren't needed anymore, so deconfigure them. They will be
 	// configured again during start of receiver, in receiver's "start"
 	// function.
 	helpers_deconfigure(receiver);
-	return 0;
+
+	return success ? 0 : -1;
 }
 
 
@@ -399,6 +407,8 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 
 	test_log_info("Morse receiver thread: received string [%s], remaining wait time = %d\n", buffer, remaining_wait_ms);
 
+	// TODO (acerion) 2024.06.02: return thread's status through return
+	// value, capture it with pthread_join().
 	thread->status = thread_stopped_ok;
 	return NULL;
 }

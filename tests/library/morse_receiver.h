@@ -86,8 +86,6 @@ int morse_receiver_start(morse_receiver_t * receiver);
 ///
 /// The condition for the stop is lack of keying on cwdevice for N seconds.
 ///
-/// @reviewed_on{2024.04.21}
-///
 /// @param receiver Receiver on which to wait
 ///
 /// @return 0
