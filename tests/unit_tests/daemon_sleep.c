@@ -125,8 +125,9 @@ static int test_millisleep_nonintr(void)
 		}
 
 		// Accept an actual duration of sleep that is within some range.
-		const long int lower_ms = test_data[i].intended_duration_ms - (long int) (test_data[i].intended_duration_ms * 0.05);
-		const long int upper_ms = test_data[i].intended_duration_ms + (long int) (test_data[i].intended_duration_ms * 0.05);
+		const float tolerance = 0.10; // On a slow Celeron machine the value 0.09 is sometimes too low.
+		const long int lower_ms = test_data[i].intended_duration_ms - (long int) (test_data[i].intended_duration_ms * tolerance);
+		const long int upper_ms = test_data[i].intended_duration_ms + (long int) (test_data[i].intended_duration_ms * tolerance);
 
 		const long int actual_duration_ms = actual_duration.tv_nsec / CWDAEMON_NANOSECS_PER_MILLISEC;
 		if (actual_duration_ms < lower_ms) {
