@@ -9,8 +9,7 @@ CLEANFILES = *~ \
 EXTRA_DIST = cwdaemon.spec.in \
 	patches \
 	doc/schematics \
-	examples/example.pl \
-	examples/example.sh \
+	examples \
 	cwdaemon.png TODO README cwsetup.sh \
 	Doxyfile
 
