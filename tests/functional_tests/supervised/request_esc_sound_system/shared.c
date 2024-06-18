@@ -396,6 +396,10 @@ static int test_run(tests_sound_systems_available_t const * avail, test_case_t c
 		// expect no sound.
 		test_log_info("Test: this test case will try switching sound system: [%s] ----> [%s]\n", old_sound_system_label, new_sound_system_label);
 		test_log_info("Test: press any key to run the test case %s\n", "");
+
+		// gcc 13.2.0 on FreeBSD 14.1 complains about getchar():
+		// "warning: assuming signed overflow does not occur when changing X +- C1 cmp C2 to X cmp C2 -+ C1 [-Wstrict-overflow]"
+		// The warning is reported for function's closing brace.
 		getchar();
 
 		// This is the actual test.
