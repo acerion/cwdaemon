@@ -52,7 +52,9 @@
 
 
 
-#define _GNU_SOURCE /* struct timespec */
+#ifndef __FreeBSD__
+#define _GNU_SOURCE /* nanosleep() on Alpine Linux 3.20. */
+#endif
 
 
 

@@ -43,7 +43,9 @@
 
 
 
-#define _DEFAULT_SOURCE
+#ifndef __FreeBSD__
+#define _POSIX_C_SOURCE // kill() on Alpine Linux 3.20.
+#endif
 
 
 

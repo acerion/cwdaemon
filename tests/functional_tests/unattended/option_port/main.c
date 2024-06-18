@@ -53,17 +53,22 @@
 
 
 
-#define _DEFAULT_SOURCE
+#ifndef __FreeBSD__
+//#define _DEFAULT_SOURCE
+#endif
+
+#ifndef __FreeBSD__
+#define _POSIX_C_SOURCE 200809L // clock_gettime() and clock IDs on Alpine Linux 3.20
+#endif
 
 
 
 
 #include "config.h"
 
-/* For kill() on FreeBSD 13.2 */
-#include <signal.h>
 //#include <sys/types.h>
 
+#include <signal.h> // signal(), SIGCHLD
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

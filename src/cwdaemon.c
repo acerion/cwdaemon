@@ -20,7 +20,9 @@
  * 02110-1301, USA.
  */
 
+#ifndef __FreeBSD__
 #define _GNU_SOURCE /* getopt_long() */
+#endif
 
 #include "config.h"
 

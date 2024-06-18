@@ -31,6 +31,13 @@
 
 
 
+#ifndef __FreeBSD__
+#define _POSIX_C_SOURCE // ctime_r() on Alpine Linux 3.20
+#endif
+
+
+
+
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>

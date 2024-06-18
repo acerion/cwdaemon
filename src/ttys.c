@@ -20,7 +20,9 @@
  * 02110-1301, USA.
  */
 
-#define _DEFAULT_SOURCE /* S_IFMT and related. TODO (acerion) 2021.12.12: check validity of this comment. */
+#ifndef __FreeBSD__
+#define _DEFAULT_SOURCE /* S_IFMT, S_IFCHR, on Linux (Debian 12 and probably earlier). */
+#endif
 
 #include "config.h"
 

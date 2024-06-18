@@ -52,7 +52,9 @@
 
 
 
+#ifndef __FreeBSD__
 #define _GNU_SOURCE /* struct timespec */
+#endif
 
 
 

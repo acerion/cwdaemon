@@ -45,12 +45,9 @@
 
 
 
-// TODO (acerion) 2022.12.17: GNU's strerror_r() may not fill provided buffer :(
-// Write own replacement of strerror_r() that bevaves as expected.
-//
-// I don't want to be guessing which version of strerror_r() is being
-// used at compile time: XSI variant or GNU variant.
-#define _GNU_SOURCE /* strerror_r() */
+#ifndef __FreeBSD__
+#define _POSIX_C_SOURCE 200809L /* XSI variant of strerror_r() */
+#endif
 
 #include "config.h"
 
@@ -78,8 +75,8 @@ int cwdevice_observer_serial_open(cwdevice_observer_t * observer)
 	int fd = open(observer->source_path, O_RDONLY);
 	if (fd == -1) {
 		char buf[ERRNO_BUF_SIZE] = { 0 };
-		char * b = strerror_r(errno, buf, sizeof (buf));
-		test_log_err("cwdevice observer: open(%s): %s / %d\n", observer->source_path, b, errno);
+		strerror_r(errno, buf, sizeof (buf));
+		test_log_err("cwdevice observer: open(%s): %s / %d\n", observer->source_path, buf, errno);
 		observer->source_reference = (uintptr_t) -1;
 		return -1;
 	}
@@ -111,8 +108,8 @@ int cwdevice_observer_serial_poll_once(cwdevice_observer_t * observer, bool * ke
 	int status = ioctl(fd, TIOCMGET, &value);
 	if (status != 0) {
 		char buf[ERRNO_BUF_SIZE] = { 0 };
-		char * b = strerror_r(errno, buf, sizeof (buf));
-		test_log_err("cwdevice observer: ioctl(TIOCMGET): %s / %d\n", b, errno);
+		strerror_r(errno, buf, sizeof (buf));
+		test_log_err("cwdevice observer: ioctl(TIOCMGET): %s / %d\n", buf, errno);
 		return -1;
 	}
 

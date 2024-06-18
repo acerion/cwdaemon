@@ -21,7 +21,9 @@
 
 
 
-#define _DEFAULT_SOURCE /* random(), srandom() */
+#ifndef __FreeBSD__
+#define _DEFAULT_SOURCE /* random(), srandom(), struct timespec */
+#endif
 
 
 

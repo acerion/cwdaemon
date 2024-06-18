@@ -53,6 +53,13 @@
 
 
 
+#ifndef __FreeBSD__
+#define _POSIX_C_SOURCE 200809L // clock_gettime() and clock IDs on Alpine Linux 3.20
+#endif
+
+
+
+
 #include "config.h"
 
 #include <ctype.h>

@@ -35,7 +35,7 @@
 
 
 
-#define _POSIX_C_SOURCE 200112L /* getaddrinfo() and friends. */
+#define _POSIX_C_SOURCE 200809L /* getaddrinfo() and friends. */
 
 #include <arpa/inet.h>
 #include <netdb.h>
