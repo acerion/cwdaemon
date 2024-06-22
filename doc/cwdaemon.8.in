@@ -508,7 +508,7 @@ exactly nothing (no rig keying, no ssb keying, etc.).
 .SH "SOUND SYSTEM"
 \'sound system\' should be one of following:
 .TP
-\'c\' - console buzzer (PC speaker) - default system,
+\'c\' - console buzzer (PC speaker) - default sound system,
 .TP
 \'o\' - OSS,
 .TP
@@ -520,6 +520,11 @@ exactly nothing (no rig keying, no ssb keying, etc.).
 .TP
 \'s\' - soundcard - autoselect from OSS/ALSA/PulseAudio.
 
+
+.P
+Currently it's not possible to specify name of sound device.
+
+For OSS, cwdaemon will try to use /dev/audio device.
 
 
 .SH "DEBUGGING"

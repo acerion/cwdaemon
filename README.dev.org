@@ -546,3 +546,16 @@ logs of tests.
 
 So the logs must show git hash of commit compiled and used for tests
 
+
+** TODO [#A] R0037: Feature: using proper sound device
+
+Currently cwdaemon doesn't allow specifying a sound device to be used. A
+default device of libcw is being used instead.
+
+For OSS, the device is /dev/audio, but on my FreeBSD 14.1 there is no such
+device.
+
+One of two things (or both) need to happen:
+ - libcw gets better at detecting a default device to be used for playback,
+ - cwdaemon allows selection of sound device through command line option.
+
