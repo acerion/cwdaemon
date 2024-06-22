@@ -336,7 +336,7 @@ void cwdaemon_close_socket_wrapper(void);
 int  cwdaemon_receive(void);
 void cwdaemon_handle_escaped_request(cwdevice ** device, char *request);
 
-void cwdaemon_reset_almost_all(cwdevice * dev);
+static int cwdaemon_reset_almost_all(cwdevice * dev);
 
 /* Functions managing cwdevices. */
 bool cwdaemon_cwdevices_init(void);
@@ -347,7 +347,7 @@ void cwdaemon_cwdevice_free(void);
 /* Functions managing libcw output. */
 bool cwdaemon_open_libcw_output(int audio_system);
 void cwdaemon_close_libcw_output(void);
-void cwdaemon_reset_libcw_output(void);
+static int cwdaemon_reset_libcw_output(void);
 
 
 
@@ -640,8 +640,11 @@ void cwdaemon_tune(uint32_t seconds)
    This function that combines these two doesn't make much sense.
 
    @param dev current keying device
+
+   return 0 on success
+   @return -1 on failure
 */
-void cwdaemon_reset_almost_all(cwdevice * dev)
+static int cwdaemon_reset_almost_all(cwdevice * dev)
 {
 	current_morse_speed  = default_morse_speed;
 	current_morse_tone   = default_morse_tone;
@@ -660,13 +663,17 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 	   consistency I'm resetting the log_threshold as well. */
 	g_current_options.log_threshold = g_default_options.log_threshold;
 
-	cwdaemon_reset_libcw_output();
+	if (0 != cwdaemon_reset_libcw_output()) {
+		has_audio_output = false;
+		return -1;
+	}
+	has_audio_output = true;
 
 #ifdef CWDAEMON_GITHUB_ISSUE_6_FIXED
 	cw_register_keying_callback(cwdaemon_keyingevent, dev);
 #endif
 
-	return;
+	return 0;
 }
 
 
@@ -678,8 +685,8 @@ void cwdaemon_reset_almost_all(cwdevice * dev)
 
    \param audio_system - audio system to be used by libcw
 
-   \return -1 on failure
-   \return 0 otherwise
+   \return false on failure
+   \return true otherwise
 */
 bool cwdaemon_open_libcw_output(int audio_system)
 {
@@ -741,8 +748,11 @@ void cwdaemon_close_libcw_output(void)
 
    Function uses values of cwdaemon's global 'default_' variables, and some
    other values to reset state of libcw.
+
+   @return 0 on success
+   @return -1 on failure
 */
-void cwdaemon_reset_libcw_output(void)
+static int cwdaemon_reset_libcw_output(void)
 {
 	/* This function is called when cwdaemon receives '0' escape code.
 	   README describes this code as "Reset to default values".
@@ -759,11 +769,8 @@ void cwdaemon_reset_libcw_output(void)
 
 	cwdaemon_debug(CWDAEMON_VERBOSITY_I, __func__, __LINE__, "setting sound system \"%s\"", cw_get_audio_system_label(default_audio_system));
 
-	if (cwdaemon_open_libcw_output(default_audio_system)) {
-		has_audio_output = true;
-	} else {
-		has_audio_output = false;
-		return;
+	if (!cwdaemon_open_libcw_output(default_audio_system)) {
+		return -1;
 	}
 
 	/* Remember that tone queue is bound to a generator.  When
@@ -777,7 +784,7 @@ void cwdaemon_reset_libcw_output(void)
 	cw_set_gap(0);
 	cw_set_weighting((int) (default_weighting * 0.6 + CWDAEMON_MORSE_WEIGHTING_MAX));
 
-	return;
+	return 0;
 }
 
 
@@ -2239,8 +2246,7 @@ int main(int argc, char *argv[])
 	   sure that libcw has been initialized and is used only by
 	   child process, not by parent process. */
 	atexit(cwdaemon_close_libcw_output);
-	cwdaemon_reset_almost_all(dev);
-	if (!has_audio_output) {
+	if (0 != cwdaemon_reset_almost_all(dev)) {
 		/* Failed to open libcw output. */
 		exit(EXIT_FAILURE);
 	}
