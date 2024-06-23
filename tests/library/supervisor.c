@@ -85,7 +85,10 @@
 // @reviewed_on{2024.05.12}
 int append_options_valgrind(const char ** argv, int * argc)
 {
-	argv[(*argc)++] = "valgrind";
+	// TODO (acerion) 2024.06.23: discover this path in runtime. On Linux
+	// it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
+	// /usr/local/bin/valgrind. See similar comment in start_process().
+	argv[(*argc)++] = "/usr/bin/valgrind";
 	argv[(*argc)++] = "-s";
 	argv[(*argc)++] = "--leak-check=full";
 	argv[(*argc)++] = "--show-leak-kinds=all";

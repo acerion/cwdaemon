@@ -435,7 +435,11 @@ static int start_process(const char * cwdaemon_path, const server_options_t * se
 		break;
 	case supervisor_id_valgrind:
 		append_options_valgrind(argv, &argc);
-		execve_pathname = "/usr/bin/valgrind"; /* TODO (acerion) 2024.04.20: discover this path in runtime? */
+		// TODO (acerion) 2024.04.20: discover this path in runtime.
+		// On Linux it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
+		// /usr/local/bin/valgrind. See similar comment in
+		// append_options_valgrind().
+		execve_pathname = "/usr/bin/valgrind";
 		break;
 	case supervisor_id_gdb:
 		append_options_gdb(argv, &argc);
