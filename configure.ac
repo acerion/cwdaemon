@@ -5,7 +5,7 @@ AC_INIT(cwdaemon, 0.13.0, acerion@wp.pl)
 AM_INIT_AUTOMAKE([subdir-objects])
 AM_MAINTAINER_MODE
 AC_CONFIG_SRCDIR([src/cwdaemon.c])
-AC_PROG_GCC_TRADITIONAL
+# AC_PROG_GCC_TRADITIONAL
 AC_PROG_RANLIB # Because of utility library built in in tests/library/
 AC_CONFIG_HEADERS([config.h])
 PKG_PROG_PKG_CONFIG # Don't call pkg-config directly. Use $PKG_CONFIG.
@@ -70,9 +70,10 @@ case $host_os in
 	AC_MSG_NOTICE([Detected FreeBSD: $host_os])
 	# Example value of host_os: 'freebsd13.2'.
 	#
-	# Name of first tty device (USB-to-UART converter) on FreeBSD 13.2.
+	# Name of first tty device (USB-to-UART converter) on FreeBSD 13.2: cuau0
+	# Name of first tty device (USB-to-UART device) on FreeBSD 14.1: cuaU0
 	# User group: dialer.
-	default_tests_tty_cwdevice_name="cuau0"
+	default_tests_tty_cwdevice_name="cuaU0"
 	;;
 
 	*openbsd*|*OpenBSD*)
@@ -346,6 +347,7 @@ AC_MSG_NOTICE([  libcw library version: ................  $(pkg-config --modvers
 AC_MSG_NOTICE([  LIBCW_LIBS: ...........................  $LIBCW_LIBS])
 AC_MSG_NOTICE([  LIBCW_CFLAGS: .........................  $LIBCW_CFLAGS])
 AC_MSG_NOTICE([  CFLAGS: ...............................  $CFLAGS])
+AC_MSG_NOTICE([  C compiler: ...........................  $CC])
 AC_MSG_NOTICE([  enable unit tests: ....................  yes])
 AC_MSG_NOTICE([  enable gcov: ..........................  $enable_gcov])
 AC_MSG_NOTICE([  enable functional tests: ..............  $enable_functional_tests])
