@@ -1,19 +1,29 @@
-#+TODO: TODO STARTED FAILED | DONE SKIPPED
+#+TODO: TODO STARTED FAILED | PASS SKIPPED
 # The vertical bar indicates which states are final states.
+#
+# Using PASS instead of DONE because a test that suceeded is rather PASS than
+# DONE. "PASS or FAIL" looks better than "DONE or FAIL".
 
-* TODO Template for tests plan for cwdaemon version 0.13.0
-Version of template: 2023.05.16.
-** TODO <Machine/OS identifier>
+* STARTED Tests plan for cwdaemon version 0.13.0
+Version of template: 2024.06.03.
+** STARTED FreeBSD 14.1-RELEASE
 <Additional info about machine, OS, libs, compiler>
-OS:
-C compiler:
+OS: FreeBSD 14.1-RELEASE
+C compiler: gcc 13.2.0
 libc:
-unixcw/libcw:
+unixcw/libcw: unixcw 3.6.1, libcw 8:0:0
 
-*** TODO Build system tests
-**** TODO make distcheck
+*** PASS tests of build system
+**** PASS make distcheck
 *Steps*
-Run "make distcheck" in main directory of the project.
+
+Run the steps in main directory of project.
+
+On FreeBSD you may need to use "gmake" (GNU make) instead of FreeBSD's
+default "make".
+
+1. ./configure
+2. make distcheck
 
 *Expected result*
 1. Distribution package is built correctly (no errors during creation of
@@ -24,23 +34,33 @@ Run "make distcheck" in main directory of the project.
 
 *Actual result*
 
-**** TODO ./configure flags
+PASS. I needed to run the test with GNU make rather than FreeBSD's default
+make.
+
+**** PASS ./configure flags
 
 Test that all flags supported by ./configure script produce "buildable" code.
 
 *Steps*
-1. Run "./configure && make",
-2. Run "./configure --enable-functional-tests && make",
-3. Run "./configure --enable-long-functional-tests && make",
+1. Run "make clean && ./configure && make",
+2. Run "make clean && ./configure --enable-functional-tests && make && make check",
+3. Run "make clean && ./configure --enable-functional-tests --enable-long-functional-tests && make && make check",
 
 *Expected result*
 
-Each of the above tests results in correct build (binaries are built
-correctly).
+Each of the above tests results in correct build: binaries are built
+correctly, including binaries for all kinds of tests.
+
+You don't have to do full tests with these test binaries, just check that
+they are there.
 
 *Actual result*
 
-**** TODO regresion with make distcheck
+PASS: Binaries are being built.
+
+The binaries are being built correctly.
+
+**** PASS regression with make distcheck
 
 Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
 
@@ -54,7 +74,6 @@ gcc  -g -O2 -Wall -Wextra -pedantic -Wswitch-default -Wimplicit-function-declara
 collect2: error: ld returned 1 exit status
 make[4]: *** [Makefile:328: utils] Error 1
 make[4]: Leaving directory '/home/acerion/cwdaemon/git_repo/cwdaemon-0.12.0/_build/sub/tests/unit_tests'
-
 
 
 *Steps*
@@ -72,9 +91,11 @@ Distribution archive is created correctly.
 
 *Actual result*
 
-*** TODO unit tests
+PASS: there is no error during "gmake distcheck" (notice the usage of "gmake").
 
-Tests implemented in tests/unit_tests.
+*** PASS unit tests
+
+Execute tests implemented in tests/unit_tests.
 
 *Steps*
 1. ./configure --enable-functional-tests
@@ -99,13 +120,30 @@ to ./configure or not. Test both cases.
 
 *Actual result*
 
-*** TODO fuzzing tests
-**** TODO simple fuzzing test
+Unit tests PASS:
+
+ - With functional tests not enabled:
+PASS: unit_tests/daemon_utils
+PASS: unit_tests/daemon_options
+PASS: unit_tests/daemon_sleep
+
+ - With functional tests enabled:
+PASS: unit_tests/daemon_utils
+PASS: unit_tests/daemon_options
+PASS: unit_tests/daemon_sleep
+PASS: unit_tests/tests_random
+PASS: unit_tests/tests_string_utils
+PASS: unit_tests/tests_time_utils
+PASS: unit_tests/tests_morse_receiver
+PASS: unit_tests/tests_events
+
+*** PASS fuzzing tests
+**** PASS simple fuzzing test
 
 Run simple fuzzing test: tests/fuzzing/simple/test_program.
 
 Run the test early in testing phase, certainly before doing manual tests. Let
-an unattended test detect problems early.
+an unattended fuzzing test detect problems early.
 
 *Preconditions*
 
@@ -116,6 +154,11 @@ an unattended test detect problems early.
    "supervisor_id_valgrind" in options passed to server_start().
 
 3. Be sure to have all tests enabled in "g_test_cases[]".
+
+*Steps*
+1. ./configure --enable-functional-tests
+2. make && make check # (you may want to interrupt functional tests here)
+3. ./tests/fuzzing/simple/test_program
 
 
 *Expected result*
@@ -128,6 +171,236 @@ an unattended test detect problems early.
 3. cwdaemon's test framework doesn't report any errors on its own
 
 *Actual result*
+
+==80129== 
+==80129== FILE DESCRIPTORS: 3 open (3 std) at exit.
+==80129== 
+==80129== HEAP SUMMARY:
+==80129==     in use at exit: 14,811 bytes in 28 blocks
+==80129==   total heap usage: 92 allocs, 64 frees, 1,616,699 bytes allocated
+==80129== 
+==80129== 2 bytes in 1 blocks are still reachable in loss record 1 of 18
+==80129==    at 0x484CDE4: malloc (vg_replace_malloc.c:446)
+==80129==    by 0x534455C: strdup (in /lib/libc.so.7)
+==80129==    by 0x5272152: ??? (in /lib/libc.so.7)
+==80129==    by 0x53445C6: ??? (in /lib/libc.so.7)
+==80129==    by 0x53447C0: strerror (in /lib/libc.so.7)
+==80129==    by 0x40537D: tty_probe_cwdevice (ttys.c:100)
+==80129==    by 0x40441B: cwdaemon_cwdevice_set (cwdaemon.c:2411)
+==80129==    by 0x405AAA: cwdaemon_option_cwdevice (options.c:148)
+==80129==    by 0x403A13: cwdaemon_handle_escaped_request (cwdaemon.c:1048)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 5 bytes in 1 blocks are still reachable in loss record 2 of 18
+==80129==    at 0x484CDE4: malloc (vg_replace_malloc.c:446)
+==80129==    by 0x534455C: strdup (in /lib/libc.so.7)
+==80129==    by 0x5272132: ??? (in /lib/libc.so.7)
+==80129==    by 0x53445C6: ??? (in /lib/libc.so.7)
+==80129==    by 0x53447C0: strerror (in /lib/libc.so.7)
+==80129==    by 0x40537D: tty_probe_cwdevice (ttys.c:100)
+==80129==    by 0x40441B: cwdaemon_cwdevice_set (cwdaemon.c:2411)
+==80129==    by 0x405AAA: cwdaemon_option_cwdevice (options.c:148)
+==80129==    by 0x403A13: cwdaemon_handle_escaped_request (cwdaemon.c:1048)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 20 bytes in 1 blocks are definitely lost in loss record 3 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x558D67D: pthread_cond_init (in /lib/libthr.so.3)
+==80129==    by 0x486A818: cw_tq_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4867F61: cw_gen_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864B8D: cw_generator_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864CCF: cw_generator_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x4024AD: main (cwdaemon.c:2249)
+==80129== 
+==80129== 20 bytes in 1 blocks are definitely lost in loss record 4 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x558D67D: pthread_cond_init (in /lib/libthr.so.3)
+==80129==    by 0x486A818: cw_tq_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4867F61: cw_gen_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864B8D: cw_generator_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864CCF: cw_generator_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==80129==    by 0x403CA1: cwdaemon_handle_escaped_request (cwdaemon.c:1173)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 20 bytes in 1 blocks are definitely lost in loss record 5 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x558D67D: pthread_cond_init (in /lib/libthr.so.3)
+==80129==    by 0x486A818: cw_tq_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4867F61: cw_gen_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864B8D: cw_generator_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864CCF: cw_generator_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==80129==    by 0x403FCF: cwdaemon_handle_escaped_request (cwdaemon.c:1178)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 56 bytes in 1 blocks are still reachable in loss record 6 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x5272117: ??? (in /lib/libc.so.7)
+==80129==    by 0x53445C6: ??? (in /lib/libc.so.7)
+==80129==    by 0x53447C0: strerror (in /lib/libc.so.7)
+==80129==    by 0x40537D: tty_probe_cwdevice (ttys.c:100)
+==80129==    by 0x40441B: cwdaemon_cwdevice_set (cwdaemon.c:2411)
+==80129==    by 0x405AAA: cwdaemon_option_cwdevice (options.c:148)
+==80129==    by 0x403A13: cwdaemon_handle_escaped_request (cwdaemon.c:1048)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 60 bytes in 3 blocks are definitely lost in loss record 7 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x558D67D: pthread_cond_init (in /lib/libthr.so.3)
+==80129==    by 0x486A818: cw_tq_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4867F61: cw_gen_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864B8D: cw_generator_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864CCF: cw_generator_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x403789: cwdaemon_handle_escaped_request (cwdaemon.c:953)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 64 bytes in 1 blocks are still reachable in loss record 8 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x5598762: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559140E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559042E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x400AF5C: ??? (in /libexec/ld-elf.so.1)
+==80129==    by 0x4009B88: ??? (in /libexec/ld-elf.so.1)
+==80129==    by 0x4006DF8: ??? (in /libexec/ld-elf.so.1)
+==80129== 
+==80129== 64 bytes in 1 blocks are still reachable in loss record 9 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x5598762: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559140E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x4024AD: main (cwdaemon.c:2249)
+==80129== 
+==80129== 64 bytes in 1 blocks are still reachable in loss record 10 of 18
+==80129==    at 0x4852862: aligned_alloc (vg_replace_malloc.c:2263)
+==80129==    by 0x5596DD5: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559685A: ??? (in /lib/libthr.so.3)
+==80129==    by 0x5271CBB: ??? (in /lib/libc.so.7)
+==80129==    by 0x53445C6: ??? (in /lib/libc.so.7)
+==80129==    by 0x53447C0: strerror (in /lib/libc.so.7)
+==80129==    by 0x40537D: tty_probe_cwdevice (ttys.c:100)
+==80129==    by 0x40441B: cwdaemon_cwdevice_set (cwdaemon.c:2411)
+==80129==    by 0x405AAA: cwdaemon_option_cwdevice (options.c:148)
+==80129==    by 0x403A13: cwdaemon_handle_escaped_request (cwdaemon.c:1048)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 64 bytes in 1 blocks are still reachable in loss record 11 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x5598762: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559140E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x403FCF: cwdaemon_handle_escaped_request (cwdaemon.c:1178)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 100 bytes in 5 blocks are still reachable in loss record 12 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x558D67D: pthread_cond_init (in /lib/libthr.so.3)
+==80129==    by 0x486A818: cw_tq_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4867F61: cw_gen_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864B8D: cw_generator_new_internal (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4864CCF: cw_generator_new (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x403789: cwdaemon_handle_escaped_request (cwdaemon.c:953)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 192 bytes in 3 blocks are still reachable in loss record 13 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x5598762: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559140E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x403789: cwdaemon_handle_escaped_request (cwdaemon.c:953)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 1,664 bytes in 1 blocks are still reachable in loss record 14 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x55913FD: ??? (in /lib/libthr.so.3)
+==80129==    by 0x559042E: ??? (in /lib/libthr.so.3)
+==80129==    by 0x400AF5C: ??? (in /libexec/ld-elf.so.1)
+==80129==    by 0x4009B88: ??? (in /libexec/ld-elf.so.1)
+==80129==    by 0x4006DF8: ??? (in /libexec/ld-elf.so.1)
+==80129== 
+==80129== 1,664 bytes in 1 blocks are still reachable in loss record 15 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x55913FD: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x4024AD: main (cwdaemon.c:2249)
+==80129== 
+==80129== 1,664 bytes in 1 blocks are still reachable in loss record 16 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x55913FD: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x403FCF: cwdaemon_handle_escaped_request (cwdaemon.c:1178)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== 4,992 bytes in 3 blocks are still reachable in loss record 18 of 18
+==80129==    at 0x4851735: calloc (vg_replace_malloc.c:1599)
+==80129==    by 0x55913FD: ??? (in /lib/libthr.so.3)
+==80129==    by 0x558E28E: pthread_create (in /lib/libthr.so.3)
+==80129==    by 0x4866259: cw_gen_start (in /home/acerion/root_dir/lib/libcw.so.8.0.0)
+==80129==    by 0x4034B4: cwdaemon_open_libcw_output (cwdaemon.c:709)
+==80129==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==80129==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==80129==    by 0x403789: cwdaemon_handle_escaped_request (cwdaemon.c:953)
+==80129==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==80129==    by 0x402547: main (cwdaemon.c:2288)
+==80129== 
+==80129== LEAK SUMMARY:
+==80129==    definitely lost: 120 bytes in 6 blocks
+==80129==    indirectly lost: 0 bytes in 0 blocks
+==80129==      possibly lost: 0 bytes in 0 blocks
+==80129==    still reachable: 10,595 bytes in 21 blocks
+==80129==         suppressed: 4,096 bytes in 1 blocks
+==80129== 
+==80129== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+--80129-- 
+--80129-- used_suppression:      1 MEMCHECK-LIBC-REACHABLE-1 /usr/local/libexec/valgrind/default.supp:582 suppressed: 4,096 bytes in 1 blocks
+==80129== 
+==80129== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+
+Result: PASS
+
+There are some "definitely lost" records - they are caused by not making a
+call to pthread_cond_destroy() in libcw. A TODO note will be added to libcw
+to address this. I won't be fixing them during work on cwdaemon-0.13.0.
+
+cwdaemon is calling cw_generator_stop() on exit, so those entries related to
+cw_gen_start() aren't a problem of cwdaemon itself, but perhaps of libcw. I
+won't be fixing them here, but I will add a TODO note in unixcw.
 
 *** TODO functional tests
 
