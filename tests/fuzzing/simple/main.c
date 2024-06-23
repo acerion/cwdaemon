@@ -191,7 +191,8 @@ int main(int argc, char * const * argv)
 		exit(EXIT_FAILURE);
 	}
 
-	test_options_t test_opts = { .sound_system = CW_AUDIO_NULL, .supervisor_id = supervisor_id_valgrind };
+	test_options_t test_opts = { .sound_system  = CW_AUDIO_NULL,
+				     .supervisor_id = supervisor_id_valgrind };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
 		test_log_err("Test: failed to process command line options for test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
@@ -969,7 +970,8 @@ static int test_fn_esc_sound_system(client_t * client, __attribute__((unused)) c
 		switch (request.bytes[2]) {
 		case 'a': // ALSA
 		case 'p': // PulseAudio
-		case 's': // SoundCard: ALSA or PulseAudio (or OSS)
+		case 'o': // OSS
+		case 's': // SoundCard: ALSA or PulseAudio or OSS
 			request.bytes[2] = 'n';
 		default:
 			break;
