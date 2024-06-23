@@ -505,7 +505,6 @@ Steps to replicate.
 Also observe that sending RESET Escape request seems to restore proper
 toggling of keying pin.
 
-
 ** TODO [#C] R0031: Bug: range of values for priority
 cwdaemon.c specifies that priority can be in range -20..20, inclusive.
 
@@ -546,7 +545,6 @@ logs of tests.
 
 So the logs must show git hash of commit compiled and used for tests
 
-
 ** TODO [#A] R0037: Feature: using proper sound device
 
 Currently cwdaemon doesn't allow specifying a sound device to be used. A
@@ -558,4 +556,13 @@ device.
 One of two things (or both) need to happen:
  - libcw gets better at detecting a default device to be used for playback,
  - cwdaemon allows selection of sound device through command line option.
+
+
+** TODO [#C] R0038: Feature: fuzzy testing with sanitizers enabled
+
+There is some info on the internet saying that fuzzy tests should be executed
+on binary that has sanitizers enabled.
+
+Double-check this information and perhaps improve a procedure and code for
+the testing of cwdaemon with fuzzing.
 
