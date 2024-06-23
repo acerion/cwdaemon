@@ -1,8 +1,11 @@
-#+TODO: TODO STARTED FAILED | DONE SKIPPED
+#+TODO: TODO STARTED FAILED | PASS SKIPPED
 # The vertical bar indicates which states are final states.
+#
+# Using PASS instead of DONE because a test that suceeded is rather PASS than
+# DONE. "PASS or FAIL" looks better than "DONE or FAIL".
 
-* TODO Template for tests plan for cwdaemon version X
-Version of template: 2023.05.16.
+* TODO Tests plan for cwdaemon version X
+Version of template: 2024.06.03.
 ** TODO <Machine/OS identifier>
 <Additional info about machine, OS, libs, compiler>
 OS:
@@ -10,10 +13,17 @@ C compiler:
 libc:
 unixcw/libcw:
 
-*** TODO Build system tests
+*** TODO tests of build system
 **** TODO make distcheck
 *Steps*
-Run "make distcheck" in main directory of the project.
+
+Run the steps in main directory of project.
+
+On FreeBSD you may need to use "gmake" (GNU make) instead of FreeBSD's
+default "make".
+
+1. ./configure
+2. make distcheck
 
 *Expected result*
 1. Distribution package is built correctly (no errors during creation of
@@ -29,18 +39,21 @@ Run "make distcheck" in main directory of the project.
 Test that all flags supported by ./configure script produce "buildable" code.
 
 *Steps*
-1. Run "./configure && make",
-2. Run "./configure --enable-functional-tests && make",
-3. Run "./configure --enable-long-functional-tests && make",
+1. Run "make clean && ./configure && make && make check",
+2. Run "make clean && ./configure --enable-functional-tests && make && make check",
+3. Run "make clean && ./configure --enable-functional-tests --enable-long-functional-tests && make && make check",
 
 *Expected result*
 
-Each of the above tests results in correct build (binaries are built
-correctly).
+Each of the above tests results in correct build: binaries are built
+correctly, including binaries for all kinds of tests.
+
+You don't have to do full tests with these test binaries, just check that
+they are there.
 
 *Actual result*
 
-**** TODO regresion with make distcheck
+**** TODO regression with make distcheck
 
 Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
 
@@ -74,7 +87,7 @@ Distribution archive is created correctly.
 
 *** TODO unit tests
 
-Tests implemented in tests/unit_tests.
+Execute tests implemented in tests/unit_tests.
 
 *Steps*
 1. ./configure --enable-functional-tests
@@ -99,13 +112,17 @@ to ./configure or not. Test both cases.
 
 *Actual result*
 
+ - With functional tests not enabled:
+
+ - With functional tests enabled:
+
 *** TODO fuzzing tests
 **** TODO simple fuzzing test
 
 Run simple fuzzing test: tests/fuzzing/simple/test_program.
 
 Run the test early in testing phase, certainly before doing manual tests. Let
-an unattended test detect problems early.
+an unattended fuzzing test detect problems early.
 
 *Preconditions*
 
