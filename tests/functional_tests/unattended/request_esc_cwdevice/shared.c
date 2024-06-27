@@ -363,7 +363,7 @@ char const * get_invalid_cwdevice_name(void)
 // @reviewed_on{2024.05.24}
 char const * get_valid_non_default_cwdevice_name(void)
 {
-#define MAX_CWDEVICES 10
+#define MAX_CWDEVICES 20
 
 	// List of found valid non-default devices, from which this function will
 	// pick a result.
@@ -373,12 +373,27 @@ char const * get_valid_non_default_cwdevice_name(void)
 	if (0 == n_devices) {
 		// TTY devices that perhaps exist on current machine and may be used
 		// as cwdevices. TODO (acerion) 2024.05.24: what about lpt devices?
+		//
+		// This test is tricky because on FreeBSD there aren't that
+		// many devices that I could add to this list. During tests
+		// on 14.1-RELEASE I had to plug in another USB-to-UART
+		// converter to have some valid non-default cwdevice. And
+		// then I discovered that I also had "cuau2". Looking for
+		// files in /dev/ belonging to "dialer" group helps here.
 		static char const * const candidates[MAX_CWDEVICES + 1 /* 1 for guard */] = {
 			"/dev/ttyS0",
 			"/dev/ttyS1",
 			"/dev/tty0",
 			"/dev/tty1",
-			"/dev/cuau0",    // From FreeBSD
+
+			// From FreeBSD
+			"/dev/cuaU0",
+			"/dev/cuaU1",
+			"/dev/cuau0",
+			"/dev/cuau1",
+			"/dev/cuau2",
+			"/dev/ttyU0",
+
 			"/dev/ttyUSB0",
 			NULL,            // Guard
 		};
@@ -408,8 +423,10 @@ char const * get_valid_non_default_cwdevice_name(void)
 
 	if (0 == n_devices) {
 		test_log_err("Test: failed to build a list of valid non-default cwdevices %s\n", "");
+		test_log_err("Test: insert a second TTY-to-USB converter or some other serial cwdevice to continue with this test %s\n", "");
 		return NULL;
 	}
+	test_log_info("Test: there are %zu devices from we will pick at random a valid non-default cwdevice\n", n_devices);
 
 	unsigned int const lower = 0;
 	unsigned int const upper = n_devices - 1;
