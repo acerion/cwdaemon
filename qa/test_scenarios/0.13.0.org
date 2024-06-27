@@ -402,18 +402,20 @@ cwdaemon is calling cw_generator_stop() on exit, so those entries related to
 cw_gen_start() aren't a problem of cwdaemon itself, but perhaps of libcw. I
 won't be fixing them here, but I will add a TODO note in unixcw.
 
-*** TODO functional tests
+*** STARTED functional tests
+
+*Preconditions*
+
+**** PASS unattended short tests
 
 *Preconditions*
 
 1. Plug in USB-to-UART converter to USB socket.
-2. ./configure --enable-functional-tests --enable-long-functional-tests
+2. ./configure --enable-functional-tests
 
-**** TODO Simple run of unattended tests
-
-Run unattended tests. Just look at final result to have some indication of
-general status of tests before delving deeper into testing procedures that
-require more attention.
+Run unattended tests, but without "long" variants. Run relatively short tests
+and look at final result to have some indication of general status of tests
+before delving deeper into testing procedures that require more attention.
 
 *Steps*
 1. Run "make check"
@@ -426,10 +428,47 @@ tests that require more attention from tester.
 
 *Actual result*
 
-**** TODO PLAIN request
+PASS
+
+Test of CWDEVICE Escape request requires another (second) cwdevice being
+present. Without it it's not possible to find a non-default valid cwdevice.
+
+**** PASS unattended long tests
+
+Run unattended tests, but this time also with "long" variants. Run relatively
+long tests and look at final result to have some indication of general status
+of tests before delving deeper into testing procedures that require more
+attention.
+
+*Preconditions*
+
+1. Plug in USB-to-UART converter to USB socket.
+2. ./configure --enable-functional-tests --enable-long-functional-tests
+
+*Steps*
+1. Run "make check"
+2. Let the unattended tests run and complete
+
+*Expectations*
+
+The unattended tests executed through "make check" pass. We can now perform
+tests that require more attention from tester.
+
+*Actual result*
+
+PASS
+
+**** PASS PLAIN request
+
+*Preconditions*
+
+1. Plug in USB-to-UART converter to USB socket.
+2. ./configure --enable-functional-tests --enable-long-functional-tests
+3. make && make check
+4. Interrupt the build process when tests start being executed
 
 *Test program*
-tests/functional_tests/unattended/request_plain
+tests/functional_tests/unattended/request_plain/test_program
 
 *Steps*
 1. Manually start the test
@@ -440,6 +479,8 @@ tests/functional_tests/unattended/request_plain
 Final result of the test is a "PASS"
 
 *Actual result*
+
+PASS
 
 **** TODO CARET request
 
