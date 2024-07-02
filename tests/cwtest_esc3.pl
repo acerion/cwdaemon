@@ -8,7 +8,7 @@
 # code sounds (Hz).
 
 
-# Copyright (C) 2015 - 2023 Kamil Ignacak
+# Copyright (C) 2015 - 2024 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ my $tone_invalid2 = 4015;      # Simple invalid value
 my $request_code = '3';   # Code of Escape request
 
 
-my $cycles = 5;           # How many times to run a basic set of tests.
+my $cycles = 2;           # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "s";     # Text to be played
 my $delta = 50;           # Change (in Hz) per one step in a loop.
@@ -66,7 +66,7 @@ my $result = GetOptions("cycles=i"     => \$cycles,
 			"delta=i"      => \$delta,
 			"test-set=s"   => \$test_set)
 
-    or die "Problems with getting options: $@\n";
+    or die "[EE] Problems with getting options: $@\n";
 
 
 
@@ -87,7 +87,7 @@ my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
 				     PeerPort => $server_port,
 				     Proto    => "udp",
 				     Type     => SOCK_DGRAM)
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+    or die "[EE] Couldn't setup udp server on port $server_port : $@\n";
 
 
 
@@ -110,13 +110,14 @@ $SIG{'INT'} = 'INT_handler';
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-    print "Cycle $cycle/$cycles\n";
+    print "[II] Cycle $cycle/$cycles\n";
     print "\n";
 
 
     if ($test_set =~ "v") {
-	print "Testing setting tone in valid range\n";
+	print "[II] Testing setting valid values of tone\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
+	print "\n";
 	&cwdaemon_test_valid;
 
 	print "\n";
@@ -124,13 +125,16 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
 
     if ($test_set =~ "i") {
-	print "Testing setting tone in invalid range\n";
+	print "[II] Testing setting invalid values of tone\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
+	print "\n";
 	&cwdaemon_test_invalid;
     }
 }
 
 
+print "\n";
+print "[II] End of test\n";
 $cwsocket->close();
 
 
