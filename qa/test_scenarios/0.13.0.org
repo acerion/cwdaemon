@@ -468,7 +468,7 @@ PASS
 4. Interrupt the build process when tests start being executed
 
 *Test program*
-tests/functional_tests/unattended/request_plain/test_program
+./tests/functional_tests/unattended/request_plain/test_program
 
 *Steps*
 1. Manually start the test
@@ -482,10 +482,17 @@ Final result of the test is a "PASS"
 
 PASS
 
-**** TODO CARET request
+**** PASS CARET request
+
+*Preconditions*
+
+1. Plug in USB-to-UART converter to USB socket.
+2. ./configure --enable-functional-tests --enable-long-functional-tests
+3. make && make check
+4. Interrupt the build process when tests start being executed
 
 *Test program*
-tests/functional_tests/unattended/request_caret
+./tests/functional_tests/unattended/request_caret/test_program
 
 *Steps*
 1. Manually start the test
@@ -496,29 +503,60 @@ tests/functional_tests/unattended/request_caret
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
-**** TODO Escape requests
+**** STARTED Escape requests
 
 ***** TODO RESET        '0'
-***** TODO SPEED        '2'
+***** PASS SPEED        '2'
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
 
 *Test program*
-tests/cwtest_esc2.pl
+cwtest_esc2.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors
 
 *Actual result*
+PASS
 
-***** TODO TONE         '3'
+***** PASS TONE         '3'
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
 
 *Test program*
-tests/cwtest_esc3.pl
+cwtest_esc3.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors
 
 *Actual result*
+PASS
 
 ***** TODO ABORT        '4'
 
@@ -530,10 +568,13 @@ Test passes
 
 *Actual result*
 
-***** TODO EXIT         '5'
+***** PASS EXIT         '5'
+
+*Preconditions*
+1. Connect TTY-to-USB converter.
 
 *Test program*
-tests/functional_tests/unattended/request_esc_exit
+./tests/functional_tests/unattended/request_esc_exit/test_program
 
 *Steps*
 1. Manually start the test
@@ -544,6 +585,7 @@ tests/functional_tests/unattended/request_esc_exit
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
 ***** TODO WORD_MODE    '6'
 
@@ -565,10 +607,14 @@ Test passes
 
 *Actual result*
 
-***** TODO CWDEVICE     '8'
+***** PASS CWDEVICE     '8'
+
+*Preconditions*
+1. Attach two TTY-to-USB devices acting as two cwdevices: default one, and
+   non-default one.
 
 *Test program*
-tests/functional_tests/unattended/request_esc_cwdevice
+./tests/functional_tests/unattended/request_esc_cwdevice/test_program
 
 *Steps*
 1. Manually start the test
@@ -579,6 +625,9 @@ tests/functional_tests/unattended/request_esc_cwdevice
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
+
+Low-priority ticket R0039 has been added to README.dev.org.
 
 ***** TODO PORT         '9'
 ***** TODO PTT_STATE    'a'
@@ -612,11 +661,26 @@ Test passes
 
 *Actual result*
 
-***** TODO BAND_SWITCH  'e'
-***** TODO SOUND_SYSTEM 'f'
+***** SKIPPED BAND_SWITCH  'e'
+
+*Expected result*
+Test passes
+
+*Actual result*
+SKIPPED: I don't have neither a HW needed to test this feature nor a test
+scenario.
+
+***** PASS SOUND_SYSTEM 'f'
+
+The test may be trying to switch to invalid sound system "?"/"<NONE>". Such
+attempts will be ignored by cwdaemon, and cwdaemon SHOULD continue to use
+previous sound system.
+
+*Preconditions*
+1. Attach TTY-to-USB device acting as cwdevice.
 
 *Test program*
-functional_tests/supervised/request_esc_sound_system
+./tests/functional_tests/supervised/request_esc_sound_system/test_program
 
 *Steps*
 1. Manually start the test
@@ -627,6 +691,7 @@ functional_tests/supervised/request_esc_sound_system
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
 ***** TODO VOLUME       'g'
 
@@ -641,7 +706,7 @@ Test passes
 ***** TODO REPLY        'h'
 
 *Test program*
-tests/functional_tests/unattended/request_esc_reply
+./tests/functional_tests/unattended/request_esc_reply
 
 *Steps*
 1. Manually start the test
@@ -664,7 +729,7 @@ Final result of the test is a "PASS"
 ***** TODO -o, --options <option>
 
 *Test program*
-tests/functional_tests/unattended/option_cwdevice_tty_lines
+./tests/functional_tests/unattended/option_cwdevice_tty_lines
 
 *Steps*
 1. Manually start the test
@@ -681,7 +746,7 @@ Final result of the test is a "PASS"
 ***** TODO -p, --port <port>
 
 *Test program*
-tests/functional_tests/unattended/option_port
+./tests/functional_tests/unattended/option_port
 
 *Steps*
 1. Manually start the test
@@ -766,7 +831,7 @@ In this test cwdaemon is executed:
 ***** TODO reset register callback
 
 *Test program*
-tests/functional_tests/unattended/reset_register_callback
+./tests/functional_tests/unattended/reset_register_callback
 
 *Steps*
 1. Manually start the test
