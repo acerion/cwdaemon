@@ -557,7 +557,6 @@ One of two things (or both) need to happen:
  - libcw gets better at detecting a default device to be used for playback,
  - cwdaemon allows selection of sound device through command line option.
 
-
 ** TODO [#C] R0038: Feature: fuzzy testing with sanitizers enabled
 
 There is some info on the internet saying that fuzzy tests should be executed
@@ -565,4 +564,24 @@ on binary that has sanitizers enabled.
 
 Double-check this information and perhaps improve a procedure and code for
 the testing of cwdaemon with fuzzing.
+
+** TODO [#C] R0039: Feature: requesting for null cwdevice should be handled faster
+
+Right now a request for 'null' cwdevice makes cwdaemon to look for such a cwdevice in /dev:
+
+[II] Test: starting test case 0 in iteration 7 / 16: [Requesting 'null' cwdevice], cwdevice name = [null]
+[DD] cwdevice observer: ptt sink: ptt is on
+[II] cwdaemon client: sent 7 bytes
+[II] cwdaemon: -------------------
+[II] cwdaemon client: sent 2 bytes
+[II] cwdaemon: received Escape request: "<ESC>8" / "<ESC>0x38"
+[II] cwdaemon client: sent 5 bytes
+[EE] cwdaemon: ioctl(TIOCMGET) failed for tty device [/dev/null]: Inappropriate ioctl for device
+[EE] cwdaemon: ioctl(PPISSTATUS) failed for lp device [/dev/null]: Inappropriate ioctl for device
+[II] cwdaemon: keying device used: "null"
+[II] cwdaemon: Requested cwdevice [null]
+
+cwdaemon should recognize that 'null' is not a device in /dev/ but a special
+dummy device. There should be no probing for lp or tty device called 'null'
+in /dev/.
 
