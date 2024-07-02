@@ -69,13 +69,13 @@
 
 /// @reviewed_on{2024.05.01}
 static test_case_t g_test_cases[] = {
-	{ .description   = "caret request with size smaller than cwdaemon's receive buffer - 255 bytes (without NUL)",
+	{ .description   = "caret request with size smaller than cwdaemon's receive buffer: 254 chars + caret = 255 bytes (without NUL)",
 	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234^"),
 	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "1234\r\n") },
 	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "1234"),    }, },
 	},
 
-	{ .description   = "caret request with size equal to cwdaemon's receive buffer - 256 bytes (without NUL)",
+	{ .description   = "caret request with size equal to cwdaemon's receive buffer: 255 chars + caret = 256 bytes (without NUL)",
 	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345^"),
 	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES("paris 7890" BYTES_11_250 "12345\r\n") },
 	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "12345"),    }, },
@@ -83,8 +83,9 @@ static test_case_t g_test_cases[] = {
 
 	/* '^' is a byte no. 257, so it will be dropped by cwdaemon's receive
 	   code. cwdaemon won't interpret this request as caret request, and
-	   won't send any reply. */
-	{ .description   = "caret request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL)",
+	   won't send any reply. Therefore ':expected' doesn't include a
+	   socket reply. */
+	{ .description   = "caret request with size larger than cwdaemon's receive buffer: 256 chars + caret = 257 bytes (without NUL)",
 	  .caret_request =                                 TESTS_SET_BYTES("paris 7890" BYTES_11_250 "123456^"),
 	  .expected = { { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris 7890" BYTES_11_250 "123456" ), }, },
 	},
