@@ -122,8 +122,9 @@ am_lib_tests_a_OBJECTS = lib_tests_a-client.$(OBJEXT) \
 	lib_tests_a-misc.$(OBJEXT) \
 	lib_tests_a-morse_receiver.$(OBJEXT) \
 	lib_tests_a-morse_receiver_utils.$(OBJEXT) \
-	lib_tests_a-random.$(OBJEXT) lib_tests_a-server.$(OBJEXT) \
-	lib_tests_a-sleep.$(OBJEXT) lib_tests_a-socket.$(OBJEXT) \
+	lib_tests_a-random.$(OBJEXT) lib_tests_a-requests.$(OBJEXT) \
+	lib_tests_a-server.$(OBJEXT) lib_tests_a-sleep.$(OBJEXT) \
+	lib_tests_a-socket.$(OBJEXT) \
 	lib_tests_a-string_utils.$(OBJEXT) \
 	lib_tests_a-supervisor.$(OBJEXT) \
 	lib_tests_a-test_env.$(OBJEXT) \
@@ -156,6 +157,7 @@ am__depfiles_remade = ./$(DEPDIR)/lib_tests_a-client.Po \
 	./$(DEPDIR)/lib_tests_a-morse_receiver.Po \
 	./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po \
 	./$(DEPDIR)/lib_tests_a-random.Po \
+	./$(DEPDIR)/lib_tests_a-requests.Po \
 	./$(DEPDIR)/lib_tests_a-server.Po \
 	./$(DEPDIR)/lib_tests_a-sleep.Po \
 	./$(DEPDIR)/lib_tests_a-socket.Po \
@@ -335,6 +337,7 @@ check_HEADERS = client.h             \
                 morse_receiver.h     \
                 morse_receiver_utils.h  \
                 random.h             \
+                requests.h           \
                 server.h             \
                 sleep.h              \
                 socket.h             \
@@ -361,6 +364,7 @@ lib_tests_a_SOURCES = client.c             \
                       morse_receiver.c     \
                       morse_receiver_utils.c \
                       random.c             \
+                      requests.c           \
                       server.c             \
                       sleep.c              \
                       socket.c             \
@@ -432,6 +436,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-requests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-server.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-sleep.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib_tests_a-socket.Po@am__quote@ # am--include-marker
@@ -631,6 +636,20 @@ lib_tests_a-random.obj: random.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='random.c' object='lib_tests_a-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-random.obj `if test -f 'random.c'; then $(CYGPATH_W) 'random.c'; else $(CYGPATH_W) '$(srcdir)/random.c'; fi`
+
+lib_tests_a-requests.o: requests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-requests.o -MD -MP -MF $(DEPDIR)/lib_tests_a-requests.Tpo -c -o lib_tests_a-requests.o `test -f 'requests.c' || echo '$(srcdir)/'`requests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-requests.Tpo $(DEPDIR)/lib_tests_a-requests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='requests.c' object='lib_tests_a-requests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-requests.o `test -f 'requests.c' || echo '$(srcdir)/'`requests.c
+
+lib_tests_a-requests.obj: requests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-requests.obj -MD -MP -MF $(DEPDIR)/lib_tests_a-requests.Tpo -c -o lib_tests_a-requests.obj `if test -f 'requests.c'; then $(CYGPATH_W) 'requests.c'; else $(CYGPATH_W) '$(srcdir)/requests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lib_tests_a-requests.Tpo $(DEPDIR)/lib_tests_a-requests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='requests.c' object='lib_tests_a-requests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -c -o lib_tests_a-requests.obj `if test -f 'requests.c'; then $(CYGPATH_W) 'requests.c'; else $(CYGPATH_W) '$(srcdir)/requests.c'; fi`
 
 lib_tests_a-server.o: server.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lib_tests_a_CFLAGS) $(CFLAGS) -MT lib_tests_a-server.o -MD -MP -MF $(DEPDIR)/lib_tests_a-server.Tpo -c -o lib_tests_a-server.o `test -f 'server.c' || echo '$(srcdir)/'`server.c
@@ -894,6 +913,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-random.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-requests.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-server.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-sleep.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
@@ -960,6 +980,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-morse_receiver_utils.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-random.Po
+	-rm -f ./$(DEPDIR)/lib_tests_a-requests.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-server.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-sleep.Po
 	-rm -f ./$(DEPDIR)/lib_tests_a-socket.Po
