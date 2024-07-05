@@ -132,6 +132,9 @@ static char const * g_test_name = "fuzzing - simple";
 
   Notice that the test function doesn't go over the array in linear way. The
   test function selects test cases in random order.
+
+  TODO (acerion) 2024.07.04: request for PORT Escape request should be built
+  with tests/library/requests.h/tests_requests_build_request_esc_port().
 */
 // @reviewed_on{2024.05.04}
 static const test_case_t g_test_cases[] = {
