@@ -189,6 +189,18 @@ New release. Changes since previous release:
       The test is located in
       tests/functional_tests/supervised/request_esc_sound_system/.
 
+    * Adding functional test for PORT Escape request (<ESC>9)
+
+      This Escape request is obsoleted and doesn't do nothing, but as long as
+      it is present in code I need to test it.
+
+      I have created a supervised test for this feature because I simply
+      didn't want to test it fully manually over and over again in this
+      release and in future releases.
+
+      The test is located in
+      tests/functional_tests/supervised/request_esc_port/.
+
     * Unit tests have been added for following existing code:
 
       - cwdaemon_get_long() function

@@ -327,6 +327,7 @@ AC_CONFIG_FILES([Makefile
 	tests/functional_tests/unattended/reset_register_callback/Makefile
 	tests/functional_tests/supervised/Makefile
 	tests/functional_tests/supervised/feature_multiple_requests/Makefile
+	tests/functional_tests/supervised/request_esc_port/Makefile
 	tests/functional_tests/supervised/request_esc_sound_system/Makefile
 	tests/fuzzing/Makefile
 	tests/fuzzing/simple/Makefile

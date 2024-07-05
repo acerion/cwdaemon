@@ -37,6 +37,7 @@ TESTS += functional_tests/unattended/request_plain/test_program
 
 # We build supervised tests, but we don't run them on "make check".
 # TESTS += functional_tests/supervised/feature_multiple_requests/test_program
+# TESTS += functional_tests/supervised/request_esc_port/test_program
 # TESTS += functional_tests/supervised/request_esc_sound_system/test_program
 
 endif
