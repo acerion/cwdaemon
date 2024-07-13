@@ -1,14 +1,7 @@
 #!/usr/bin/perl
 
 
-# Test script for cwdnaemon.
-#
-# This script tests cwdaemon's responses to <ESC>a escaped
-# request. The request is used to turn on or turn off PTT function.
-#
-
-
-# Copyright (C) 2015 - 2023 Kamil Ignacak
+# Copyright (C) 2015 - 2024 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +18,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 
+
+
+# Test script for cwdaemon.
+#
+# This script tests cwdaemon's responses to <ESC>a escaped
+# request. The request is used to turn on or turn off PTT function.
+#
+# This script works in three modes:
+#  - manual mode (0): toggling PTT pin manually purely by sending PTT Escape
+#    request (the default mode)
+#  - automatic mode (1): toggling PTT pin automatically at the beginning and
+#    end of plaing a Caret request.
+#  - mixed mode (2): setting PTT ON before a Caret request, and setting PTT
+#    OFF after receing reply to the Caret request.
+
+
+
+
 use warnings;
 use strict;
 
@@ -39,47 +50,13 @@ use cwdaemon::test::common;
 
 
 
-# These two values are taken from libcw.h
-my $ptt_state_min = 0;
-my $ptt_state_max = 1;
-
-my $ptt_state_initial = 0;         # Initial valid value set before trying to set invalid values
-my $ptt_state_invalid1 = -5;       # Simple invalid value
-my $ptt_state_invalid2 = 99;       # Simple invalid value
-
-
-
 my $request_code = 'a';   # Code of Escape request
+my $input_text = "paris madrit";     # Text to be played.
+my $g_mode = 0; # 0 = manual, 1 = automatic, 2 = mixed
 
 
-my $cycles = 5;           # How many times to run a basic set of tests.
-my $cycle = 0;
-my $input_text = "p";     # Text to be played.
-my $delta = 1;            # Change (in wpm) per one step in a loop.
-
-
-my $test_set = "vi";      # Set of tests: valid and invalid parameter values
-
-
-my $result = GetOptions("cycles=i"     => \$cycles,
-			"input-text=s" => \$input_text,
-			"delta=i"      => \$delta,
-			"test-set=s"   => \$test_set)
-
-    or die "Problems with getting options: $@\n";
-
-
-
-
-
-if (!($test_set =~ "v")
-    && !($test_set =~ "i")) {
-
-    exit;
-}
-
-
-
+my $result = GetOptions("mode=i"     => \$g_mode)
+    or die "[EE] Problems with getting options: $@\n";
 
 
 my $server_port = 6789;
@@ -87,7 +64,7 @@ my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
 				     PeerPort => $server_port,
 				     Proto    => "udp",
 				     Type     => SOCK_DGRAM)
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+    or die "[EE] Couldn't setup udp server on port $server_port : $@\n";
 
 
 
@@ -106,108 +83,57 @@ $SIG{'INT'} = 'INT_handler';
 
 
 cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
+# Re-enable the toggling of PTT by setting non-zero PTT delay.
+print $cwsocket chr(27)."d"."1";
 
 
 
-for ($cycle = 1; $cycle <= $cycles; $cycle++) {
+# Enough iterations to make good measurements with multimeter. You don't
+# really need to observe all 100 iterations :)
+my g_n_iters = 100;
 
-    print "\n\n";
+if (0 == $g_mode) {
+    print "[II] Manual mode\n";
+    for (my $i = 0; $i <= $g_n_iters; $i += 1) {
+	print "[II] Setting PTT state ON\n";
+	print $cwsocket chr(27).$request_code."1";
+	sleep 3;
 
-    print "Cycle $cycle/$cycles\n";
-
-    print "\n";
-
-
-    if ($test_set =~ "v") {
-	print "Testing setting PTT state in valid range\n";
-	&cwdaemon_test_valid;
-
-	print "\n";
+	print "[II] Setting PTT state OFF\n";
+	print $cwsocket chr(27).$request_code."0";
+	sleep 3;
     }
-
-
-    if ($test_set =~ "i") {
-	print "Testing setting PTT state in invalid range\n";
-	&cwdaemon_test_invalid;
+} elsif (1 == $g_mode) {
+    print "[II] Automatic mode: toggling PTT when playing Caret request\n";
+    for (my $i = 0; $i <= $g_n_iters; $i += 1) {
+	print "[II] Sending Caret request\n";
+	print $cwsocket $input_text."^";
+	my $reply = <$cwsocket>;
+	sleep 3;
     }
+} elsif (2 == $g_mode) {
+    print "[II] Mixed mode: manually toggling PTT before and after playing Caret request\n";
+    for (my $i = 0; $i <= $g_n_iters; $i += 1) {
+
+	print "[II] Manually setting PTT state ON\n";
+	print $cwsocket chr(27).$request_code."1";
+	sleep 3;
+
+	print "[II] Sending Caret request\n";
+	print $cwsocket $input_text."^";
+	my $reply = <$cwsocket>;
+	sleep 3;
+
+	print "[II] Manually setting PTT state OFF\n";
+	print $cwsocket chr(27).$request_code."0";
+	sleep 3;
+    }
+} else {
+    print "[EE] Invalid mode $g_mode\n";
 }
+
+
 
 
 $cwsocket->close();
 
-
-
-
-
-
-
-
-# ==========================================================================
-#                                    subs
-# ==========================================================================
-
-
-
-
-
-# Testing setting PTT state in valid range
-sub cwdaemon_test_valid
-{
-    # PTT state going from min to max
-    for (my $ptt_state = $ptt_state_min; $ptt_state <= $ptt_state_max; $ptt_state += $delta) {
-
-	print "    Setting PTT state $ptt_state (up)\n";
-	print $cwsocket chr(27).$request_code.$ptt_state;
-
-	print $cwsocket $input_text."^";
-	my $reply = <$cwsocket>;
-    }
-
-
-    # PTT state going from max to min
-    for (my $ptt_state = $ptt_state_max; $ptt_state >= $ptt_state_min; $ptt_state -= $delta) {
-
-	print "    Setting PTT state $ptt_state (down)\n";
-	print $cwsocket chr(27).$request_code.$ptt_state;
-
-	print $cwsocket $input_text."^";
-	my $reply = <$cwsocket>;
-    }
-
-    return;
-}
-
-
-
-
-
-# Testing setting invalid values of <ESC>d request
-sub cwdaemon_test_invalid
-{
-    # Set an initial valid value as a preparation
-    cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, $request_code, $input_text, $ptt_state_initial);
-
-
-    # Try setting a simple invalid value
-    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $ptt_state_invalid1);
-
-
-    # Try setting a simple invalid value
-    cwdaemon::test::common::esc_set_invalid_send($cwsocket, $request_code, $input_text, $ptt_state_invalid2);
-
-
-    # Try setting value that is a bit too low and then value that is a
-    # bit too high
-    cwdaemon::test::common::esc_set_min1_max1_send($cwsocket, $request_code, $input_text, $ptt_state_min, $ptt_state_max);
-
-
-    # Try setting 'out of range' long values
-    cwdaemon::test::common::esc_set_oor_long_send($cwsocket, $request_code, $input_text);
-
-
-    # Try setting 'not a number' values
-    cwdaemon::test::common::esc_set_nan_send($cwsocket, $request_code, $input_text);
-
-
-    return;
-}

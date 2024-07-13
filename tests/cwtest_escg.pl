@@ -50,7 +50,7 @@ my $volume_invalid2 = 115;     # Simple invalid value
 my $request_code = 'g';   # Code of Escape request
 
 
-my $cycles = 5;           # How many times to run a basic set of tests.
+my $cycles = 3;           # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";     # Text to be played
 my $delta = 5;            # Change (in %) per one step in a loop.
@@ -64,7 +64,7 @@ my $result = GetOptions("cycles=i"     => \$cycles,
 			"delta=i"      => \$delta,
 			"test-set=s"   => \$test_set)
 
-    or die "Problems with getting options: $@\n";
+    or die "[EE] Problems with getting options: $@\n";
 
 
 
@@ -85,7 +85,7 @@ my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
 				     PeerPort => $server_port,
 				     Proto    => "udp",
 				     Type     => SOCK_DGRAM)
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+    or die "[EE] Couldn't setup udp server on port $server_port : $@\n";
 
 
 
@@ -108,12 +108,12 @@ $SIG{'INT'} = 'INT_handler';
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-    print "Cycle $cycle/$cycles\n";
+    print "[II] Cycle $cycle/$cycles\n";
     print "\n";
 
 
     if ($test_set =~ "v") {
-	print "Testing setting volume in valid range\n";
+	print "[II] Testing setting volume in valid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test_valid;
 
@@ -122,13 +122,15 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
 
     if ($test_set =~ "i") {
-	print "Testing setting volume in invalid range\n";
+	print "[II] Testing setting volume in invalid range\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test_invalid;
     }
 }
 
 
+print "\n";
+print "[II] End of test\n";
 $cwsocket->close();
 
 

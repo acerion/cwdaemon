@@ -8,7 +8,7 @@
 # by cwdaemon.
 
 
-# Copyright (C) 2015 - 2023 Kamil Ignacak
+# Copyright (C) 2015 - 2024 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ my $weight_invalid2 = 220;     # Simple invalid value
 my $request_code = '7';   # Code of Escape request
 
 
-my $cycles = 5;           # How many times to run a basic set of tests.
+my $cycles = 2;           # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = ".";     # Text to be played. '.' = ".-.-.-", a good pattern to test weight changes
 my $delta = 5;            # Change per one step in a loop.
@@ -67,7 +67,7 @@ my $result = GetOptions("cycles=i"     => \$cycles,
 			"delta=i"      => \$delta,
 			"test-set=s"   => \$test_set)
 
-    or die "Problems with getting options: $@\n";
+    or die "[EE] Problems with getting options: $@\n";
 
 
 
@@ -88,7 +88,7 @@ my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
 				     PeerPort => $server_port,
 				     Proto    => "udp",
 				     Type     => SOCK_DGRAM)
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+    or die "[EE] Couldn't setup udp server on port $server_port : $@\n";
 
 
 
@@ -111,12 +111,12 @@ $SIG{'INT'} = 'INT_handler';
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-    print "Cycle $cycle/$cycles\n";
+    print "[II] Cycle $cycle/$cycles\n";
     print "\n";
 
 
     if ($test_set =~ "v") {
-	print "Testing setting weight in valid range\n";
+	print "[II] Testing setting weight in valid range\n";
 
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, 2, $input_text, $speed_initial);
@@ -131,7 +131,7 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
 
     if ($test_set =~ "i") {
-	print "Testing setting weight in invalid range\n";
+	print "[II] Testing setting weight in invalid range\n";
 
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	cwdaemon::test::common::esc_set_initial_valid_send($cwsocket, 2, $input_text, $speed_initial);
@@ -144,11 +144,9 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 }
 
 
+print "\n";
+print "[II] End of test\n";
 $cwsocket->close();
-
-
-
-
 
 
 
@@ -156,7 +154,6 @@ $cwsocket->close();
 # ==========================================================================
 #                                    subs
 # ==========================================================================
-
 
 
 

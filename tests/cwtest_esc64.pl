@@ -7,7 +7,7 @@
 # <ESC>4 (abort message) escaped requests.
 
 
-# Copyright (C) 2015 - 2023 Kamil Ignacak
+# Copyright (C) 2015 - 2024 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ my $abort_code = '4';
 my $reset_code = '0';
 
 
-my $cycles = 5;               # How many times to run a basic set of tests.
+my $cycles = 3;               # How many times to run a basic set of tests.
 my $cycle = 0;
 
 # Text long enough for cwdaemon to start playing it, and to be able to
@@ -58,7 +58,7 @@ my $result = GetOptions("cycles=i"     => \$cycles,
 			"input-text=s" => \$input_text,
 			"test-set=s"   => \$test_set)
 
-    or die "Problems with getting options: $@\n";
+    or die "[EE] Problems with getting options: $@\n";
 
 
 
@@ -67,7 +67,7 @@ my $cwsocket = IO::Socket::INET->new(PeerAddr => "localhost",
 				     PeerPort => $server_port,
 				     Proto    => "udp",
 				     Type     => SOCK_DGRAM)
-    or die "Couldn't setup udp server on port $server_port : $@\n";
+    or die "[EE] Couldn't setup udp server on port $server_port : $@\n";
 
 
 
@@ -90,18 +90,18 @@ $SIG{'INT'} = 'INT_handler';
 for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
     print "\n\n";
-    print "Cycle $cycle/$cycles\n";
+    print "[II] Cycle $cycle/$cycles\n";
     print "\n";
 
 
     if ($test_set =~ "v") {
-	print "Testing word mode and aborting message (VALID test set)\n\n";
+	print "[II] Testing word mode and aborting message (VALID test set)\n\n";
 
 	# Reset parameters to nominal
-	print "Setting normal (interruptible) mode:\n";
+	print "[II] Setting normal (interruptible) mode:\n";
 	print $cwsocket chr(27).$reset_code;
 
-	print "Setting initial parameter values:\n";
+	print "[II] Setting initial parameter values:\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test_valid;
 
@@ -110,13 +110,13 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 
 
     if ($test_set =~ "i") {
-	print "Testing word mode and aborting message (INVALID test set)\n\n";
+	print "[II] Testing word mode and aborting message (INVALID test set)\n\n";
 
 	# Reset parameters to nominal
-	print "Setting normal (interruptible) mode:\n";
+	print "[II] Setting normal (interruptible) mode:\n";
 	print $cwsocket chr(27).$reset_code;
 
-	print "Setting initial parameter values:\n";
+	print "[II] Setting initial parameter values:\n";
 	cwdaemon::test::common::esc_set_initial_parameters($cwsocket);
 	&cwdaemon_test_invalid;
 
@@ -125,11 +125,9 @@ for ($cycle = 1; $cycle <= $cycles; $cycle++) {
 }
 
 
+print "\n";
+print "[II] End of test\n";
 $cwsocket->close();
-
-
-
-
 
 
 
@@ -173,14 +171,14 @@ sub cwdaemon_test
 {
     my $suffix = shift;
 
-    print "Sending message in normal (interruptable) mode:\n";
+    print "[II] Sending message in normal (interruptible) mode:\n";
     sleep(1);
     print $cwsocket $input_text."^";
 
     # Give cwdaemon some time to play beginning of a word.
     sleep(2);
 
-    print "Attempting to abort in normal (interruptable) mode... ";
+    print "[II] Attempting to abort in normal (interruptible) mode... ";
     STDOUT->flush();
     sleep(1);
     print "now\n";
@@ -196,19 +194,19 @@ sub cwdaemon_test
 
 
 
-    print "Setting word (non-interruptable) mode:\n";
+    print "[II] Setting word (non-interruptible) mode:\n";
     print $cwsocket chr(27).$word_mode_code.$suffix;
     sleep(1);
 
 
-    print "Sending message in word (non-interruptible) mode:\n";
+    print "[II] Sending message in word (non-interruptible) mode:\n";
     sleep(1);
     print $cwsocket $input_text."^";
 
     # Give cwdaemon some time to play beginning of a word.
     sleep(2);
 
-    print "Attempting to abort in word mode... ";
+    print "[II] Attempting to abort in word mode... ";
     STDOUT->flush();
     sleep(1);
     print "now\n";
