@@ -67,5 +67,23 @@ int append_options_gdb(const char ** argv, int * argc);
 
 
 
+/// @brief Get full path to valgrind
+///
+/// Function returns pointer to memory that MUST NOT be freed or modified by
+/// caller.
+char const * tests_supervisor_get_valgrind_path(void);
+
+
+
+
+/// @brief Get full path to gdb
+///
+/// Function returns pointer to memory that MUST NOT be freed or modified by
+/// caller.
+char const * tests_supervisor_get_gdb_path(void);
+
+
+
+
 #endif /* #ifndef CWDAEMON_TESTS_LIB_SUPERVISOR_H */
 

@@ -85,10 +85,7 @@
 // @reviewed_on{2024.05.12}
 int append_options_valgrind(const char ** argv, int * argc)
 {
-	// TODO (acerion) 2024.06.23: discover this path in runtime. On Linux
-	// it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
-	// /usr/local/bin/valgrind. See similar comment in start_process().
-	argv[(*argc)++] = "/usr/bin/valgrind";
+	argv[(*argc)++] = tests_supervisor_get_valgrind_path();
 	argv[(*argc)++] = "-s";
 	argv[(*argc)++] = "--leak-check=full";
 	argv[(*argc)++] = "--show-leak-kinds=all";
@@ -102,10 +99,30 @@ int append_options_valgrind(const char ** argv, int * argc)
 
 int append_options_gdb(const char ** argv, int * argc)
 {
-	argv[(*argc)++] = "gdb";
+	argv[(*argc)++] = tests_supervisor_get_gdb_path();
 	argv[(*argc)++] = "--args";
 
 	return 0;
+}
+
+
+
+
+char const * tests_supervisor_get_valgrind_path(void)
+{
+	// TODO (acerion) 2024.06.23: discover this path in runtime. On Linux
+	// it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
+	// /usr/local/bin/valgrind.
+	return "/usr/local/bin/valgrind";
+}
+
+
+
+
+char const * tests_supervisor_get_gdb_path(void)
+{
+	// TODO (acerion) 2024.04.20: discover this path in runtime?
+	return "/usr/bin/gdb";
 }
 
 

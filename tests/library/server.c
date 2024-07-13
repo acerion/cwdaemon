@@ -435,15 +435,11 @@ static int start_process(const char * cwdaemon_path, const server_options_t * se
 		break;
 	case supervisor_id_valgrind:
 		append_options_valgrind(argv, &argc);
-		// TODO (acerion) 2024.04.20: discover this path in runtime.
-		// On Linux it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
-		// /usr/local/bin/valgrind. See similar comment in
-		// append_options_valgrind().
-		execve_pathname = "/usr/bin/valgrind";
+		execve_pathname = tests_supervisor_get_valgrind_path();
 		break;
 	case supervisor_id_gdb:
 		append_options_gdb(argv, &argc);
-		execve_pathname = "/usr/bin/gdb"; /* TODO (acerion) 2024.04.20: discover this path in runtime? */
+		execve_pathname = tests_supervisor_get_gdb_path();
 		break;
 	default:
 		test_log_err("Test: can't get top level exec path: unhandled supervisor id %u\n", server_opts->supervisor_id);
