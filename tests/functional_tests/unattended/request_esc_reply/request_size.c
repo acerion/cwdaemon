@@ -52,7 +52,7 @@
 
 /* Bytes from 11 to 250 (inclusive) in Escape request. */
 #define ESC_BYTES_250 \
-              "kukukukukukukukukukukukukukukukukukukuku" \
+	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -67,7 +67,7 @@
   other functional test.
 */
 #if 0
-#define PLAIN_BYTES_250                                  \
+#define PLAIN_BYTES_250                                      \
 	          "kukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
 	"kukukukukukukukukukukukukukukukukukukukukukukukuku" \
@@ -81,6 +81,10 @@
 
 
 /// @reviewed_on{2024.05.01}
+///
+/// The sizes mentioned in descriptions refer to total count of bytes in the
+/// Escape request, including Esc character (\033), request code ('h'
+/// character) and request value.
 static const test_case_t g_test_cases[] = {
 	{ .description   = "REPLY Escape request with size smaller than cwdaemon's receive buffer - 254 bytes (without NUL)",
 	  .esc_request   =                                 TESTS_SET_BYTES("\033hGREEN 90" ESC_BYTES_250 "1234"),
@@ -132,6 +136,8 @@ static const test_case_t g_test_cases[] = {
 	/// In the following test cases a truncation of request will occur. First
 	/// cwdaemon will drop the last non-NULL char(s), and then the daemon
 	/// will send back truncated reply.
+	///
+	/// Remember that cwdaemon's receive buffer is only 256 bytes large.
 	{ .description   = "REPLY Escape request with size larger than cwdaemon's receive buffer - 257 bytes (without NUL) - TRUNCATION of reply",
 	  /* The '7' char from Escape request will be dropped in daemon during
 	     receive - it won't fit into receive buffer. */
