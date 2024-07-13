@@ -295,11 +295,32 @@ cwtest_esc3.pl
 
 ***** TODO ABORT        '4'
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
+
 *Test program*
-tests/cwtest_esc64.pl
+cwtest_esc64.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors
+3. Text played by cwdaemon can be interrupted by ABORT Escape request when
+   cwdaemon works in interruptible mode.
+4. Text played by cwdaemon cannot be interrupted by ABORT Escape request when
+   cwdaemon works in non-interruptible mode.
+5. cwdaemon behaves as described in points 3 and 4 even when invalid ABORT
+   Escape request is being sent, i.e. when the value of the request is
+   non-empty.
 
 *Actual result*
 
@@ -323,21 +344,57 @@ Final result of the test is a "PASS"
 
 ***** TODO WORD_MODE    '6'
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
+
 *Test program*
-tests/cwtest_esc64.pl
+cwtest_esc64.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors
+3. cwdaemon is being switched between word-mode (non-interruptible mode) and
+   regular mode (interruptible mode).
+
+   This is recognized by cwdaemon's response to ABORT Escape request.
+
+   Played text cannot (in word-mode) or can (in regular mode) be interrupted
+   by ABORT Escape request.
 
 *Actual result*
 
 ***** TODO WEIGHTING    '7'
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
+
 *Test program*
-tests/cwtest_esc7.pl
+cwtest_esc7.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. Weighting of dits and dashes changes as expected,
+3. cwdaemon doesn't report any unexpected errors.
 
 *Actual result*
 
@@ -361,24 +418,122 @@ Final result of the test is a "PASS"
 *Actual result*
 
 ***** TODO PORT         '9'
-***** TODO PTT_STATE    'a'
+
+*Preconditions*
+1. Connect TTY-to-USB converter.
 
 *Test program*
-tests/cwtest_esca.pl
+./tests/functional_tests/supervised/request_esc_port/test_program
+
+*Steps*
+1. Manually start the test
+2. Read the banner text displayed at the beginning of test,
+3. Observe the logs displayed during execution of test,
+4. Wait for final status of the test.
+
+*Expectations*
+1. Final result of the test is a "PASS".
+2. None of characteristics of played sounds are changing between iterations
+   of test.
+
+*Actual result*
+
+***** TODO PTT_STATE    'a'
+
+*Preconditions*
+
+1. Prepare a multimeter or logic state analyzer.
+2. Read information at the beginning of tests/cwtest_esca.pl script about 3
+   modes.
+3. Connect TTY-to-USB converter.
+4. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+5. In another terminal (terminal B) enter into "tests" dir.
+
+*Test program*
+cwtest_esca.pl
+
+*Steps*
+1. Connect the multimeter to PTT pin of the TTY-to-USB converter.
+2. In terminal B run a test
+
+   perl ./<test program name> --mode X
+
+   Do this with value of mode (X) equal to 0, 1, and 2.
+3. Observe output of test in terminal B
+4. Observe readings on the multimeter, showing state of PTT pin (ON or OFF).
+
 
 *Expected result*
-Test passes
+1. State of PTT pin changes at all, as shown by multimeter's reading,
+2. State of PTT pin changes according to mode used by the test script.
 
 *Actual result*
 
 ***** TODO SSB_WAY      'b'
 ***** TODO TUNE         'c'
+****** TODO Perl script
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
 
 *Test program*
-tests/cwtest_escc.pl
+cwtest_escc.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors
+
+*Actual result*
+
+****** TODO Manual test, with observing PTT Flag
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s -iii -t 1
+3. In another terminal (terminal B) run nc:
+   nc -u 127.0.0.1 6789
+
+
+*Steps*
+1. In terminal B request long tuning time
+   ^[c9
+2. In terminal A observe that PTT pin is raised:
+
+   [II] cwdaemon: -------------------
+   [II] cwdaemon: received Escape request: "<ESC>c" / "<ESC>0x63"
+   [II] cwdaemon: requested tuning time [s]: "9"
+   [II] cwdaemon: PTT (TUNE) on
+   [DD] cwdaemon: PTT flag +PTT_ACTIVE_AUTO (0x01/Ame)
+   [DD] cwdaemon: keying event 1
+
+3. After the tuning time elapses, observe in terminal A that PTT pin is
+   lowered:
+
+   [II] cwdaemon: low TQ callback: start, TQ len = 1, PTT flag = 0x01/Ame
+   [II] cwdaemon: low TQ callback: branch 1, PTT flag = 0x01/Ame
+   [DD] cwdaemon: PTT flag = 0 (0x00/ame)
+   [II] cwdaemon: PTT (auto) off
+   [II] cwdaemon: low TQ callback: end, TQ len = 1, PTT flag = 0x00/ame
+   [DD] cwdaemon: keying event 0
+
+
+*Expected result*
+1. PTT pin is raised and lowered as expected,
+2. cwdaemon doesn't report any unexpected errors
+
 
 *Actual result*
 
@@ -423,18 +578,33 @@ Final result of the test is a "PASS"
 
 ***** TODO VOLUME       'g'
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
+
 *Test program*
-tests/cwtest_escg.pl
+cwtest_escg.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. Volume of sounds produced by cwdaemon changes as expected,
+3. cwdaemon doesn't report any unexpected errors.
 
 *Actual result*
 
 ***** TODO REPLY        'h'
 
 *Test program*
-./tests/functional_tests/unattended/request_esc_reply
+./tests/functional_tests/unattended/request_esc_reply/test_program
 
 *Steps*
 1. Manually start the test
