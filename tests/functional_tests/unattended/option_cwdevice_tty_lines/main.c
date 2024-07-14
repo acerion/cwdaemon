@@ -73,6 +73,12 @@ typedef struct test_case_t {
 
 
 
+// TODO (acerion) 2024.07.14: extend the test framework to make it use
+// "--options" in addition to "-o" to configure pin assignments.
+
+
+
+
 /// TODO (acerion) 2024.05.09 add a case in which cwdaemon is not started due
 /// to set of options that don't pass a validation made with
 /// cwdevice->options->optvalidate. Example call with such invalid set of

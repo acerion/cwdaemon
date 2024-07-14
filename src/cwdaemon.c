@@ -1709,6 +1709,12 @@ void cwdaemon_args_process_short(options_t * defaults, int c, const char *optarg
 		break;
 	case 'i':
 		cwdaemon_option_inc_verbosity(&defaults->log_threshold);
+		// TODO (acerion) 2024.07.14: we should change the currently
+		// used log threshold as soon as it's requested here.
+		// Currently passing of "-iiii" command line option doesn't
+		// increase log threshold for messages printed during
+		// processing of command line options, and this makes
+		// debugging of the command line options harder.
 		break;
 	case 'y':
 		if (0 != cwdaemon_option_set_verbosity(&defaults->log_threshold, optarg)) {
@@ -2181,6 +2187,8 @@ int main(int argc, char *argv[])
 		}
 
 		if (pid > 0) {
+			// TODO (acerion) 2024.07.15: log child's pid here,
+			// to make debugging easier.
 			/* We are the parent process. The process is
 			   no longer needed at this point. */
 			exit(EXIT_SUCCESS);
