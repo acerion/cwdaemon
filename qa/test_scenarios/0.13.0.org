@@ -505,9 +505,66 @@ Final result of the test is a "PASS"
 *Actual result*
 PASS
 
-**** STARTED Escape requests
+**** PASS Escape requests
 
-***** TODO RESET        '0'
+***** PASS RESET        '0'
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+
+
+*Info*
+
+The following parameters are reset with RESET Escape request:
+ - Morse speed,
+ - tone (frequency) of played Morse code,
+ - volume of played Morse code,
+ - sound system used to play Morse code,
+ - PTT delay
+ - weighting of Morse code,
+ - state of libcw,
+ - word mode (to false),
+ - state of pins of cwdevice,
+ - cwdaemon's internal PTT flags
+
+
+*Steps*
+1. in terminal A start cwdaemon with specific values of some of parameters.
+   Those will be the initial/default parameters.
+
+   ./src/cwdaemon -n -x s --wpm 15 --tone 1000 --volume 100 --weighting 50
+
+2. In terminal B start "nc" as a client of cwdaemon:
+
+   nc -u 127.0.0.1 6789
+
+3. In terminal B send some text to confirm that cwdaemon can play it with
+   initial/default parameters.
+
+4. In terminal B send few Escape requests to modify parameters of cwdaemon:
+   - Morse speed: change to 8 (Esc 2)
+   - tone: change to 400 (Esc 3)
+   - volume: change to 20 (Esc g)
+   - weighting: change to 0 (Esc 7)
+
+5. In terminal B send some text to confirm that cwdaemon can play it with
+   modified parameters.
+
+6. In terminal B send few RESET Escape request to change cwdaemon's
+   parameters back to their initial/default values.
+
+7. In terminal B send some text to confirm that cwdaemon is playing the text
+   with initial/default parameters.
+
+
+*Expected result*
+1. RESET Escape sent in step 6 does reset parameters to their initial values,
+   which is confirmed by how cwdaemon plays a request in step 7.
+
+*Actual result*
+PASS
+
 ***** PASS SPEED        '2'
 
 *Preconditions*
@@ -820,15 +877,30 @@ PASS
 *Actual result*
 PASS
 
-***** TODO TX_DELAY     'd'
+***** PASS TX_DELAY     'd'
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. In one terminal (terminal A) start a test instance of cwdaemon:
+   ./src/cwdaemon -n -x s
+3. In another terminal (terminal B) enter into "tests" dir.
 
 *Test program*
-tests/cwtest_escd.pl
+cwtest_escd.pl
+
+*Steps*
+1. In terminal B run a test
+   perl ./<test program name>
+2. Observe output of cwdaemon in terminal A
+3. Observe output of test in terminal B
 
 *Expected result*
-Test passes
+1. Test passes without errors,
+2. cwdaemon doesn't report any unexpected errors.
 
 *Actual result*
+PASS
 
 ***** SKIPPED BAND_SWITCH  'e'
 
@@ -904,18 +976,109 @@ Final result of the test is a "PASS"
 *Actual result*
 PASS
 
-**** TODO Command line options
+**** STARTED Command line options
 
-***** TODO -h, --help
+***** PASS -h, --help
 
-***** TODO -V, --version
+*Actual result*
+PASS
+Help text is printed, looks correct.
 
-***** TODO -d, --cwdevice <device>
+***** PASS -V, --version
 
-***** TODO -o, --options <option>
+*Actual result*
+PASS
+Information about version of cwdaemon and libcw is printed correctly.
+
+***** PASS -d, --cwdevice <device>
+
+*Preconditions*
+1. Connect two cwdevices
+
+
+*Steps*
+1. In one terminal (terminal A) start a test instance of cwdaemon:
+
+   ./src/cwdaemon -n -x s -t1 --cwdevice <cwdevice-1>
+
+2. In another terminal (terminal B) send some text using nc. As the text is
+   being played, confirm that cwdaemon is toggling "keying" pin on
+   <cwdevice-1>, but not in <cwdevice-2>.
+
+3. In terminal A stop cwdaemon and start it again, but this time with the
+   second cwdevice.
+
+   ./src/cwdaemon -n -x s -t1 -d <cwdevice-2>
+
+4. In another terminal (terminal B) send some text using nc. As the text is
+   being played, confirm that cwdaemon is toggling "keying" pin on
+   <cwdevice-2>, but not in <cwdevice-1>.
+
+
+*Expected result*
+1. cwdaemon is using the right cwdevice, as specified in command line.
+
+
+*Actual result*
+PASS
+cwdevice is using the device that was specified in command line.
+
+***** PASS -o, --options <option>
 
 *Test program*
-./tests/functional_tests/unattended/option_cwdevice_tty_lines
+./tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program
+
+*Steps*
+1. Manually start the test
+2. Observe the logs
+3. Wait for final status of the test
+4. Manually run at least one test with the long "--options" form of the
+   command line option.
+5. Try passing invalid values of "key=" or "ptt=" keywords in command line.
+
+
+*Expectations*
+1. Final result of the test is a "PASS".
+2. Handling of long "--options" option work.
+3. Invalid values of "key=" or "ptt=" keywords are rejected.
+
+
+*Actual result*
+PASS
+
+The test program doesn't support passing long form of option (--options) in
+command line yet, so I had to do that part manually.
+
+I also verified manually the handling of invalid values of "key=" and "ptt="
+keywords.
+
+***** PASS -n, --nofork
+
+*Preconditions*
+
+Find out the syslog output to which daemon which output a "daemon" processes
+are logging.
+
+On FreeBSD, per /etc/syslog.conf, the INFO messages go to
+/var/log/daemon.log.
+
+
+*Expected result*
+1. cwdaemon doesn't daemonize when executed with "-n" flag.
+2. cwdaemon does daemonize when executed without "-n" flag.
+3. When cwdaemon doesn't daemonize, it doesn't log into syslog.
+4. When cwdaemon does daemonize, it does log into syslog.
+
+
+*Actual result*
+PASS
+1. cwdaemon obeys "-n" flag.
+2. cwdaemon logs to proper output depending on "-n" flag.
+
+***** PASS -p, --port <port>
+
+*Test program*
+./tests/functional_tests/unattended/option_port/test_program
 
 *Steps*
 1. Manually start the test
@@ -926,35 +1089,104 @@ PASS
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
-***** TODO -n, --nofork
+***** PASS -s, --wpm <speed>
 
-***** TODO -p, --port <port>
-
-*Test program*
-./tests/functional_tests/unattended/option_port
-
-*Steps*
-1. Manually start the test
-2. Observe the logs
-3. Wait for final status of the test
-
-*Expectations*
-Final result of the test is a "PASS"
+*Expected result*
+1. It's possible to set parameter using short and long form of the option.
+2. Values in range are accepted by cwdaemon (confirmed by playing some text).
+3. Values out of range are rejected - cwdaemon prints error message and exits.
 
 *Actual result*
+PASS
+Speed is set as requested in command line.
+Values out of range are rejected.
 
-***** TODO -s, --wpm <speed>
+***** PASS -t, --pttdelay <time>
 
-***** TODO -t, --pttdelay <time>
+*Expected result*
+1. It's possible to set parameter using short and long form of the option.
+2. Values in range are accepted by cwdaemon.
+3. Values out of range are rejected - cwdaemon prints error message and exits.
 
-***** TODO -x, --system <sound system>
-***** TODO -v, --volume <volume>
-***** TODO -w, --weighting <weight>
-***** TODO -T, --tone <tone>
+*Actual result*
+PASS
+Values in range are accepted.
+Values out of range are rejected.
+
+Unfortunately right now I don't have good tools or good SW tests to measure
+the actual delay.
+
+***** PASS -x, --system <sound system>
+
+*Preconditions*
+1. Connect a cwdevice
+
+
+*Steps*
+1. Run cwdaemon with different sound systems: one of 'n', 'c', 'o', 'a', 'p',
+   's'.
+2. Observe if cwdaemon exits due to unsupported sound system, or if it starts
+   correctly.
+3. If it starts correctly, try to sending some text through "nc".
+
+
+*Expected results*
+1. cwdaemon doesn't start correctly if a sound system not supported on the
+   test platform is specified.
+2. cwdaemon starts correctly if a sound system supported on the test platform
+   is specified.
+3. If cwdaemon starts correctly, it plays a text using specified sound
+   system.
+4. Both short and long form of the command line option works the same.
+
+
+*Actual result*
+PASS
+1. cwdaemon accepted following sound systems: 'n', 'o', 's'.
+2. Short and long form of command line option works the same.
+
+***** PASS -v, --volume <volume>
+
+*Expected result*
+1. It's possible to set parameter using short and long form of the option.
+2. Values in range are accepted by cwdaemon (confirmed by playing some text).
+3. Values out of range are rejected - cwdaemon prints error message and exits.
+
+*Actual result*
+PASS
+Volume is set as requested in command line.
+Values out of range are rejected.
+
+***** PASS -w, --weighting <weight>
+
+*Expected result*
+1. It's possible to set parameter using short and long form of the option.
+2. Values in range are accepted by cwdaemon (confirmed by playing some text).
+3. Values out of range are rejected - cwdaemon prints error message and exits.
+4. cwdaemon accepts negative values (you may need to put them in quotes)
+
+*Actual result*
+PASS
+Tone is set as requested in command line.
+Values out of range are rejected.
+
+***** PASS -T, --tone <tone>
+
+*Expected result*
+1. It's possible to set parameter using short and long form of the option.
+2. Values in range are accepted by cwdaemon (confirmed by playing some text).
+3. Values out of range are rejected - cwdaemon prints error message and exits.
+
+*Actual result*
+PASS.
+Tone is set as requested in command line.
+Values out of range are rejected.
+
 ***** TODO -i
 ***** TODO -y, --verbosity <threshold>
-***** TODO -I, --libcwflags <flags>
+***** PASS -I, --libcwflags <flags>
 
 Confirm that option that specifies debug flags for libcw is working.
 
@@ -974,7 +1206,7 @@ In this test cwdaemon is executed:
 2. Run cwdaemon without the tested flag. Notice the 'd' (DEBUG) threshold for
    cwdaemon.
 
-   ./src/cwdaemon -d null -n -x p -y d
+   ./src/cwdaemon -d null -n -x o -y d
 
 3. Send some characters to cwdaemon with nc.
 
@@ -984,7 +1216,7 @@ In this test cwdaemon is executed:
 5. Kill cwdaemon started in step 2. Start cwdaemon with '--libcwflags'
    option. Notice the 'd' (DEBUG) threshold for cwdaemon.
 
-   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y d
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x o -y d
 
 6. Send characters to cwdaemon using nc.
 
@@ -994,21 +1226,22 @@ In this test cwdaemon is executed:
 8. Kill cwdaemon started in step 4. Start cwdaemon with '--libcwflags'
    option. Notice the 'w' (WARNING) threshold for cwdaemon.
 
-   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y w
+   ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x o -y w
 
 9. Send characters to cwdaemon using nc.
 
 10. Confirm that cwdaemon's log output shows cwdaemon logs. If there are any
-	libcw logs, the logs have severity only WARNING or ERROR.
+    libcw logs, the logs have severity only WARNING or ERROR.
 
 *Expected result*
 
 1. libcw logs are visible in cwdaemon's log output only if `--libcwflags`
    flag is used
 
-2. Threshold for libcw logs depends on value of '-y' flag.
+2. Threshold for libcw logs depends on value of '-y' flag passed to cwdaemon.
 
 *Actual result*
+PASS
 
 ***** TODO -f, --debugfile <output>
 
