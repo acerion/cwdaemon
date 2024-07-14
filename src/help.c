@@ -45,6 +45,7 @@ void cwdaemon_args_help(void)
 
 	printf("-h, --help\n");
 	printf("        Print this help and exit.\n");
+
 	printf("-V, --version\n");
 	printf("        Print version information and exit.\n");
 
@@ -65,7 +66,7 @@ void cwdaemon_args_help(void)
 	printf("        Use \"null\" for dummy device (no rig keying, no ssb keying, etc.).\n");
 
 	printf("-o, --options <option>\n");
-	printf("        Specify <option> to configure device selected by -d / -cwdevice option.\n");
+	printf("        Specify <option> to configure device selected by -d / --cwdevice option.\n");
 	printf("        Multiple <option> values can be passed in multiple -o invocations.\n");
 	printf("        These options must always follow the -d / --cwdevice option\n");
 	printf("        on the command line.\n");
@@ -74,23 +75,28 @@ void cwdaemon_args_help(void)
 	printf("        ptt=RTS|DTR|none (without spaces, default is RTS)\n");
 
 	printf("-n, --nofork\n");
-	printf("        Do not fork. Print debug information to stdout.\n");
+	printf("        Do not fork. Print messages to stdout.\n");
 
 	printf("-p, --port <port>\n");
 	printf("        Specify a number of UDP port to listen on.\n");
 	printf("        Valid values are in range <%d - %d>, inclusive.\n", CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX);
-	printf("        Default port number is %d.\n", CWDAEMON_NETWORK_PORT_DEFAULT);
+	printf("        Default value is %d.\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 
 #if defined(HAVE_SETPRIORITY) && defined(PRIO_PROCESS)
 	printf("-P, --priority <priority>\n");
 	printf("        Set program's priority (-20 - 20, default: 0).\n");
 #endif
+
 	printf("-s, --wpm <speed>\n");
-	printf("        Set Morse speed [wpm] (%d - %d, default: %d).\n",
-	       CW_SPEED_MIN, CW_SPEED_MAX, CWDAEMON_MORSE_SPEED_DEFAULT);
+	printf("        Set Morse speed [wpm].\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CW_SPEED_MIN, CW_SPEED_MAX);
+	printf("        Default value is %d.\n", CWDAEMON_MORSE_SPEED_DEFAULT);
+
 	printf("-t, --pttdelay <time>\n");
-	printf("        Set PTT delay [ms] (%d - %d, default: %d).\n",
-	       CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX, CWDAEMON_PTT_DELAY_DEFAULT);
+	printf("        Set PTT delay [ms].\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CWDAEMON_PTT_DELAY_MIN, CWDAEMON_PTT_DELAY_MAX);
+	printf("        Default value is %d.\n", CWDAEMON_PTT_DELAY_DEFAULT);
+
 	printf("-x, --system <sound system>\n");
 	printf("        Use a specific sound system:\n");
 	printf("        c = console buzzer (default)\n");
@@ -99,15 +105,22 @@ void cwdaemon_args_help(void)
 	printf("        p = PulseAudio\n");
 	printf("        n = null (no audio)\n");
 	printf("        s = soundcard (autoselect from OSS/ALSA/PulseAudio)\n");
+
 	printf("-v, --volume <volume>\n");
-	printf("        Set volume for soundcard output [%%] (%d - %d, default: %d).\n",
-	       CW_VOLUME_MIN, CW_VOLUME_MAX, CWDAEMON_MORSE_VOLUME_DEFAULT);
+	printf("        Set volume for soundcard output [%%].\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CW_VOLUME_MIN, CW_VOLUME_MAX);
+	printf("        Default value is %d.\n", CWDAEMON_MORSE_VOLUME_DEFAULT);
+
 	printf("-w, --weighting <weight>\n");
-	printf("        Set weighting (%d - %d, default: %d).\n",
-	       CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX, CWDAEMON_MORSE_WEIGHTING_DEFAULT);
+	printf("        Set weighting of Morse code.\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CWDAEMON_MORSE_WEIGHTING_MIN, CWDAEMON_MORSE_WEIGHTING_MAX);
+	printf("        Default value is %d.\n", CWDAEMON_MORSE_WEIGHTING_DEFAULT);
+
 	printf("-T, --tone <tone>\n");
-	printf("        Set initial tone [Hz] (%d - %d, default: %d).\n",
-	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
+	printf("        Set tone (frequency) of played Morse code [Hz].\n");
+	printf("        Valid values are in range <%d - %d>, inclusive.\n", CW_FREQUENCY_MIN, CW_FREQUENCY_MAX);
+	printf("        Default value is %d.\n", CWDAEMON_MORSE_TONE_DEFAULT);
+
 	printf("-i\n");
 	printf("        Increase verbosity of debug messages printed by cwdaemon.\n");
 	printf("        Repeat for even more verbosity (e.g. -iii).\n");
