@@ -326,7 +326,7 @@ static int test_run(test_case_t * test_cases, size_t n_test_cases, client_t * cl
 			for (size_t c = 0; c < n_test_cases; c++) {
 				test_case_t * test_case = &test_cases[c];
 
-				/* Insert unique id into message to easily recognize it in cwademon's logs. */
+				/* Insert unique id into message to easily recognize it in cwdaemon's logs. */
 				char id_buffer[16] = { 0 };
 				snprintf(id_buffer, sizeof (id_buffer), ">%zu_%08d<", c, iter);
 				const size_t id_len = strlen(id_buffer);

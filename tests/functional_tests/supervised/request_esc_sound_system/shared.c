@@ -459,7 +459,7 @@ static int test_run(tests_sound_systems_available_t const * avail, test_case_t c
 		test_log_info("Test: iteration %zu / %zu: test case [%s] has succeeded\n\n", iter + 1, n_iterations, test_case->description);
 
 		if (new_sound_system != CW_AUDIO_NONE) {
-			// cwademon switched to new sound system only if the new
+			// cwdaemon switched to new sound system only if the new
 			// system is valid (i.e. is not CW_AUDIO_NONE).
 			old_sound_system = new_sound_system;
 		}

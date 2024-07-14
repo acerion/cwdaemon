@@ -109,7 +109,7 @@ void cwdaemon_args_help(void)
 	printf("        Set initial tone [Hz] (%d - %d, default: %d).\n",
 	       CW_FREQUENCY_MIN, CW_FREQUENCY_MAX, CWDAEMON_MORSE_TONE_DEFAULT);
 	printf("-i\n");
-	printf("        Increase verbosity of debug messages printed by cwademon.\n");
+	printf("        Increase verbosity of debug messages printed by cwdaemon.\n");
 	printf("        Repeat for even more verbosity (e.g. -iii).\n");
 	printf("        Alternatively you can use -y/--verbosity option.\n");
 	printf("-y, --verbosity <threshold>\n");
