@@ -113,7 +113,11 @@ char const * tests_supervisor_get_valgrind_path(void)
 	// TODO (acerion) 2024.06.23: discover this path in runtime. On Linux
 	// it's /usr/bin/valgrind, but on FreeBSD 14.1 it's
 	// /usr/local/bin/valgrind.
+#if defined(__FreeBSD__)
 	return "/usr/local/bin/valgrind";
+#else
+	return "/usr/bin/valgrind";
+#endif
 }
 
 
@@ -122,7 +126,11 @@ char const * tests_supervisor_get_valgrind_path(void)
 char const * tests_supervisor_get_gdb_path(void)
 {
 	// TODO (acerion) 2024.04.20: discover this path in runtime?
+#if defined(__FreeBSD__)
+	return "/usr/local/bin/gdb";
+#else
 	return "/usr/bin/gdb";
+#endif
 }
 
 
