@@ -3,7 +3,7 @@
 
 # cwtest.pl - test script for cwdaemon
 # Copyright (C) 2012 Jenö Vágó  HA5SE
-# Copyright (C) 2012 - 2023 Kamil Ignacak
+# Copyright (C) 2012 - 2024 Kamil Ignacak
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ my $result = GetOptions("cycles=i"       => \$cycles,
 			"nstrings=i"     => \$n_test_strings,
 			"stringlenmax=i" => \$string_len_max)
 
-    or die "Problems with getting options: $@\n";
+    or die "[EE] Problems with getting options: $@\n";
 
 
 
@@ -172,6 +172,8 @@ for ($cycle = 0; $cycle < $cycles; $cycle++) {
 }
 
 
+print "\n";
+print "[II] End of test\n";
 $cwsocket->close();
 
 
