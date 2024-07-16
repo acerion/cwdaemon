@@ -1204,24 +1204,41 @@ cwtest_short_space.pl
 
 *** TODO gcov/lcov
 
-Purpose: confirm that it's possible to generate a coverage report for unit
-tests.
+*Purpose*
+
+Confirm that it's possible to generate a coverage report for unit tests. It
+is not expected that specific level of coverage is achieved.
+
+
+*Prerequisites*
+
+1. "lcov" package is installed.
+2. The compilation and the coverage must be done with the same toolchain, and
+   therefore on FreeBSD you may need to do this:
+
+   export CC=clang
+
 
 *Steps*
 
 The steps are copied from relevant sections in top-level README file:
 
-1. ./configure --enable-gcov
+1. ./configure --enable-functional-tests --enable-gcov
 2. make gcov
-3. <web browser> tests/unit_tests/coverage/index.html
-4. make gcov-clean
+3. <web browser> tests/coverage/unit_tests/daemon_options/index.html
+4. make clean
+
 
 *Expected results*
+
 1. Summary of configuration step correctly shows enabled gcov,
 2. There are no errors during generation of gcov/lcov report,
 3. Contents of the report looks correct (no obvious problems with the
    report).
 4. There are no errors during cleanup step.
+
+
+*Actual result*
 
 *** TODO memory tests with valgrind
 **** TODO memory tests with valgrind for functional/unattended tests
