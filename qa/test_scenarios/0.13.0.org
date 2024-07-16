@@ -1577,8 +1577,8 @@ The steps are copied from relevant sections in top-level README file:
 *Actual result*
 PASS
 
-*** TODO memory tests with valgrind
-**** TODO memory tests with valgrind for functional/unattended tests
+*** STARTED memory tests with valgrind
+**** STARTED memory tests with valgrind for functional/unattended tests
 
 *Goal*
 
@@ -1596,37 +1596,75 @@ running under control of valgrind.
 
    make && make check
 
+   You can terminate the "make check" command as soon as build system starts
+   executing unit tests.
+
 3. Prepare environment variables that will be used by all test programs
    executed with "make check"
 
    export CWDAEMON_TEST_SOUND_SYSTEM=null
    export CWDAEMON_TEST_SUPERVISOR=valgrind
 
-4. Compile and run the tests.
+4. Find all unattended tests
 
-   make check
+   find tests/functional_tests/unattended/ -name test_program
 
-5. After tests are completed:
+5. Run each binary by hand, one at a time.
 
-   1. Look for sections in test logs that contain valgrind's summary of memory leaks.
+   The purpose of running each test at a time is to get informed about a
+   failure early.
 
-	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers in *.log
-      files.
+   1. After each test is completed, confirm that no errors are present in
+      summary of the test, in one of these sections:
 
-   2. Look for sections in test logs that contain valgrind's summary of
-      memory errors.
+      1. "FILE DESCRIPTORS"
+      2. "HEAP SUMMARY"
+      3. "LEAK SUMMARY"
+      4. "ERROR SUMMARY"
 
-	  Look for "ERROR SUMMARY" section header in *.log files
+      Remember that each test may generate several valgrind sessions, each
+      having its own summary. Be sure to review summaries of all valgrind
+      sessions.
 
-   3. Confirm that no memory leaks or memory errors were reported by
-      valgrind.
+   2. After each test is completed, confirm that the status of the test
+      itself is a PASS (i.e. that the test didn't fail).
 
 
 *Expected result*
 
 1. no memory leaks or memory errors were reported by valgrind.
 
+
 *Actual result*
+
+tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program - ticket R0040
+tests/functional_tests/unattended/request_esc_exit/test_program          - PASS
+tests/functional_tests/unattended/reset_register_callback/test_program   - PASS
+tests/functional_tests/unattended/option_port/test_program
+tests/functional_tests/unattended/request_plain/test_program
+tests/functional_tests/unattended/request_caret/test_program
+tests/functional_tests/unattended/request_esc_cwdevice/test_program      - PASS
+tests/functional_tests/unattended/request_esc_reply/test_program         - PASS
+
+
+
+Tests of request_esc_cwdevice result in this valgrind log (and similar logs);
+
+==86935== 2 bytes in 1 blocks are still reachable in loss record 1 of 9
+==86935==    at 0x484D314: malloc (vg_replace_malloc.c:450)
+==86935==    by 0x534555C: strdup (in /lib/libc.so.7)
+==86935==    by 0x5273152: ??? (in /lib/libc.so.7)
+==86935==    by 0x53455C6: ??? (in /lib/libc.so.7)
+==86935==    by 0x53457C0: strerror (in /lib/libc.so.7)
+==86935==    by 0x405472: tty_probe_cwdevice (ttys.c:112)
+==86935==    by 0x40449B: cwdaemon_cwdevice_set (cwdaemon.c:2420)
+==86935==    by 0x405BBA: cwdaemon_option_cwdevice (options.c:148)
+==86935==    by 0x403A53: cwdaemon_handle_escaped_request (cwdaemon.c:1049)
+==86935==    by 0x4043E0: cwdaemon_receive (cwdaemon.c:921)
+==86935==    by 0x402547: main (cwdaemon.c:2297)
+
+Since strerror() returns pointer to static buffer that can't be deallocated,
+I'm not going to address this problem.
 
 **** TODO memory tests with valgrind for functional/supervised tests
 

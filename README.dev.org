@@ -585,3 +585,46 @@ cwdaemon should recognize that 'null' is not a device in /dev/ but a special
 dummy device. There should be no probing for lp or tty device called 'null'
 in /dev/.
 
+
+** TODO [#A] R0040: Bug: memory allocation in Valgrind's logs
+
+Found during tests of 0.13.0 on FreeBSD.
+
+Valgrind reports more allocs (15) than frees (10) in HEAP SUMMARY, see log below.
+
+While this is not reflected in LEAK SUMMARY, this is still bad and needs to
+be addressed soon.
+
+This particular problem was found during execution of
+tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program with
+"supervisor" set to "valgrind".
+
+==72103== 
+==72103== FILE DESCRIPTORS: 3 open (3 std) at exit.
+==72103== 
+==72103== HEAP SUMMARY:
+==72103==     in use at exit: 7,552 bytes in 5 blocks
+==72103==   total heap usage: 15 allocs, 10 frees, 153,202 bytes allocated       <---- here
+==72103== 
+==72103== LEAK SUMMARY:
+==72103==    definitely lost: 0 bytes in 0 blocks
+==72103==    indirectly lost: 0 bytes in 0 blocks
+==72103==      possibly lost: 0 bytes in 0 blocks
+==72103==    still reachable: 0 bytes in 0 blocks
+==72103==         suppressed: 7,552 bytes in 5 blocks
+==72103== 
+==72103== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+--72103-- 
+--72103-- used_suppression:      1 MEMCHECK-LIBC-REACHABLE-1 /usr/local/libexec/valgrind/default.supp:595 suppressed: 4,096 bytes in 1 blocks
+--72103-- used_suppression:      4 MEMCHECK-LIBTHR-REACHABLE-1 /usr/local/libexec/valgrind/default.supp:665 suppressed: 3,456 bytes in 4 blocks
+==72103== 
+==72103== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+Analysis with valgrind's "massif" tool
+(https://stackoverflow.com/questions/30512000/how-to-make-valgrind-log-all-allocations)
+suggests that the problem is either in libc, or in libcw.
+
+This problem occurs on FreeBSD, but not on Linux. On Linux the Count of frees
+matches the count of allocs.
+
