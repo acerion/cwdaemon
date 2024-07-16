@@ -859,7 +859,72 @@ Values out of range are rejected.
 *Actual result*
 
 ***** TODO -i
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+
+*Steps*
+
+1. In one terminal (terminal A) start cwdaemon without "-i" flags:
+
+   ./src/cwdaemon -n -x s -d <cwdevice>
+
+2. In another terminal (terminal B) send a valid TONE Escape request, send an
+   invalid TONE Escape request, and then play some text.
+
+3. In terminal A observe that with no "-i" flags specified in command line,
+   cwdaemon prints only errors and warnings
+
+4. In terminal A do a series of starts of cwdaemon with increasing amount of
+   "-i" flags. In terminal B send a TONE Escape request, then play some text,
+   and then in terminal A observe increasing verbosity of cwdaemon's logs.
+
+
+*Expected result*
+1. Verbosity of logs in cwdaemon increases with count of "i" options passed
+   in command line.
+
+
+*Actual result*
+
 ***** TODO -y, --verbosity <threshold>
+
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+
+*Steps*
+
+1. In one terminal (terminal A) start cwdaemon without "-y"/"--verbosity"
+   flag:
+
+   ./src/cwdaemon -n -x s -d <cwdevice>
+
+2. In another terminal (terminal B) send a valid TONE Escape request, send an
+   invalid TONE Escape request, and then play some text.
+
+3. In terminal A observe that with no "-i" flags specified in command line,
+   cwdaemon prints only errors and warnings.
+
+4. In terminal A do a series of starts of cwdaemon with increasing a level
+   passed to "-y"/"--verbosity" flag (n (none), e (error), w (warning), i
+   (information), d (debug)). In terminal B send a TONE Escape request, then
+   play some text, and then in terminal A observe increasing verbosity of
+   cwdaemon's logs.
+
+   In particular confirm that with "n" flag cwdaemon doesn't even print
+   errors.
+
+
+*Expected result*
+
+1. Verbosity of logs in cwdaemon increases with level of verbosity passed to
+   "-y"/"--verbosity" in command line.
+
+
+*Actual result*
+
 ***** TODO -I, --libcwflags <flags>
 
 Confirm that option that specifies debug flags for libcw is working.
@@ -918,12 +983,62 @@ In this test cwdaemon is executed:
 
 ***** TODO -f, --debugfile <output>
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+
+
+*Steps*
+
+1. Confirm that cwdaemon logs messages to text file when started like this in
+   non-forking mode:
+
+   ./src/cwdaemon -n -x s -d /dev/cuaU0 -y d [-f/--debugfile] /tmp/non_forking.txt
+
+2. Confirm that cwdaemon logs messages to text file when started like this in
+   forking mode:
+
+   ./src/cwdaemon -x s -d /dev/cuaU0 -y d [-f/--debugfile] /tmp/forking.txt
+
+3. Confirm that cwdaemon logs messages to stdout when started like this:
+
+   ./src/cwdaemon -n -x s -d /dev/cuaU0 -y d [-f/--debugfile] stdout 2>/tmp/stderr.txt
+
+4. Confirm that cwdaemon logs messages to stderr when started like this:
+
+   ./src/cwdaemon -n -x s -d /dev/cuaU0 -y d [-f/--debugfile] stderr 1>/tmp/stdout.txt
+
+5. Confirm that cwdaemon rejects "syslog" as output of logs when started like
+   this:
+
+   ./src/cwdaemon -n -x s -d /dev/cuaU0 -y d [-f/--debugfile] syslog
+
+
+*Expected result*
+1. All of the behaviours from "Steps" are seen in running cwdaemon.
+2. All of the behaviours from "Steps" are the same for short and long form of
+   the command line option.
+
+
+*Actual result*
+
 **** TODO Misc tests
 
 ***** TODO reset register callback
 
+*Preconditions*
+
+1. Connect TTY-to-USB converter.
+2. Compile cwdaemon with functional tests enabled
+
+   ./configure --enable-functional-tests
+   make
+   make check
+
+
 *Test program*
-./tests/functional_tests/unattended/reset_register_callback
+./tests/functional_tests/unattended/reset_register_callback/test_program
+
 
 *Steps*
 1. Manually start the test
@@ -1027,36 +1142,63 @@ All expectations from above steps are met.
 
 ***** TODO tests/cwtest.pl
 
-*Test program*
-tests/cwtest.pl
-
 *Preconditions*
 
-cwdaemon must be started (automatically or manually), running on default
-port, with <platform's preferred sound system>.
+1. USB-to-UART converter that exposes DTR pin and RTS pin.
+2. cwdaemon must be started (automatically or manually), running on default
+   port, with <platform's preferred sound system>.
 
-./src/cwdaemon -n -x p
+   ./src/cwdaemon -n -x s -d cuaU0
+
+
+*Test program*
+cwtest.pl
+
+
+*Steps*
+1. Enter "tests" directory
+2. Start the test script
+
+   perl ./cwtest.pl --cycles 2
+
+3. Observe test's output and cwdaemon's output.
+
 
 *Expected result*
-Test passes
+1. There are no errors in messages printed by cwdaemon.
+2. There are no errors in messages printed by the test.
+
 
 *Actual result*
 
 ***** TODO tests/cwtest_short_space.pl
 
-*Test program*
-tests/cwtest_short_space.pl
-
 *Preconditions*
 
-cwdaemon must be started (automatically or manually), running on default
-port, with <platform's preferred sound system>.
+1. USB-to-UART converter that exposes DTR pin and RTS pin.
+2. cwdaemon must be started (automatically or manually), running on default
+   port, with <platform's preferred sound system>.
 
-./src/cwdaemon -n -x p
+   ./src/cwdaemon -n -x s -d cuaU0
+
+
+*Test program*
+cwtest_short_space.pl
+
+
+*Steps*
+1. Enter "tests" directory
+2. Start the test script
+
+   perl ./cwtest_short_space.pl --cycles 20
+
+3. Observe test's output and cwdaemon's output.
 
 
 *Expected result*
-Test passes
+1. There are no errors in messages printed by cwdaemon.
+2. There are no errors in messages printed by the test.
+
 
 *Actual result*
 
