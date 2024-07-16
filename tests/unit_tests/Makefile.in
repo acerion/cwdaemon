@@ -112,39 +112,43 @@ CONFIG_CLEAN_VPATH_FILES =
 @FUNCTIONAL_TESTS_TRUE@	tests_events$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_daemon_options_OBJECTS =  \
-	../../src/daemon_options-options.$(OBJEXT) \
-	../../src/daemon_options-log.$(OBJEXT) \
-	../../src/daemon_options-utils.$(OBJEXT) \
+	$(top_builddir)/src/daemon_options-options.$(OBJEXT) \
+	$(top_builddir)/src/daemon_options-log.$(OBJEXT) \
+	$(top_builddir)/src/daemon_options-utils.$(OBJEXT) \
 	./daemon_options-daemon_options.$(OBJEXT) \
 	./daemon_options-daemon_stubs.$(OBJEXT)
 daemon_options_OBJECTS = $(am_daemon_options_OBJECTS)
 daemon_options_LDADD = $(LDADD)
 daemon_options_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(daemon_options_LDFLAGS) $(LDFLAGS) -o $@
-am_daemon_sleep_OBJECTS = ../../src/daemon_sleep-sleep.$(OBJEXT) \
+am_daemon_sleep_OBJECTS =  \
+	$(top_builddir)/src/daemon_sleep-sleep.$(OBJEXT) \
 	./daemon_sleep-daemon_sleep.$(OBJEXT)
 daemon_sleep_OBJECTS = $(am_daemon_sleep_OBJECTS)
 daemon_sleep_LDADD = $(LDADD)
 daemon_sleep_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(daemon_sleep_LDFLAGS) $(LDFLAGS) -o $@
-am_daemon_utils_OBJECTS = ../../src/daemon_utils-utils.$(OBJEXT) \
+am_daemon_utils_OBJECTS =  \
+	$(top_builddir)/src/daemon_utils-utils.$(OBJEXT) \
 	./daemon_utils-daemon_utils.$(OBJEXT)
 daemon_utils_OBJECTS = $(am_daemon_utils_OBJECTS)
 daemon_utils_LDADD = $(LDADD)
 daemon_utils_LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(daemon_utils_LDFLAGS) $(LDFLAGS) -o $@
-am_tests_events_OBJECTS = ../library/tests_events-events.$(OBJEXT) \
-	../library/tests_events-random.$(OBJEXT) \
-	../library/tests_events-string_utils.$(OBJEXT) \
-	../library/tests_events-time_utils.$(OBJEXT) \
+am_tests_events_OBJECTS =  \
+	$(top_builddir)/tests/library/tests_events-events.$(OBJEXT) \
+	$(top_builddir)/tests/library/tests_events-random.$(OBJEXT) \
+	$(top_builddir)/tests/library/tests_events-string_utils.$(OBJEXT) \
+	$(top_builddir)/tests/library/tests_events-time_utils.$(OBJEXT) \
 	./tests_events-tests_events.$(OBJEXT)
 tests_events_OBJECTS = $(am_tests_events_OBJECTS)
 tests_events_LDADD = $(LDADD)
-am_tests_morse_receiver_OBJECTS = ../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT) \
+am_tests_morse_receiver_OBJECTS = $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT) \
 	./tests_morse_receiver-tests_morse_receiver.$(OBJEXT)
 tests_morse_receiver_OBJECTS = $(am_tests_morse_receiver_OBJECTS)
 tests_morse_receiver_LDADD = $(LDADD)
-am_tests_random_OBJECTS = ../library/tests_random-random.$(OBJEXT) \
+am_tests_random_OBJECTS =  \
+	$(top_builddir)/tests/library/tests_random-random.$(OBJEXT) \
 	./tests_random-tests_random.$(OBJEXT)
 tests_random_OBJECTS = $(am_tests_random_OBJECTS)
 tests_random_LDADD = $(LDADD)
@@ -152,8 +156,7 @@ am_tests_string_utils_OBJECTS = $(top_builddir)/tests/library/tests_string_utils
 	./tests_string_utils-tests_string_utils.$(OBJEXT)
 tests_string_utils_OBJECTS = $(am_tests_string_utils_OBJECTS)
 tests_string_utils_LDADD = $(LDADD)
-am_tests_time_utils_OBJECTS =  \
-	../library/tests_time_utils-time_utils.$(OBJEXT) \
+am_tests_time_utils_OBJECTS = $(top_builddir)/tests/library/tests_time_utils-time_utils.$(OBJEXT) \
 	./tests_time_utils-tests_time_utils.$(OBJEXT)
 tests_time_utils_OBJECTS = $(am_tests_time_utils_OBJECTS)
 tests_time_utils_LDADD = $(LDADD)
@@ -172,19 +175,20 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po \
-	../../src/$(DEPDIR)/daemon_options-log.Po \
-	../../src/$(DEPDIR)/daemon_options-options.Po \
-	../../src/$(DEPDIR)/daemon_options-utils.Po \
-	../../src/$(DEPDIR)/daemon_sleep-sleep.Po \
-	../../src/$(DEPDIR)/daemon_utils-utils.Po \
-	../library/$(DEPDIR)/tests_events-events.Po \
-	../library/$(DEPDIR)/tests_events-random.Po \
-	../library/$(DEPDIR)/tests_events-string_utils.Po \
-	../library/$(DEPDIR)/tests_events-time_utils.Po \
-	../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po \
-	../library/$(DEPDIR)/tests_random-random.Po \
-	../library/$(DEPDIR)/tests_time_utils-time_utils.Po \
+am__depfiles_remade =  \
+	$(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po \
+	$(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po \
+	$(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po \
+	$(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po \
+	$(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po \
+	$(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po \
 	./$(DEPDIR)/daemon_options-daemon_options.Po \
 	./$(DEPDIR)/daemon_options-daemon_stubs.Po \
 	./$(DEPDIR)/daemon_sleep-daemon_sleep.Po \
@@ -359,46 +363,37 @@ top_srcdir = @top_srcdir@
 @ENABLE_GCOV_TRUE@gcov_C_FLAGS = --coverage
 @ENABLE_GCOV_TRUE@gcov_LD_FLAGS = --coverage
 
-# POSIX-compliant "suffix rules" are SO MUCH FUN!
-#
-# This rule is doing following:
-# 1. clean unit test code
-# 2. rebuild unit test code
-# 3. run unit test
-# 4. generate coverage report with lcov+genhtml
-@ENABLE_GCOV_TRUE@SUFFIXES = .gcov .dummy
-
 # Below are unit tests for code used in daemon.
-daemon_utils_SOURCES = ../../src/utils.c ./daemon_utils.c
+daemon_utils_SOURCES = $(top_srcdir)/src/utils.c ./daemon_utils.c
 daemon_utils_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_utils_LDFLAGS = $(gcov_LD_FLAGS)
-daemon_options_SOURCES = ../../src/options.c ../../src/log.c ../../src/utils.c ./daemon_options.c ./daemon_stubs.c
+daemon_options_SOURCES = $(top_srcdir)/src/options.c $(top_srcdir)/src/log.c $(top_srcdir)/src/utils.c ./daemon_options.c ./daemon_stubs.c
 daemon_options_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_options_LDFLAGS = $(gcov_LD_FLAGS)
-daemon_sleep_SOURCES = ../../src/sleep.c ./daemon_sleep.c
+daemon_sleep_SOURCES = $(top_srcdir)/src/sleep.c ./daemon_sleep.c
 daemon_sleep_CPPFLAGS = -I$(top_srcdir) $(gcov_C_FLAGS)
 daemon_sleep_LDFLAGS = $(gcov_LD_FLAGS)
 
 # Below are unit tests for code used in functional tests.
 tests_string_utils_SOURCES = $(top_srcdir)/tests/library/string_utils.c ./tests_string_utils.c
 tests_string_utils_CPPFLAGS = -I$(top_srcdir)
-tests_time_utils_SOURCES = ../library/time_utils.c ./tests_time_utils.c
+tests_time_utils_SOURCES = $(top_srcdir)/tests/library/time_utils.c ./tests_time_utils.c
 tests_time_utils_CPPFLAGS = -I$(top_srcdir)
-tests_random_SOURCES = ../library/random.c ../library/random.h ./tests_random.c
+tests_random_SOURCES = $(top_srcdir)/tests/library/random.c $(top_srcdir)/tests/library/random.h ./tests_random.c
 tests_random_CPPFLAGS = -I$(top_srcdir)
-tests_morse_receiver_SOURCES = ../library/morse_receiver_utils.c ./tests_morse_receiver.c
+tests_morse_receiver_SOURCES = $(top_srcdir)/tests/library/morse_receiver_utils.c ./tests_morse_receiver.c
 tests_morse_receiver_CPPFLAGS = -I$(top_srcdir)
-tests_events_SOURCES = ../library/events.c        \
-                       ../library/random.c        \
-                       ../library/string_utils.c  \
-                       ../library/time_utils.c    \
+tests_events_SOURCES = $(top_srcdir)/tests/library/events.c        \
+                       $(top_srcdir)/tests/library/random.c        \
+                       $(top_srcdir)/tests/library/string_utils.c  \
+                       $(top_srcdir)/tests/library/time_utils.c    \
                        ./tests_events.c
 
 tests_events_CPPFLAGS = -I$(top_srcdir) $(LIBCW_CFLAGS)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .gcov .dummy .c .o .obj
+.SUFFIXES: .c .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -431,18 +426,21 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-../../src/$(am__dirstamp):
-	@$(MKDIR_P) ../../src
-	@: > ../../src/$(am__dirstamp)
-../../src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ../../src/$(DEPDIR)
-	@: > ../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/daemon_options-options.$(OBJEXT): ../../src/$(am__dirstamp) \
-	../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/daemon_options-log.$(OBJEXT): ../../src/$(am__dirstamp) \
-	../../src/$(DEPDIR)/$(am__dirstamp)
-../../src/daemon_options-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
-	../../src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src
+	@: > $(top_builddir)/src/$(am__dirstamp)
+$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
+	@: > $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/daemon_options-options.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/daemon_options-log.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/daemon_options-utils.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 ./$(am__dirstamp):
 	@$(MKDIR_P) .
 	@: > ./$(am__dirstamp)
@@ -457,67 +455,66 @@ $(DEPDIR)/$(am__dirstamp):
 daemon_options$(EXEEXT): $(daemon_options_OBJECTS) $(daemon_options_DEPENDENCIES) $(EXTRA_daemon_options_DEPENDENCIES) 
 	@rm -f daemon_options$(EXEEXT)
 	$(AM_V_CCLD)$(daemon_options_LINK) $(daemon_options_OBJECTS) $(daemon_options_LDADD) $(LIBS)
-../../src/daemon_sleep-sleep.$(OBJEXT): ../../src/$(am__dirstamp) \
-	../../src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/daemon_sleep-sleep.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 ./daemon_sleep-daemon_sleep.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
 daemon_sleep$(EXEEXT): $(daemon_sleep_OBJECTS) $(daemon_sleep_DEPENDENCIES) $(EXTRA_daemon_sleep_DEPENDENCIES) 
 	@rm -f daemon_sleep$(EXEEXT)
 	$(AM_V_CCLD)$(daemon_sleep_LINK) $(daemon_sleep_OBJECTS) $(daemon_sleep_LDADD) $(LIBS)
-../../src/daemon_utils-utils.$(OBJEXT): ../../src/$(am__dirstamp) \
-	../../src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/daemon_utils-utils.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 ./daemon_utils-daemon_utils.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
 daemon_utils$(EXEEXT): $(daemon_utils_OBJECTS) $(daemon_utils_DEPENDENCIES) $(EXTRA_daemon_utils_DEPENDENCIES) 
 	@rm -f daemon_utils$(EXEEXT)
 	$(AM_V_CCLD)$(daemon_utils_LINK) $(daemon_utils_OBJECTS) $(daemon_utils_LDADD) $(LIBS)
-../library/$(am__dirstamp):
-	@$(MKDIR_P) ../library
-	@: > ../library/$(am__dirstamp)
-../library/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ../library/$(DEPDIR)
-	@: > ../library/$(DEPDIR)/$(am__dirstamp)
-../library/tests_events-events.$(OBJEXT): ../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-../library/tests_events-random.$(OBJEXT): ../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-../library/tests_events-string_utils.$(OBJEXT):  \
-	../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-../library/tests_events-time_utils.$(OBJEXT):  \
-	../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-./tests_events-tests_events.$(OBJEXT): ./$(am__dirstamp) \
-	$(DEPDIR)/$(am__dirstamp)
-
-tests_events$(EXEEXT): $(tests_events_OBJECTS) $(tests_events_DEPENDENCIES) $(EXTRA_tests_events_DEPENDENCIES) 
-	@rm -f tests_events$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_events_OBJECTS) $(tests_events_LDADD) $(LIBS)
-../library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT):  \
-	../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-./tests_morse_receiver-tests_morse_receiver.$(OBJEXT):  \
-	./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
-
-tests_morse_receiver$(EXEEXT): $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_DEPENDENCIES) $(EXTRA_tests_morse_receiver_DEPENDENCIES) 
-	@rm -f tests_morse_receiver$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_LDADD) $(LIBS)
-../library/tests_random-random.$(OBJEXT): ../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
-./tests_random-tests_random.$(OBJEXT): ./$(am__dirstamp) \
-	$(DEPDIR)/$(am__dirstamp)
-
-tests_random$(EXEEXT): $(tests_random_OBJECTS) $(tests_random_DEPENDENCIES) $(EXTRA_tests_random_DEPENDENCIES) 
-	@rm -f tests_random$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(tests_random_OBJECTS) $(tests_random_LDADD) $(LIBS)
 $(top_builddir)/tests/library/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/tests/library
 	@: > $(top_builddir)/tests/library/$(am__dirstamp)
 $(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/tests/library/$(DEPDIR)
 	@: > $(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_events-events.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_events-random.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_events-string_utils.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_events-time_utils.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+./tests_events-tests_events.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+tests_events$(EXEEXT): $(tests_events_OBJECTS) $(tests_events_DEPENDENCIES) $(EXTRA_tests_events_DEPENDENCIES) 
+	@rm -f tests_events$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_events_OBJECTS) $(tests_events_LDADD) $(LIBS)
+$(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+./tests_morse_receiver-tests_morse_receiver.$(OBJEXT):  \
+	./$(am__dirstamp) $(DEPDIR)/$(am__dirstamp)
+
+tests_morse_receiver$(EXEEXT): $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_DEPENDENCIES) $(EXTRA_tests_morse_receiver_DEPENDENCIES) 
+	@rm -f tests_morse_receiver$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_morse_receiver_OBJECTS) $(tests_morse_receiver_LDADD) $(LIBS)
+$(top_builddir)/tests/library/tests_random-random.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
+./tests_random-tests_random.$(OBJEXT): ./$(am__dirstamp) \
+	$(DEPDIR)/$(am__dirstamp)
+
+tests_random$(EXEEXT): $(tests_random_OBJECTS) $(tests_random_DEPENDENCIES) $(EXTRA_tests_random_DEPENDENCIES) 
+	@rm -f tests_random$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(tests_random_OBJECTS) $(tests_random_LDADD) $(LIBS)
 $(top_builddir)/tests/library/tests_string_utils-string_utils.$(OBJEXT):  \
 	$(top_builddir)/tests/library/$(am__dirstamp) \
 	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
@@ -527,9 +524,9 @@ $(top_builddir)/tests/library/tests_string_utils-string_utils.$(OBJEXT):  \
 tests_string_utils$(EXEEXT): $(tests_string_utils_OBJECTS) $(tests_string_utils_DEPENDENCIES) $(EXTRA_tests_string_utils_DEPENDENCIES) 
 	@rm -f tests_string_utils$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(tests_string_utils_OBJECTS) $(tests_string_utils_LDADD) $(LIBS)
-../library/tests_time_utils-time_utils.$(OBJEXT):  \
-	../library/$(am__dirstamp) \
-	../library/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/tests/library/tests_time_utils-time_utils.$(OBJEXT):  \
+	$(top_builddir)/tests/library/$(am__dirstamp) \
+	$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
 ./tests_time_utils-tests_time_utils.$(OBJEXT): ./$(am__dirstamp) \
 	$(DEPDIR)/$(am__dirstamp)
 
@@ -539,27 +536,26 @@ tests_time_utils$(EXEEXT): $(tests_time_utils_OBJECTS) $(tests_time_utils_DEPEND
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 	-rm -f $(top_builddir)/tests/library/*.$(OBJEXT)
-	-rm -f ../../src/*.$(OBJEXT)
-	-rm -f ../library/*.$(OBJEXT)
 	-rm -f ./*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-log.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-options.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_options-utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_sleep-sleep.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../../src/$(DEPDIR)/daemon_utils-utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-events.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-random.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-string_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_events-time_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_random-random.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@../library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_options.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_options-daemon_stubs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/daemon_sleep-daemon_sleep.Po@am__quote@ # am--include-marker
@@ -592,47 +588,47 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-../../src/daemon_options-options.o: ../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-options.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-options.Tpo -c -o ../../src/daemon_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-options.Tpo ../../src/$(DEPDIR)/daemon_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/daemon_options-options.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-options.o: $(top_builddir)/src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-options.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Tpo -c -o $(top_builddir)/src/daemon_options-options.o `test -f '$(top_builddir)/src/options.c' || echo '$(srcdir)/'`$(top_builddir)/src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/options.c' object='$(top_builddir)/src/daemon_options-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-options.o `test -f '../../src/options.c' || echo '$(srcdir)/'`../../src/options.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-options.o `test -f '$(top_builddir)/src/options.c' || echo '$(srcdir)/'`$(top_builddir)/src/options.c
 
-../../src/daemon_options-options.obj: ../../src/options.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-options.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-options.Tpo -c -o ../../src/daemon_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-options.Tpo ../../src/$(DEPDIR)/daemon_options-options.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/options.c' object='../../src/daemon_options-options.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-options.obj: $(top_builddir)/src/options.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-options.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Tpo -c -o $(top_builddir)/src/daemon_options-options.obj `if test -f '$(top_builddir)/src/options.c'; then $(CYGPATH_W) '$(top_builddir)/src/options.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/options.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/options.c' object='$(top_builddir)/src/daemon_options-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-options.obj `if test -f '../../src/options.c'; then $(CYGPATH_W) '../../src/options.c'; else $(CYGPATH_W) '$(srcdir)/../../src/options.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-options.obj `if test -f '$(top_builddir)/src/options.c'; then $(CYGPATH_W) '$(top_builddir)/src/options.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/options.c'; fi`
 
-../../src/daemon_options-log.o: ../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-log.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-log.Tpo -c -o ../../src/daemon_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-log.Tpo ../../src/$(DEPDIR)/daemon_options-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/daemon_options-log.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-log.o: $(top_builddir)/src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-log.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Tpo -c -o $(top_builddir)/src/daemon_options-log.o `test -f '$(top_builddir)/src/log.c' || echo '$(srcdir)/'`$(top_builddir)/src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/log.c' object='$(top_builddir)/src/daemon_options-log.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-log.o `test -f '../../src/log.c' || echo '$(srcdir)/'`../../src/log.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-log.o `test -f '$(top_builddir)/src/log.c' || echo '$(srcdir)/'`$(top_builddir)/src/log.c
 
-../../src/daemon_options-log.obj: ../../src/log.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-log.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-log.Tpo -c -o ../../src/daemon_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-log.Tpo ../../src/$(DEPDIR)/daemon_options-log.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/log.c' object='../../src/daemon_options-log.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-log.obj: $(top_builddir)/src/log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-log.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Tpo -c -o $(top_builddir)/src/daemon_options-log.obj `if test -f '$(top_builddir)/src/log.c'; then $(CYGPATH_W) '$(top_builddir)/src/log.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/log.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/log.c' object='$(top_builddir)/src/daemon_options-log.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-log.obj `if test -f '../../src/log.c'; then $(CYGPATH_W) '../../src/log.c'; else $(CYGPATH_W) '$(srcdir)/../../src/log.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-log.obj `if test -f '$(top_builddir)/src/log.c'; then $(CYGPATH_W) '$(top_builddir)/src/log.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/log.c'; fi`
 
-../../src/daemon_options-utils.o: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-utils.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-utils.Tpo -c -o ../../src/daemon_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-utils.Tpo ../../src/$(DEPDIR)/daemon_options-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_options-utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-utils.o: $(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-utils.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Tpo -c -o $(top_builddir)/src/daemon_options-utils.o `test -f '$(top_builddir)/src/utils.c' || echo '$(srcdir)/'`$(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/utils.c' object='$(top_builddir)/src/daemon_options-utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-utils.o `test -f '$(top_builddir)/src/utils.c' || echo '$(srcdir)/'`$(top_builddir)/src/utils.c
 
-../../src/daemon_options-utils.obj: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_options-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_options-utils.Tpo -c -o ../../src/daemon_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_options-utils.Tpo ../../src/$(DEPDIR)/daemon_options-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_options-utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_options-utils.obj: $(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_options-utils.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Tpo -c -o $(top_builddir)/src/daemon_options-utils.obj `if test -f '$(top_builddir)/src/utils.c'; then $(CYGPATH_W) '$(top_builddir)/src/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/utils.c' object='$(top_builddir)/src/daemon_options-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_options-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_options-utils.obj `if test -f '$(top_builddir)/src/utils.c'; then $(CYGPATH_W) '$(top_builddir)/src/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/utils.c'; fi`
 
 ./daemon_options-daemon_options.o: ./daemon_options.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_options-daemon_options.o -MD -MP -MF $(DEPDIR)/daemon_options-daemon_options.Tpo -c -o ./daemon_options-daemon_options.o `test -f './daemon_options.c' || echo '$(srcdir)/'`./daemon_options.c
@@ -662,19 +658,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_options_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_options-daemon_stubs.obj `if test -f './daemon_stubs.c'; then $(CYGPATH_W) './daemon_stubs.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_stubs.c'; fi`
 
-../../src/daemon_sleep-sleep.o: ../../src/sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_sleep-sleep.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_sleep-sleep.Tpo -c -o ../../src/daemon_sleep-sleep.o `test -f '../../src/sleep.c' || echo '$(srcdir)/'`../../src/sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_sleep-sleep.Tpo ../../src/$(DEPDIR)/daemon_sleep-sleep.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/sleep.c' object='../../src/daemon_sleep-sleep.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_sleep-sleep.o: $(top_builddir)/src/sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_sleep-sleep.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Tpo -c -o $(top_builddir)/src/daemon_sleep-sleep.o `test -f '$(top_builddir)/src/sleep.c' || echo '$(srcdir)/'`$(top_builddir)/src/sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/sleep.c' object='$(top_builddir)/src/daemon_sleep-sleep.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_sleep-sleep.o `test -f '../../src/sleep.c' || echo '$(srcdir)/'`../../src/sleep.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_sleep-sleep.o `test -f '$(top_builddir)/src/sleep.c' || echo '$(srcdir)/'`$(top_builddir)/src/sleep.c
 
-../../src/daemon_sleep-sleep.obj: ../../src/sleep.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_sleep-sleep.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_sleep-sleep.Tpo -c -o ../../src/daemon_sleep-sleep.obj `if test -f '../../src/sleep.c'; then $(CYGPATH_W) '../../src/sleep.c'; else $(CYGPATH_W) '$(srcdir)/../../src/sleep.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_sleep-sleep.Tpo ../../src/$(DEPDIR)/daemon_sleep-sleep.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/sleep.c' object='../../src/daemon_sleep-sleep.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_sleep-sleep.obj: $(top_builddir)/src/sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_sleep-sleep.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Tpo -c -o $(top_builddir)/src/daemon_sleep-sleep.obj `if test -f '$(top_builddir)/src/sleep.c'; then $(CYGPATH_W) '$(top_builddir)/src/sleep.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/sleep.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/sleep.c' object='$(top_builddir)/src/daemon_sleep-sleep.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_sleep-sleep.obj `if test -f '../../src/sleep.c'; then $(CYGPATH_W) '../../src/sleep.c'; else $(CYGPATH_W) '$(srcdir)/../../src/sleep.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_sleep-sleep.obj `if test -f '$(top_builddir)/src/sleep.c'; then $(CYGPATH_W) '$(top_builddir)/src/sleep.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/sleep.c'; fi`
 
 ./daemon_sleep-daemon_sleep.o: ./daemon_sleep.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_sleep-daemon_sleep.o -MD -MP -MF $(DEPDIR)/daemon_sleep-daemon_sleep.Tpo -c -o ./daemon_sleep-daemon_sleep.o `test -f './daemon_sleep.c' || echo '$(srcdir)/'`./daemon_sleep.c
@@ -690,19 +686,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_sleep_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_sleep-daemon_sleep.obj `if test -f './daemon_sleep.c'; then $(CYGPATH_W) './daemon_sleep.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_sleep.c'; fi`
 
-../../src/daemon_utils-utils.o: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_utils-utils.o -MD -MP -MF ../../src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o ../../src/daemon_utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_utils-utils.Tpo ../../src/$(DEPDIR)/daemon_utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_utils-utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_utils-utils.o: $(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_utils-utils.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o $(top_builddir)/src/daemon_utils-utils.o `test -f '$(top_builddir)/src/utils.c' || echo '$(srcdir)/'`$(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/utils.c' object='$(top_builddir)/src/daemon_utils-utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_utils-utils.o `test -f '../../src/utils.c' || echo '$(srcdir)/'`../../src/utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_utils-utils.o `test -f '$(top_builddir)/src/utils.c' || echo '$(srcdir)/'`$(top_builddir)/src/utils.c
 
-../../src/daemon_utils-utils.obj: ../../src/utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../../src/daemon_utils-utils.obj -MD -MP -MF ../../src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o ../../src/daemon_utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../../src/$(DEPDIR)/daemon_utils-utils.Tpo ../../src/$(DEPDIR)/daemon_utils-utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../../src/utils.c' object='../../src/daemon_utils-utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/daemon_utils-utils.obj: $(top_builddir)/src/utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/daemon_utils-utils.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Tpo -c -o $(top_builddir)/src/daemon_utils-utils.obj `if test -f '$(top_builddir)/src/utils.c'; then $(CYGPATH_W) '$(top_builddir)/src/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Tpo $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/utils.c' object='$(top_builddir)/src/daemon_utils-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../../src/daemon_utils-utils.obj `if test -f '../../src/utils.c'; then $(CYGPATH_W) '../../src/utils.c'; else $(CYGPATH_W) '$(srcdir)/../../src/utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/daemon_utils-utils.obj `if test -f '$(top_builddir)/src/utils.c'; then $(CYGPATH_W) '$(top_builddir)/src/utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/utils.c'; fi`
 
 ./daemon_utils-daemon_utils.o: ./daemon_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./daemon_utils-daemon_utils.o -MD -MP -MF $(DEPDIR)/daemon_utils-daemon_utils.Tpo -c -o ./daemon_utils-daemon_utils.o `test -f './daemon_utils.c' || echo '$(srcdir)/'`./daemon_utils.c
@@ -718,61 +714,61 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(daemon_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./daemon_utils-daemon_utils.obj `if test -f './daemon_utils.c'; then $(CYGPATH_W) './daemon_utils.c'; else $(CYGPATH_W) '$(srcdir)/./daemon_utils.c'; fi`
 
-../library/tests_events-events.o: ../library/events.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-events.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-events.Tpo -c -o ../library/tests_events-events.o `test -f '../library/events.c' || echo '$(srcdir)/'`../library/events.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-events.Tpo ../library/$(DEPDIR)/tests_events-events.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/events.c' object='../library/tests_events-events.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-events.o: $(top_builddir)/tests/library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-events.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Tpo -c -o $(top_builddir)/tests/library/tests_events-events.o `test -f '$(top_builddir)/tests/library/events.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/events.c' object='$(top_builddir)/tests/library/tests_events-events.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-events.o `test -f '../library/events.c' || echo '$(srcdir)/'`../library/events.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-events.o `test -f '$(top_builddir)/tests/library/events.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/events.c
 
-../library/tests_events-events.obj: ../library/events.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-events.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-events.Tpo -c -o ../library/tests_events-events.obj `if test -f '../library/events.c'; then $(CYGPATH_W) '../library/events.c'; else $(CYGPATH_W) '$(srcdir)/../library/events.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-events.Tpo ../library/$(DEPDIR)/tests_events-events.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/events.c' object='../library/tests_events-events.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-events.obj: $(top_builddir)/tests/library/events.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-events.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Tpo -c -o $(top_builddir)/tests/library/tests_events-events.obj `if test -f '$(top_builddir)/tests/library/events.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/events.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/events.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/events.c' object='$(top_builddir)/tests/library/tests_events-events.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-events.obj `if test -f '../library/events.c'; then $(CYGPATH_W) '../library/events.c'; else $(CYGPATH_W) '$(srcdir)/../library/events.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-events.obj `if test -f '$(top_builddir)/tests/library/events.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/events.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/events.c'; fi`
 
-../library/tests_events-random.o: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-random.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-random.Tpo -c -o ../library/tests_events-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-random.Tpo ../library/$(DEPDIR)/tests_events-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_events-random.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-random.o: $(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-random.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Tpo -c -o $(top_builddir)/tests/library/tests_events-random.o `test -f '$(top_builddir)/tests/library/random.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/random.c' object='$(top_builddir)/tests/library/tests_events-random.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-random.o `test -f '$(top_builddir)/tests/library/random.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/random.c
 
-../library/tests_events-random.obj: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-random.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-random.Tpo -c -o ../library/tests_events-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-random.Tpo ../library/$(DEPDIR)/tests_events-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_events-random.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-random.obj: $(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-random.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Tpo -c -o $(top_builddir)/tests/library/tests_events-random.obj `if test -f '$(top_builddir)/tests/library/random.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/random.c' object='$(top_builddir)/tests/library/tests_events-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-random.obj `if test -f '$(top_builddir)/tests/library/random.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/random.c'; fi`
 
-../library/tests_events-string_utils.o: ../library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-string_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-string_utils.Tpo -c -o ../library/tests_events-string_utils.o `test -f '../library/string_utils.c' || echo '$(srcdir)/'`../library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-string_utils.Tpo ../library/$(DEPDIR)/tests_events-string_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/string_utils.c' object='../library/tests_events-string_utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-string_utils.o: $(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-string_utils.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Tpo -c -o $(top_builddir)/tests/library/tests_events-string_utils.o `test -f '$(top_builddir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/string_utils.c' object='$(top_builddir)/tests/library/tests_events-string_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-string_utils.o `test -f '../library/string_utils.c' || echo '$(srcdir)/'`../library/string_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-string_utils.o `test -f '$(top_builddir)/tests/library/string_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/string_utils.c
 
-../library/tests_events-string_utils.obj: ../library/string_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-string_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-string_utils.Tpo -c -o ../library/tests_events-string_utils.obj `if test -f '../library/string_utils.c'; then $(CYGPATH_W) '../library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/string_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-string_utils.Tpo ../library/$(DEPDIR)/tests_events-string_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/string_utils.c' object='../library/tests_events-string_utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-string_utils.obj: $(top_builddir)/tests/library/string_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-string_utils.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Tpo -c -o $(top_builddir)/tests/library/tests_events-string_utils.obj `if test -f '$(top_builddir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/string_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/string_utils.c' object='$(top_builddir)/tests/library/tests_events-string_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-string_utils.obj `if test -f '../library/string_utils.c'; then $(CYGPATH_W) '../library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/string_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-string_utils.obj `if test -f '$(top_builddir)/tests/library/string_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/string_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/string_utils.c'; fi`
 
-../library/tests_events-time_utils.o: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-time_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_events-time_utils.Tpo -c -o ../library/tests_events-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-time_utils.Tpo ../library/$(DEPDIR)/tests_events-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_events-time_utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-time_utils.o: $(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-time_utils.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Tpo -c -o $(top_builddir)/tests/library/tests_events-time_utils.o `test -f '$(top_builddir)/tests/library/time_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/time_utils.c' object='$(top_builddir)/tests/library/tests_events-time_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-time_utils.o `test -f '$(top_builddir)/tests/library/time_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/time_utils.c
 
-../library/tests_events-time_utils.obj: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_events-time_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_events-time_utils.Tpo -c -o ../library/tests_events-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_events-time_utils.Tpo ../library/$(DEPDIR)/tests_events-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_events-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_events-time_utils.obj: $(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_events-time_utils.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Tpo -c -o $(top_builddir)/tests/library/tests_events-time_utils.obj `if test -f '$(top_builddir)/tests/library/time_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/time_utils.c' object='$(top_builddir)/tests/library/tests_events-time_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_events-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_events-time_utils.obj `if test -f '$(top_builddir)/tests/library/time_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/time_utils.c'; fi`
 
 ./tests_events-tests_events.o: ./tests_events.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_events-tests_events.o -MD -MP -MF $(DEPDIR)/tests_events-tests_events.Tpo -c -o ./tests_events-tests_events.o `test -f './tests_events.c' || echo '$(srcdir)/'`./tests_events.c
@@ -788,19 +784,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_events_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_events-tests_events.obj `if test -f './tests_events.c'; then $(CYGPATH_W) './tests_events.c'; else $(CYGPATH_W) '$(srcdir)/./tests_events.c'; fi`
 
-../library/tests_morse_receiver-morse_receiver_utils.o: ../library/morse_receiver_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_morse_receiver-morse_receiver_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o ../library/tests_morse_receiver-morse_receiver_utils.o `test -f '../library/morse_receiver_utils.c' || echo '$(srcdir)/'`../library/morse_receiver_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/morse_receiver_utils.c' object='../library/tests_morse_receiver-morse_receiver_utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.o: $(top_builddir)/tests/library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.o `test -f '$(top_builddir)/tests/library/morse_receiver_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/morse_receiver_utils.c' object='$(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_morse_receiver-morse_receiver_utils.o `test -f '../library/morse_receiver_utils.c' || echo '$(srcdir)/'`../library/morse_receiver_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.o `test -f '$(top_builddir)/tests/library/morse_receiver_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/morse_receiver_utils.c
 
-../library/tests_morse_receiver-morse_receiver_utils.obj: ../library/morse_receiver_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_morse_receiver-morse_receiver_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o ../library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '../library/morse_receiver_utils.c'; then $(CYGPATH_W) '../library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/morse_receiver_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/morse_receiver_utils.c' object='../library/tests_morse_receiver-morse_receiver_utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.obj: $(top_builddir)/tests/library/morse_receiver_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo -c -o $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '$(top_builddir)/tests/library/morse_receiver_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/morse_receiver_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/morse_receiver_utils.c' object='$(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '../library/morse_receiver_utils.c'; then $(CYGPATH_W) '../library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/morse_receiver_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_morse_receiver-morse_receiver_utils.obj `if test -f '$(top_builddir)/tests/library/morse_receiver_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/morse_receiver_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/morse_receiver_utils.c'; fi`
 
 ./tests_morse_receiver-tests_morse_receiver.o: ./tests_morse_receiver.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_morse_receiver-tests_morse_receiver.o -MD -MP -MF $(DEPDIR)/tests_morse_receiver-tests_morse_receiver.Tpo -c -o ./tests_morse_receiver-tests_morse_receiver.o `test -f './tests_morse_receiver.c' || echo '$(srcdir)/'`./tests_morse_receiver.c
@@ -816,19 +812,19 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_morse_receiver_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_morse_receiver-tests_morse_receiver.obj `if test -f './tests_morse_receiver.c'; then $(CYGPATH_W) './tests_morse_receiver.c'; else $(CYGPATH_W) '$(srcdir)/./tests_morse_receiver.c'; fi`
 
-../library/tests_random-random.o: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_random-random.o -MD -MP -MF ../library/$(DEPDIR)/tests_random-random.Tpo -c -o ../library/tests_random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_random-random.Tpo ../library/$(DEPDIR)/tests_random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_random-random.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_random-random.o: $(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_random-random.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Tpo -c -o $(top_builddir)/tests/library/tests_random-random.o `test -f '$(top_builddir)/tests/library/random.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/random.c' object='$(top_builddir)/tests/library/tests_random-random.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_random-random.o `test -f '../library/random.c' || echo '$(srcdir)/'`../library/random.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_random-random.o `test -f '$(top_builddir)/tests/library/random.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/random.c
 
-../library/tests_random-random.obj: ../library/random.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_random-random.obj -MD -MP -MF ../library/$(DEPDIR)/tests_random-random.Tpo -c -o ../library/tests_random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_random-random.Tpo ../library/$(DEPDIR)/tests_random-random.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/random.c' object='../library/tests_random-random.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_random-random.obj: $(top_builddir)/tests/library/random.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_random-random.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Tpo -c -o $(top_builddir)/tests/library/tests_random-random.obj `if test -f '$(top_builddir)/tests/library/random.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/random.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/random.c' object='$(top_builddir)/tests/library/tests_random-random.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_random-random.obj `if test -f '../library/random.c'; then $(CYGPATH_W) '../library/random.c'; else $(CYGPATH_W) '$(srcdir)/../library/random.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_random-random.obj `if test -f '$(top_builddir)/tests/library/random.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/random.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/random.c'; fi`
 
 ./tests_random-tests_random.o: ./tests_random.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_random_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_random-tests_random.o -MD -MP -MF $(DEPDIR)/tests_random-tests_random.Tpo -c -o ./tests_random-tests_random.o `test -f './tests_random.c' || echo '$(srcdir)/'`./tests_random.c
@@ -872,19 +868,19 @@ $(top_builddir)/tests/library/tests_string_utils-string_utils.obj: $(top_builddi
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_string_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ./tests_string_utils-tests_string_utils.obj `if test -f './tests_string_utils.c'; then $(CYGPATH_W) './tests_string_utils.c'; else $(CYGPATH_W) '$(srcdir)/./tests_string_utils.c'; fi`
 
-../library/tests_time_utils-time_utils.o: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_time_utils-time_utils.o -MD -MP -MF ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o ../library/tests_time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_time_utils-time_utils.o: $(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_time_utils-time_utils.o -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o $(top_builddir)/tests/library/tests_time_utils-time_utils.o `test -f '$(top_builddir)/tests/library/time_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/time_utils.c' object='$(top_builddir)/tests/library/tests_time_utils-time_utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_time_utils-time_utils.o `test -f '../library/time_utils.c' || echo '$(srcdir)/'`../library/time_utils.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_time_utils-time_utils.o `test -f '$(top_builddir)/tests/library/time_utils.c' || echo '$(srcdir)/'`$(top_builddir)/tests/library/time_utils.c
 
-../library/tests_time_utils-time_utils.obj: ../library/time_utils.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../library/tests_time_utils-time_utils.obj -MD -MP -MF ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o ../library/tests_time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../library/$(DEPDIR)/tests_time_utils-time_utils.Tpo ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../library/time_utils.c' object='../library/tests_time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/tests/library/tests_time_utils-time_utils.obj: $(top_builddir)/tests/library/time_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/tests/library/tests_time_utils-time_utils.obj -MD -MP -MF $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Tpo -c -o $(top_builddir)/tests/library/tests_time_utils-time_utils.obj `if test -f '$(top_builddir)/tests/library/time_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/time_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Tpo $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/tests/library/time_utils.c' object='$(top_builddir)/tests/library/tests_time_utils-time_utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../library/tests_time_utils-time_utils.obj `if test -f '../library/time_utils.c'; then $(CYGPATH_W) '../library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/../library/time_utils.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/tests/library/tests_time_utils-time_utils.obj `if test -f '$(top_builddir)/tests/library/time_utils.c'; then $(CYGPATH_W) '$(top_builddir)/tests/library/time_utils.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/tests/library/time_utils.c'; fi`
 
 ./tests_time_utils-tests_time_utils.o: ./tests_time_utils.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_time_utils_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ./tests_time_utils-tests_time_utils.o -MD -MP -MF $(DEPDIR)/tests_time_utils-tests_time_utils.Tpo -c -o ./tests_time_utils-tests_time_utils.o `test -f './tests_time_utils.c' || echo '$(srcdir)/'`./tests_time_utils.c
@@ -1015,12 +1011,10 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f ../../src/$(DEPDIR)/$(am__dirstamp)
-	-rm -f ../../src/$(am__dirstamp)
-	-rm -f ../library/$(DEPDIR)/$(am__dirstamp)
-	-rm -f ../library/$(am__dirstamp)
 	-rm -f ./$(am__dirstamp)
 	-test -z "$(DEPDIR)/$(am__dirstamp)" || rm -f $(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/src/$(am__dirstamp)" || rm -f $(top_builddir)/src/$(am__dirstamp)
 	-test -z "$(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/tests/library/$(DEPDIR)/$(am__dirstamp)
 	-test -z "$(top_builddir)/tests/library/$(am__dirstamp)" || rm -f $(top_builddir)/tests/library/$(am__dirstamp)
 
@@ -1032,19 +1026,19 @@ clean: clean-am
 clean-am: clean-checkPROGRAMS clean-generic mostlyclean-am
 
 distclean: distclean-am
-		-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_sleep-sleep.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-events.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-random.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-string_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-time_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
-	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+		-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_stubs.Po
 	-rm -f ./$(DEPDIR)/daemon_sleep-daemon_sleep.Po
@@ -1099,19 +1093,19 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-log.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-options.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_options-utils.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_sleep-sleep.Po
-	-rm -f ../../src/$(DEPDIR)/daemon_utils-utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-events.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-random.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-string_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_events-time_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
-	-rm -f ../library/$(DEPDIR)/tests_random-random.Po
-	-rm -f ../library/$(DEPDIR)/tests_time_utils-time_utils.Po
+		-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-log.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-options.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_options-utils.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_sleep-sleep.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/daemon_utils-utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-events.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-random.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-string_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_events-time_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_morse_receiver-morse_receiver_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_random-random.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_string_utils-string_utils.Po
+	-rm -f $(top_builddir)/tests/library/$(DEPDIR)/tests_time_utils-time_utils.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_options.Po
 	-rm -f ./$(DEPDIR)/daemon_options-daemon_stubs.Po
 	-rm -f ./$(DEPDIR)/daemon_sleep-daemon_sleep.Po
@@ -1155,26 +1149,34 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
-.PHONY: check daemon_utils.dummy daemon_options.dummy daemon_sleep.dummy
+.PHONY: check
 
 # Target for building coverage report for unit tests. But only for those unit
 # tests that test code of main program (of cwdaemon). There is no report for
 # unit tests executed on testing code itself.
 @ENABLE_GCOV_TRUE@gcov:
-@ENABLE_GCOV_TRUE@	make daemon_utils.gcov
-@ENABLE_GCOV_TRUE@	make daemon_options.gcov
-@ENABLE_GCOV_TRUE@	make daemon_sleep.gcov
-@ENABLE_GCOV_TRUE@.dummy.gcov:
+@ENABLE_GCOV_TRUE@	make gcov2 target=daemon_utils
+@ENABLE_GCOV_TRUE@	make gcov2 target=daemon_options
+@ENABLE_GCOV_TRUE@	make gcov2 target=daemon_sleep
+
+@ENABLE_GCOV_TRUE@gcov2:
+@ENABLE_GCOV_TRUE@	@echo "[II] Coverage: removing old artifacts before building unit test [$(target)]"
 @ENABLE_GCOV_TRUE@	make clean
 @ENABLE_GCOV_TRUE@	make clean -C $(abs_top_builddir)/src/
 @ENABLE_GCOV_TRUE@	make gcov-clean
 @ENABLE_GCOV_TRUE@	make gcov-clean -C $(abs_top_builddir)/src/
-@ENABLE_GCOV_TRUE@	rm -rf $(OUTPUT_DIR)/unit_tests/$*
-@ENABLE_GCOV_TRUE@	make $*
-@ENABLE_GCOV_TRUE@	./$*
-@ENABLE_GCOV_TRUE@	mkdir -p $(OUTPUT_DIR)/unit_tests/$*
-@ENABLE_GCOV_TRUE@	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
-@ENABLE_GCOV_TRUE@	genhtml -t $* -o $(OUTPUT_DIR)/unit_tests/$* $(OUTPUT_DIR)/unit_tests/$*/traceinfo.info
+@ENABLE_GCOV_TRUE@	rm -rf $(OUTPUT_DIR)/unit_tests/$(target)
+
+@ENABLE_GCOV_TRUE@	@echo "[II] Coverage: building unit test [$(target)]"
+@ENABLE_GCOV_TRUE@	make $(target)
+
+@ENABLE_GCOV_TRUE@	@echo "[II] Coverage: running unit test [$(target)]"
+@ENABLE_GCOV_TRUE@	./$(target)
+
+@ENABLE_GCOV_TRUE@	@echo "[II] Coverage: building report for unit test [$(target)]"
+@ENABLE_GCOV_TRUE@	mkdir -p $(OUTPUT_DIR)/unit_tests/$(target)
+@ENABLE_GCOV_TRUE@	lcov -directory $(abs_top_builddir)/tests/unit_tests --capture --output-file $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
+@ENABLE_GCOV_TRUE@	genhtml -t $(target) -o $(OUTPUT_DIR)/unit_tests/$(target) $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
 
 @ENABLE_GCOV_TRUE@gcov-clean:
 @ENABLE_GCOV_TRUE@	rm -f *.gcda *.gcno

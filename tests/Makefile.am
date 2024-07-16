@@ -48,21 +48,21 @@ endif
 if ENABLE_GCOV
 
 gcov:
-	@echo "Coverage: creating dir for reports"
+	@echo "[II] Coverage: creating dir for reports"
 	mkdir -p $(abs_top_builddir)/tests/coverage/
 
-	@echo "Coverage: building unit tests, running them and generating coverage reports"
+	@echo "[II] Coverage: building unit tests, running them and generating coverage reports"
 	make gcov -C unit_tests OUTPUT_DIR=$(abs_top_builddir)/tests/coverage/
 
 if FUNCTIONAL_TESTS
-	@echo "Coverage: building server to be used by functional tests"
+	@echo "[II] Coverage: building server to be used by functional tests"
 	make gcov-clean -C $(abs_top_builddir)/src/
 	make -C $(abs_top_builddir)/src/
 
-	@echo "Coverage: building utility library for functional tests"
+	@echo "[II] Coverage: building utility library for functional tests"
 	make check -C library
 
-	@echo "Coverage: building functional tests, running them and generating coverage reports"
+	@echo "[II] Coverage: building functional tests, running them and generating coverage reports"
 	make gcov -C functional_tests OUTPUT_DIR=$(abs_top_builddir)/tests/coverage/
 endif
 

@@ -6,6 +6,7 @@ CLEANFILES = *~ \
 	./tests/cwdaemon/*~ \
 	./tests/cwdaemon/test/*~
 
+
 EXTRA_DIST = cwdaemon.spec.in \
 	patches \
 	doc/schematics \
@@ -42,12 +43,16 @@ uninstall-local:
 	$(RM) $(DESTDIR)/$(pkgdatadir)/*
 
 
+clean-local:
+if ENABLE_GCOV
+	make gcov-clean
+endif
+
+
 rpm: Makefile
 	make dist
 	$(RPMBUILD) -ta $(PACKAGE)-$(VERSION).tar.gz
 	rm $(PACKAGE)-$(VERSION).tar.gz
-
-
 
 
 if ENABLE_GCOV

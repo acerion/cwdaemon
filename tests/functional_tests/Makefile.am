@@ -1,13 +1,4 @@
-.PHONY: check                                     \
-	unattended/option_cwdevice_tty_lines.dummy     \
-	unattended/option_port.dummy                   \
-	unattended/request_caret.dummy                 \
-	unattended/request_esc_exit.dummy              \
-	unattended/request_esc_cwdevice.dummy          \
-	unattended/request_esc_reply.dummy             \
-	unattended/request_plain.dummy                 \
-	unattended/reset_register_callback.dummy
-
+.PHONY: check gcov gcov2
 
 SUBDIRS = unattended supervised
 
@@ -18,36 +9,34 @@ if ENABLE_GCOV
 
 # Target for building coverage report for functional tests.
 gcov:
-	make unattended/option_cwdevice_tty_lines.gcov
-	make unattended/option_port.gcov
-	make unattended/request_caret.gcov
-	make unattended/request_esc_exit.gcov
-	make unattended/request_esc_cwdevice.gcov
-	make unattended/request_esc_reply.gcov
-	make unattended/request_plain.gcov
-	make unattended/reset_register_callback.gcov
+	make gcov2 target=unattended/option_cwdevice_tty_lines
+	make gcov2 target=unattended/option_port
+	make gcov2 target=unattended/request_caret
+	make gcov2 target=unattended/request_esc_exit
+	make gcov2 target=unattended/request_esc_cwdevice
+	make gcov2 target=unattended/request_esc_reply
+	make gcov2 target=unattended/request_plain
+	make gcov2 target=unattended/reset_register_callback
 
 
 
-# POSIX-compliant "suffix rules" are SO MUCH FUN!
-SUFFIXES=.gcov .dummy
-.dummy.gcov: gcov_clean_old_artifacts
+gcov2:
 # Be careful to not remove entire OUTPUT_DIR, in which reports of other tests
 # are stored.
-	@echo "Coverage: removing old artifacts before building functional test [$*]"
-	make clean -C $*
-	rm -rf $(OUTPUT_DIR)/functional_tests/$*
+	@echo "[II] Coverage: removing old artifacts before building functional test [$(target)]"
+	make clean -C $(target)
+	rm -rf $(OUTPUT_DIR)/functional_tests/$(target)
 
-	@echo "Coverage: building functional test [$*]"
-	make check -C $*
+	@echo "[II] Coverage: building functional test [$(target)]"
+	make check -C $(target)
 
-	@echo "Coverage: running functional test [$*]"
-	./$*/test_program
+	@echo "[II] Coverage: running functional test [$(target)]"
+	./$(target)/test_program
 
-	@echo "Coverage: building report for functional test [$*]"
-	mkdir -p $(OUTPUT_DIR)/functional_tests/$*
-	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/functional_tests/$*/traceinfo.info
-	genhtml -t $* -o $(OUTPUT_DIR)/functional_tests/$* $(OUTPUT_DIR)/functional_tests/$*/traceinfo.info
+	@echo "[II] Coverage: building report for functional test [$(target)]"
+	mkdir -p $(OUTPUT_DIR)/functional_tests/$(target)
+	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/functional_tests/$(target)/traceinfo.info
+	genhtml -t $(target) -o $(OUTPUT_DIR)/functional_tests/$(target) $(OUTPUT_DIR)/functional_tests/$(target)/traceinfo.info
 
 endif
 
