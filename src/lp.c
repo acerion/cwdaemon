@@ -90,8 +90,8 @@
 */
 int lp_probe_cwdevice(const char *fname)
 {
-	char nm[MAXPATHLEN];
-	struct stat st;
+	char nm[MAXPATHLEN] = { 0 };
+	struct stat st = { 0 };
 	int m = 0;
 
 	int retv = build_full_device_path(nm, sizeof (nm), fname);
@@ -126,10 +126,10 @@ out:
 
 int lp_probe_cwdevice(const char *fname)
 {
-	char nm[MAXPATHLEN];
-	struct stat st;
-	unsigned char c;
-	int fd;
+	char nm[MAXPATHLEN] = { 0 };
+	struct stat st = { 0 };
+	unsigned char c = 0;
+	int fd = 0;
 
 	int retv = build_full_device_path(nm, sizeof (nm), fname);
 	if (0 != retv) {
@@ -176,7 +176,7 @@ int lp_probe_cwdevice(const char *fname)
 static void
 parport_control (int fd, unsigned char controlbits, int values)
 {
-	struct ppdev_frob_struct frob;
+	struct ppdev_frob_struct frob = { 0 };
 	frob.mask = controlbits;
 	frob.val = values;
 
@@ -193,7 +193,7 @@ parport_control (int fd, unsigned char controlbits, int values)
 static void
 parport_control (int fd, unsigned char controlbits, int values)
 {
-	unsigned char val;
+	unsigned char val = 0;
 
 	if (ioctl (fd, PPIGCTRL, &val) == -1)
 	{
