@@ -202,6 +202,9 @@ static void sighandler(int sig)
 	if (SIGCHLD == sig) {
 		g_child_exit_info.waitpid_retv = waitpid(g_child_exit_info.pid, &g_child_exit_info.wstatus, 0);
 		clock_gettime(CLOCK_MONOTONIC, &g_child_exit_info.sigchld_timestamp);
+
+		// Re-enable signal handling.
+		signal(SIGCHLD, sighandler);
 	}
 }
 

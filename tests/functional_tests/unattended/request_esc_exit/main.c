@@ -154,6 +154,13 @@ static void sighandler(int sig)
 	if (SIGCHLD == sig) {
 		g_child_exit_info.waitpid_retv = waitpid(g_child_exit_info.pid, &g_child_exit_info.wstatus, 0);
 		clock_gettime(CLOCK_MONOTONIC, &g_child_exit_info.sigchld_timestamp);
+
+		// Re-enable signal handling.
+		//
+		// TODO (acerion) 2024.07.16: consider using sigaction() to
+		// have better control on re-enabling of signal handler.
+		// Apply such change in all tests calling signal().
+		signal(SIGCHLD, sighandler);
 	}
 }
 
