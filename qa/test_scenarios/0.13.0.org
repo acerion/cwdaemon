@@ -6,7 +6,7 @@
 
 * STARTED Tests plan for cwdaemon version 0.13.0
 Version of template: 2024.06.03.
-** STARTED FreeBSD 14.1-RELEASE
+** PASS FreeBSD 14.1-RELEASE
 <Additional info about machine, OS, libs, compiler>
 OS: FreeBSD 14.1-RELEASE
 C compiler: gcc 13.2.0
@@ -1577,8 +1577,8 @@ The steps are copied from relevant sections in top-level README file:
 *Actual result*
 PASS
 
-*** STARTED memory tests with valgrind
-**** STARTED memory tests with valgrind for functional/unattended tests
+*** PASS memory tests with valgrind
+**** PASS memory tests with valgrind for functional/unattended tests
 
 *Goal*
 
