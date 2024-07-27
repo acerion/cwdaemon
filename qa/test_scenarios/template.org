@@ -1251,7 +1251,7 @@ running under control of valgrind.
 
 *Steps*
 
-1. Enable compilation of supervised functional tests
+1. Enable compilation of unattended functional tests
 
    ./configure --enable-functional-tests --enable-long-functional-tests
 
@@ -1304,8 +1304,8 @@ running under control of valgrind.
 
 *Goal*
 
-Run selected cwdaemon's supervised functional tests in a setup where cwdaemon is
-running under control of valgrind.
+Run all of cwdaemon's supervised functional tests in a setup where cwdaemon
+is running under control of valgrind.
 
 
 *Steps*
@@ -1314,30 +1314,48 @@ running under control of valgrind.
 
    ./configure --enable-functional-tests --enable-long-functional-tests
 
-2. Compile
+2. Compile cwdaemon
 
    make && make check
 
-3. Run the test. Use command line options necessary to enable and use valgrind
+   You can terminate the "make check" command as soon as build system starts
+   executing unit tests.
 
-   ./tests/functional_tests/supervised/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
+3. Prepare environment variables that will be used by all test programs
+   executed with "make check"
 
-4. After test is completed:
+   export CWDAEMON_TEST_SOUND_SYSTEM=null
+   export CWDAEMON_TEST_SUPERVISOR=valgrind
 
-   1. Confirm that cwdaemon has exited correctly, without errors.
+4. Find all supervised tests
 
-   2. Confirm that there are no memory leaks or memory errors reported in
-      valgrind's log.
+   find tests/functional_tests/supervised/ -name test_program
 
-	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers the log.
-	  Look for "ERROR SUMMARY" section header in the log.
+5. Run each binary by hand, one at a time.
+
+   The purpose of running each test at a time is to get informed about a
+   failure early.
+
+   1. After each test is completed, confirm that no errors are present in
+      summary of the test, in one of these sections:
+
+      1. "FILE DESCRIPTORS"
+      2. "HEAP SUMMARY"
+      3. "LEAK SUMMARY"
+      4. "ERROR SUMMARY"
+
+      Remember that each test may generate several valgrind sessions, each
+      having its own summary. Be sure to review summaries of all valgrind
+      sessions.
+
+   2. After each test is completed, confirm that the status of the test
+      itself is a PASS (i.e. that the test didn't fail).
 
 
 *Expected result*
 
-1. cwdaemon didn't crash.
+1. no memory leaks or memory errors were reported by valgrind.
 
-2. no memory leaks or memory errors were reported by valgrind.
 
 *Actual result*
 
@@ -1358,6 +1376,59 @@ under control of valgrind.
 
 No additional test is needed here because the primary fuzzing tests already
 use valgrind.
+
+*Actual result*
+
+**** TODO memory tests with valgrind for unit tests
+
+*Goal*
+
+Run all of cwdaemon's unit tests in a setup where unit tests are running
+under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of unit tests (unit tests of cwdaemon only)
+
+   make clean
+   ./configure
+
+2. Compile cwdaemon and unit tests
+
+   make && make check
+
+3. Find all unit test binaries
+
+   find tests/unit_tests/* -type f  -executable
+
+4. Run each binary by hand, one at a time.
+
+   /usr/local/bin/valgrind -s --leak-check=full --show-leak-kinds=all --track-fds=yes <path to test binary>
+
+   The purpose of running each test at a time is to get informed about a
+   failure early.
+
+   1. After each test is completed, confirm that no errors are present in
+      summary of the test, in one of these sections:
+
+      1. "FILE DESCRIPTORS"
+      2. "HEAP SUMMARY"
+      3. "LEAK SUMMARY"
+      4. "ERROR SUMMARY"
+
+      Remember that each test may generate several valgrind sessions, each
+      having its own summary. Be sure to review summaries of all valgrind
+      sessions.
+
+   2. After each test is completed, confirm that the status of the test
+      itself is a PASS (i.e. that the test didn't fail).
+
+
+*Expected result*
+
+1. no memory leaks or memory errors were reported by valgrind.
+
 
 *Actual result*
 
