@@ -53,6 +53,10 @@
 ///
 /// TODO (acerion) 2024.04.16: describe where this value comes from. Maybe
 /// it's not the best default.
+///
+/// TODO (acerion) 2024.07.26: value of 100us results in rather high CPU
+/// usage (8-10%) on a weak machine. See if that short interval and that high
+/// CPU usage is justified.
 #define KEY_SOURCE_DEFAULT_INTERVAL_US 100
 
 

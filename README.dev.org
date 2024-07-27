@@ -585,7 +585,6 @@ cwdaemon should recognize that 'null' is not a device in /dev/ but a special
 dummy device. There should be no probing for lp or tty device called 'null'
 in /dev/.
 
-
 ** TODO [#A] R0040: Bug: memory allocation in Valgrind's logs
 
 Found during tests of 0.13.0 on FreeBSD.
@@ -627,4 +626,48 @@ suggests that the problem is either in libc, or in libcw.
 
 This problem occurs on FreeBSD, but not on Linux. On Linux the Count of frees
 matches the count of allocs.
+
+** TODO [#A] R0041: Bug: closelog() is not being called
+
+closelog() should be called to close an (implicitly) opened syslog output.
+
+The following issue has been found on FreeBSD 14.1-RELEASE during execution
+of tests/functional_tests/unattended/option_port/test_program test under
+valgrind (search for "here" word to see the exact place):
+
+
+acerion@FreeBSD:~/cwdaemon/cwdaemon_git_head $ tests/functional_tests/unattended/option_port/test_program
+current:revision:age: 8:0:0
+[II] Test: random seed: 0x87506e7b (2270195323)
+
+[II] Test: starting test case 1 / 8: [failure case: port 0]
+[WW] Test: requested value of port is out of range: 0, continuing with the value anyway
+/usr/local/bin/valgrind -s --leak-check=full --show-leak-kinds=all --track-fds=yes /home/acerion/cwdaemon/cwdaemon_git_head/src/cwdaemon --port 0 -T 792 -x n -n -d cuaU0 -s 19 
+==65473== Memcheck, a memory error detector
+==65473== Copyright (C) 2002-2024, and GNU GPL'd, by Julian Seward et al.
+==65473== Using Valgrind-3.23.0 and LibVEX; rerun with -h for copyright info
+==65473== Command: /home/acerion/cwdaemon/cwdaemon_git_head/src/cwdaemon --port 0 -T 792 -x n -n -d cuaU0 -s 19
+==65473== 
+==65473== 
+==65473== FILE DESCRIPTORS: 4 open (3 std) at exit.
+==65473== Open AF_UNIX socket 3: <unknown>
+==65473==    at 0x52B898A: socket (in /lib/libc.so.7)                      <---- here
+==65473==    by 0x5237C5A: ??? (in /lib/libc.so.7)
+==65473==    by 0x52377B0: ??? (in /lib/libc.so.7)
+==65473==    by 0x5237205: syslog (in /lib/libc.so.7)
+==65473==    by 0x404898: log_message (log.c:140)
+==65473==    by 0x4059AE: cwdaemon_option_network_port (options.c:51)
+==65473==    by 0x402173: cwdaemon_args_process_short (cwdaemon.c:1664)
+==65473==    by 0x402173: cwdaemon_args_process_long (cwdaemon.c:1634)
+==65473==    by 0x402173: cwdaemon_args_parse (cwdaemon.c:2120)
+==65473==    by 0x402173: main (cwdaemon.c:2167)
+==65473== 
+
+
+This problem occurs when invalid value of "port" command-line option has been
+passed, and cwdaemon is logging an error to the only message output available
+at this time: to syslog. syslog output is probably implicitly opened by call
+to syslog(), before an explicit call to openlog().
+
+A better control over opening and closing of syslog() must be exercised.
 
