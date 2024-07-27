@@ -1640,9 +1640,9 @@ running under control of valgrind.
 tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program - ticket R0040
 tests/functional_tests/unattended/request_esc_exit/test_program          - PASS
 tests/functional_tests/unattended/reset_register_callback/test_program   - PASS
-tests/functional_tests/unattended/option_port/test_program
-tests/functional_tests/unattended/request_plain/test_program
-tests/functional_tests/unattended/request_caret/test_program
+tests/functional_tests/unattended/option_port/test_program               - PASS, ticket R0041
+tests/functional_tests/unattended/request_plain/test_program             - PASS
+tests/functional_tests/unattended/request_caret/test_program             - PASS
 tests/functional_tests/unattended/request_esc_cwdevice/test_program      - PASS
 tests/functional_tests/unattended/request_esc_reply/test_program         - PASS
 
@@ -1666,12 +1666,54 @@ Tests of request_esc_cwdevice result in this valgrind log (and similar logs);
 Since strerror() returns pointer to static buffer that can't be deallocated,
 I'm not going to address this problem.
 
-**** TODO memory tests with valgrind for functional/supervised tests
+
+
+
+
+Tests of option_port result in these two valgrind issues:
+
+==10394== FILE DESCRIPTORS: 4 open (3 std) at exit.
+==10394== Open AF_UNIX socket 3: <unknown>
+==10394==    at 0x52B898A: socket (in /lib/libc.so.7)
+==10394==    by 0x5237C5A: ??? (in /lib/libc.so.7)
+==10394==    by 0x52377B0: ??? (in /lib/libc.so.7)
+==10394==    by 0x5237205: syslog (in /lib/libc.so.7)
+==10394==    by 0x404848: log_message (log.c:140)
+==10394==    by 0x40592E: cwdaemon_option_network_port (options.c:51)
+==10394==    by 0x402123: cwdaemon_args_process_short (cwdaemon.c:1664)
+==10394==    by 0x402123: cwdaemon_args_process_long (cwdaemon.c:1634)
+==10394==    by 0x402123: cwdaemon_args_parse (cwdaemon.c:2119)
+==10394==    by 0x402123: main (cwdaemon.c:2165)
+==10394== 
+==10394== 
+==10394== HEAP SUMMARY:
+==10394==     in use at exit: 25,168 bytes in 3 blocks
+==10394==   total heap usage: 8 allocs, 5 frees, 104,616 bytes allocated
+==10394== 
+==10394== 23,440 bytes in 1 blocks are still reachable in loss record 3 of 3
+==10394==    at 0x484D314: malloc (vg_replace_malloc.c:450)
+==10394==    by 0x52AFCB0: ??? (in /lib/libc.so.7)
+==10394==    by 0x52AFF75: ??? (in /lib/libc.so.7)
+==10394==    by 0x52373FA: ??? (in /lib/libc.so.7)
+==10394==    by 0x5237205: syslog (in /lib/libc.so.7)
+==10394==    by 0x404848: log_message (log.c:140)
+==10394==    by 0x40592E: cwdaemon_option_network_port (options.c:51)
+==10394==    by 0x402123: cwdaemon_args_process_short (cwdaemon.c:1664)
+==10394==    by 0x402123: cwdaemon_args_process_long (cwdaemon.c:1634)
+==10394==    by 0x402123: cwdaemon_args_parse (cwdaemon.c:2119)
+==10394==    by 0x402123: main (cwdaemon.c:2165)
+
+The first one is covered by new ticket R0041, and it doesn't appear to be a
+serious issue for now.
+
+The second one doesn't seem to be a real issue, so I will ignore it.
+
+**** PASS memory tests with valgrind for functional/supervised tests
 
 *Goal*
 
-Run selected cwdaemon's supervised functional tests in a setup where cwdaemon is
-running under control of valgrind.
+Run all of cwdaemon's supervised functional tests in a setup where cwdaemon
+is running under control of valgrind.
 
 
 *Steps*
@@ -1680,34 +1722,85 @@ running under control of valgrind.
 
    ./configure --enable-functional-tests --enable-long-functional-tests
 
-2. Compile
+2. Compile cwdaemon
 
    make && make check
 
-3. Run the test. Use command line options necessary to enable and use valgrind
+   You can terminate the "make check" command as soon as build system starts
+   executing unit tests.
 
-   ./tests/functional_tests/supervised/feature_multiple_requests/test_program --sound-system null --supervisor valgrind
+3. Prepare environment variables that will be used by all test programs
+   executed with "make check"
 
-4. After test is completed:
+   export CWDAEMON_TEST_SOUND_SYSTEM=null
+   export CWDAEMON_TEST_SUPERVISOR=valgrind
 
-   1. Confirm that cwdaemon has exited correctly, without errors.
+4. Find all supervised tests
 
-   2. Confirm that there are no memory leaks or memory errors reported in
-      valgrind's log.
+   find tests/functional_tests/supervised/ -name test_program
 
-	  Look for "HEAP SUMMARY" and "LEAK SUMMARY" section headers the log.
-	  Look for "ERROR SUMMARY" section header in the log.
+5. Run each binary by hand, one at a time.
+
+   The purpose of running each test at a time is to get informed about a
+   failure early.
+
+   1. After each test is completed, confirm that no errors are present in
+      summary of the test, in one of these sections:
+
+      1. "FILE DESCRIPTORS"
+      2. "HEAP SUMMARY"
+      3. "LEAK SUMMARY"
+      4. "ERROR SUMMARY"
+
+      Remember that each test may generate several valgrind sessions, each
+      having its own summary. Be sure to review summaries of all valgrind
+      sessions.
+
+   2. After each test is completed, confirm that the status of the test
+      itself is a PASS (i.e. that the test didn't fail).
 
 
 *Expected result*
 
-1. cwdaemon didn't crash.
+1. no memory leaks or memory errors were reported by valgrind.
 
-2. no memory leaks or memory errors were reported by valgrind.
 
 *Actual result*
 
-**** TODO memory tests with valgrind for fuzzing tests
+tests/functional_tests/supervised/feature_multiple_requests/test_program   - SKIPPED (this test is not fully ready yet)
+tests/functional_tests/supervised/request_esc_sound_system/test_program    - PASS (problem in libcw)
+tests/functional_tests/supervised/request_esc_port/test_program            - PASS
+
+
+Tests of request_esc_sound_system reported a known problem in libcw/tq:
+
+==4930== 20 bytes in 1 blocks are definitely lost in loss record 1 of 10
+==4930==    at 0x4852105: calloc (vg_replace_malloc.c:1679)
+==4930==    by 0x559467D: pthread_cond_init (in /lib/libthr.so.3)
+==4930==    by 0x486E4C0: cw_tq_new_internal (libcw_tq.c:185)
+==4930==    by 0x4866F76: cw_gen_new (libcw_gen.c:498)
+==4930==    by 0x4865B00: cw_generator_new_internal (libcw.c:182)
+==4930==    by 0x4865AE6: cw_generator_new (libcw.c:158)
+==4930==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==4930==    by 0x4035AD: cwdaemon_reset_libcw_output (cwdaemon.c:772)
+==4930==    by 0x4035AD: cwdaemon_reset_almost_all (cwdaemon.c:666)
+==4930==    by 0x4024AD: main (cwdaemon.c:2257)
+==4930== 
+==4930== 140 bytes in 7 blocks are definitely lost in loss record 5 of 10
+==4930==    at 0x4852105: calloc (vg_replace_malloc.c:1679)
+==4930==    by 0x559467D: pthread_cond_init (in /lib/libthr.so.3)
+==4930==    by 0x486E4C0: cw_tq_new_internal (libcw_tq.c:185)
+==4930==    by 0x4866F76: cw_gen_new (libcw_gen.c:498)
+==4930==    by 0x4865B00: cw_generator_new_internal (libcw.c:182)
+==4930==    by 0x4865AE6: cw_generator_new (libcw.c:158)
+==4930==    by 0x403426: cwdaemon_open_libcw_output (cwdaemon.c:693)
+==4930==    by 0x403CA1: cwdaemon_handle_escaped_request (cwdaemon.c:1173)
+==4930==    by 0x404360: cwdaemon_receive (cwdaemon.c:920)
+==4930==    by 0x402547: main (cwdaemon.c:2296)
+
+This problem can't be fixed in cwdaemon, so I'm ignoring it here.
+
+**** PASS memory tests with valgrind for fuzzing tests
 
 *Goal*
 
@@ -1726,4 +1819,5 @@ No additional test is needed here because the primary fuzzing tests already
 use valgrind.
 
 *Actual result*
+PASS
 
