@@ -1821,3 +1821,61 @@ use valgrind.
 *Actual result*
 PASS
 
+**** PASS memory tests with valgrind for unit tests
+
+*Goal*
+
+Run all of cwdaemon's unit tests in a setup where unit tests are running
+under control of valgrind.
+
+
+*Steps*
+
+1. Enable compilation of unit tests (unit tests of cwdaemon only)
+
+   make clean
+   ./configure
+
+2. Compile cwdaemon and unit tests
+
+   make && make check
+
+3. Find all unit test binaries
+
+   find tests/unit_tests/* -type f  -executable
+
+4. Run each binary by hand, one at a time.
+
+   /usr/local/bin/valgrind -s --leak-check=full --show-leak-kinds=all --track-fds=yes <path to test binary>
+
+   The purpose of running each test at a time is to get informed about a
+   failure early.
+
+   1. After each test is completed, confirm that no errors are present in
+      summary of the test, in one of these sections:
+
+      1. "FILE DESCRIPTORS"
+      2. "HEAP SUMMARY"
+      3. "LEAK SUMMARY"
+      4. "ERROR SUMMARY"
+
+      Remember that each test may generate several valgrind sessions, each
+      having its own summary. Be sure to review summaries of all valgrind
+      sessions.
+
+   2. After each test is completed, confirm that the status of the test
+      itself is a PASS (i.e. that the test didn't fail).
+
+
+*Expected result*
+
+1. no memory leaks or memory errors were reported by valgrind.
+
+
+*Actual result*
+
+tests/unit_tests/daemon_options    - PASS
+tests/unit_tests/daemon_sleep      - PASS
+tests/unit_tests/daemon_utils      - PASS
+
+
