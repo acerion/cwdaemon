@@ -90,7 +90,7 @@ print $cwsocket chr(27)."d"."1";
 
 # Enough iterations to make good measurements with multimeter. You don't
 # really need to observe all 100 iterations :)
-my g_n_iters = 100;
+my $g_n_iters = 100;
 
 if (0 == $g_mode) {
     print "[II] Manual mode\n";
