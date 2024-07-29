@@ -343,7 +343,7 @@ cwtest_esc2.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_esc2.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -367,7 +367,7 @@ cwtest_esc3.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_esc3.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -391,7 +391,7 @@ cwtest_esc64.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_esc64.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -417,7 +417,7 @@ cwtest_esc64.pl
 ./tests/functional_tests/unattended/request_esc_exit/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
@@ -440,7 +440,7 @@ cwtest_esc64.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_esc64.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -450,7 +450,8 @@ cwtest_esc64.pl
 3. cwdaemon is being switched between word-mode (non-interruptible mode) and
    regular mode (interruptible mode).
 
-   This is recognized by cwdaemon's response to ABORT Escape request.
+   A current mode can be recognized by cwdaemon's response to ABORT Escape
+   request.
 
    Played text cannot (in word-mode) or can (in regular mode) be interrupted
    by ABORT Escape request.
@@ -471,7 +472,7 @@ cwtest_esc7.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_esc7.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -492,7 +493,7 @@ cwtest_esc7.pl
 ./tests/functional_tests/unattended/request_esc_cwdevice/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
@@ -510,7 +511,7 @@ Final result of the test is a "PASS"
 ./tests/functional_tests/supervised/request_esc_port/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Read the banner text displayed at the beginning of test,
 3. Observe the logs displayed during execution of test,
 4. Wait for final status of the test.
@@ -519,6 +520,11 @@ Final result of the test is a "PASS"
 1. Final result of the test is a "PASS".
 2. None of characteristics of played sounds are changing between iterations
    of test.
+3. You can see the following message in logs of cwdaemon when PORT Escape
+   request is sent to cwdaemon:
+
+   [WW] cwdaemon: obsolete request "9" (change network port), ignoring
+
 
 *Actual result*
 
@@ -531,7 +537,7 @@ Final result of the test is a "PASS"
    modes.
 3. Connect USB-to-UART converter.
 4. In one terminal (terminal A) start a test instance of cwdaemon:
-   ./src/cwdaemon -n -x s
+   ./src/cwdaemon -n -x s --cwdevice <cwdevice>
 5. In another terminal (terminal B) enter into "tests" dir.
 
 *Test program*
@@ -541,7 +547,7 @@ cwtest_esca.pl
 1. Connect the multimeter to PTT pin of the USB-to-UART converter.
 2. In terminal B run the test program
 
-   perl ./<test program name> --mode X
+   perl ./cwtest_esca.pl --mode X
 
    Do this with value of mode (X) equal to 0, 1, and 2.
 3. Observe output of test in terminal B
@@ -577,7 +583,7 @@ cwtest_escc.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_escc.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 4. Count the duration of each generated tuning tone.
@@ -646,7 +652,7 @@ cwtest_escd.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_escd.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -677,7 +683,7 @@ previous sound system.
 ./tests/functional_tests/supervised/request_esc_sound_system/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
@@ -700,7 +706,7 @@ cwtest_escg.pl
 
 *Steps*
 1. In terminal B run the test program
-   perl ./<test program name>
+   perl ./cwtest_escg.pl
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
 
@@ -717,7 +723,7 @@ cwtest_escg.pl
 ./tests/functional_tests/unattended/request_esc_reply/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
@@ -769,7 +775,7 @@ Final result of the test is a "PASS"
 ./tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 4. Manually run at least one test with the long "--options" form of the
@@ -812,7 +818,7 @@ On FreeBSD, per /etc/syslog.conf, the INFO messages go to
 
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
@@ -830,10 +836,8 @@ Final result of the test is a "PASS"
 2. Values in range are accepted by cwdaemon (confirmed by playing some text).
 3. Values out of range are rejected - cwdaemon prints error message and exits.
 
+
 *Actual result*
-PASS
-Volume is set as requested in command line.
-Values out of range are rejected.
 
 ***** TODO -t, --pttdelay <time>
 
@@ -1055,7 +1059,7 @@ In this test cwdaemon is executed:
 
 
 *Expected result*
-1. All of the behaviours from "Steps" are seen in running cwdaemon.
+1. All of the behaviours from "Steps" are observed in running cwdaemon.
 2. All of the behaviours from "Steps" are the same for short and long form of
    the command line option.
 
@@ -1081,7 +1085,7 @@ In this test cwdaemon is executed:
 
 
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
 
