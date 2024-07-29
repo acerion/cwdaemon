@@ -1878,17 +1878,15 @@ tests/unit_tests/daemon_options    - PASS
 tests/unit_tests/daemon_sleep      - PASS
 tests/unit_tests/daemon_utils      - PASS
 
-
-
-** TODO <Machine/OS identifier>
+** STARTED Debian GNU/Linux 12
 <Additional info about machine, OS, libs, compiler>
-OS:
-C compiler:
-libc:
-unixcw/libcw:
+OS: Debian GNU/Linux 12
+C compiler: gcc (Debian 12.2.0-14) 12.2.0
+libc: glibc
+unixcw/libcw: 3.6.1/8:0:0
 
-*** TODO tests of build system
-**** TODO make distcheck
+*** PASS tests of build system
+**** PASS make distcheck
 *Steps*
 
 Run the steps in main directory of project.
@@ -1907,8 +1905,9 @@ default "make".
    your best judgement here).
 
 *Actual result*
+PASS
 
-**** TODO ./configure flags
+**** PASS ./configure flags
 
 Test that all flags supported by ./configure script produce "buildable" code.
 
@@ -1926,8 +1925,9 @@ You don't have to do full tests with these test binaries, just check that
 they are there.
 
 *Actual result*
+PASS
 
-**** TODO regression with make distcheck
+**** PASS regression with make distcheck
 
 Confirm that failure of 'make distcheck' after specific sequence of steps does not occur.
 
@@ -1958,8 +1958,9 @@ make distcheck  # <---- In this step a compilation error was occurring
 Distribution archive is created correctly.
 
 *Actual result*
+PASS
 
-*** TODO unit tests
+*** PASS unit tests
 
 Execute tests implemented in tests/unit_tests.
 
@@ -1986,17 +1987,20 @@ to ./configure or not. Test both cases.
 
 *Actual result*
 
- - With functional tests not enabled:
+ - With functional tests not enabled: PASS
 
- - With functional tests enabled:
+ - With functional tests enabled: PASS
 
-*** TODO fuzzing tests
-**** TODO simple fuzzing test
+*** PASS fuzzing tests
+**** PASS simple fuzzing test
 
-Run simple fuzzing test: tests/fuzzing/simple/test_program.
+*Purpose*
+
+Run simple fuzzing test to catch memory errors.
 
 Run the test early in testing phase, certainly before doing manual tests. Let
 an unattended fuzzing test detect problems early.
+
 
 *Preconditions*
 
@@ -2007,6 +2011,23 @@ an unattended fuzzing test detect problems early.
    "supervisor_id_valgrind" in options passed to server_start().
 
 3. Be sure to have all tests enabled in "g_test_cases[]".
+
+4. Plug-in an USB-to-UART converter.
+
+
+*Steps*
+
+1. Compile cwdaemon package with fuzzing test enabled:
+
+   ./configure --enable-functional-tests
+   make
+   make check
+
+   You can interrupt the automatic execution of unit and functional tests.
+
+2. Run test program: tests/fuzzing/simple/test_program
+3. Look at summary of valgrind test, looking for information about memory
+   errors.
 
 
 *Expected result*
@@ -2019,102 +2040,124 @@ an unattended fuzzing test detect problems early.
 3. cwdaemon's test framework doesn't report any errors on its own
 
 *Actual result*
+PASS
 
-*** TODO functional tests
+*** STARTED functional tests
 
-*Preconditions*
+**** PASS unattended short tests
 
-1. Plug in USB-to-UART converter to USB socket.
-2. ./configure --enable-functional-tests --enable-long-functional-tests
-
-**** TODO unattended short tests
-
-*Preconditions*
-
-1. Plug in USB-to-UART converter to USB socket.
-2. ./configure --enable-functional-tests
+*Goal*
 
 Run unattended tests, but without "long" variants. Run relatively short tests
 and look at final result to have some indication of general status of tests
 before delving deeper into testing procedures that require more attention.
 
+
+*Preconditions*
+
+1. Plug in USB-to-UART converter to USB socket.
+2. ./configure --enable-functional-tests
+3. make
+
+
 *Steps*
+
 1. Run "make check"
 2. Let the unattended tests run and complete
+
 
 *Expectations*
 
 The unattended tests executed through "make check" pass. We can now perform
 tests that require more attention from tester.
 
-*Actual result*
 
-**** TODO unattended long tests
+*Actual result*
+PASS
+
+**** PASS unattended long tests
+
+*Goal*
 
 Run unattended tests, but this time also with "long" variants. Run relatively
 long tests and look at final result to have some indication of general status
 of tests before delving deeper into testing procedures that require more
 attention.
 
+
 *Preconditions*
 
 1. Plug in USB-to-UART converter to USB socket.
 2. ./configure --enable-functional-tests --enable-long-functional-tests
+3. make
+
 
 *Steps*
+
 1. Run "make check"
 2. Let the unattended tests run and complete
+
 
 *Expectations*
 
 The unattended tests executed through "make check" pass. We can now perform
 tests that require more attention from tester.
 
-*Actual result*
 
-**** TODO PLAIN request
+*Actual result*
+PASS
+
+**** PASS PLAIN request
 
 *Preconditions*
-
 1. Plug in USB-to-UART converter to USB socket.
 2. ./configure --enable-functional-tests --enable-long-functional-tests
 3. make && make check
 4. Interrupt the build process when tests start being executed
+
 
 *Test program*
 ./tests/functional_tests/unattended/request_plain/test_program
 
+
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
+
 
 *Expectations*
 Final result of the test is a "PASS"
 
-*Actual result*
 
-**** TODO CARET request
+*Actual result*
+PASS
+
+**** PASS CARET request
 
 *Preconditions*
-
 1. Plug in USB-to-UART converter to USB socket.
 2. ./configure --enable-functional-tests --enable-long-functional-tests
 3. make && make check
 4. Interrupt the build process when tests start being executed
 
+
 *Test program*
 tests/functional_tests/unattended/request_caret/test_program
 
+
 *Steps*
-1. Manually start the test
+1. Manually start the test program
 2. Observe the logs
 3. Wait for final status of the test
+
 
 *Expectations*
 Final result of the test is a "PASS"
 
+
 *Actual result*
+PASS
 
 **** TODO Escape requests
 
