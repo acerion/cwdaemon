@@ -276,7 +276,7 @@ Final result of the test is a "PASS"
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 
 *Info*
@@ -333,7 +333,7 @@ The following parameters are reset with RESET Escape request:
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -357,7 +357,7 @@ cwtest_esc2.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -381,7 +381,7 @@ cwtest_esc3.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -411,7 +411,7 @@ cwtest_esc64.pl
 ***** TODO EXIT         '5'
 
 *Preconditions*
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 *Test program*
 ./tests/functional_tests/unattended/request_esc_exit/test_program
@@ -430,7 +430,7 @@ Final result of the test is a "PASS"
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -461,7 +461,7 @@ cwtest_esc64.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -485,7 +485,7 @@ cwtest_esc7.pl
 ***** TODO CWDEVICE     '8'
 
 *Preconditions*
-1. Attach two TTY-to-USB devices acting as two cwdevices: default one, and
+1. Attach two USB-to-UART devices acting as two cwdevices: default one, and
    non-default one.
 
 *Test program*
@@ -504,7 +504,7 @@ Final result of the test is a "PASS"
 ***** TODO PORT         '9'
 
 *Preconditions*
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 *Test program*
 ./tests/functional_tests/supervised/request_esc_port/test_program
@@ -529,7 +529,7 @@ Final result of the test is a "PASS"
 1. Prepare a multimeter or logic state analyzer.
 2. Read information at the beginning of tests/cwtest_esca.pl script about 3
    modes.
-3. Connect TTY-to-USB converter.
+3. Connect USB-to-UART converter.
 4. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 5. In another terminal (terminal B) enter into "tests" dir.
@@ -538,7 +538,7 @@ Final result of the test is a "PASS"
 cwtest_esca.pl
 
 *Steps*
-1. Connect the multimeter to PTT pin of the TTY-to-USB converter.
+1. Connect the multimeter to PTT pin of the USB-to-UART converter.
 2. In terminal B run a test
 
    perl ./<test program name> --mode X
@@ -560,7 +560,7 @@ cwtest_esca.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -584,7 +584,7 @@ cwtest_escc.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s -iii -t 1
 3. In another terminal (terminal B) run nc:
@@ -625,7 +625,7 @@ cwtest_escc.pl
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -659,7 +659,7 @@ attempts will be ignored by cwdaemon, and cwdaemon SHOULD continue to use
 previous sound system.
 
 *Preconditions*
-1. Attach TTY-to-USB device acting as cwdevice.
+1. Attach USB-to-UART device acting as cwdevice.
 
 *Test program*
 ./tests/functional_tests/supervised/request_esc_sound_system/test_program
@@ -678,7 +678,7 @@ Final result of the test is a "PASS"
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. In one terminal (terminal A) start a test instance of cwdaemon:
    ./src/cwdaemon -n -x s
 3. In another terminal (terminal B) enter into "tests" dir.
@@ -890,7 +890,7 @@ Values out of range are rejected.
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 *Steps*
 
@@ -920,7 +920,7 @@ Values out of range are rejected.
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 *Steps*
 
@@ -1013,7 +1013,7 @@ In this test cwdaemon is executed:
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 
 
 *Steps*
@@ -1056,7 +1056,7 @@ In this test cwdaemon is executed:
 
 *Preconditions*
 
-1. Connect TTY-to-USB converter.
+1. Connect USB-to-UART converter.
 2. Compile cwdaemon with functional tests enabled
 
    ./configure --enable-functional-tests
