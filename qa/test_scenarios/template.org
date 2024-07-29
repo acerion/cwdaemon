@@ -316,8 +316,8 @@ The following parameters are reset with RESET Escape request:
 5. In terminal B send some text to confirm that cwdaemon can play it with
    modified parameters.
 
-6. In terminal B send few RESET Escape request to change cwdaemon's
-   parameters back to their initial/default values.
+6. In terminal B send RESET Escape request to change cwdaemon's parameters
+   back to their initial/default values.
 
 7. In terminal B send some text to confirm that cwdaemon is playing the text
    with initial/default parameters.
@@ -342,7 +342,7 @@ The following parameters are reset with RESET Escape request:
 cwtest_esc2.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -366,7 +366,7 @@ cwtest_esc2.pl
 cwtest_esc3.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -390,7 +390,7 @@ cwtest_esc3.pl
 cwtest_esc64.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -439,7 +439,7 @@ Final result of the test is a "PASS"
 cwtest_esc64.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -470,7 +470,7 @@ cwtest_esc64.pl
 cwtest_esc7.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -539,7 +539,7 @@ cwtest_esca.pl
 
 *Steps*
 1. Connect the multimeter to PTT pin of the USB-to-UART converter.
-2. In terminal B run a test
+2. In terminal B run the test program
 
    perl ./<test program name> --mode X
 
@@ -555,6 +555,13 @@ cwtest_esca.pl
 *Actual result*
 
 ***** TODO SSB_WAY      'b'
+
+*Expected result*
+Test passes
+
+
+*Actual result*
+
 ***** TODO TUNE         'c'
 ****** TODO Perl script
 
@@ -569,14 +576,18 @@ cwtest_esca.pl
 cwtest_escc.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
+4. Count the duration of each generated tuning tone.
+
 
 *Expected result*
 1. Test passes without errors,
-2. cwdaemon doesn't report any unexpected errors
+2. cwdaemon doesn't report any unexpected errors,
+3. Each generated tuning tone lasted for expected count of seconds.
+
 
 *Actual result*
 
@@ -634,7 +645,7 @@ cwtest_escc.pl
 cwtest_escd.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -649,6 +660,7 @@ cwtest_escd.pl
 
 *Expected result*
 Test passes
+
 
 *Actual result*
 
@@ -687,7 +699,7 @@ Final result of the test is a "PASS"
 cwtest_escg.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
