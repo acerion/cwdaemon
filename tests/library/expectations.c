@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2002 - 2005 Joop Stakenborg <pg4i@amsat.org>
  *		        and many authors, see the AUTHORS file.
- * Copyright (C) 2012 - 2023 Kamil Ignacak <acerion@wp.pl>
+ * Copyright (C) 2012 - 2024 Kamil Ignacak <acerion@wp.pl>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,9 +52,20 @@ static int expect_morse_and_reply_events_distance_inner(int expectation_idx, boo
 
 
 
-int expect_reply_match(int expectation_idx, const test_reply_data_t * received, const test_reply_data_t * expected)
+/// @brief Data received in "reply" from cwdaemon must match data sent in
+/// "reply" Escape request or "caret" request
+///
+/// @reviewed_on{2024.07.28}
+///
+/// @param[in] expectation_idx Index/number of expectation - info to be included in logs
+/// @param[in] received Reply received from tested cwdaemon server
+/// @param[in] expected Expected reply - what test expects to receive from tested cwdaemon server
+///
+/// @return 0 if expectation is met
+/// @return -1 otherwise
+static int expect_reply_match(int expectation_idx, const test_reply_data_t * received, const test_reply_data_t * expected)
 {
-	// This part implements checking of expectation.
+	// This part implements checking if expectation is met.
 	const bool correct = socket_receive_bytes_is_correct(expected, received);
 
 	// This part implements ONLY logging.
@@ -65,16 +76,15 @@ int expect_reply_match(int expectation_idx, const test_reply_data_t * received, 
 		char printable_expected[PRINTABLE_BUFFER_SIZE(sizeof (expected->bytes))] = { 0 };
 		get_printable_string(expected->bytes, expected->n_bytes, printable_expected, sizeof (printable_expected));
 
+		// Print the two messages (expected and received) as strings aligned
+		// horizontally, to make their visual comparison easier.
+		test_log_info("Expectation %d: expected reply %zu/[%s]\n", expectation_idx, expected->n_bytes, printable_expected);
+		test_log_info("Expectation %d: received reply %zu/[%s]\n", expectation_idx, received->n_bytes, printable_received);
+
 		if (correct) {
-			test_log_info("Expectation %d: received reply %zu/[%s] matches expected reply %zu/[%s]\n",
-			              expectation_idx,
-			              received->n_bytes, printable_received,
-			              expected->n_bytes, printable_expected);
+			test_log_info("Expectation %d: received reply matches expected reply\n", expectation_idx);
 		} else {
-			test_log_err("Expectation %d: received reply %zu/[%s] doesn't match expected reply %zu/[%s]\n",
-			             expectation_idx,
-			             received->n_bytes, printable_received,
-			             expected->n_bytes, printable_expected);
+			test_log_err("Expectation %d: received reply doesn't match expected reply\n", expectation_idx);
 		}
 	}
 
@@ -90,7 +100,7 @@ int expect_reply_match(int expectation_idx, const test_reply_data_t * received, 
    Receiving of message by Morse receiver should not be verified if the
    expected message is too short (the problem with "warm-up" of receiver).
 
-   @reviewed_on{2024.05.05}
+   @reviewed_on{2024.07.28}
 
    @param[in] expectation_idx Index/number of expectation - info to be included in logs
    @param[in] received Morse message keyed by cwdaemon and received on cwdevice by Morse receiver
@@ -101,17 +111,20 @@ int expect_reply_match(int expectation_idx, const test_reply_data_t * received, 
 */
 static int expect_morse_match(int expectation_idx, event_morse_receive_t const * received, event_morse_receive_t const * expected)
 {
-	// This part implements checking of expectation.
+	// This part implements checking if expectation is met.
 	const bool correct = morse_receive_text_is_correct(received->string, expected->string);
 
 	// This part implements ONLY logging.
 	{
+		// Print the two messages (expected and received) as strings aligned
+		// horizontally, to make their visual comparison easier.
+		test_log_info("Expectation %d: expected Morse message [%s]\n", expectation_idx, expected->string);
+		test_log_info("Expectation %d: received Morse message [%s]\n", expectation_idx, received->string);
+
 		if (correct) {
-			test_log_info("Expectation %d: received Morse message [%s] matches expected Morse message [%s] (ignoring the first character)\n",
-			              expectation_idx, received->string, expected->string);
+			test_log_info("Expectation %d: received Morse message matches expected Morse message (ignoring the first character)\n", expectation_idx);
 		} else {
-			test_log_err("Expectation %d: received Morse message [%s] doesn't match expected Morse message [%s]\n",
-			             expectation_idx, received->string, expected->string);
+			test_log_err("Expectation %d: received Morse message doesn't match expected Morse message\n", expectation_idx);
 		}
 	}
 

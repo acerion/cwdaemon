@@ -10,24 +10,6 @@
 
 
 /**
-   @brief Data received in "reply" from cwdaemon must match data sent in
-   "reply" Escape request or "caret" request
-
-   @reviewed_on{2024.02.19}
-
-   @param[in] expectation_idx Index/number of expectation - info to be included in logs
-   @param[in] received Reply received from tested cwdaemon server
-   @param[in] expected Expected reply - what test expects to receive from tested cwdaemon server
-
-   @return 0 if expectation is met
-   @return -1 otherwise
-*/
-int expect_reply_match(int expectation_idx, test_reply_data_t const * received, test_reply_data_t const * expected);
-
-
-
-
-/**
    @brief The end of receiving of Morse message and the time of receiving a
    reply should be separated by short time span
 
