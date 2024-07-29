@@ -2159,9 +2159,9 @@ Final result of the test is a "PASS"
 *Actual result*
 PASS
 
-**** TODO Escape requests
+**** STARTED Escape requests
 
-***** TODO RESET        '0'
+***** PASS RESET        '0'
 
 *Preconditions*
 
@@ -2205,8 +2205,8 @@ The following parameters are reset with RESET Escape request:
 5. In terminal B send some text to confirm that cwdaemon can play it with
    modified parameters.
 
-6. In terminal B send few RESET Escape request to change cwdaemon's
-   parameters back to their initial/default values.
+6. In terminal B send RESET Escape request to change cwdaemon's parameters
+   back to their initial/default values.
 
 7. In terminal B send some text to confirm that cwdaemon is playing the text
    with initial/default parameters.
@@ -2217,8 +2217,9 @@ The following parameters are reset with RESET Escape request:
    which is confirmed by how cwdaemon plays a request in step 7.
 
 *Actual result*
+PASS
 
-***** TODO SPEED        '2'
+***** PASS SPEED        '2'
 
 *Preconditions*
 
@@ -2241,8 +2242,9 @@ cwtest_esc2.pl
 2. cwdaemon doesn't report any unexpected errors
 
 *Actual result*
+PASS
 
-***** TODO TONE         '3'
+***** PASS TONE         '3'
 
 *Preconditions*
 
@@ -2255,7 +2257,7 @@ cwtest_esc2.pl
 cwtest_esc3.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -2265,6 +2267,7 @@ cwtest_esc3.pl
 2. cwdaemon doesn't report any unexpected errors
 
 *Actual result*
+PASS
 
 ***** TODO ABORT        '4'
 
@@ -2279,7 +2282,7 @@ cwtest_esc3.pl
 cwtest_esc64.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -2297,7 +2300,7 @@ cwtest_esc64.pl
 
 *Actual result*
 
-***** TODO EXIT         '5'
+***** PASS EXIT         '5'
 
 *Preconditions*
 1. Connect USB-to-UART converter.
@@ -2314,6 +2317,7 @@ cwtest_esc64.pl
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
 ***** TODO WORD_MODE    '6'
 
@@ -2328,7 +2332,7 @@ Final result of the test is a "PASS"
 cwtest_esc64.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -2346,7 +2350,7 @@ cwtest_esc64.pl
 
 *Actual result*
 
-***** TODO WEIGHTING    '7'
+***** PASS WEIGHTING    '7'
 
 *Preconditions*
 
@@ -2359,7 +2363,7 @@ cwtest_esc64.pl
 cwtest_esc7.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -2370,6 +2374,7 @@ cwtest_esc7.pl
 3. cwdaemon doesn't report any unexpected errors.
 
 *Actual result*
+PASS
 
 ***** TODO CWDEVICE     '8'
 
@@ -2428,7 +2433,7 @@ cwtest_esca.pl
 
 *Steps*
 1. Connect the multimeter to PTT pin of the USB-to-UART converter.
-2. In terminal B run a test
+2. In terminal B run the test program
 
    perl ./<test program name> --mode X
 
@@ -2443,9 +2448,13 @@ cwtest_esca.pl
 
 *Actual result*
 
-***** TODO SSB_WAY      'b'
-***** TODO TUNE         'c'
-****** TODO Perl script
+***** SKIPPED SSB_WAY      'b'
+
+SKIPPED: I don't have neither a HW needed to test this feature nor a test
+scenario.
+
+***** PASS TUNE         'c'
+****** PASS Perl script
 
 *Preconditions*
 
@@ -2458,18 +2467,23 @@ cwtest_esca.pl
 cwtest_escc.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
+4. Count the duration of each generated tuning tone.
+
 
 *Expected result*
 1. Test passes without errors,
-2. cwdaemon doesn't report any unexpected errors
+2. cwdaemon doesn't report any unexpected errors,
+3. Each generated tuning tone lasted for expected count of seconds.
+
 
 *Actual result*
+PASS
 
-****** TODO Manual test, with observing PTT Flag
+****** PASS Manual test, with observing PTT Flag
 
 *Preconditions*
 
@@ -2509,8 +2523,9 @@ cwtest_escc.pl
 
 
 *Actual result*
+PASS
 
-***** TODO TX_DELAY     'd'
+***** PASS TX_DELAY     'd'
 
 *Preconditions*
 
@@ -2523,7 +2538,7 @@ cwtest_escc.pl
 cwtest_escd.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
@@ -2533,15 +2548,19 @@ cwtest_escd.pl
 2. cwdaemon doesn't report any unexpected errors.
 
 *Actual result*
+PASS
 
-***** TODO BAND_SWITCH  'e'
+***** SKIPPED BAND_SWITCH  'e'
 
 *Expected result*
 Test passes
 
-*Actual result*
 
-***** TODO SOUND_SYSTEM 'f'
+*Actual result*
+SKIPPED: I don't have neither a HW needed to test this feature nor a test
+scenario.
+
+***** PASS SOUND_SYSTEM 'f'
 
 The test may be trying to switch to invalid sound system "?"/"<NONE>". Such
 attempts will be ignored by cwdaemon, and cwdaemon SHOULD continue to use
@@ -2562,8 +2581,9 @@ previous sound system.
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
-***** TODO VOLUME       'g'
+***** PASS VOLUME       'g'
 
 *Preconditions*
 
@@ -2576,7 +2596,7 @@ Final result of the test is a "PASS"
 cwtest_escg.pl
 
 *Steps*
-1. In terminal B run a test
+1. In terminal B run the test program
    perl ./<test program name>
 2. Observe output of cwdaemon in terminal A
 3. Observe output of test in terminal B
