@@ -68,8 +68,8 @@ void cwdaemon_args_help(void)
 	printf("-o, --options <option>\n");
 	printf("        Specify <option> to configure device selected by -d / --cwdevice option.\n");
 	printf("        Multiple <option> values can be passed in multiple -o invocations.\n");
-	printf("        These options must always follow the -d / --cwdevice option\n");
-	printf("        on the command line.\n");
+	printf("        These options can be used only after the -d / --cwdevice option\n");
+	printf("        on the command line (first use '-d' and only then you can append '-o').\n");
 	printf("        Driver for serial line devices understands the following options:\n");
 	printf("        key=DTR|RTS|none (without spaces, default is DTR)\n");
 	printf("        ptt=RTS|DTR|none (without spaces, default is RTS)\n");
@@ -78,7 +78,7 @@ void cwdaemon_args_help(void)
 	printf("        Do not fork. Print messages to stdout.\n");
 
 	printf("-p, --port <port>\n");
-	printf("        Specify a number of UDP port to listen on.\n");
+	printf("        Set a number of UDP port to listen on.\n");
 	printf("        Valid values are in range <%d - %d>, inclusive.\n", CWDAEMON_NETWORK_PORT_MIN, CWDAEMON_NETWORK_PORT_MAX);
 	printf("        Default value is %d.\n", CWDAEMON_NETWORK_PORT_DEFAULT);
 
@@ -128,7 +128,7 @@ void cwdaemon_args_help(void)
 	printf("-y, --verbosity <threshold>\n");
 	printf("        Set verbosity threshold for debug messages printed by cwdaemon.\n");
 	printf("        Recognized values:\n");
-	printf("        n = none\n");
+	printf("        n = none (don't print any messages)\n");
 	printf("        e = error\n");
 	printf("        w = warning (default)\n");
 	printf("        i = information\n");
