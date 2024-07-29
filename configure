@@ -5373,8 +5373,25 @@ esac
 # -fstack-clash-protection
 # -fstack-protector-strong
 
-# Some of the flags come from:
+# TODO acerion 2024.07.28 add these clang-specific flags:
+# -Warray-bounds-pointer-arithmetic
+# -Wassign-enum
+# -Wbad-function-cast
+# -Wconditional-uninitialized
+# -Wformat-type-confusion
+# -Widiomatic-parentheses
+# -Wloop-analysis
+# -Wshift-sign-overflow
+# -Wshorten-64-to-32
+# -Wtautological-constant-in-range-compare
+# -Wunreachable-code-aggressive
+# -Wthread-safety
+# -Wthread-safety-beta
+# -Wcomma
+
+# References:
 # https://kristerw.blogspot.com/2017/09/useful-gcc-warning-options-not-enabled.html
+# https://github.com/airbus-seclab/c-compiler-security
 
 CFLAGS="${CFLAGS} -std=c99"
 CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
