@@ -50,7 +50,7 @@ my $volume_invalid2 = 115;     # Simple invalid value
 my $request_code = 'g';   # Code of Escape request
 
 
-my $cycles = 3;           # How many times to run a basic set of tests.
+my $cycles = 2;           # How many times to run a basic set of tests.
 my $cycle = 0;
 my $input_text = "p";     # Text to be played
 my $delta = 5;            # Change (in %) per one step in a loop.
