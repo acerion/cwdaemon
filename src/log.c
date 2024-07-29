@@ -111,17 +111,12 @@ void cwdaemon_errmsg(const char *format, ...)
 
 
 
-// @reviewed_on{2024.05.10}
+// @reviewed_on{2024.07.28}
 void log_message(int priority, char const * format, ...)
 {
-	// If we fork and detach from console, we can't log to stdout/stderr, and
-	// we can log only to syslog.
-	const bool to_syslog = g_forking;
-
-	if (!to_syslog && NULL == cwdaemon_debug_f) {
-		// We don't want to log to either syslog or to file.
-		return;
-	}
+	// If output file (either disc file or stdout/stderr) is not specified,
+	// then the only remaining option is logging to syslog.
+	bool const to_syslog = NULL == cwdaemon_debug_f;
 
 	// LOG_EMERG == 0, ... LOG_DEBUG == 7.
 	if (priority > g_current_options.log_threshold) {
