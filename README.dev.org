@@ -671,3 +671,12 @@ to syslog(), before an explicit call to openlog().
 
 A better control over opening and closing of syslog() must be exercised.
 
+
+** TODO [#C] R0042: Test: clipping of PTT delay value
+
+Delays requested through PTT_DELAY Escape request's values with integer value
+larger than 50 are clipped by cwdaemon.
+
+Current tests don't cover this case carefully enough, but they should. TODO:
+improve the tests.
+
