@@ -380,11 +380,20 @@ char const * get_valid_non_default_cwdevice_name(void)
 		// converter to have some valid non-default cwdevice. And
 		// then I discovered that I also had "cuau2". Looking for
 		// files in /dev/ belonging to "dialer" group helps here.
+		//
+		// TODO (acerion) 2024.07.29: should we skip the "/dev/ prefix and
+		// attach it later at random? Older versions of cwdaemon can't handle
+		// the prefix, so the test can't be used on those versions.
 		static char const * const candidates[MAX_CWDEVICES + 1 /* 1 for guard */] = {
 			"/dev/ttyS0",
 			"/dev/ttyS1",
 			"/dev/tty0",
 			"/dev/tty1",
+
+			// CH343-based device on my Debian 12.
+			// Uses "USB Abstract Control Model" driver.
+			"/dev/ttyACM0",
+			"/dev/ttyACM1",
 
 			// From FreeBSD
 			"/dev/cuaU0",
