@@ -195,7 +195,7 @@ int main(int argc, char * const * argv)
 	}
 
 	test_options_t test_opts = { .sound_system  = CW_AUDIO_NULL,
-				     .supervisor_id = supervisor_id_valgrind };
+	                             .supervisor_id = supervisor_id_valgrind };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
 		test_log_err("Test: failed to process command line options for test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
