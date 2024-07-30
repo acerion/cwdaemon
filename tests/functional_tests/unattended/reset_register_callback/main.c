@@ -258,6 +258,7 @@ static int testcase_run(test_case_t const * test_case, client_t * client, morse_
 
 	/* This would break the cwdaemon before a fix to
 	   https://github.com/acerion/cwdaemon/issues/6 was applied. */
+	test_log_info("Test: sending RESET Escape request %s\n", "");
 	client_send_esc_request(client, CWDAEMON_ESC_REQUEST_RESET, "", 0);
 
 
@@ -368,7 +369,7 @@ static void tests_pause_between_requests(void)
 		if (0 != cwdaemon_random_uint(0, 500, &sleep_duration_ms)) {
 			test_log_warn("Test: failed to randomize first sleep duration, using %u ms\n", sleep_duration_ms);
 		}
-		test_log_info("Test: =========== will sleep for %u ms\n", sleep_duration_ms);
+		test_log_info("Test: will randomly sleep for %u ms between requests\n", sleep_duration_ms);
 		if (0 != test_millisleep_nonintr(sleep_duration_ms)) {
 			test_log_warn("Test: failed to sleep for %u ms\n", sleep_duration_ms);
 		}
