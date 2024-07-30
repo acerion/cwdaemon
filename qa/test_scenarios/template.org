@@ -747,7 +747,7 @@ Final result of the test is a "PASS"
 *Steps*
 1. In one terminal (terminal A) start a test instance of cwdaemon:
 
-   ./src/cwdaemon -n -x s --device <cwdevice-1>
+   ./src/cwdaemon -n -x s --cwdevice <cwdevice-1>
 
 2. In another terminal (terminal B) send some text using nc. As the text is
    being played, confirm that cwdaemon is toggling "keying" pin on
@@ -756,7 +756,7 @@ Final result of the test is a "PASS"
 3. In terminal A stop cwdaemon and start it again, but this time with the
    second cwdevice.
 
-   ./src/cwdaemon -n -x s --device <cwdevice-2>
+   ./src/cwdaemon -n -x s --cwdevice <cwdevice-2>
 
 4. In another terminal (terminal B) send some text using nc. As the text is
    being played, confirm that cwdaemon is toggling "keying" pin on
@@ -801,12 +801,62 @@ are logging.
 On FreeBSD, per /etc/syslog.conf, the INFO messages go to
 /var/log/daemon.log.
 
+On Linux, you will be able to see messages in output of "journalctl -f":
+<netkeyer[5093]: received request: "is this syslog?">
+
+****** TODO do not fork
+
+*Steps*
+
+1. Run cwdaemon in non-forking mode
+
+   ./src/cwdaemon [-n/--nofork] -x p -ii
+
+2. In another terminal send some PLAIN message to cwdaemon.
+
 
 *Expected result*
-1. cwdaemon doesn't daemonize when executed with "-n" flag.
-2. cwdaemon does daemonize when executed without "-n" flag.
-3. When cwdaemon doesn't daemonize, it doesn't log into syslog.
-4. When cwdaemon does daemonize, it does log into syslog.
+
+1. Observe that cwdaemon is still attached to current terminal (it didn't go
+   to background).
+2. Observe that cwdaemon is logging messages to stdout
+
+
+*Actual result*
+
+****** TODO do fork
+
+*Steps*
+
+1. Confirm that no other cwdaemon is already running
+
+   ps -A | grep cwdaemon
+
+2. Run cwdaemon in forking mode
+
+   ./src/cwdaemon -x p -ii
+
+3. Confirm that cwdaemon process is present with this command:
+
+   ps -A | grep cwdaemon
+
+4. In another terminal send some PLAIN message to cwdaemon.
+
+5. In another terminal send EXIT Escape request (<ESC>5).
+
+6. Confirm that cwdaemon process is no longer present (because it exited)
+   with this command:
+
+   ps -A | grep cwdaemon
+
+
+*Expected result*
+
+1. After step 2 the cwdaemon is no longer attached to current terminal (it
+   went to background).
+2. In step 4 cwdaemon is not logging messages to stdout.
+3. In step 4 cwdaemon is logging messages to syslog instead.
+4. In step 4 cwdaemon is playing Morse code using sound system.
 
 
 *Actual result*
@@ -854,12 +904,18 @@ Final result of the test is a "PASS"
 1. Connect a cwdevice
 
 
+*Info*
+cwdaemon may fail to run with OSS on Linux, and detecting the failure by
+cwdaemon may last ~15 seconds.
+
+
 *Steps*
 1. Run cwdaemon with different sound systems: one of 'n', 'c', 'o', 'a', 'p',
    's'.
-2. Observe if cwdaemon exits due to unsupported sound system, or if it starts
+2. Run cwdaemon with invalid sound system, e.g. 'u'.
+3. Observe if cwdaemon exits due to unsupported sound system, or if it starts
    correctly.
-3. If it starts correctly, try to sending some text through "nc".
+4. If it starts correctly, try to sending some text through "nc".
 
 
 *Expected results*
@@ -869,7 +925,8 @@ Final result of the test is a "PASS"
    is specified.
 3. If cwdaemon starts correctly, it plays a text using specified sound
    system.
-4. Both short and long form of the command line option works the same.
+4. If cwdaemon starts correctly, Morse code is keyed on cwdevice's 'key' pin.
+5. Both short and long form of the command line option works the same.
 
 
 *Actual result*
@@ -908,14 +965,15 @@ Final result of the test is a "PASS"
 
 1. Connect USB-to-UART converter.
 
+
 *Steps*
 
 1. In one terminal (terminal A) start cwdaemon without "-i" flags:
 
    ./src/cwdaemon -n -x s -d <cwdevice>
 
-2. In another terminal (terminal B) send a valid TONE Escape request, send an
-   invalid TONE Escape request, and then play some text.
+2. In another terminal (terminal B) send a valid TONE Escape request
+   (<ESC>3), send an invalid TONE Escape request, and then play some text.
 
 3. In terminal A observe that with no "-i" flags specified in command line,
    cwdaemon prints only errors and warnings
@@ -923,6 +981,11 @@ Final result of the test is a "PASS"
 4. In terminal A do a series of starts of cwdaemon with increasing amount of
    "-i" flags. In terminal B send a TONE Escape request, then play some text,
    and then in terminal A observe increasing verbosity of cwdaemon's logs.
+
+   "-i"     ->  notice
+   "-ii"    ->  info
+   "-iii"   ->  debug
+   "-iiii"  ->  still debug
 
 
 *Expected result*
@@ -945,17 +1008,17 @@ Final result of the test is a "PASS"
 
    ./src/cwdaemon -n -x s -d <cwdevice>
 
-2. In another terminal (terminal B) send a valid TONE Escape request, send an
-   invalid TONE Escape request, and then play some text.
+2. In another terminal (terminal B) send a valid TONE Escape request
+   (<ESC>3), send an invalid TONE Escape request, and then play some text.
 
-3. In terminal A observe that with no "-i" flags specified in command line,
-   cwdaemon prints only errors and warnings.
+3. In terminal A observe that with no "-y"/"--verbosity" flag specified in
+   command line, cwdaemon prints only errors and warnings.
 
-4. In terminal A do a series of starts of cwdaemon with increasing a level
-   passed to "-y"/"--verbosity" flag (n (none), e (error), w (warning), i
-   (information), d (debug)). In terminal B send a TONE Escape request, then
-   play some text, and then in terminal A observe increasing verbosity of
-   cwdaemon's logs.
+4. In terminal A do a series of starts of cwdaemon with increasing a
+   verbosity level passed to "-y"/"--verbosity" flag (n (none), e (error), w
+   (warning), i (information), d (debug)). In terminal B send a TONE Escape
+   request, then play some text, and then in terminal A observe increasing
+   verbosity of cwdaemon's logs.
 
    In particular confirm that with "n" flag cwdaemon doesn't even print
    errors.
@@ -971,8 +1034,11 @@ Final result of the test is a "PASS"
 
 ***** TODO -I, --libcwflags <flags>
 
+*Goal*
 Confirm that option that specifies debug flags for libcw is working.
 
+
+*Info*
 In this test cwdaemon is executed:
  - in non-daemonized mode to observe console logs;
  - with null keying device because cwdevice is not essential for this test.
@@ -980,18 +1046,18 @@ In this test cwdaemon is executed:
 
 *Steps*
 
-1. Open connection to cwdaemon.
+1. In terminal A, open connection to cwdaemon.
 
    nc -u localhost 6789
    OR
    nc -u 127.0.0.1 6789
 
-2. Run cwdaemon without the tested flag. Notice the 'd' (DEBUG) threshold for
-   cwdaemon.
+2. In terminal B, run cwdaemon without the tested flag. Notice the 'd'
+   (DEBUG) threshold for cwdaemon.
 
-   ./src/cwdaemon -d null -n -x p -y d
+   ./src/cwdaemon -d null -n -x s -y d
 
-3. Send some characters to cwdaemon with nc.
+3. In terminal A, send some characters to cwdaemon with nc.
 
 4. Confirm that cwdaemon's log output shows cwdaemon logs, but doesn't show
    any libcw logs (because '--libcwflags' option is not provided).
@@ -1011,10 +1077,12 @@ In this test cwdaemon is executed:
 
    ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y w
 
-9. Send characters to cwdaemon using nc.
+9. Send characters to cwdaemon using nc. Also send VOLUME Escape request
+   (<ESC>g) with value out of range to trigger logging errors by cwdaemon.
 
 10. Confirm that cwdaemon's log output shows cwdaemon logs. If there are any
     libcw logs, the logs have severity only WARNING or ERROR.
+
 
 *Expected result*
 
@@ -1253,6 +1321,9 @@ cwtest_short_space.pl
 Confirm that it's possible to generate a coverage report for unit tests. It
 is not expected that specific level of coverage is achieved.
 
+Make sure that you can see coverage reports for source code of cwdaemon, i.e.
+for files from ROOT/src.
+
 
 *Prerequisites*
 
@@ -1262,6 +1333,8 @@ is not expected that specific level of coverage is achieved.
 
    export CC=clang
 
+3. Connect an USB-to-UART cwdevice
+
 
 *Steps*
 
@@ -1269,7 +1342,7 @@ The steps are copied from relevant sections in top-level README file:
 
 1. ./configure --enable-functional-tests --enable-gcov
 2. make gcov
-3. <web browser> tests/coverage/unit_tests/daemon_options/index.html
+3. <web browser> tests/coverage/unit_tests/daemon_<functionality>/index.html
 4. make clean
 
 
