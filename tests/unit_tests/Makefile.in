@@ -1175,7 +1175,7 @@ uninstall-am:
 
 @ENABLE_GCOV_TRUE@	@echo "[II] Coverage: building report for unit test [$(target)]"
 @ENABLE_GCOV_TRUE@	mkdir -p $(OUTPUT_DIR)/unit_tests/$(target)
-@ENABLE_GCOV_TRUE@	lcov -directory $(abs_top_builddir)/tests/unit_tests --capture --output-file $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
+@ENABLE_GCOV_TRUE@	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
 @ENABLE_GCOV_TRUE@	genhtml -t $(target) -o $(OUTPUT_DIR)/unit_tests/$(target) $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
 
 @ENABLE_GCOV_TRUE@gcov-clean:

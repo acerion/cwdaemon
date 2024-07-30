@@ -51,7 +51,7 @@ gcov2:
 
 	@echo "[II] Coverage: building report for unit test [$(target)]"
 	mkdir -p $(OUTPUT_DIR)/unit_tests/$(target)
-	lcov -directory $(abs_top_builddir)/tests/unit_tests --capture --output-file $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
+	lcov -directory $(abs_top_builddir)/src/ --capture --output-file $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
 	genhtml -t $(target) -o $(OUTPUT_DIR)/unit_tests/$(target) $(OUTPUT_DIR)/unit_tests/$(target)/traceinfo.info
 
 

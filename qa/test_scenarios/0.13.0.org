@@ -1538,7 +1538,7 @@ cwtest_short_space.pl
 *Actual result*
 PASS
 
-*** PASS gcov/lcov
+*** STARTED gcov/lcov
 
 *Purpose*
 
@@ -1575,7 +1575,7 @@ The steps are copied from relevant sections in top-level README file:
 
 
 *Actual result*
-PASS
+
 
 *** PASS memory tests with valgrind
 **** PASS memory tests with valgrind for functional/unattended tests
@@ -3223,12 +3223,16 @@ cwtest_short_space.pl
 *Actual result*
 PASS
 
-*** TODO gcov/lcov
+*** PASS gcov/lcov
 
 *Purpose*
 
 Confirm that it's possible to generate a coverage report for unit tests. It
 is not expected that specific level of coverage is achieved.
+
+Make sure that you can see coverage reports for source code of cwdaemon, i.e.
+for files from ROOT/src.
+
 
 
 *Prerequisites*
@@ -3239,6 +3243,8 @@ is not expected that specific level of coverage is achieved.
 
    export CC=clang
 
+3. Connect an USB-to-UART cwdevice
+
 
 *Steps*
 
@@ -3246,7 +3252,7 @@ The steps are copied from relevant sections in top-level README file:
 
 1. ./configure --enable-functional-tests --enable-gcov
 2. make gcov
-3. <web browser> tests/coverage/unit_tests/daemon_options/index.html
+3. <web browser> tests/coverage/unit_tests/daemon_<functionality>/index.html
 4. make clean
 
 
@@ -3254,14 +3260,16 @@ The steps are copied from relevant sections in top-level README file:
 
 1. Summary of configuration step correctly shows enabled gcov,
 2. There are no errors during generation of gcov/lcov report,
-3. Contents of the report looks correct (no obvious problems with the
+3. The reports are generated for source code from ROOT/src directory.
+4. Contents of the report looks correct (no obvious problems with the
    report).
-4. There are no errors during cleanup step.
+5. There are no errors during cleanup step.
 
 
 *Actual result*
+PASS
 
-*** TODO memory tests with valgrind
+*** STARTED memory tests with valgrind
 **** TODO memory tests with valgrind for functional/unattended tests
 
 *Goal*
@@ -3380,7 +3388,7 @@ is running under control of valgrind.
 
 *Actual result*
 
-**** TODO memory tests with valgrind for fuzzing tests
+**** PASS memory tests with valgrind for fuzzing tests
 
 *Goal*
 
@@ -3400,7 +3408,9 @@ use valgrind.
 
 *Actual result*
 
-**** TODO memory tests with valgrind for unit tests
+PASS
+
+**** PASS memory tests with valgrind for unit tests
 
 *Goal*
 
@@ -3425,7 +3435,7 @@ under control of valgrind.
 
 4. Run each binary by hand, one at a time.
 
-   /usr/local/bin/valgrind -s --leak-check=full --show-leak-kinds=all --track-fds=yes <path to test binary>
+   /usr/bin/valgrind -s --leak-check=full --show-leak-kinds=all --track-fds=yes <path to test binary>
 
    The purpose of running each test at a time is to get informed about a
    failure early.
@@ -3452,4 +3462,8 @@ under control of valgrind.
 
 
 *Actual result*
+
+tests/unit_tests/daemon_options   - PASS
+tests/unit_tests/daemon_sleep     - PASS
+tests/unit_tests/daemon_utils     - PASS
 
