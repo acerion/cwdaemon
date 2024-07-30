@@ -1973,9 +1973,7 @@ bool cwdaemon_params_debugfile(const char *optarg)
 	}
 
 	if (!strcmp(optarg, "syslog")) {
-		cwdaemon_debug(CWDAEMON_VERBOSITY_E, __func__, __LINE__,
-			       "debug output file \"%s\" not implemented yet, try it in later versions of %s",
-			       optarg, PACKAGE);
+		log_error("Support for [%s] value of -d/--debugfile option is not implemented yet", optarg);
 		return false;
 	}
 
