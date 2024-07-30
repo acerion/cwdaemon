@@ -342,7 +342,7 @@ Update INSTALL file with details about required unixcw/libcw versions.
 Make a properly named copy of qa/test_scenarios/template.org. The name of the
 copy should reflect new version number of the package.
 
-* TODO Remove -Werror from CFLAGS
+* SKIPPED Remove -Werror from CFLAGS
 At this stage of this list there should be no more changes in code. Remove
 -Werror from CFLAGS because after this stage there should be no occasions on
 which you would introduce problems in code.
@@ -352,20 +352,21 @@ this code will be compiled by your users may have different version of
 compiler, and that compiler may discover some issues. You don't want to break
 compilation on users' computers due to -Werror.
 
-* TODO Make sure that debug and optimization compiler flags are correct
+SKIPPED: the flag was not added to CFLAGS in the first place - source code of
+cwdaemon is not ready for that yet.
+
+* DONE Make sure that debug and optimization compiler flags are correct
 
 Make sure that CFLAGS of code that is almost ready for release doesn't
 contain "-g -O0". Do this before testing phase so that the code that you test
 has been compiled with options similar to options used for release.
 
-* TODO Do the testing per test scenarios
+* STARTED Do the testing per test scenarios
 
 Test your software using test scenarios that you have created. See if you
 need to repeat some tests on different software/hardware platforms. Write
 down bugs that you have found and fixed, you may want to check for them when
 testing next release, to see if you haven't reintroduced them.
-
-The test scenarios describe both supervised and unattended tests.
 
 * TODO Make sure that debug and optimization compiler flags are correct (again)
 
