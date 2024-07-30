@@ -2042,7 +2042,7 @@ an unattended fuzzing test detect problems early.
 *Actual result*
 PASS
 
-*** STARTED functional tests
+*** PASS functional tests
 
 **** PASS unattended short tests
 
@@ -2634,13 +2634,13 @@ Final result of the test is a "PASS"
 *Actual result*
 PASS
 
-**** STARTED Command line options
+**** PASS Command line options
 
 ***** PASS -h, --help
 
 ***** PASS -V, --version
 
-***** TODO -d, --cwdevice <device>
+***** PASS -d, --cwdevice <device>
 
 *Preconditions*
 1. Connect two cwdevices
@@ -2649,7 +2649,7 @@ PASS
 *Steps*
 1. In one terminal (terminal A) start a test instance of cwdaemon:
 
-   ./src/cwdaemon -n -x s --device <cwdevice-1>
+   ./src/cwdaemon -n -x s --cwdevice <cwdevice-1>
 
 2. In another terminal (terminal B) send some text using nc. As the text is
    being played, confirm that cwdaemon is toggling "keying" pin on
@@ -2658,7 +2658,7 @@ PASS
 3. In terminal A stop cwdaemon and start it again, but this time with the
    second cwdevice.
 
-   ./src/cwdaemon -n -x s --device <cwdevice-2>
+   ./src/cwdaemon -n -x s --cwdevice <cwdevice-2>
 
 4. In another terminal (terminal B) send some text using nc. As the text is
    being played, confirm that cwdaemon is toggling "keying" pin on
@@ -2670,8 +2670,9 @@ PASS
 
 
 *Actual result*
+PASS
 
-***** TODO -o, --options <option>
+***** PASS -o, --options <option>
 
 *Test program*
 ./tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program
@@ -2692,8 +2693,9 @@ PASS
 
 
 *Actual result*
+PASS
 
-***** TODO -n, --nofork
+***** PASS -n, --nofork
 
 *Preconditions*
 
@@ -2703,15 +2705,66 @@ are logging.
 On FreeBSD, per /etc/syslog.conf, the INFO messages go to
 /var/log/daemon.log.
 
+On Linux, you will be able to see messages in output of "journalctl -f":
+<netkeyer[5093]: received request: "is this syslog?">
+
+****** PASS do not fork
+
+*Steps*
+1. Run cwdaemon in non-forking mode
+
+   ./src/cwdaemon [-n/--nofork] -x p -ii
+
+2. In another terminal send some PLAIN message to cwdaemon.
+
 
 *Expected result*
-1. cwdaemon doesn't daemonize when executed with "-n" flag.
-2. cwdaemon does daemonize when executed without "-n" flag.
-3. When cwdaemon doesn't daemonize, it doesn't log into syslog.
-4. When cwdaemon does daemonize, it does log into syslog.
+1. Observe that cwdaemon is still attached to current terminal (it didn't go
+   to background).
+2. Observe that cwdaemon is logging messages to stdout
 
 
 *Actual result*
+PASS
+
+****** PASS do fork
+
+*Steps*
+
+1. Confirm that no other cwdaemon is already running
+
+   ps -A | grep cwdaemon
+
+2. Run cwdaemon in forking mode
+
+   ./src/cwdaemon -x p -ii
+
+3. Confirm that cwdaemon process is present with this command:
+
+   ps -A | grep cwdaemon
+
+4. In another terminal send some PLAIN message to cwdaemon.
+
+5. In another terminal send EXIT Escape request (<ESC>5).
+
+6. Confirm that cwdaemon process is no longer present (because it exited)
+   with this command:
+
+   ps -A | grep cwdaemon
+
+
+*Expected result*
+
+1. After step 2 the cwdaemon is no longer attached to current terminal (it
+   went to background).
+2. In step 4 cwdaemon is not logging messages to stdout.
+3. In step 4 cwdaemon is logging messages to syslog instead.
+4. In step 4 cwdaemon is playing Morse code using sound system.
+
+
+*Actual result*
+
+PASS
 
 ***** PASS -p, --port <port>
 
@@ -2742,7 +2795,7 @@ PASS
 *Actual result*
 PASS
 
-***** TODO -t, --pttdelay <time>
+***** PASS -t, --pttdelay <time>
 
 *Expected result*
 1. It's possible to set parameter using short and long form of the option.
@@ -2750,8 +2803,12 @@ PASS
 3. Values out of range are rejected - cwdaemon prints error message and exits.
 
 *Actual result*
+PASS
 
-***** TODO -x, --system <sound system>
+Unfortunately right now I don't have good tools or good SW tests to measure
+the actual delay.
+
+***** PASS -x, --system <sound system>
 
 *Preconditions*
 1. Connect a cwdevice
@@ -2760,9 +2817,10 @@ PASS
 *Steps*
 1. Run cwdaemon with different sound systems: one of 'n', 'c', 'o', 'a', 'p',
    's'.
-2. Observe if cwdaemon exits due to unsupported sound system, or if it starts
+2. Run cwdaemon with invalid sound system, e.g. 'u'.
+3. Observe if cwdaemon exits due to unsupported sound system, or if it starts
    correctly.
-3. If it starts correctly, try to sending some text through "nc".
+4. If it starts correctly, try to sending some text through "nc".
 
 
 *Expected results*
@@ -2772,10 +2830,12 @@ PASS
    is specified.
 3. If cwdaemon starts correctly, it plays a text using specified sound
    system.
-4. Both short and long form of the command line option works the same.
+4. If cwdaemon starts correctly, Morse code is keyed on cwdevice's 'key' pin.
+5. Both short and long form of the command line option works the same.
 
 
 *Actual result*
+PASS
 
 ***** PASS -v, --volume <volume>
 
@@ -2807,7 +2867,7 @@ PASS
 *Actual result*
 PASS
 
-***** TODO -i
+***** PASS -i
 
 *Preconditions*
 
@@ -2836,8 +2896,9 @@ PASS
 
 
 *Actual result*
+PASS
 
-***** TODO -y, --verbosity <threshold>
+***** PASS -y, --verbosity <threshold>
 
 *Preconditions*
 
@@ -2850,17 +2911,17 @@ PASS
 
    ./src/cwdaemon -n -x s -d <cwdevice>
 
-2. In another terminal (terminal B) send a valid TONE Escape request, send an
-   invalid TONE Escape request, and then play some text.
+2. In another terminal (terminal B) send a valid TONE Escape request
+   (<ESC>3), send an invalid TONE Escape request, and then play some text.
 
-3. In terminal A observe that with no "-i" flags specified in command line,
-   cwdaemon prints only errors and warnings.
+3. In terminal A observe that with no "-y"/"--verbosity" flag specified in
+   command line, cwdaemon prints only errors and warnings.
 
-4. In terminal A do a series of starts of cwdaemon with increasing a level
-   passed to "-y"/"--verbosity" flag (n (none), e (error), w (warning), i
-   (information), d (debug)). In terminal B send a TONE Escape request, then
-   play some text, and then in terminal A observe increasing verbosity of
-   cwdaemon's logs.
+4. In terminal A do a series of starts of cwdaemon with increasing a
+   verbosity level passed to "-y"/"--verbosity" flag (n (none), e (error), w
+   (warning), i (information), d (debug)). In terminal B send a TONE Escape
+   request, then play some text, and then in terminal A observe increasing
+   verbosity of cwdaemon's logs.
 
    In particular confirm that with "n" flag cwdaemon doesn't even print
    errors.
@@ -2873,11 +2934,15 @@ PASS
 
 
 *Actual result*
+PASS
 
-***** TODO -I, --libcwflags <flags>
+***** PASS -I, --libcwflags <flags>
 
+*Goal*
 Confirm that option that specifies debug flags for libcw is working.
 
+
+*Info*
 In this test cwdaemon is executed:
  - in non-daemonized mode to observe console logs;
  - with null keying device because cwdevice is not essential for this test.
@@ -2885,18 +2950,18 @@ In this test cwdaemon is executed:
 
 *Steps*
 
-1. Open connection to cwdaemon.
+1. In terminal A, open connection to cwdaemon.
 
    nc -u localhost 6789
    OR
    nc -u 127.0.0.1 6789
 
-2. Run cwdaemon without the tested flag. Notice the 'd' (DEBUG) threshold for
-   cwdaemon.
+2. In terminal B, run cwdaemon without the tested flag. Notice the 'd'
+   (DEBUG) threshold for cwdaemon.
 
-   ./src/cwdaemon -d null -n -x p -y d
+   ./src/cwdaemon -d null -n -x s -y d
 
-3. Send some characters to cwdaemon with nc.
+3. In terminal A, send some characters to cwdaemon with nc.
 
 4. Confirm that cwdaemon's log output shows cwdaemon logs, but doesn't show
    any libcw logs (because '--libcwflags' option is not provided).
@@ -2916,7 +2981,8 @@ In this test cwdaemon is executed:
 
    ./src/cwdaemon --libcwflags=4294967295 -d null  -n -x p -y w
 
-9. Send characters to cwdaemon using nc.
+9. Send characters to cwdaemon using nc. Also send VOLUME Escape request
+   (<ESC>g) with value out of range to trigger logging errors by cwdaemon.
 
 10. Confirm that cwdaemon's log output shows cwdaemon logs. If there are any
     libcw logs, the logs have severity only WARNING or ERROR.
@@ -2929,8 +2995,9 @@ In this test cwdaemon is executed:
 2. Threshold for libcw logs depends on value of '-y' flag passed to cwdaemon.
 
 *Actual result*
+PASS
 
-***** STARTED -f, --debugfile <output>
+***** PASS -f, --debugfile <output>
 
 *Preconditions*
 
@@ -2972,9 +3039,9 @@ In this test cwdaemon is executed:
 *Actual result*
 PASS
 
-**** TODO Misc tests
+**** PASS Misc tests
 
-***** TODO reset register callback
+***** PASS reset register callback
 
 *Preconditions*
 
@@ -2999,8 +3066,9 @@ PASS
 Final result of the test is a "PASS"
 
 *Actual result*
+PASS
 
-***** TODO State of tty DTR and RTS pins during inactivity
+***** PASS State of tty DTR and RTS pins during inactivity
 
 *Purpose*
 
@@ -3089,8 +3157,9 @@ pins.
 All expectations from above steps are met.
 
 *Actual result*
+PASS
 
-***** TODO tests/cwtest.pl
+***** PASS tests/cwtest.pl
 
 *Preconditions*
 
@@ -3098,7 +3167,7 @@ All expectations from above steps are met.
 2. cwdaemon must be started (automatically or manually), running on default
    port, with <platform's preferred sound system>.
 
-   ./src/cwdaemon -n -x s -d cuaU0
+   ./src/cwdaemon -n -x s -d ttyUSB0
 
 
 *Test program*
@@ -3120,8 +3189,9 @@ cwtest.pl
 
 
 *Actual result*
+PASS
 
-***** TODO tests/cwtest_short_space.pl
+***** PASS tests/cwtest_short_space.pl
 
 *Preconditions*
 
@@ -3151,6 +3221,7 @@ cwtest_short_space.pl
 
 
 *Actual result*
+PASS
 
 *** TODO gcov/lcov
 
