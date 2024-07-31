@@ -1366,6 +1366,11 @@ Run all of cwdaemon's unattended functional tests in a setup where cwdaemon is
 running under control of valgrind.
 
 
+*Preconditions*
+
+1. Connect USB-to-UART converter (a cwdevice).
+
+
 *Steps*
 
 1. Enable compilation of unattended functional tests
@@ -1392,7 +1397,7 @@ running under control of valgrind.
 5. Run each binary by hand, one at a time.
 
    The purpose of running each test at a time is to get informed about a
-   failure early.
+   possible failure early.
 
    1. After each test is completed, confirm that no errors are present in
       summary of the test, in one of these sections:
@@ -1423,6 +1428,11 @@ running under control of valgrind.
 
 Run all of cwdaemon's supervised functional tests in a setup where cwdaemon
 is running under control of valgrind.
+
+
+*Preconditions*
+
+1. Connect USB-to-UART converter (a cwdevice).
 
 
 *Steps*
