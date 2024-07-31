@@ -415,6 +415,10 @@ Command line option: N/A
 .IP
 Escaped request: <ESC>4
 
+.IP
+This request may be used to interrupt/end keying of current message or to
+interrupt/end a tuning procedure, provided that cwdaemon is working in
+interrupt-able (non-word) mode.
 
 
 .TP
@@ -463,6 +467,10 @@ Escaped request: <ESC>c<seconds>
 Tune for <seconds> seconds. This function does two things: plays continuous
 wave using current sound system, and holds down (closed / 1) the 'key' pin of
 keying device.
+
+.IP
+The tuning may be interrupted/terminated with ABORT Escape request (<ESC>4)
+if cwdaemon is working in interrupt-able (non-word) mode.
 
 
 
