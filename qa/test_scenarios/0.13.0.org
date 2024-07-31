@@ -1878,7 +1878,7 @@ tests/unit_tests/daemon_options    - PASS
 tests/unit_tests/daemon_sleep      - PASS
 tests/unit_tests/daemon_utils      - PASS
 
-** STARTED Debian GNU/Linux 12
+** PASS Debian GNU/Linux 12
 <Additional info about machine, OS, libs, compiler>
 OS: Debian GNU/Linux 12
 C compiler: gcc (Debian 12.2.0-14) 12.2.0
@@ -3269,13 +3269,18 @@ The steps are copied from relevant sections in top-level README file:
 *Actual result*
 PASS
 
-*** STARTED memory tests with valgrind
-**** TODO memory tests with valgrind for functional/unattended tests
+*** PASS memory tests with valgrind
+**** PASS memory tests with valgrind for functional/unattended tests
 
 *Goal*
 
 Run all of cwdaemon's unattended functional tests in a setup where cwdaemon is
 running under control of valgrind.
+
+
+*Preconditions*
+
+1. Connect USB-to-UART converter (a cwdevice).
 
 
 *Steps*
@@ -3304,7 +3309,7 @@ running under control of valgrind.
 5. Run each binary by hand, one at a time.
 
    The purpose of running each test at a time is to get informed about a
-   failure early.
+   possible failure early.
 
    1. After each test is completed, confirm that no errors are present in
       summary of the test, in one of these sections:
@@ -3329,12 +3334,26 @@ running under control of valgrind.
 
 *Actual result*
 
-**** TODO memory tests with valgrind for functional/supervised tests
+tests/functional_tests/unattended/option_cwdevice_tty_lines/test_program   - PASS
+tests/functional_tests/unattended/request_esc_exit/test_program            - PASS
+tests/functional_tests/unattended/reset_register_callback/test_program     - PASS
+tests/functional_tests/unattended/option_port/test_program                 - PASS
+tests/functional_tests/unattended/request_plain/test_program               - PASS
+tests/functional_tests/unattended/request_caret/test_program               - PASS
+tests/functional_tests/unattended/request_esc_cwdevice/test_program        - PASS
+tests/functional_tests/unattended/request_esc_reply/test_program           - PASS
+
+**** PASS memory tests with valgrind for functional/supervised tests
 
 *Goal*
 
 Run all of cwdaemon's supervised functional tests in a setup where cwdaemon
 is running under control of valgrind.
+
+
+*Preconditions*
+
+1. Connect USB-to-UART converter (a cwdevice).
 
 
 *Steps*
@@ -3387,6 +3406,15 @@ is running under control of valgrind.
 
 
 *Actual result*
+
+tests/functional_tests/supervised/feature_multiple_requests/test_program  - SKIPPED (not a mature test yet)
+tests/functional_tests/supervised/request_esc_sound_system/test_program   - PASS
+tests/functional_tests/supervised/request_esc_port/test_program           - PASS
+
+request_esc_sound_system switches to PulseAudio, and that results in lots of
+Valgrind logs for PulseAudio library. I ignored these because they are most
+probably due to memory/resource handling inside of PulseAudio library, and
+have nothing to do with cwdaemon's resource management.
 
 **** PASS memory tests with valgrind for fuzzing tests
 
