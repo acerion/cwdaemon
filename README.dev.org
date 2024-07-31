@@ -356,9 +356,10 @@ further work:
 
 ** TODO [#C] R0020: Feature: Add non-simple fuzzing test framework
 
-Come up with non-simple, non-naive fuzzing test framework
+Come up with non-simple, non-naive fuzzing test framework.
 
 Maybe American Fuzzy Loop?
+Maybe https://llvm.org/docs/LibFuzzer.html?
 
 ** TODO [#A] R0021: Feature: Stop treating requests and replies as plain strings
 
@@ -679,10 +680,50 @@ larger than 50 are clipped by cwdaemon.
 Current tests don't cover this case carefully enough, but they should. TODO:
 improve the tests.
 
-
 ** TODO [#A] R0043: Documentation: REPLY Escape request in man page
 
 The request is not really described in the man page.
 
 There is a short mention about it, but the man page doesn't explain what the
 request really does.
+
+** TODO [#B] R0044: "high" memory usage
+
+Each run of cwdaemon allocates some memory on heap, even when Null sound
+system is being used. There is no memory leak, but the amount of allocated
+memory seems high.
+
+From valgrind report:
+
+==6437== 
+==6437== FILE DESCRIPTORS: 3 open (3 std) at exit.
+==6437== 
+==6437== HEAP SUMMARY:
+==6437==     in use at exit: 0 bytes in 0 blocks
+==6437==   total heap usage: 9 allocs, 9 frees, 147,012 bytes allocated
+==6437== 
+==6437== All heap blocks were freed -- no leaks are possible
+==6437== 
+==6437== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+147 kB of memory? I did not expect that much!
+
+TODO: find out where this memory is allocated, and whether we can decrease
+the total size of allocations.
+
+Steps to reproduce:
+1. ./configure --enable-functional-tests --enable-long-functional-tests
+2. make && make check
+3. Plug in USB-to-UART converter
+4. Make tests use Null sound system and run under valgrind:
+
+   export CWDAEMON_TEST_SOUND_SYSTEM=null
+   export CWDAEMON_TEST_SUPERVISOR=valgrind
+
+5. Run a test:
+
+   tests/functional_tests/unattended/request_esc_exit/test_program
+
+6. Observe valgrind's summary at the end of the test.
+
