@@ -208,7 +208,18 @@ New release. Changes since previous release:
 
     * Adding "-D_FORTIFY_SOURCE=2" to list of arguments passed to C compiler.
 
-    * Adding -Wundef to CFLAGS.
+    * Adding following flags to CFLAGS:
+
+      -Walloc-zero -Warith-conversion -Warray-bounds=2 -Wattributes
+      -Wcast-align=strict -Wformat-nonliteral -Wformat-overflow=2
+      -Wformat-security -Wformat-signedness -Wformat-y2k
+      -Wimplicit-fallthrough=3 -Wimplicit-int -Wincompatible-pointer-types
+      -Winit-self -Wmain -Wmisleading-indentation -Wmissing-include-dirs
+      -Wnested-externs -Wold-style-definition -Wpointer-sign
+      -Wshift-overflow=2 -Wstack-usage=1000000 -Wstrict-aliasing
+      -Wstrict-overflow=4 -Wstringop-overflow=4 -Wtrampolines -Wundef
+      -Wuninitialized -Wunused -Wunused-macros -Wunused-parameter
+      -Wunused-result -Wvla
 
     * Adding most basic support for gcov/lcov to find holes in unit-tested
       code. Four relevant commands are:
@@ -284,6 +295,7 @@ New release. Changes since previous release:
 
     * man page now has "Quick start" section that has been added to make
       introduction to cwdaemon easier.
+
 
 
 ----
