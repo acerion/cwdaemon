@@ -215,8 +215,10 @@ New release. Changes since previous release:
 
       - ./configure --enable-gcov
       - make gcov
-      - <web browser> tests/unit_tests/coverage/index.html
+      - <web browser> tests/unit_tests/coverage/<subdir>/index.html
       - make gcov-clean
+
+      For now this works only on Debian.
 
     * Removing ./tests/cwtest_esc5.pl functional test. There is no need to
       keep the test written in Perl when testing of handling of EXIT Escape

@@ -6,12 +6,16 @@
 
 * STARTED Tests plan for cwdaemon version 0.13.0
 Version of template: 2024.06.03.
-** STARTED FreeBSD 14.1-RELEASE
+** PASS FreeBSD 14.1-RELEASE
 <Additional info about machine, OS, libs, compiler>
 OS: FreeBSD 14.1-RELEASE
 C compiler: gcc 13.2.0
 libc:
 unixcw/libcw: unixcw 3.6.1, libcw 8:0:0
+
+The overall status of tests for FreeBSD is PASS even though gcov/lcov tests
+have failed. This has been addressed in comment at the end of the failed
+test.
 
 *** PASS tests of build system
 **** PASS make distcheck
@@ -402,7 +406,7 @@ cwdaemon is calling cw_generator_stop() on exit, so those entries related to
 cw_gen_start() aren't a problem of cwdaemon itself, but perhaps of libcw. I
 won't be fixing them here, but I will add a TODO note in unixcw.
 
-*** STARTED functional tests
+*** PASS functional tests
 
 *Preconditions*
 
@@ -976,7 +980,7 @@ Final result of the test is a "PASS"
 *Actual result*
 PASS
 
-**** STARTED Command line options
+**** PASS Command line options
 
 ***** PASS -h, --help
 
@@ -1310,7 +1314,7 @@ In this test cwdaemon is executed:
 *Actual result*
 PASS
 
-***** STARTED -f, --debugfile <output>
+***** PASS -f, --debugfile <output>
 
 *Preconditions*
 
@@ -1538,7 +1542,7 @@ cwtest_short_space.pl
 *Actual result*
 PASS
 
-*** STARTED gcov/lcov
+*** FAILED gcov/lcov
 
 *Purpose*
 
@@ -1575,7 +1579,14 @@ The steps are copied from relevant sections in top-level README file:
 
 
 *Actual result*
+FAIL
 
+I can't get gcov on FreeBSD work quickly.
+
+Given that gcov coverage reports are not a key feature of cwdaemon, and given
+that it works on Linux, I will let it FAIL today on FreeBSD.
+
+There is a ticket R0045 that addresses this problem.
 
 *** PASS memory tests with valgrind
 **** PASS memory tests with valgrind for functional/unattended tests

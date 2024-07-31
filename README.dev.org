@@ -727,3 +727,8 @@ Steps to reproduce:
 
 6. Observe valgrind's summary at the end of the test.
 
+** TODO [#C] R0045: Bug: gcov target on FreeBSD
+
+Right now (0.13.0) it doesn't work.
+
+The target works on Linux, so the priority of this ticket is only "#C".
