@@ -1,4 +1,4 @@
-cwdaemon 0.13.0 / 202b.cd.ef
+cwdaemon 0.13.0 / 2024.08.ef
 
 New release. Changes since previous release:
 
@@ -48,7 +48,7 @@ New release. Changes since previous release:
       through command line options (if any assignment was made).
 
     * Proper definition of cwdaemon's reply buffer size fixes a problem with
-      too small buffer. Depending on which version of recent code
+      too small buffer. Depending on version of recent code
       (post-0.12.0 code currently in development), the incorrect size of the
       buffer resulted either in writing one byte beyond the buffer, or in
       truncation of reply. Both cases happened only for very long requests,
@@ -295,6 +295,9 @@ New release. Changes since previous release:
 
     * man page now has "Quick start" section that has been added to make
       introduction to cwdaemon easier.
+
+    * man page now includes information that it's possible to terminate tuning
+      with ABORT Escape request.
 
 
 

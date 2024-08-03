@@ -234,7 +234,7 @@ compilation on users' computers due to -Werror.
 * TODO Make sure that debug and optimization compiler flags are correct
 
 Make sure that CFLAGS of code that is almost ready for release doesn't
-contain "-g -O0". Do this before testing phase so that the code that you test
+contain "-O0". Do this before testing phase so that the code that you test
 has been compiled with options similar to options used for release.
 
 * TODO Do the testing per test scenarios
@@ -249,7 +249,7 @@ The test scenarios describe both supervised and unattended tests.
 * TODO Make sure that debug and optimization compiler flags are correct (again)
 
 Make sure that CFLAGS of code that is almost ready for release doesn't
-contain "-g -O0". Do this test for a second time (after testing phase): maybe
+contain "-O0". Do this test for a second time (after testing phase): maybe
 you have added the flags during fixing of some issues found during testing
 phase.
 
@@ -268,7 +268,7 @@ Review information about what was changed in current releases:
  - NEWS file
  - ChangeLog file
  - README file
- - man page files (there are several man pages, check them all)
+ - man page files (there may be several man pages, check them all)
 
 Make sure that:
  - the information is factually correct,
@@ -290,7 +290,7 @@ Spell-check user-facing files:
  - NEWS
  - README
  - ChangeLog
- - man page files (there are several man pages, check them all)
+ - man page files (there may be several man pages, check them all)
 
 * TODO Localization
 

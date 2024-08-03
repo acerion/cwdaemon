@@ -16,6 +16,8 @@ bear
 
 * Lessons learned
 
+0. Also visit similar section in similar file in unixcw project.
+
 1. Test a cwdaewmon process that is running as system service
 
 cwdaemon is installed on target OS and is executed as system daemon. This
@@ -201,7 +203,7 @@ should be:
 3. The value should be then also displayed at the beginning of each
    functional test, to give tester some expectation for duration of test.
 
-** TODO [#B] R0010: Feature: clear indication of results of tests
+** IN-PROGRESS [#B] R0010: Feature: clear indication of results of tests
 
 Each test case in each type of test (functional, non-functional, unit test)
 should clearly and explicitly indicate PASS or FAIL result in output printed
@@ -210,6 +212,8 @@ to console.
 Tester should always be unambiguously informed about PASS/FAIL result. He
 should not be forced to read sentences in logs, he should be able to evaluate
 tests' results just by looking at PASS/FAIL indicator in output of logs.
+
+IN-PROGRESS: some of test do this, but probably not all yet.
 
 ** IN-PROGRESS [#C] R0011: Feature: unify handling of short and long command line options
 
@@ -228,6 +232,9 @@ accidentally break something.
 ** IN-PROGRESS [#A] R0012: Feature: Static code analysis with clang-tidy
 
 Add/improve tools and procedures for static code analysis with clang-tidy.
+
+IN-PROGRESS: there is ROOT/.clang-tidy and ROOT/qa/lint_clang_tidy.sh. The
+next step is to decrease count of exclusions in .clang-tidy.
 
 ** TODO [#A] R0013: Feature: Static code analysis with cppcheck
 
@@ -440,13 +447,24 @@ There is a file called BUGS that is located in my local dir - it is not a
 part of repo. Review its contents and include the contents in the repo -
 perhaps in this file, as new bug items.
 
-** TODO [#B] R0028: Feature: ptt pin functions in cwdaemon.init
+** DONE [#B] R0028: Feature: ptt pin functions in cwdaemon.init
 
 Add basic support for specifying ptt pin functions (KEY/PTT) to cwdaemon.init
 file.
 
 You don't have to specify any pin assignment in the file, but add enough code
 to the file to make it easy and fast to change default assignments.
+
+DONE:
+
+cwdaemon.init:
+    test -n "$OPT_KEY"  && OPTS="$OPTS -o key=$OPT_KEY"
+    test -n "$OPT_PTT"  && OPTS="$OPTS -o ptt=$OPT_PTT"
+
+cwdaemon.default:
+# Keying device options, for tty (serial) device. Default: OPT_KEY=DTR, OPT_PTT=RTS
+#OPT_KEY=DTR
+#OPT_PTT=RTS
 
 ** TODO [#C] R0029: Feature: interrupt in fuzzing test
 
@@ -732,3 +750,48 @@ Steps to reproduce:
 Right now (0.13.0) it doesn't work.
 
 The target works on Linux, so the priority of this ticket is only "#C".
+
+** TODO [#C] R0046: Feature: don't run unattended test when cwdaemon is running
+
+Detect an existing instance of cwdaemon.
+
+Such instance may be a sign of problems during earlier execution of some test.
+
+Refuse to conduct a test in such situation, let tester investigate why there
+is already a running instance of cwdaemon - was there some error or is it
+expected (e.g. there is a system-wide cwdaemon started by init system).
+
+
+** TODO [#C] R0047: Test: test case-insensitive-ness of values of 'ptt' and 'key'
+
+Values ("dtr"/"ptt"/"none") passed throug "-options" command line options for
+tty cwdevice should be treated in case-insensitive way.
+
+The test code in tests/functional_tests/unattended/option_cwdevice_tty_lines/
+only uses lower-case values.
+
+TODO: make the test use lower- and upper-case values.
+
+** TODO [#B] R0048: Test: new test for tty cwdevice's pin functions
+
+NEWS file for 0.13.0 includes the following notice:
+
+"
+    * A fix to GitHub issue #12 (mentioned in previous bullet point)
+      introduces a change/fix to resetting of tty cwdevice's pin functions.
+
+      Until now (since v0.11.0) when cwdaemon received "change cwdevice"
+      Escape request, the assignment of functions (keying/ptt) to tty pins
+      (DTR, RTS) specified through command line options would be lost during
+      handling of the Escape request. Handling of the request would reset the
+      assignment to cwdaemon's defaults, which may be different than assignment
+      specified through command line options.
+
+      A commit that fixes GitHub issue #12 also fixes the problem described
+      above. Now any changes of cwdevice through "change cwdevice" Escape
+      request will preserve assignment of functions to tty lines specified
+      through command line options (if any assignment was made).
+"
+
+TODO: write a test for it.
+

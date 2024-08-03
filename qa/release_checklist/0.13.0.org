@@ -139,7 +139,7 @@ slip into repo.
 
 Skipped. cwdaemon code base is not ready yet for -Werror.
 
-* STARTED Review 'terminology'
+* DONE Review 'terminology'
 
 Refresh your knowledge of terminology and conventions for code and
 documentation by reading the related section in README.dev.org.
@@ -147,7 +147,7 @@ documentation by reading the related section in README.dev.org.
 Do this in order to avoid introducing non-compliant changes in code or
 documentation.
 
-* STARTED Review 'lessons learned'
+* DONE Review 'lessons learned'
 
 The previous development cycle may have happened a long time ago, and you may
 have forgotten the lessons learned during the previous development cycle.
@@ -368,14 +368,14 @@ need to repeat some tests on different software/hardware platforms. Write
 down bugs that you have found and fixed, you may want to check for them when
 testing next release, to see if you haven't reintroduced them.
 
-* TODO Make sure that debug and optimization compiler flags are correct (again)
+* DONE Make sure that debug and optimization compiler flags are correct (again)
 
 Make sure that CFLAGS of code that is almost ready for release doesn't
-contain "-g -O0". Do this test for a second time (after testing phase): maybe
+contain "-O0". Do this test for a second time (after testing phase): maybe
 you have added the flags during fixing of some issues found during testing
 phase.
 
-* TODO Review the opened tickets, find fixed ones
+* DONE Review the opened tickets, find fixed ones
 
 Review the list of opened tickets from README.dev.org -> "Bugs, feature
 requests". It may happen that some of them have been fixed during your work
@@ -384,20 +384,20 @@ in this development cycle, but you didn't notice it.
 Read the list of opened tickets, find the tickets that describe already fixed
 bug or already implemented feature, and close them.
 
-* TODO Review descriptions of changes
+* DONE Review descriptions of changes
 
 Review information about what was changed in current releases:
  - NEWS file
  - ChangeLog file
  - README file
- - man page files (there are several man pages, check them all)
+ - man page files (there may be several man pages, check them all)
 
 Make sure that:
  - the information is factually correct,
  - the sentences and paragraphs are logically correct.
  - the structures of documents are valid.
 
-* TODO Review initial scope of the release
+* DONE Review initial scope of the release
 
 Some items from initial scope of the release may not have been implemented
 for one reason or another.
@@ -406,15 +406,15 @@ Review the unimplemented items. If any items are still valid, add them as
 tickets to project's list of tickets - you don't want to forget about those
 goals!
 
-* TODO Run a spell check on documentation
+* DONE Run a spell check on documentation
 
 Spell-check user-facing files:
  - NEWS
  - README
  - ChangeLog
- - man page files (there are several man pages, check them all)
+ - man page files (there may be several man pages, check them all)
 
-* TODO Localization
+* SKIPPED Localization
 
 If you use gettext or any other tool to facilitate localization of your
 application then generate new file with strings intended for translation,
@@ -429,6 +429,10 @@ invokes xgettext, the script is:
 
 All translatable strings are called by "gettext_noop()" or "_()" functions
 ("_()" is just an alias for "gettext()").
+
+
+
+SKIPPED: cwdaemon doesn't use localization
 
 * TODO Update your website files
 
