@@ -293,8 +293,10 @@ Platforms
 ---------
 cwdaemon 0.13.0 has been compiled and tested on following platforms:
  - Debian GNU/Linux 12, x86_64, gcc 12.2.0, libcw 8:0:0 (unixcw 3.6.1)
+ - FreeBSD 14.1-RELEASE, x86_64, gcc 13.2.0, libcw 8:0:0 (unixcw 3.6.1)
 
-
+A subset of tests has been also executed on:
+ - Alpine Linux 3.20, x86_64, gcc 13.2.1, libcw 8:0:0 (unixcw 3.6.1)
 
 
 Quality Assurance

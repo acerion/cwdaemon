@@ -361,7 +361,7 @@ Make sure that CFLAGS of code that is almost ready for release doesn't
 contain "-g -O0". Do this before testing phase so that the code that you test
 has been compiled with options similar to options used for release.
 
-* STARTED Do the testing per test scenarios
+* DONE Do the testing per test scenarios
 
 Test your software using test scenarios that you have created. See if you
 need to repeat some tests on different software/hardware platforms. Write

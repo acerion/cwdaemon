@@ -4,7 +4,7 @@
 # Using PASS instead of DONE because a test that suceeded is rather PASS than
 # DONE. "PASS or FAIL" looks better than "DONE or FAIL".
 
-* STARTED Tests plan for cwdaemon version 0.13.0
+* PASS Tests plan for cwdaemon version 0.13.0
 Version of template: 2024.06.03.
 ** PASS FreeBSD 14.1-RELEASE
 <Additional info about machine, OS, libs, compiler>
@@ -3506,7 +3506,7 @@ tests/unit_tests/daemon_options   - PASS
 tests/unit_tests/daemon_sleep     - PASS
 tests/unit_tests/daemon_utils     - PASS
 
-** STARTED Alpine Linux 3.20
+** PASS Alpine Linux 3.20
 
 OS: Alpine Linux 3.20
 C compiler: gcc (Alpine 13.2.1_git20240309) 13.2.1 20240309
