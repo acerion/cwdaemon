@@ -444,7 +444,7 @@ online yet, there is still some testing to do.
 
 Make sure that contact information available on your website is correct.
 
-* TODO Update date in copyright notices
+* DONE Update date in copyright notices
 
 Update date (year) in the copyright statements like this one in all relevant
 files:
