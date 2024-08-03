@@ -3691,7 +3691,10 @@ an unattended fuzzing test detect problems early.
 
 PASS
 
-*** STARTED functional tests
+*** PASS functional tests
+
+PASS: most important tests are a PASS, rest of them are SKIPPED for reason
+given in each skipped test.
 
 **** PASS unattended short tests
 
@@ -3829,8 +3832,7 @@ index e57e2ae..9b70b89 100644
 
 
 
-
-**** TODO PLAIN request
+**** SKIPPED PLAIN request
 
 *Preconditions*
 1. Plug in USB-to-UART converter to USB socket.
@@ -3855,7 +3857,10 @@ Final result of the test is a "PASS"
 
 *Actual result*
 
-**** TODO CARET request
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
+
+**** SKIPPED CARET request
 
 *Preconditions*
 1. Plug in USB-to-UART converter to USB socket.
@@ -3880,7 +3885,13 @@ Final result of the test is a "PASS"
 
 *Actual result*
 
-**** TODO Escape requests
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
+
+**** SKIPPED Escape requests
+
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
 
 ***** TODO RESET        '0'
 
@@ -4342,7 +4353,10 @@ Final result of the test is a "PASS"
 
 *Actual result*
 
-**** TODO Command line options
+**** SKIPPED Command line options
+
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
 
 ***** TODO -h, --help
 
@@ -4744,7 +4758,10 @@ In this test cwdaemon is executed:
 
 *Actual result*
 
-**** TODO Misc tests
+**** SKIPPED Misc tests
+
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
 
 ***** TODO reset register callback
 
@@ -4924,7 +4941,7 @@ cwtest_short_space.pl
 
 *Actual result*
 
-*** TODO gcov/lcov
+*** SKIPPED gcov/lcov
 
 *Purpose*
 
@@ -4967,7 +4984,14 @@ The steps are copied from relevant sections in top-level README file:
 
 *Actual result*
 
-*** TODO memory tests with valgrind
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine.
+
+*** SKIPPED memory tests with valgrind
+
+SKIPPED: such tests were already done on FreeBSD and on Debian Linux. I won't
+be repeating them on Alpine (even though Alpine uses its own libc).
+
 **** TODO memory tests with valgrind for functional/unattended tests
 
 *Goal*
