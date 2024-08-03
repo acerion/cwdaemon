@@ -158,7 +158,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 	   quickly to make the test short. Using "25" because at "30" there are
 	   too many errors. TODO (acerion) 2024.05.01: fix receiving and increase
 	   the speed. */
-	const int wpm = 25;
+	const int wpm = TESTS_WPM_MAX;
 
 	/* Prepare local test instance of cwdaemon server. */
 	const server_options_t server_opts = {

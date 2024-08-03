@@ -167,7 +167,7 @@ static int test_setup(server_t * server, client_t * client, morse_receiver_t * m
 {
 	// We want test cases to be executed rather quickly, so play the Morse
 	// code rather quickly.
-	const int wpm = 20;
+	const int wpm = TESTS_WPM_MAX;
 
 	// Prepare local test instance of cwdaemon server.
 	const server_options_t server_opts = {
