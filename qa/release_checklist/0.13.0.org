@@ -523,7 +523,7 @@ for cwdaemon.
 DONE: the steps from previous checklist point are showing how export && "make
 check" are used to prepare and test the code.
 
-* TODO Make final sanity check test using code from repository
+* DONE Make final sanity check test using code from repository
 
   1. do an anonymous checkout of full source code tree from source code
      management (SCM) repository. This is to check if your SCM repository is
@@ -538,12 +538,20 @@ check" are used to prepare and test the code.
   correctly here. You have already did this in point 12, and code in SCM
   should be the same as in your release archive.
 
-* TODO Update statuses of issues in issue tracker
+DONE:
+1. export DISTCHECK_CONFIGURE_FLAGS=--enable-functional-tests
+2. make distcheck
+3. tests are completed successfully
+4. release archive is built successfully
+
+* DONE Update statuses of issues in issue tracker
 
 If you run any sort of bug or issue tracker, or feature request list, and
 there are any issues affected or addressed by current release, update
 statuses of these items: close them, comment them, update them. Don't let
 fixed bugs be still open in your bug tracking system.
+
+DONE: some tickets on GitHub have been updated
 
 * SKIPPED Publish your release archive with your program
 
@@ -554,7 +562,7 @@ archive file with source code of your software.
 SKIPPED: I no longer use SourceForge for cwdaemon, so there is no place in
 which I could publish the release archive.
 
-* TODO Tag release in SCM repository
+* DONE Tag release in SCM repository
 
 Use git's annotated tag:
    git tag -a <tag-name> -m <tagging message>
