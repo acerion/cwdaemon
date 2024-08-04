@@ -434,12 +434,12 @@ All translatable strings are called by "gettext_noop()" or "_()" functions
 
 SKIPPED: cwdaemon doesn't use localization
 
-* TODO Update your website files
+* DONE Update your website files
 
 If your project has a homepage, update content of website files so that the
 website informs visitors about new release, latest changes and new features.
-Do this now, you may want to reuse some content from files updated in point
-9. Test your website offline if you can. Don't put updated website files
+Do this now, you may want to reuse some content from files updated later
+point. Test your website offline if you can. Don't put updated website files
 online yet, there is still some testing to do.
 
 Make sure that contact information available on your website is correct.
@@ -451,13 +451,59 @@ files:
 
     Copyright (C) 2011-2021  John Doe (email@domain.com)
 
-* TODO Prepare release archive
+* DONE Prepare release archive
 
 Prepare tar.gz archive with source code tree that you want to release and
 distribute. If you are using Autotools check "make dist" target, it is very
 convenient.
 
-* TODO Make final test using code from release archive
+DONE:
+1. export DISTCHECK_CONFIGURE_FLAGS=--enable-functional-tests
+2. make distcheck
+3. tests are completed:
+
+   PASS: unit_tests/daemon_utils
+PASS: unit_tests/daemon_options
+PASS: unit_tests/daemon_sleep
+PASS: unit_tests/tests_random
+PASS: unit_tests/tests_string_utils
+PASS: unit_tests/tests_time_utils
+PASS: unit_tests/tests_morse_receiver
+PASS: unit_tests/tests_events
+PASS: functional_tests/unattended/option_cwdevice_tty_lines/test_program
+PASS: functional_tests/unattended/option_port/test_program
+PASS: functional_tests/unattended/reset_register_callback/test_program
+PASS: functional_tests/unattended/request_caret/test_program
+PASS: functional_tests/unattended/request_esc_exit/test_program
+PASS: functional_tests/unattended/request_esc_cwdevice/test_program
+PASS: functional_tests/unattended/request_esc_reply/test_program
+PASS: functional_tests/unattended/request_plain/test_program
+============================================================================
+Testsuite summary for cwdaemon 0.13.0
+============================================================================
+# TOTAL: 16
+# PASS:  16
+# SKIP:  0
+# XFAIL: 0
+# FAIL:  0
+# XPASS: 0
+# ERROR: 0
+============================================================================
+
+4. archive is built:
+=================================================
+cwdaemon-0.13.0 archives ready for distribution:
+cwdaemon-0.13.0.tar.gz
+=================================================
+
+
+
+So it's possible to build a self-contained release archive.
+
+However the archive won't be used anywhere since I no longer use SourceForge
+for cwdaemon.
+
+* DONE Make final test using code from release archive
 
   1. extract the archive in some temporary directory, outside of your regular
      development directory;
@@ -472,6 +518,10 @@ convenient.
      correctly, that all basic functions are running as expected, that there
      is no crash or error that would discourage user who is checking your
      program;
+
+
+DONE: the steps from previous checklist point are showing how export && "make
+check" are used to prepare and test the code.
 
 * TODO Make final sanity check test using code from repository
 
@@ -495,25 +545,44 @@ there are any issues affected or addressed by current release, update
 statuses of these items: close them, comment them, update them. Don't let
 fixed bugs be still open in your bug tracking system.
 
-* TODO Publish your release archive with your program
+* SKIPPED Publish your release archive with your program
 
 Whether you are using sourceforge.net, tigris.org, Alioth, your own website,
 or any other means of publishing archive with your program, publish an
 archive file with source code of your software.
 
-* TODO Update your website
-
-Now that archive with program is available, you can publish your updated
-website as well. Test the website to make sure that all pages are accessible.
+SKIPPED: I no longer use SourceForge for cwdaemon, so there is no place in
+which I could publish the release archive.
 
 * TODO Tag release in SCM repository
 
-If your source code management repository supports tags, you may want to tag
-this specific snapshot with name of release. If you are SCM wizard, you
-should know what to do in such situations anyway :)
+Use git's annotated tag:
+   git tag -a <tag-name> -m <tagging message>
+   e.g.
+   git tag -a v0.13.0 -m "Tagging release v0.13.0"
+
+
+Don't forget to push the tag to remote:
+   git push origin <tag-name>
+   or
+   git push origin --tags
 
 This is a bit of a chicken-and-egg situation: if you tag first and then mark
 this item as DONE, then the tagged commit won't represent a fully closed
 release. But if you change this item to DONE and only then tag a commit, you
 will claim that an item is DONE before it's done :)
+
+The decision on how to solve the issue is: first mark this item as DONE, then
+commit the change, and then tag the commit.
+
+* DONE Update your website
+
+Now that archive with program is available, you can publish your updated
+website as well. Test the website to make sure that all pages are accessible.
+
+DONE: cwdaemon.sf.net and related pages at sf.net have been updated with
+information that cwdaemon has been completely migrated to GitHub.
+
+GitHub page won't require any dedicated actions to update information about
+the project's release.
 
