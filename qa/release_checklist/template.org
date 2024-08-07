@@ -25,6 +25,15 @@ The goals of this development cycle are:
 
 ** TODO Nice-to-haves
 
+* TODO Enable extra compiler warnings
+
+Enable the long list of compiler warnings added to CFLAGS in configure.ac.
+You want to have them enabled during development to catch as many errors as
+possible.
+
+You want to have the full list enabled only during development phase. Your
+user may have an older compiler that doesn't support all of the flags yet.
+
 * TODO Add -Werror to CFLAGS
 During development phase you don't want to introduce any issues that can be
 caught by compiler. -Werror will make sure that you will fix them before they
@@ -221,6 +230,15 @@ Update INSTALL file with details about required unixcw/libcw versions.
 Make a properly named copy of qa/test_scenarios/template.org. The name of the
 copy should reflect new version number of the package.
 
+* TODO Disable extra compiler warnings
+
+Disable the long list of compiler warnings added to CFLAGS in configure.ac.
+You want to have them enabled only during development to catch as many errors
+as possible.
+
+You want to have the full list enabled only during development phase. Your
+user may have an older compiler that doesn't support all of the flags yet.
+
 * TODO Remove -Werror from CFLAGS
 At this stage of this list there should be no more changes in code. Remove
 -Werror from CFLAGS because after this stage there should be no occasions on
@@ -312,7 +330,7 @@ All translatable strings are called by "gettext_noop()" or "_()" functions
 
 If your project has a homepage, update content of website files so that the
 website informs visitors about new release, latest changes and new features.
-Do this now, you may want to reuse some content from files updated later
+Do this now, you may want to reuse some content from files updated in later
 point. Test your website offline if you can. Don't put updated website files
 online yet, there is still some testing to do.
 
@@ -339,8 +357,7 @@ convenient.
   2. make a standard build using extracted source code tree, just as any
      regular user would do;
 
-  3. if your program has any unit tests that can be run by user, run them and
-     make sure that all tests are passed;
+  3. run "make check" to execute tests. Make sure that all tests are a PASS.
 
   4. run the program that you have just built, check that program starts
      correctly, that all basic functions are running as expected, that there
@@ -359,7 +376,7 @@ convenient.
      missing in repository.
 
   You don't have to run tests or run the software and check if it works
-  correctly here. You have already did this in point 12, and code in SCM
+  correctly here. You have already did this in previous point, and code in SCM
   should be the same as in your release archive.
 
 * TODO Update statuses of issues in issue tracker
@@ -380,7 +397,7 @@ archive file with source code of your software.
 Use git's annotated tag:
    git tag -a <tag-name> -m <tagging message>
    e.g.
-   git tag -a v0.13.0 -m "Tagging release v0.13.0"
+   git tag -a vX.Y.X -m "Tagging release vX.Y.X"
 
 
 Don't forget to push the tag to remote:
