@@ -306,7 +306,8 @@ Quality Assurance
 
     - -std=c99
     - -Wall -Wextra -pedantic
-    - a long list of additional warning flags for compiler (see configure.ac)
+    - a long list of additional warning flags for compiler, enabled during
+      development cycles (see configure.ac)
     - -D_FORTIFY_SOURCE=2
 
     Only a handful of enabled compiler warnings aren't fixed yet.

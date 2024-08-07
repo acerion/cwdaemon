@@ -137,6 +137,9 @@ esac
 
 CFLAGS="${CFLAGS} -std=c99"
 CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
+
+# Enable extra flags only during development.
+if 0; then
 CFLAGS="${CFLAGS} -Wattributes"
 CFLAGS="${CFLAGS} -Wcast-qual"
 CFLAGS="${CFLAGS} -Wdouble-promotion"
@@ -197,7 +200,7 @@ if test "$CC" = "gcc" ; then
 fi
 
 CFLAGS="${CFLAGS} -D_FORTIFY_SOURCE=2"
-
+fi
 
 
 
