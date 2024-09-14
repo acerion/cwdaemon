@@ -76,12 +76,14 @@
 /// @reviewed_on{2024.05.01}
 static const test_case_t g_test_cases[] = {
 	/* This is a SUCCESS case. We request cwdaemon server to send us empty
-	   string in reply. */
+	   string in reply. Space in request text is present to make test more
+	   challenging for libcw's receiver (a badly written receiver may ignore
+	   the space). */
 	{ .description   = "success case, empty reply value - no terminating NUL in Escape request",
 	  .esc_request   =                                 TESTS_SET_BYTES("\033h"),
-	  .plain_request =                                 TESTS_SET_BYTES("paris"),
+	  .plain_request =                                 TESTS_SET_BYTES("paris two"),
 	  .expected = { { .etype = etype_reply, .u.reply = TESTS_SET_BYTES(    "h\r\n") }, // Notice the 'h' char copied from Escape request.
-	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris")     }, },
+	                { .etype = etype_morse, .u.morse = TESTS_SET_MORSE("paris two")     }, },
 
 	},
 

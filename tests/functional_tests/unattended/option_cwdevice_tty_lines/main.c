@@ -59,6 +59,8 @@
 #include "tests/library/test_env.h"
 #include "tests/library/test_options.h"
 
+#include <libcw_debug.h>
+
 
 
 
@@ -165,6 +167,11 @@ static int evaluate_events(events_t const * recorded_events, test_case_t const *
 
 
 
+extern cw_debug_t cw_debug_object;
+
+
+
+
 /// @reviewed_on{2024.04.05}
 int main(int argc, char * const * argv)
 {
@@ -173,6 +180,9 @@ int main(int argc, char * const * argv)
 		test_log_err("Test: preconditions for testing env are not met, exiting test [%s]\n", g_test_name);
 		exit(EXIT_FAILURE);
 	}
+
+	//cw_debug_set_flags(&cw_debug_object, CW_DEBUG_RECEIVE_STATES);
+	//cw_debug_object.level = CW_DEBUG_INFO;
 
 	test_options_t test_opts = { .sound_system = CW_AUDIO_SOUNDCARD };
 	if (0 != test_options_get(argc, argv, &test_opts)) {
