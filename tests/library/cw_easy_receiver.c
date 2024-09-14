@@ -46,15 +46,15 @@
 
 
 
-cw_easy_receiver_t * cw_easy_receiver_new(void)
+cw_easy_rec_t * cw_easy_receiver_new(void)
 {
-	return (cw_easy_receiver_t *) calloc(1, sizeof (cw_easy_receiver_t));
+	return (cw_easy_rec_t *) calloc(1, sizeof (cw_easy_rec_t));
 }
 
 
 
 
-void cw_easy_receiver_delete(cw_easy_receiver_t ** easy_rec)
+void cw_easy_receiver_delete(cw_easy_rec_t ** easy_rec)
 {
 	if (easy_rec && *easy_rec) {
 		free(*easy_rec);
@@ -65,7 +65,7 @@ void cw_easy_receiver_delete(cw_easy_receiver_t ** easy_rec)
 
 
 
-void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
+void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, bool is_down)
 {
 	/* Inform xcwcp receiver (which will inform libcw receiver)
 	   about new state of straight key ("sk").
@@ -97,7 +97,7 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down)
 
 
 
-void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down, bool is_reverse_paddles)
+void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles)
 {
 	easy_rec->is_left_down = is_down;
 	if (easy_rec->is_left_down && !easy_rec->is_right_down) {
@@ -132,7 +132,7 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
 
 
 
-void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down, bool is_reverse_paddles)
+void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles)
 {
 	easy_rec->is_right_down = is_down;
 	if (easy_rec->is_right_down && !easy_rec->is_left_down) {
@@ -200,7 +200,7 @@ void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int k
 */
 int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is_down)
 {
-	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) easy_receiver;
+	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) easy_receiver;
 
 	/* Ignore calls where the key state matches our tracked key
 	   state.  This avoids possible problems where this event
@@ -274,7 +274,7 @@ int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is
 
 
 
-void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
+void cw_easy_receiver_start(cw_easy_rec_t * easy_rec)
 {
 	/* The call above registered receiver->main_timer as a generic
 	   argument to a callback. However, libcw needs to know when
@@ -298,7 +298,7 @@ void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec)
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-bool cw_easy_receiver_poll(cw_easy_receiver_t * easy_rec, int (* callback)(const cw_rec_data_t *))
+bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -345,7 +345,7 @@ bool cw_easy_receiver_poll(cw_easy_receiver_t * easy_rec, int (* callback)(const
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-bool cw_easy_receiver_poll_data(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd)
+bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd)
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -374,7 +374,7 @@ bool cw_easy_receiver_poll_data(cw_easy_receiver_t * easy_rec, cw_rec_data_t * e
 
 
 
-bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd)
+bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd)
 {
 	/* Don't use receiver.easy_rec->main_timer - it is used exclusively for
 	   marking initial "key down" events. Use local throw-away
@@ -454,7 +454,7 @@ bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_
 
 // TODO (acerion) 2024.02.09: can we return true when a space has been
 // successfully polled, instead of returning it through erd?
-bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd)
+bool cw_easy_receiver_poll_space(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd)
 {
 	/* We expect the receiver to contain a character, but we don't
 	   ask for it this time. The receiver should also store
@@ -506,7 +506,7 @@ bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * 
 
 
 
-int cw_easy_receiver_get_libcw_errno(const cw_easy_receiver_t * easy_rec)
+int cw_easy_receiver_get_libcw_errno(const cw_easy_rec_t * easy_rec)
 {
 	return easy_rec->libcw_receive_errno;
 }
@@ -514,7 +514,7 @@ int cw_easy_receiver_get_libcw_errno(const cw_easy_receiver_t * easy_rec)
 
 
 
-void cw_easy_receiver_clear_libcw_errno(cw_easy_receiver_t * easy_rec)
+void cw_easy_receiver_clear_libcw_errno(cw_easy_rec_t * easy_rec)
 {
 	easy_rec->libcw_receive_errno = 0;
 }
@@ -522,7 +522,7 @@ void cw_easy_receiver_clear_libcw_errno(cw_easy_receiver_t * easy_rec)
 
 
 
-bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_receiver_t * easy_rec)
+bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec)
 {
 	return easy_rec->is_pending_iws;
 }
@@ -530,7 +530,7 @@ bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_receiver_t * eas
 
 
 
-void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec)
+void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec)
 {
 	cw_clear_receive_buffer();
 	easy_rec->is_pending_iws = false;
@@ -543,7 +543,7 @@ void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec)
 
 int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, bool key_is_down)
 {
-	cw_easy_receiver_t * easy_rec = (cw_easy_receiver_t *) arg_easy_rec;
+	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) arg_easy_rec;
 	cw_easy_receiver_sk_event(easy_rec, key_is_down);
 
 	// fprintf(stdout, "[INFO ] easy receiver: key is %s\n", key_is_down ? "down" : "up");

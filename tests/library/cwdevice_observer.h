@@ -89,7 +89,7 @@ typedef struct cwdevice_observer_t {
 	/// each call to the function.
 	///
 	/// Since the observer of cwdevice is frequently used to feed data to
-	/// Morse receiver, this pointer will be set to some cw_easy_receiver_t*
+	/// Morse receiver, this pointer will be set to some cw_easy_rec_t*
 	/// variable.
 	void * new_key_state_cb_arg;
 

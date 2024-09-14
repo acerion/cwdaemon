@@ -18,7 +18,7 @@ extern "C"
 
 
 
-struct cw_easy_receiver_t {
+typedef struct cw_easy_rec_t {
 	/* Timer for measuring length of dots and dashes.
 
 	   Initial value of the timestamp is created by xcwcp's receiver on
@@ -58,8 +58,7 @@ struct cw_easy_receiver_t {
 	bool get_representation;
 
 	void * rec_tester;
-};
-typedef struct cw_easy_receiver_t cw_easy_receiver_t;
+} cw_easy_rec_t;
 
 
 
@@ -83,20 +82,20 @@ typedef struct cw_rec_data_t {
 
 
 
-cw_easy_receiver_t * cw_easy_receiver_new(void);
-void cw_easy_receiver_delete(cw_easy_receiver_t ** easy_rec);
-void cw_easy_receiver_start(cw_easy_receiver_t * easy_rec);
+cw_easy_rec_t * cw_easy_receiver_new(void);
+void cw_easy_receiver_delete(cw_easy_rec_t ** easy_rec);
+void cw_easy_receiver_start(cw_easy_rec_t * easy_rec);
 
 
-bool cw_easy_receiver_poll(cw_easy_receiver_t * easy_rec, int (* callback)(const cw_rec_data_t *));
-bool cw_easy_receiver_poll_data(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd);
-bool cw_easy_receiver_poll_character(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd);
-bool cw_easy_receiver_poll_space(cw_easy_receiver_t * easy_rec, cw_rec_data_t * erd);
+bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
+bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+bool cw_easy_receiver_poll_space(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
 
-int cw_easy_receiver_get_libcw_errno(const cw_easy_receiver_t * easy_rec);
-void cw_easy_receiver_clear_libcw_errno(cw_easy_receiver_t * easy_rec);
-bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_receiver_t * easy_rec);
-void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec);
+int cw_easy_receiver_get_libcw_errno(const cw_easy_rec_t * easy_rec);
+void cw_easy_receiver_clear_libcw_errno(cw_easy_rec_t * easy_rec);
+bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec);
+void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec);
 
 
 
@@ -106,7 +105,7 @@ void cw_easy_receiver_clear(cw_easy_receiver_t * easy_rec);
 
    \param is_down
 */
-void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down);
+void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, bool is_down);
 
 /**
    \brief Handle event on left paddle of iambic keyer
@@ -114,7 +113,7 @@ void cw_easy_receiver_sk_event(cw_easy_receiver_t * easy_rec, bool is_down);
    \param is_down
    \param is_reverse_paddles
 */
-void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down, bool is_reverse_paddles);
+void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles);
 
 /**
    \brief Handle event on right paddle of iambic keyer
@@ -122,14 +121,14 @@ void cw_easy_receiver_ik_left_event(cw_easy_receiver_t * easy_rec, bool is_down,
    \param is_down
    \param is_reverse_paddles
 */
-void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down, bool is_reverse_paddles);
+void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles);
 
 
 
 
 /// @brief libcw receiver's callback to be called on change of straight key's state
 ///
-/// This is a callback for objects of type cw_easy_receiver_t. It should be
+/// This is a callback for objects of type cw_easy_rec_t. It should be
 /// called on each change of state (open/closed, up/down) of straight key.
 ///
 /// In the context of cwdaemon, the straight key is the "keying" pin on
@@ -141,7 +140,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_receiver_t * easy_rec, bool is_down
 ///
 /// @reviewed_on{2024.04.22}
 ///
-/// @param[in/out] easy_receiver cw_easy_receiver_t receiver structure
+/// @param[in/out] easy_receiver cw_easy_rec_t receiver structure
 /// @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
 void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int key_state);
 
@@ -150,13 +149,13 @@ void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int k
 
 /// @brief libcw receiver's callback to be called on change of straight key's state
 ///
-/// This is a callback for objects of type cw_easy_receiver_t. It should be
+/// This is a callback for objects of type cw_easy_rec_t. It should be
 /// called on each change of state (open/closed, up/down) of straight key.
 ///
 /// In the context of cwdaemon, the straight key is the "keying" pin on
 /// cwdevice.
 ///
-/// @param[in/out] easy_receiver cw_easy_receiver_t receiver structure
+/// @param[in/out] easy_receiver cw_easy_rec_t receiver structure
 /// @param[in] key_is_down Whether straight key is down or up
 ///
 /// @return 0
@@ -171,7 +170,7 @@ int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is
 ///
 /// @reviewed_on{2024.04.16}
 ///
-/// @param[in] arg_easy_rec cw_easy_receiver_t variable
+/// @param[in] arg_easy_rec cw_easy_rec_t variable
 /// @param[in] key_is_down current state of keying pin
 ///
 /// @return 0

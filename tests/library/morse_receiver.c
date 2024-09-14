@@ -80,8 +80,8 @@
 static int helpers_configure(morse_receiver_t * morse_receiver);
 static int helpers_deconfigure(morse_receiver_t * morse_receiver);
 
-static int libcw_receiver_configure(cw_easy_receiver_t * easy_receiver, int wpm);
-static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_receiver_t * easy_receiver);
+static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm);
+static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_rec_t * easy_receiver);
 
 static void * morse_receiver_thread_fn(void * receiver_arg);
 
@@ -203,7 +203,7 @@ int morse_receiver_wait_for_stop(morse_receiver_t * receiver)
 /// @param wpm Expected speed of Morse code to be used for initialization of the receiver
 ///
 /// @return 0
-static int libcw_receiver_configure(cw_easy_receiver_t * easy_receiver, int wpm)
+static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 {
 #if 0
 	cw_enable_adaptive_receive();
@@ -233,7 +233,7 @@ static int libcw_receiver_configure(cw_easy_receiver_t * easy_receiver, int wpm)
 /// @param easy_receiver libcw receiver to stop and deconfigure
 ///
 /// @return 0
-static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_receiver_t * easy_receiver)
+static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_rec_t * easy_receiver)
 {
 	cw_generator_stop();
 	return 0;
@@ -256,9 +256,9 @@ static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_receiver_t
 static int helpers_configure(morse_receiver_t * morse_receiver)
 {
 	cwdevice_observer_t * cwdevice_observer = &morse_receiver->cwdevice_observer;
-	cw_easy_receiver_t * libcw_receiver = &morse_receiver->libcw_receiver;
+	cw_easy_rec_t * libcw_receiver = &morse_receiver->libcw_receiver;
 	memset(cwdevice_observer, 0, sizeof (cwdevice_observer_t));
-	memset(libcw_receiver, 0, sizeof (cw_easy_receiver_t));
+	memset(libcw_receiver, 0, sizeof (cw_easy_rec_t));
 
 	// cwdevice observer is configured here in 3 steps. I believe that such
 	// multi-step and more explicit setup gives better idea about

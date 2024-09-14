@@ -33,7 +33,7 @@ typedef struct morse_receiver_t {
 	cwdevice_observer_t cwdevice_observer;
 
 	/// @brief The low-level component that is decoding Morse code.
-	cw_easy_receiver_t libcw_receiver;
+	cw_easy_rec_t libcw_receiver;
 } morse_receiver_t;
 
 
