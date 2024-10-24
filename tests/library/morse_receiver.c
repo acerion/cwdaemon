@@ -214,7 +214,7 @@ static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 	cw_generator_new(CW_AUDIO_NULL, NULL);
 	cw_generator_start();
 
-	cw_register_keying_callback(cw_easy_receiver_handle_libcw_keying_event_void, easy_receiver);
+	cw_register_keying_callback(cw_easy_rec_handle_keying_event_void, easy_receiver);
 	cw_easy_receiver_start(easy_receiver);
 	cw_clear_receive_buffer();
 	cw_easy_receiver_clear(easy_receiver);
@@ -302,7 +302,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	//
 	// Observer learns the initial state of the pin only during a start, in
 	// cwdevice_observer_start_observing().
-	libcw_receiver->tracked_key_is_down = cwdevice_observer->previous_key_is_down;
+	libcw_receiver->tracked_key_state = cwdevice_observer->previous_key_is_down;
 
 	return 0;
 }

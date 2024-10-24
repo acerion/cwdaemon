@@ -32,7 +32,7 @@ typedef struct cw_easy_rec_t {
 	   events. Without, there's a chance that of a on-off event, one half
 	   will go to one application instance, and the other to another
 	   instance. */
-	volatile bool tracked_key_is_down;
+	volatile int tracked_key_state;
 
 	/* Flag indicating if receive polling has received a character, and
 	   may need to augment it with a word space on a later poll. */
@@ -90,11 +90,11 @@ void cw_easy_receiver_start(cw_easy_rec_t * easy_rec);
 bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
 bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
 bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
-bool cw_easy_receiver_poll_space(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
 
-int cw_easy_receiver_get_libcw_errno(const cw_easy_rec_t * easy_rec);
-void cw_easy_receiver_clear_libcw_errno(cw_easy_rec_t * easy_rec);
-bool cw_easy_receiver_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec);
+int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);
+void cw_easy_rec_clear_libcw_errno(cw_easy_rec_t * easy_rec);
+bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec);
 void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec);
 
 
@@ -103,25 +103,25 @@ void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec);
 /**
    \brief Handle straight key event
 
-   \param is_down
+   \param state
 */
-void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, bool is_down);
+void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state);
 
 /**
    \brief Handle event on left paddle of iambic keyer
 
-   \param is_down
+   \param state
    \param is_reverse_paddles
 */
-void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles);
+void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles);
 
 /**
    \brief Handle event on right paddle of iambic keyer
 
-   \param is_down
+   \param state
    \param is_reverse_paddles
 */
-void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, bool is_down, bool is_reverse_paddles);
+void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles);
 
 
 
@@ -134,7 +134,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, bool is_down, boo
 /// In the context of cwdaemon, the straight key is the "keying" pin on
 /// cwdevice.
 ///
-/// This function is similar to cw_easy_receiver_handle_libcw_keying_event(),
+/// This function is similar to cw_easy_rec_handle_keying_event(),
 /// but has a prototype suitable for passing as callback to
 /// cw_register_keying_callback().
 ///
@@ -142,7 +142,7 @@ void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, bool is_down, boo
 ///
 /// @param[in/out] easy_receiver cw_easy_rec_t receiver structure
 /// @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
-void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int key_state);
+void cw_easy_rec_handle_keying_event_void(void * easy_receiver, int key_state);
 
 
 
@@ -156,10 +156,10 @@ void cw_easy_receiver_handle_libcw_keying_event_void(void * easy_receiver, int k
 /// cwdevice.
 ///
 /// @param[in/out] easy_receiver cw_easy_rec_t receiver structure
-/// @param[in] key_is_down Whether straight key is down or up
+/// @param[in] key_state Whether straight key is down or up
 ///
 /// @return 0
-int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is_down);
+int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state);
 
 
 
@@ -171,10 +171,10 @@ int cw_easy_receiver_handle_libcw_keying_event(void * easy_receiver, bool key_is
 /// @reviewed_on{2024.04.16}
 ///
 /// @param[in] arg_easy_rec cw_easy_rec_t variable
-/// @param[in] key_is_down current state of keying pin
+/// @param[in] key_state current state of keying pin
 ///
 /// @return 0
-int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, bool key_is_down);
+int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, int key_state);
 
 
 
