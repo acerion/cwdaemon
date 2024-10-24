@@ -270,7 +270,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	}
 
 	/* Changes of cwdevice's keying pin will be forwarded to libcw_receiver. */
-	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_receiver_sk_event, libcw_receiver)) {
+	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_rec_handle_keying_event, libcw_receiver)) {
 		test_log_err("Morse receiver thread: failed to set up handler of key pin %s\n", "");
 		return -1;
 	}

@@ -77,22 +77,6 @@ void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec)
 
 
 
-void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state)
-{
-	/* Inform xcwcp receiver (which will inform libcw receiver)
-	   about new state of straight key ("sk").
-
-	   libcw receiver will process the new state and we will later
-	   try to poll a character or space from it. */
-
-	cw_notify_straight_key_event(state);
-
-	return;
-}
-
-
-
-
 int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 {
 	if (NULL == easy_receiver) {
