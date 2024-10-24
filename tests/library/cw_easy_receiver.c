@@ -446,18 +446,6 @@ void cw_easy_rec_clear(cw_easy_rec_t * easy_rec)
 
 
 
-int cw_easy_rec_on_key_state_change(void * arg_easy_rec, int key_state)
-{
-	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) arg_easy_rec;
-	cw_easy_receiver_sk_event(easy_rec, key_state);
-
-	// fprintf(stdout, "[INFO ] easy receiver: key is %s\n", key_state ? "down" : "up");
-
-	return 0;
-}
-
-
-
 #if 0
 
 cw_ret_t cw_easy_rec_set_speed(cw_easy_rec_t * easy_rec, int speed)
