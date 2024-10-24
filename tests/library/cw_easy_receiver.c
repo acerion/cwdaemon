@@ -169,9 +169,8 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 		/* Key down. */
 		//fprintf(stderr, "[DD] %10ld.%06ld - mark begin\n", mark_tstamp.tv_sec, mark_tstamp.tv_usec);
 		if (!cw_start_receive_tone(&mark_tstamp)) {
-			// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
 			perror("cw_start_receive_tone");
-			return 0;
+			return -1;
 		}
 	} else {
 		/* Key up. */
@@ -196,8 +195,7 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 				break;
 			default:
 				perror("cw_end_receive_tone");
-				// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
-				return 0;
+				return -1;
 			}
 		}
 	}
@@ -226,7 +224,7 @@ bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_r
 	if (easy_rec->is_pending_iws) {
 		/* Check if receiver received the pending inter-word-space. */
 		cw_rec_data_t data = { 0 };
-		if (cw_easy_rec_poll_iws_internal(easy_rec, &data)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_iws_internal(easy_rec, &data)) {
 			if (callback) {
 				callback(&data);
 			}
@@ -266,7 +264,7 @@ bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_r
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -279,17 +277,17 @@ bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 			   receiver may have received another
 			   character.  Try to get it too. */
 			cw_easy_receiver_poll_character(easy_rec, data);
-			return true; /* A space has been polled successfully. */
+			return CW_SUCCESS; /* A space has been polled successfully. */
 		}
 	} else {
 		/* Not awaiting a possible space, so just poll the
 		   next possible received character. */
 		if (cw_easy_receiver_poll_character(easy_rec, data)) {
-			return true; /* A character has been polled successfully. */
+			return CW_SUCCESS; /* A character has been polled successfully. */
 		}
 	}
 
-	return false; /* Nothing was polled at this time. */
+	return CW_FAILURE; /* Nothing was polled at this time. */
 }
 
 
@@ -322,7 +320,7 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 
 		//fprintf(stderr, "Received character '%c'\n", data->character);
 
-		return true;
+		return CW_SUCCESS;
 
 	} else {
 		/* Handle receive error detected on trying to read a character. */
@@ -353,7 +351,7 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 			perror("cw_receive_character");
 		}
 
-		return false;
+		return CW_FAILURE;
 	}
 }
 
@@ -362,7 +360,7 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 
 // TODO (acerion) 2024.02.09: can we return true when a space has been
 // successfully polled, instead of returning it through data?
-bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	/* We expect the receiver to contain a character, but we don't
 	   ask for it this time. The receiver should also store
@@ -383,7 +381,7 @@ bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * dat
 
 		cw_clear_receive_buffer();
 		easy_rec->is_pending_iws = false;
-		return true; /* Inter-word-space has been polled. */
+		return CW_SUCCESS; /* Inter-word-space has been polled. */
 	} else {
 		/* We don't reset easy_rec->is_pending_iws. The
 		   space that currently lasts, and isn't long enough
@@ -396,7 +394,7 @@ bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * dat
 		   beginning of new character within the same
 		   word. And since a new character begins, the flag
 		   will be reset (elsewhere). */
-		return false; /* Inter-word-space has not been polled. */
+		return CW_FAILURE; /* Inter-word-space has not been polled. */
 	}
 }
 

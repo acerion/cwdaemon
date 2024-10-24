@@ -66,9 +66,9 @@ void cw_easy_receiver_start(cw_easy_rec_t * easy_rec);
 
 
 bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
-bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
 bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
-bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
 
 int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);
 void cw_easy_rec_clear_libcw_errno(cw_easy_rec_t * easy_rec);

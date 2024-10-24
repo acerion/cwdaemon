@@ -385,7 +385,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		remaining_wait_ms -= poll_interval_ms;
 
 		cw_rec_data_t erd = { 0 };
-		if (cw_easy_receiver_poll_data(&morse_receiver->libcw_receiver, &erd)) {
+		if (CW_SUCCESS == cw_easy_receiver_poll_data(&morse_receiver->libcw_receiver, &erd)) {
 			if (erd.is_iws) {
 				fprintf(stdout, " ");
 				fflush(stdout);
