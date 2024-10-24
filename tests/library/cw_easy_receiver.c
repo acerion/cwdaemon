@@ -92,13 +92,6 @@ void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state)
 
 
 
-void cw_easy_rec_handle_keying_event_void(void * easy_receiver, int key_state)
-{
-	cw_easy_rec_handle_keying_event(easy_receiver, key_state);
-}
-
-
-
 
 int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 {

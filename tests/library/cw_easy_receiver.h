@@ -85,25 +85,6 @@ void cw_easy_rec_clear(cw_easy_rec_t * easy_rec);
 void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state);
 
 
-/// @brief libcw receiver's callback to be called on change of straight key's state
-///
-/// This is a callback for objects of type cw_easy_rec_t. It should be
-/// called on each change of state (open/closed, up/down) of straight key.
-///
-/// In the context of cwdaemon, the straight key is the "keying" pin on
-/// cwdevice.
-///
-/// This function is similar to cw_easy_rec_handle_keying_event(),
-/// but has a prototype suitable for passing as callback to
-/// cw_register_keying_callback().
-///
-/// @reviewed_on{2024.04.22}
-///
-/// @param[in/out] easy_receiver cw_easy_rec_t receiver structure
-/// @param[in] key_state CW_KEY_STATE_OPEN or CW_KEY_STATE_CLOSED
-void cw_easy_rec_handle_keying_event_void(void * easy_receiver, int key_state);
-
-
 
 
 /// @brief libcw receiver's callback to be called on change of straight key's state

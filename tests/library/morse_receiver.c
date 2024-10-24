@@ -214,7 +214,7 @@ static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 	cw_generator_new(CW_AUDIO_NULL, NULL);
 	cw_generator_start();
 
-	cw_register_keying_callback(cw_easy_rec_handle_keying_event_void, easy_receiver);
+	cw_register_keying_callback(cw_easy_rec_handle_keying_event, easy_receiver);
 	cw_clear_receive_buffer();
 	cw_easy_rec_clear(easy_receiver);
 
