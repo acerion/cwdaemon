@@ -19,15 +19,6 @@ extern "C"
 
 
 typedef struct cw_easy_rec_t {
-	/* Timer for measuring length of dots and dashes.
-
-	   Initial value of the timestamp is created by xcwcp's receiver on
-	   first "paddle down" event in a character. The timestamp is then
-	   updated by libcw on specific time intervals. The intervals are a
-	   function of keyboard key presses or mouse button presses recorded
-	   by xcwcp. */
-	struct timeval main_timer;
-
 	/* Safety flag to ensure that we keep the library in sync with keyer
 	   events. Without, there's a chance that of a on-off event, one half
 	   will go to one application instance, and the other to another

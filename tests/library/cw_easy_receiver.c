@@ -44,6 +44,16 @@
 #define NANOSECS_PER_MICROSEC 1000
 
 
+#define get_timer(timer) \
+	do { \
+		struct timespec clockval = { 0 }; \
+		clock_gettime(CLOCK_MONOTONIC, &clockval); \
+		timer.tv_sec  = clockval.tv_sec; \
+		timer.tv_usec = clockval.tv_nsec / NANOSECS_PER_MICROSEC; \
+	} while (0);
+
+
+
 
 
 cw_easy_rec_t * cw_easy_receiver_new(void)
@@ -72,22 +82,6 @@ void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state)
 
 	   libcw receiver will process the new state and we will later
 	   try to poll a character or space from it. */
-
-	/* Prepare timestamp for libcw on both "key up" and "key down"
-	   events. There is no code in libcw that would generate
-	   updated consecutive timestamps for us (as it does in case
-	   of iambic keyer).
-
-	   TODO: see in libcw how iambic keyer updates a timer, and
-	   how straight key does not. Apparently the timer is used to
-	   recognize and distinguish dots from dashes. Maybe straight
-	   key could have such timer as well? */
-	struct timespec ts = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	easy_rec->main_timer.tv_sec  = ts.tv_sec;
-	easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
-
-	// fprintf(stdout, "[II] Easy receiver: time on S-key [%s] event: %10ld.%09ld\n", state ? "down" : " up ", ts.tv_sec, ts.tv_nsec);
 
 	cw_notify_straight_key_event(state);
 
@@ -160,21 +154,29 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 		easy_rec->is_pending_iws = false;
 	}
 
-	//fprintf(stderr, "calling callback, stage 2\n");
+	// Get timestamp of beginning or of end of mark.
+	//
+	// The mark_begin/end functions can internally get the mark themselves
+	// too (if timestamp pointer arg is NULL), but they would do it using
+	// gettimeofday() for legacy reasons. I want the time stamps to be taken
+	// from monotonic clock here. This way I avoid issues with ntp.
+	struct timeval mark_tstamp = { 0 };
+	get_timer(mark_tstamp);
 
 	/* Pass tone state on to the library.  For tone end, check to
 	   see if the library has registered any receive error. */
 	if (key_state) {
-		// fprintf(stdout, "[II] Easy receiver: key goes down:              %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
-		if (!cw_start_receive_tone(&easy_rec->main_timer)) {
+		/* Key down. */
+		//fprintf(stderr, "[DD] %10ld.%06ld - mark begin\n", mark_tstamp.tv_sec, mark_tstamp.tv_usec);
+		if (!cw_start_receive_tone(&mark_tstamp)) {
 			// TODO (acerion) 2024.02.09: Perhaps this should be counted as test error
 			perror("cw_start_receive_tone");
 			return 0;
 		}
 	} else {
 		/* Key up. */
-		// fprintf(stdout, "[II] Easy receiver: key goes up:                %10ld.%09ld\n", easy_rec->main_timer.tv_sec, easy_rec->main_timer.tv_usec);
-		if (!cw_end_receive_tone(&easy_rec->main_timer)) {
+		//fprintf(stderr, "[DD] %10ld.%06ld - mark end\n", mark_tstamp.tv_sec, mark_tstamp.tv_usec);
+		if (!cw_end_receive_tone(&mark_tstamp)) {
 			/* Handle receive error detected on tone end.
 			   For ENOMEM and ENOENT we set the error in a
 			   class flag, and display the appropriate
@@ -208,12 +210,6 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 
 void cw_easy_receiver_start(cw_easy_rec_t * easy_rec)
 {
-	struct timespec ts = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	easy_rec->main_timer.tv_sec  = ts.tv_sec;
-	easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
-
-	// fprintf(stdout, "[II] Easy receiver: time on aux config: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
 }
 
 
@@ -301,19 +297,13 @@ bool cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 
 bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
-	/* Don't use receiver.easy_rec->main_timer - it is used exclusively for
-	   marking initial "key down" events. Use local throw-away
-	   timer.
+	// This timer will be used by poll function to measure current duration
+	// of space that is happening after a current character. The space may be
+	// inter-word-space, but also may already be inter-word-space.
+	struct timeval timer;
+	get_timer(timer);
 
-	   Additionally using reveiver.easy_rec->main_timer here would mess up time
-	   intervals measured by receiver.easy_rec->main_timer, and that would
-	   interfere with recognizing dots and dashes. */
-	struct timespec ts = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC };
-
-	// fprintf(stdout, "[II] Easy receiver: poll char:                  %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
-
+	//fprintf(stderr, "[DD] %10ld.%06ld - poll for character\n", timer.tv_sec, timer.tv_usec);
 	errno = 0;
 	const bool received = cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
 	data->errno_val = errno;
@@ -386,17 +376,14 @@ bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * dat
 	   information about an inter-character space. If it is longer
 	   than a regular inter-character space, then the receiver
 	   will treat it as inter-word space, and communicate it over
-	   is_iws.
+	   is_iws. */
 
-	   Don't use receiver.easy_rec->main_timer - it is used eclusively for
-	   marking initial "key down" events. Use local throw-away
-	   timer. */
-	struct timespec ts = { 0 };
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	const struct timeval timer = { .tv_sec = ts.tv_sec, .tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC };
+	// This timer will be used by poll function to measure duration of
+	// current space (space from end of last mark till now).
+	struct timeval timer;
+	get_timer(timer);
 
-	// fprintf(stdout, "[II] Easy receiver: poll space:                 %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
-
+	//fprintf(stderr, "[DD] %10ld.%06ld - poll for iws\n", timer.tv_sec, timer.tv_usec);
 	cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
 	if (data->is_iws) {
 		//fprintf(stderr, "End of word '%c'\n\n", data->character);
