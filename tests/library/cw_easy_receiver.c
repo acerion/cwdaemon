@@ -98,44 +98,21 @@ void cw_easy_rec_handle_keying_event_void(void * easy_receiver, int key_state)
 
 
 
-/**
-   \brief Handler for the keying callback from the CW library
-   indicating that the state of a key has changed.
-
-   The "key" is libcw's internal key structure. It's state is updated
-   by libcw when e.g. one iambic keyer paddle is constantly
-   pressed. It is also updated in other situations. In any case: the
-   function is called whenever state of this key changes.
-
-   Notice that the description above talks about a key, not about a
-   receiver. Key's states need to be interpreted by receiver, which is
-   a separate task. Key and receiver are separate concepts. This
-   function connects them.
-
-   This function, called on key state changes, calls receiver
-   functions to ensure that receiver does "receive" the key state
-   changes.
-
-   This function is called in signal handler context, and it takes
-   care to call only functions that are safe within that context.  In
-   particular, it goes out of its way to deliver results by setting
-   flags that are later handled by receive polling.
-
-   TODO (acerion) 2024.04.22: review the function and decide when to
-   return success and when to return failure.
-*/
 int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 {
+	if (NULL == easy_receiver) {
+		fprintf(stderr, "[EE] %s:%d: NULL argument\n", __func__, __LINE__);
+		return -1;
+	}
+
 	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) easy_receiver;
 
-	/* Ignore calls where the key state matches our tracked key
-	   state.  This avoids possible problems where this event
-	   handler is redirected between application instances; we
-	   might receive an end of tone without seeing the start of
-	   tone. */
-	// fprintf(stdout, "[II] incoming 'key is down' = %d, tracked 'key is down' = %d\n", key_state, easy_rec->tracked_key_state);
+	// Ignore calls where the key state matches our tracked key state.
+	//fprintf(stderr, "[DD] new key state: %d, tracked key state: %d\n", key_state, easy_rec->tracked_key_state);
 	if (key_state == easy_rec->tracked_key_state) {
-		return 0; // Not an error, we just don't react to this event.
+		fprintf(stderr, "[NN] ignoring new key state, it is the same as tracked key state: %d\n", easy_rec->tracked_key_state);
+		// This is *probably* not an error situation, so return zero.
+		return 0;
 	}
 	easy_rec->tracked_key_state = key_state;
 
@@ -293,6 +270,24 @@ int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 
 
 
+
+/**
+   @brief Try polling a character from receiver
+
+   See if a receiver has received/recognized a character (a character other
+   than ' ').
+
+   Function may return false (failure) for completely valid reasons, e.g.
+   when it's too early to decide if a receiver has received something or not.
+
+   Call this function periodically on a receiver.
+
+   @param[in] easy_rec Easy receiver from which to try to poll the character
+   @param[out] data Data of easy receiver, filled on successful poll.
+
+   @return CW_SUCCESS if receiver has received a character (@p data is updated accordingly)
+   @return CW_FAILURE if receiver didn't receive a character
+*/
 bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	// This timer will be used by poll function to measure current duration
@@ -318,7 +313,7 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 		   inter-word space. */
 		easy_rec->is_pending_iws = true;
 
-		//fprintf(stderr, "Received character '%c'\n", data->character);
+		//fprintf(stderr, "[DD] Received character '%c', is_iws = %d\n", data->character, data->is_iws);
 
 		return CW_SUCCESS;
 
@@ -326,23 +321,27 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 		/* Handle receive error detected on trying to read a character. */
 		switch (data->errno_val) {
 		case EAGAIN:
+			//fprintf(stderr, "EAGAIN\n");
 			/* Call made too early, receiver hasn't
 			   received a full character yet. Try next
 			   time. */
 			break;
 
 		case ERANGE:
+			//fprintf(stderr, "ERANGE\n");
 			/* Call made not in time, or not in proper
 			   sequence. Receiver hasn't received any
 			   character (yet). Try harder. */
 			break;
 
 		case ENOENT:
+			fprintf(stderr, "ENOENT\n");
 			/* Invalid character in receiver's buffer. */
 			cw_clear_receive_buffer();
 			break;
 
 		case EINVAL:
+			fprintf(stderr, "EINVAL\n");
 			/* Timestamp error. */
 			cw_clear_receive_buffer();
 			break;
@@ -358,8 +357,24 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 
 
 
-// TODO (acerion) 2024.02.09: can we return true when a space has been
-// successfully polled, instead of returning it through data?
+/**
+   @brief Try polling an inter-word-space from receiver
+
+   See if a receiver has received/recognized an inter-word-space (a ' ' character).
+
+   'iws' in function name stands for 'inter-word-space' (i.e. a ' ' character).
+
+   Function may return false (failure) for completely valid reasons, e.g.
+   when it's too early to decide if a receiver has received something or not.
+
+   Call this function if cw_easy_rec_t::is_pending_iws flag is set to true.
+
+   @param[in] easy_rec Easy receiver from which to try to poll the character
+   @param[out] data Data of easy receiver, filled on successful poll.
+
+   @return CW_SUCCESS if receiver has received a space (@p data is updated accordingly)
+   @return CW_FAILURE if receiver didn't receive a space
+*/
 int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	/* We expect the receiver to contain a character, but we don't
@@ -377,7 +392,7 @@ int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data
 	//fprintf(stderr, "[DD] %10ld.%06ld - poll for iws\n", timer.tv_sec, timer.tv_usec);
 	cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
 	if (data->is_iws) {
-		//fprintf(stderr, "End of word '%c'\n\n", data->character);
+		//fprintf(stderr, "[DD] Character at inter-word-space: '%c'\n", data->character);
 
 		cw_clear_receive_buffer();
 		easy_rec->is_pending_iws = false;
