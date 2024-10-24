@@ -42,17 +42,6 @@ typedef struct cw_easy_rec_t {
 	   context and needing to be passed to the foreground. */
 	volatile int libcw_receive_errno;
 
-	/* State of left and right paddle of iambic keyer. The
-	   flags are common for keying with keyboard keys and
-	   with mouse buttons.
-
-	   A timestamp for libcw needs to be generated only in
-	   situations when one of the paddles comes down and
-	   the other is up. This is why we observe state of
-	   both paddles separately. */
-	bool is_left_down;
-	bool is_right_down;
-
 	/* Whether to get a representation or a character from receiver's
 	   internals with libcw low-level API. */
 	bool get_representation;
@@ -106,24 +95,6 @@ void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec);
    \param state
 */
 void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state);
-
-/**
-   \brief Handle event on left paddle of iambic keyer
-
-   \param state
-   \param is_reverse_paddles
-*/
-void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles);
-
-/**
-   \brief Handle event on right paddle of iambic keyer
-
-   \param state
-   \param is_reverse_paddles
-*/
-void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles);
-
-
 
 
 /// @brief libcw receiver's callback to be called on change of straight key's state

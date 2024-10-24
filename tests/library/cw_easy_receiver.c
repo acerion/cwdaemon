@@ -96,73 +96,6 @@ void cw_easy_receiver_sk_event(cw_easy_rec_t * easy_rec, int state)
 
 
 
-
-void cw_easy_receiver_ik_left_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles)
-{
-	easy_rec->is_left_down = state;
-	if (easy_rec->is_left_down && !easy_rec->is_right_down) {
-		/* Prepare timestamp for libcw, but only for initial
-		   "paddle down" event at the beginning of
-		   character. Don't create the timestamp for any
-		   successive "paddle down" events inside a character.
-
-		   In case of iambic keyer the timestamps for every
-		   next (non-initial) "paddle up" or "paddle down"
-		   event in a character will be created by libcw.
-
-		   TODO: why libcw can't create such timestamp for
-		   first event for us? */
-		struct timespec ts = { 0 };
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		easy_rec->main_timer.tv_sec  = ts.tv_sec;
-		easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
-
-		// fprintf(stdout, "[II] Easy receiver: time on L-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
-	}
-
-	/* Inform libcw about state of left paddle regardless of state
-	   of the other paddle. */
-	is_reverse_paddles
-		? cw_notify_keyer_dash_paddle_event(state)
-		: cw_notify_keyer_dot_paddle_event(state);
-	return;
-}
-
-
-
-
-
-void cw_easy_receiver_ik_right_event(cw_easy_rec_t * easy_rec, int state, bool is_reverse_paddles)
-{
-	easy_rec->is_right_down = state;
-	if (easy_rec->is_right_down && !easy_rec->is_left_down) {
-		/* Prepare timestamp for libcw, but only for initial
-		   "paddle down" event at the beginning of
-		   character. Don't create the timestamp for any
-		   successive "paddle down" events inside a character.
-
-		   In case of iambic keyer the timestamps for every
-		   next (non-initial) "paddle up" or "paddle down"
-		   event in a character will be created by libcw. */
-		struct timespec ts = { 0 };
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-		easy_rec->main_timer.tv_sec  = ts.tv_sec;
-		easy_rec->main_timer.tv_usec = ts.tv_nsec / NANOSECS_PER_MICROSEC;
-
-		// fprintf(stdout, "[II] Easy receiver: time on R-key down: %10ld.%09ld\n", ts.tv_sec, ts.tv_nsec);
-	}
-
-	/* Inform libcw about state of left paddle regardless of state
-	   of the other paddle. */
-	is_reverse_paddles
-		? cw_notify_keyer_dot_paddle_event(state)
-		: cw_notify_keyer_dash_paddle_event(state);
-	return;
-}
-
-
-
-
 void cw_easy_rec_handle_keying_event_void(void * easy_receiver, int key_state)
 {
 	cw_easy_rec_handle_keying_event(easy_receiver, key_state);
@@ -275,13 +208,6 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 
 void cw_easy_receiver_start(cw_easy_rec_t * easy_rec)
 {
-	/* The call above registered receiver->main_timer as a generic
-	   argument to a callback. However, libcw needs to know when
-	   the argument happens to be of type 'struct timeval'. This
-	   is why we have this second call, explicitly passing
-	   receiver's timer to libcw. */
-	cw_iambic_keyer_register_timer(&easy_rec->main_timer);
-
 	struct timespec ts = { 0 };
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	easy_rec->main_timer.tv_sec  = ts.tv_sec;
