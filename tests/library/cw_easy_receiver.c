@@ -309,13 +309,6 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
 	data->errno_val = errno;
 	if (received) {
 
-#ifdef XCWCP_WITH_REC_TEST
-		if (CW_SUCCESS != cw_rec_tester_on_character(easy_rec->rec_tester, data, &timer)) {
-			/* FIXME acerion 2022.02.19: this is a library code,
-			   so don't call exit(). */
-			exit(EXIT_FAILURE);
-		}
-#endif
 		/* A full character has been received. Directly after
 		   it comes a space. Either a short inter-character
 		   space followed by another character (in this case
@@ -387,14 +380,6 @@ bool cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * dat
 	cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
 	if (data->is_iws) {
 		//fprintf(stderr, "End of word '%c'\n\n", data->character);
-
-#ifdef XCWCP_WITH_REC_TEST
-		if (CW_SUCCESS != cw_rec_tester_on_space(easy_rec->rec_tester, data, &timer)) {
-			/* FIXME acerion 2022.02.19: this is a library code,
-			   so don't call exit(). */
-			exit(EXIT_FAILURE);
-		}
-#endif
 
 		cw_clear_receive_buffer();
 		easy_rec->is_pending_iws = false;

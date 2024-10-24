@@ -36,8 +36,6 @@ typedef struct cw_easy_rec_t {
 	/* Whether to get a representation or a character from receiver's
 	   internals with libcw low-level API. */
 	bool get_representation;
-
-	void * rec_tester;
 } cw_easy_rec_t;
 
 
