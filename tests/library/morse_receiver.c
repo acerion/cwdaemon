@@ -215,9 +215,8 @@ static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 	cw_generator_start();
 
 	cw_register_keying_callback(cw_easy_rec_handle_keying_event_void, easy_receiver);
-	cw_easy_receiver_start(easy_receiver);
 	cw_clear_receive_buffer();
-	cw_easy_receiver_clear(easy_receiver);
+	cw_easy_rec_clear(easy_receiver);
 
 	return 0;
 }
@@ -271,7 +270,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	}
 
 	/* Changes of cwdevice's keying pin will be forwarded to libcw_receiver. */
-	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_receiver_on_key_state_change, libcw_receiver)) {
+	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_rec_on_key_state_change, libcw_receiver)) {
 		test_log_err("Morse receiver thread: failed to set up handler of key pin %s\n", "");
 		return -1;
 	}
@@ -385,7 +384,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		remaining_wait_ms -= poll_interval_ms;
 
 		cw_rec_data_t erd = { 0 };
-		if (CW_SUCCESS == cw_easy_receiver_poll_data(&morse_receiver->libcw_receiver, &erd)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_data(&morse_receiver->libcw_receiver, &erd)) {
 			if (erd.is_iws) {
 				fprintf(stdout, " ");
 				fflush(stdout);

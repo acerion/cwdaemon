@@ -60,20 +60,19 @@ typedef struct cw_rec_data_t {
 
 
 
-cw_easy_rec_t * cw_easy_receiver_new(void);
-void cw_easy_receiver_delete(cw_easy_rec_t ** easy_rec);
-void cw_easy_receiver_start(cw_easy_rec_t * easy_rec);
+cw_easy_rec_t * cw_easy_rec_new(void);
+void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec);
 
 
-bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
-int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
-bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
-int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * erd);
+int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
+int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+
 
 int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);
 void cw_easy_rec_clear_libcw_errno(cw_easy_rec_t * easy_rec);
 bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec);
-void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec);
+void cw_easy_rec_clear(cw_easy_rec_t * easy_rec);
 
 
 
@@ -134,7 +133,7 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state);
 /// @param[in] key_state current state of keying pin
 ///
 /// @return 0
-int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, int key_state);
+int cw_easy_rec_on_key_state_change(void * arg_easy_rec, int key_state);
 
 
 

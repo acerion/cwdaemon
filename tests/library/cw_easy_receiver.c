@@ -55,8 +55,10 @@
 
 
 
+static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
 
-cw_easy_rec_t * cw_easy_receiver_new(void)
+
+cw_easy_rec_t * cw_easy_rec_new(void)
 {
 	return (cw_easy_rec_t *) calloc(1, sizeof (cw_easy_rec_t));
 }
@@ -64,7 +66,7 @@ cw_easy_rec_t * cw_easy_receiver_new(void)
 
 
 
-void cw_easy_receiver_delete(cw_easy_rec_t ** easy_rec)
+void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec)
 {
 	if (easy_rec && *easy_rec) {
 		free(*easy_rec);
@@ -183,18 +185,11 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 
 
 
-void cw_easy_receiver_start(cw_easy_rec_t * easy_rec)
-{
-}
-
-
-
-
 /**
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
+int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -212,26 +207,26 @@ bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_r
 			   receiver may have received another
 			   character.  Try to get it too. */
 			memset(&data, 0, sizeof (data));
-			if (cw_easy_receiver_poll_character(easy_rec, &data)) {
+			if (CW_SUCCESS == cw_easy_rec_poll_character(easy_rec, &data)) {
 				if (callback) {
 					callback(&data);
 				}
 			}
-			return true; /* A space has been polled successfully. */
+			return CW_SUCCESS; /* A space has been polled successfully. */
 		}
 	} else {
 		/* Not awaiting a possible space, so just poll the
 		   next possible received character. */
 		cw_rec_data_t data = { 0 };
-		if (cw_easy_receiver_poll_character(easy_rec, &data)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_character(easy_rec, &data)) {
 			if (callback) {
 				callback(&data);
 			}
-			return true; /* A character has been polled successfully. */
+			return CW_SUCCESS; /* A character has been polled successfully. */
 		}
 	}
 
-	return false; /* Nothing was polled at this time. */
+	return CW_FAILURE; /* Nothing was polled at this time. */
 }
 
 
@@ -241,7 +236,7 @@ bool cw_easy_receiver_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_r
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -253,13 +248,13 @@ int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 			/* We received the pending space. After it the
 			   receiver may have received another
 			   character.  Try to get it too. */
-			cw_easy_receiver_poll_character(easy_rec, data);
+			cw_easy_rec_poll_character(easy_rec, data);
 			return CW_SUCCESS; /* A space has been polled successfully. */
 		}
 	} else {
 		/* Not awaiting a possible space, so just poll the
 		   next possible received character. */
-		if (cw_easy_receiver_poll_character(easy_rec, data)) {
+		if (cw_easy_rec_poll_character(easy_rec, data)) {
 			return CW_SUCCESS; /* A character has been polled successfully. */
 		}
 	}
@@ -288,7 +283,7 @@ int cw_easy_receiver_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
    @return CW_SUCCESS if receiver has received a character (@p data is updated accordingly)
    @return CW_FAILURE if receiver didn't receive a character
 */
-bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	// This timer will be used by poll function to measure current duration
 	// of space that is happening after a current character. The space may be
@@ -375,7 +370,7 @@ bool cw_easy_receiver_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * d
    @return CW_SUCCESS if receiver has received a space (@p data is updated accordingly)
    @return CW_FAILURE if receiver didn't receive a space
 */
-int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	/* We expect the receiver to contain a character, but we don't
 	   ask for it this time. The receiver should also store
@@ -440,7 +435,7 @@ bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec)
 
 
 
-void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec)
+void cw_easy_rec_clear(cw_easy_rec_t * easy_rec)
 {
 	cw_clear_receive_buffer();
 	easy_rec->is_pending_iws = false;
@@ -451,7 +446,7 @@ void cw_easy_receiver_clear(cw_easy_rec_t * easy_rec)
 
 
 
-int cw_easy_receiver_on_key_state_change(void * arg_easy_rec, int key_state)
+int cw_easy_rec_on_key_state_change(void * arg_easy_rec, int key_state)
 {
 	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) arg_easy_rec;
 	cw_easy_receiver_sk_event(easy_rec, key_state);
