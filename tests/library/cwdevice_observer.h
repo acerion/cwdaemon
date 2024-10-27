@@ -12,7 +12,7 @@
 
 
 
-#include "cw_easy_receiver.h"
+#include "cw_easy_rec.h"
 #include "cwdevice.h"
 
 

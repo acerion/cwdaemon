@@ -4,7 +4,7 @@
 
 
 
-#include "tests/library/cw_easy_receiver.h"
+#include "tests/library/cw_easy_rec.h"
 #include "tests/library/cwdevice_observer.h"
 #include "tests/library/events.h"
 #include "tests/library/misc.h"

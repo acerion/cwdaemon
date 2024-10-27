@@ -33,7 +33,7 @@
 /// @todo
 /// \parblock
 /// TODO (acerion) 2024.04.16 Refactor interaction between Morse
-/// receiver, cw_easy_receiver and cwdevice observer.
+/// receiver, cw_easy_rec and cwdevice observer.
 ///
 /// The thread function in this file tries to do too much. Right now the
 /// process of receiving Morse code is the only sink for events happening on

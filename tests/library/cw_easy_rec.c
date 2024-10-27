@@ -36,7 +36,7 @@
 
 #include <libcw.h>
 
-#include "cw_easy_receiver.h"
+#include "cw_easy_rec.h"
 
 
 

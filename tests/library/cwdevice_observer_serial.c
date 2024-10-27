@@ -60,7 +60,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "cw_easy_receiver.h"
+#include "cw_easy_rec.h"
 #include "cwdevice_observer_serial.h"
 #include "log.h"
 #include "test_defines.h"
