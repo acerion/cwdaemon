@@ -20,31 +20,6 @@ extern "C"
 
 
 
-typedef struct cw_easy_rec_t {
-
-	cw_rec_t * rec;
-
-	/* Safety flag to ensure that we keep the library in sync with keyer
-	   events. Without, there's a chance that of a on-off event, one half
-	   will go to one application instance, and the other to another
-	   instance. */
-	volatile int tracked_key_state;
-
-	/* Flag indicating if receive polling has received a character, and
-	   may need to augment it with a word space on a later poll. */
-	volatile bool is_pending_iws;
-
-	/* Flag indicating possible receive errno detected in signal handler
-	   context and needing to be passed to the foreground. */
-	volatile int libcw_receive_errno;
-
-	/* Whether to get a representation or a character from receiver's
-	   internals with libcw low-level API. */
-	bool get_representation;
-} cw_easy_rec_t;
-
-
-
 #if 0
 /* TODO: move this type to libcw_rec.h and use it to pass arguments to
    functions such as cw_rec_poll_representation_ics_internal(). */
@@ -60,7 +35,9 @@ typedef struct cw_rec_data_t {
 
 
 
-/* *** For legacy libcw API. *** */
+
+struct cw_easy_rec_t;
+typedef struct cw_easy_rec_t cw_easy_rec_t;
 
 
 
@@ -69,9 +46,8 @@ cw_easy_rec_t * cw_easy_rec_new(void);
 void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec);
 
 
-int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
-int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
-int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
+cw_ret_t cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
 
 
 int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);
@@ -95,6 +71,16 @@ void cw_easy_rec_clear_buffer_and_state(cw_easy_rec_t * easy_rec);
 ///
 /// @return 0
 int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state);
+
+
+
+
+cw_ret_t cw_easy_rec_set_speed(cw_easy_rec_t * easy_rec, int speed);
+cw_ret_t cw_easy_rec_get_speed(cw_easy_rec_t * easy_rec, float * speed);
+cw_ret_t cw_easy_rec_set_tolerance(cw_easy_rec_t * easy_rec, int tolerance);
+cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * tolerance);
+// void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t cb, void * data);
+cw_ret_t cw_easy_rec_init_tracked_key_state(cw_easy_rec_t * rec, int key_state);
 
 
 

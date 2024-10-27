@@ -288,7 +288,10 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	//
 	// Observer learns the initial state of the pin only during a start, in
 	// cwdevice_observer_start_observing().
-	morse_receiver->libcw_receiver->tracked_key_state = cwdevice_observer->previous_key_is_down;
+	if (CW_SUCCESS != cw_easy_rec_init_tracked_key_state(morse_receiver->libcw_receiver, cwdevice_observer->previous_key_is_down)) {
+		test_log_err("Morse receiver thread: failed to set up Morse receiver's initial state %s\n", "");
+		return -1;
+	}
 
 	return 0;
 }

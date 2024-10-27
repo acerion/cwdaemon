@@ -71,7 +71,36 @@
 
 
 
-static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+struct cw_easy_rec_t {
+
+	cw_rec_t * rec;
+
+	/* Safety flag to ensure that we keep the library in sync with keyer
+	   events. Without it, there's a chance that of a on-off event, one half
+	   will go to one application instance, and the other to another
+	   instance.
+
+	   TODO (acerion) 2023.08.12: this struct is used outside of xcwcp and
+	   its instances, and is meant to be thread-safe. Does the above comment
+	   about instances still make sense? Do we still need this member? */
+	volatile int tracked_key_state;
+
+	/* Flag indicating if receive polling has received a character, and
+	   may need to augment it with a word space on a later poll. */
+	volatile bool is_pending_iws;
+
+	/* Flag indicating possible receive errno detected in signal handler
+	   context and needing to be passed to the foreground. */
+	volatile int libcw_receive_errno;
+};
+
+
+
+
+static cw_ret_t cw_easy_rec_poll_character_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+static cw_ret_t cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+
+
 
 
 cw_easy_rec_t * cw_easy_rec_new(void)
@@ -205,7 +234,7 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
+cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -223,7 +252,7 @@ int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_dat
 			   receiver may have received another
 			   character.  Try to get it too. */
 			memset(&data, 0, sizeof (data));
-			if (CW_SUCCESS == cw_easy_rec_poll_character(easy_rec, &data)) {
+			if (CW_SUCCESS == cw_easy_rec_poll_character_internal(easy_rec, &data)) {
 				if (callback) {
 					callback(&data);
 				}
@@ -234,7 +263,7 @@ int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_dat
 		/* Not awaiting a possible space, so just poll the
 		   next possible received character. */
 		cw_rec_data_t data = { 0 };
-		if (CW_SUCCESS == cw_easy_rec_poll_character(easy_rec, &data)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_character_internal(easy_rec, &data)) {
 			if (callback) {
 				callback(&data);
 			}
@@ -252,7 +281,7 @@ int cw_easy_rec_poll(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_dat
    \brief Poll the CW library receive buffer and handle anything found in the
    buffer
 */
-int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+cw_ret_t cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -261,16 +290,24 @@ int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 		cw_easy_rec_poll_iws_internal(easy_rec, data);
 
 		if (!easy_rec->is_pending_iws) {
-			/* We received the pending space. After it the
-			   receiver may have received another
-			   character.  Try to get it too. */
-			cw_easy_rec_poll_character(easy_rec, data);
+			/*
+			  We received the pending space. After it the receiver may have
+			  received another character. Try to get it too.
+
+			  TODO (acerion 2023.07.16): is this call really necessary? Is
+			  it realistic to expect one (non-iws) character after another?
+			*/
+			if (CW_SUCCESS == cw_easy_rec_poll_character_internal(easy_rec, data)) {
+				/* This 'warning' log is used to help detecting the situation
+				   described in above TODO. */
+				fprintf(stderr, "[WARN ] Easy rec: unexpected successful poll of character after a space has been polled\n");
+			}
 			return CW_SUCCESS; /* A space has been polled successfully. */
 		}
 	} else {
 		/* Not awaiting a possible space, so just poll the
 		   next possible received character. */
-		if (cw_easy_rec_poll_character(easy_rec, data)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_character_internal(easy_rec, data)) {
 			return CW_SUCCESS; /* A character has been polled successfully. */
 		}
 	}
@@ -299,7 +336,7 @@ int cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
    @return CW_SUCCESS if receiver has received a character (@p data is updated accordingly)
    @return CW_FAILURE if receiver didn't receive a character
 */
-int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+static cw_ret_t cw_easy_rec_poll_character_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	// This timer will be used by poll function to measure current duration
 	// of space that is happening after a current character. The space may be
@@ -363,6 +400,7 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 
 		default:
 			perror("cw_rec_poll_character");
+			break;
 		}
 
 		return CW_FAILURE;
@@ -390,7 +428,7 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
    @return CW_SUCCESS if receiver has received a space (@p data is updated accordingly)
    @return CW_FAILURE if receiver didn't receive a space
 */
-static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+static cw_ret_t cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	/* We expect the receiver to contain a character, but we don't
 	   ask for it this time. The receiver should also store
@@ -513,13 +551,15 @@ cw_ret_t cw_easy_rec_set_tolerance(cw_easy_rec_t * easy_rec, int tolerance)
 
 
 
-int cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec)
+cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * tolerance)
 {
 	if (NULL == easy_rec) {
 		fprintf(stderr, "[EE] %s:%d: NULL argument\n", __func__, __LINE__);
 		return CW_FAILURE;
 	}
-	return cw_rec_get_tolerance(easy_rec->rec);
+
+	*tolerance = cw_rec_get_tolerance(easy_rec->rec);;
+	return CW_SUCCESS;
 }
 
 
