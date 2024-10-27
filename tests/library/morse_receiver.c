@@ -81,7 +81,6 @@ static int helpers_configure(morse_receiver_t * morse_receiver);
 static int helpers_deconfigure(morse_receiver_t * morse_receiver);
 
 static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm);
-static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_rec_t * easy_receiver);
 
 static void * morse_receiver_thread_fn(void * receiver_arg);
 
@@ -202,39 +201,26 @@ int morse_receiver_wait_for_stop(morse_receiver_t * receiver)
 /// @param easy_receiver Easy receiver to configure and start
 /// @param wpm Expected speed of Morse code to be used for initialization of the receiver
 ///
-/// @return 0
+/// @return 0 on success
+/// @return -1 on failure
 static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 {
 #if 0
 	cw_enable_adaptive_receive();
 #else
-	cw_set_receive_speed(wpm);
+	if (CW_SUCCESS != cw_easy_rec_set_speed(easy_receiver, wpm)) {
+		fprintf(stderr, "[EE] %s:%d: failed to set speed of easy receiver\n", __func__, __LINE__);
+		return -1;
+	}
 #endif
 
 	cw_generator_new(CW_AUDIO_NULL, NULL);
 	cw_generator_start();
 
-	cw_register_keying_callback(cw_easy_rec_handle_keying_event, easy_receiver);
-	cw_clear_receive_buffer();
+	//cw_register_keying_callback(cw_easy_rec_handle_keying_event, easy_receiver);
+	//cw_rec_reset_state(easy_receiver->rec);
 	cw_easy_rec_clear_buffer_and_state(easy_receiver);
 
-	return 0;
-}
-
-
-
-
-/// @brief Stop and deconfigure a libcw receiver that is used to do actual
-/// decoding of Morse code
-///
-/// @reviewed_on{2024.04.21}
-///
-/// @param easy_receiver libcw receiver to stop and deconfigure
-///
-/// @return 0
-static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_rec_t * easy_receiver)
-{
-	cw_generator_stop();
 	return 0;
 }
 
@@ -255,9 +241,10 @@ static int libcw_receiver_deconfigure(__attribute__((unused)) cw_easy_rec_t * ea
 static int helpers_configure(morse_receiver_t * morse_receiver)
 {
 	cwdevice_observer_t * cwdevice_observer = &morse_receiver->cwdevice_observer;
-	cw_easy_rec_t * libcw_receiver = &morse_receiver->libcw_receiver;
+	//cw_easy_rec_t * libcw_receiver = &morse_receiver->libcw_receiver;
 	memset(cwdevice_observer, 0, sizeof (cwdevice_observer_t));
-	memset(libcw_receiver, 0, sizeof (cw_easy_rec_t));
+	//memset(libcw_receiver, 0, sizeof (cw_easy_rec_t));
+	morse_receiver->libcw_receiver = cw_easy_rec_new();
 
 	// cwdevice observer is configured here in 3 steps. I believe that such
 	// multi-step and more explicit setup gives better idea about
@@ -270,7 +257,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	}
 
 	/* Changes of cwdevice's keying pin will be forwarded to libcw_receiver. */
-	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_rec_handle_keying_event, libcw_receiver)) {
+	if (0 != cwdevice_observer_set_key_change_handler(cwdevice_observer, cw_easy_rec_handle_keying_event, morse_receiver->libcw_receiver)) {
 		test_log_err("Morse receiver thread: failed to set up handler of key pin %s\n", "");
 		return -1;
 	}
@@ -289,7 +276,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	}
 
 	const int wpm = morse_receiver->config.wpm == 0 ? CW_SPEED_INITIAL : morse_receiver->config.wpm;
-	if (0 != libcw_receiver_configure(libcw_receiver, wpm)) {
+	if (0 != libcw_receiver_configure(morse_receiver->libcw_receiver, wpm)) {
 		test_log_err("Morse receiver thread: failed to set up Morse receiver %s\n", "");
 		return -1;
 	}
@@ -301,7 +288,7 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 	//
 	// Observer learns the initial state of the pin only during a start, in
 	// cwdevice_observer_start_observing().
-	libcw_receiver->tracked_key_state = cwdevice_observer->previous_key_is_down;
+	morse_receiver->libcw_receiver->tracked_key_state = cwdevice_observer->previous_key_is_down;
 
 	return 0;
 }
@@ -321,7 +308,8 @@ static int helpers_configure(morse_receiver_t * morse_receiver)
 /// @return 0
 static int helpers_deconfigure(morse_receiver_t * morse_receiver)
 {
-	libcw_receiver_deconfigure(&morse_receiver->libcw_receiver);
+	cw_easy_rec_delete(&morse_receiver->libcw_receiver);
+	cw_generator_stop();
 	cwdevice_observer_stop_observing(&morse_receiver->cwdevice_observer);
 
 	return 0;
@@ -384,7 +372,7 @@ static void * morse_receiver_thread_fn(void * receiver_arg)
 		remaining_wait_ms -= poll_interval_ms;
 
 		cw_rec_data_t erd = { 0 };
-		if (CW_SUCCESS == cw_easy_rec_poll_data(&morse_receiver->libcw_receiver, &erd)) {
+		if (CW_SUCCESS == cw_easy_rec_poll_data(morse_receiver->libcw_receiver, &erd)) {
 			if (erd.is_iws) {
 				fprintf(stdout, " ");
 				fflush(stdout);

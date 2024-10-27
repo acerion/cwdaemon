@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <sys/time.h>
 
+#include <libcw2.h>
+
 
 
 
@@ -19,6 +21,9 @@ extern "C"
 
 
 typedef struct cw_easy_rec_t {
+
+	cw_rec_t * rec;
+
 	/* Safety flag to ensure that we keep the library in sync with keyer
 	   events. Without, there's a chance that of a on-off event, one half
 	   will go to one application instance, and the other to another
@@ -40,7 +45,7 @@ typedef struct cw_easy_rec_t {
 
 
 
-
+#if 0
 /* TODO: move this type to libcw_rec.h and use it to pass arguments to
    functions such as cw_rec_poll_representation_ics_internal(). */
 #define REPRESENTATION_SIZE 20 /* TODO 2024.03.02: move the define to libcw.h? */
@@ -51,7 +56,7 @@ typedef struct cw_rec_data_t {
 	bool is_iws;             /* Is receiver in 'found inter-word-space' state? */
 	bool is_error;
 } cw_rec_data_t;
-
+#endif
 
 
 

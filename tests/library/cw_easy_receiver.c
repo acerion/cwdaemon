@@ -44,6 +44,22 @@
 #define NANOSECS_PER_MICROSEC 1000
 
 
+
+
+/**
+   \file Receiving of cw made easy
+
+   A set of wrappers around receiver API from libcw2.h that hides some
+   complexities, and makes using the receiver much easier.
+
+   This file implements a wrapper around modern (non-legacy) receiver API.
+   With this API we can have more than one easy receiver at a time, in a
+   single process.
+*/
+
+
+
+
 #define get_timer(timer) \
 	do { \
 		struct timespec clockval = { 0 }; \
@@ -60,7 +76,19 @@ static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t
 
 cw_easy_rec_t * cw_easy_rec_new(void)
 {
-	return (cw_easy_rec_t *) calloc(1, sizeof (cw_easy_rec_t));
+	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) calloc(1, sizeof (cw_easy_rec_t));
+	if (NULL == easy_rec) {
+		fprintf(stderr, "[ERROR] Failed to allocate new easy rec\n");
+		return NULL;
+	}
+	easy_rec->rec = cw_rec_new();
+	if (NULL == easy_rec->rec) {
+		free(easy_rec);
+		fprintf(stderr, "[ERROR] Failed to allocate new receiver in easy rec\n");
+		return NULL;
+	}
+
+	return easy_rec;
 }
 
 
@@ -68,10 +96,17 @@ cw_easy_rec_t * cw_easy_rec_new(void)
 
 void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec)
 {
-	if (easy_rec && *easy_rec) {
-		free(*easy_rec);
-		*easy_rec = NULL;
+	if (NULL == easy_rec) {
+		return;
 	}
+	if (NULL == *easy_rec) {
+		return;
+	}
+	if (NULL != (*easy_rec)->rec) {
+		cw_rec_delete(&(*easy_rec)->rec);
+	}
+	free(*easy_rec);
+	*easy_rec = NULL;
 }
 
 
@@ -102,7 +137,7 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 		   receiving new character. */
 
 		// This clears representation buffer and clears receiver state
-		cw_clear_receive_buffer();
+		cw_rec_reset_state(easy_rec->rec);
 
 		/* The tone start means that we're seeing the next
 		   incoming character within the same word, so no
@@ -126,14 +161,14 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 	if (key_state) {
 		/* Key down. */
 		//fprintf(stderr, "[DD] %10ld.%06ld - mark begin\n", mark_tstamp.tv_sec, mark_tstamp.tv_usec);
-		if (!cw_start_receive_tone(&mark_tstamp)) {
-			perror("cw_start_receive_tone");
+		if (CW_SUCCESS != cw_rec_mark_begin(easy_rec->rec, &mark_tstamp)) {
+			perror("cw_rec_mark_begin()");
 			return -1;
 		}
 	} else {
 		/* Key up. */
 		//fprintf(stderr, "[DD] %10ld.%06ld - mark end\n", mark_tstamp.tv_sec, mark_tstamp.tv_usec);
-		if (!cw_end_receive_tone(&mark_tstamp)) {
+		if (CW_SUCCESS != cw_rec_mark_end(easy_rec->rec, &mark_tstamp)) {
 			/* Handle receive error detected on tone end.
 			   For ENOMEM and ENOENT we set the error in a
 			   class flag, and display the appropriate
@@ -151,10 +186,10 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 				easy_rec->libcw_receive_errno = errno;
 
 				// This clears representation buffer and clears receiver state
-				cw_clear_receive_buffer();
+				cw_rec_reset_state(easy_rec->rec);
 				break;
 			default:
-				perror("cw_end_receive_tone");
+				perror("cw_rec_mark_end()");
 				return -1;
 			}
 		}
@@ -274,9 +309,9 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 
 	//fprintf(stderr, "[DD] %10ld.%06ld - poll for character\n", timer.tv_sec, timer.tv_usec);
 	errno = 0;
-	const bool received = cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
+	const cw_ret_t cwret = cw_rec_poll_character(easy_rec->rec, &timer, &data->character, &data->is_iws, NULL);
 	data->errno_val = errno;
-	if (received) {
+	if (CW_SUCCESS == cwret) {
 
 		/* A full character has been received. Directly after
 		   it comes a space. Either a short inter-character
@@ -315,7 +350,7 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 			/* Invalid character in receiver's buffer. */
 
 			// This clears representation buffer and clears receiver state
-			cw_clear_receive_buffer();
+			cw_rec_reset_state(easy_rec->rec);
 			break;
 
 		case EINVAL:
@@ -323,11 +358,11 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 			/* Timestamp error. */
 
 			// This clears representation buffer and clears receiver state
-			cw_clear_receive_buffer();
+			cw_rec_reset_state(easy_rec->rec);
 			break;
 
 		default:
-			perror("cw_receive_character");
+			perror("cw_rec_poll_character");
 		}
 
 		return CW_FAILURE;
@@ -370,12 +405,14 @@ static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t
 	get_timer(timer);
 
 	//fprintf(stderr, "[DD] %10ld.%06ld - poll for iws\n", timer.tv_sec, timer.tv_usec);
-	cw_receive_character(&timer, &data->character, &data->is_iws, NULL);
+	if (CW_SUCCESS != cw_rec_poll_character(easy_rec->rec, &timer, &data->character, &data->is_iws, NULL)) {
+		return CW_FAILURE;
+	}
 	if (data->is_iws) {
 		//fprintf(stderr, "[DD] Character at inter-word-space: '%c'\n", data->character);
 
 		// This clears representation buffer and clears receiver state
-		cw_clear_receive_buffer();
+		cw_rec_reset_state(easy_rec->rec);
 
 		easy_rec->is_pending_iws = false;
 		return CW_SUCCESS; /* Inter-word-space has been polled. */
@@ -430,7 +467,7 @@ void cw_easy_rec_clear_buffer_and_state(cw_easy_rec_t * easy_rec)
 	}
 
 	// This clears representation buffer and clears receiver state
-	cw_clear_receive_buffer();
+	cw_rec_reset_state(easy_rec->rec);
 
 	easy_rec->is_pending_iws = false;
 	easy_rec->libcw_receive_errno = 0;
@@ -439,8 +476,6 @@ void cw_easy_rec_clear_buffer_and_state(cw_easy_rec_t * easy_rec)
 
 
 
-
-#if 0
 
 cw_ret_t cw_easy_rec_set_speed(cw_easy_rec_t * easy_rec, int speed)
 {
@@ -489,13 +524,13 @@ int cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec)
 
 
 
-
+#if 0
 void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t cb, void * data)
 {
 	easy_rec->receive_callback = cb;
 	easy_rec->receive_callback_data = data;
 }
-
+#endif
 
 
 
@@ -504,6 +539,4 @@ cw_ret_t cw_easy_rec_init_tracked_key_state(cw_easy_rec_t * rec, int key_state)
 	rec->tracked_key_state = key_state;
 	return CW_SUCCESS;
 }
-
-#endif
 
