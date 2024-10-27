@@ -216,7 +216,7 @@ static int libcw_receiver_configure(cw_easy_rec_t * easy_receiver, int wpm)
 
 	cw_register_keying_callback(cw_easy_rec_handle_keying_event, easy_receiver);
 	cw_clear_receive_buffer();
-	cw_easy_rec_clear(easy_receiver);
+	cw_easy_rec_clear_buffer_and_state(easy_receiver);
 
 	return 0;
 }

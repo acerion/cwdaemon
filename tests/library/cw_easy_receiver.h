@@ -72,7 +72,7 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
 int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);
 void cw_easy_rec_clear_libcw_errno(cw_easy_rec_t * easy_rec);
 bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec);
-void cw_easy_rec_clear(cw_easy_rec_t * easy_rec);
+void cw_easy_rec_clear_buffer_and_state(cw_easy_rec_t * easy_rec);
 
 
 

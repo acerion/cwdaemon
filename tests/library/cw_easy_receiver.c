@@ -100,6 +100,8 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 	if (key_state && easy_rec->is_pending_iws) {
 		/* Tell receiver to prepare (to make space) for
 		   receiving new character. */
+
+		// This clears representation buffer and clears receiver state
 		cw_clear_receive_buffer();
 
 		/* The tone start means that we're seeing the next
@@ -147,6 +149,8 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 			case EINVAL:
 			case ENOENT:
 				easy_rec->libcw_receive_errno = errno;
+
+				// This clears representation buffer and clears receiver state
 				cw_clear_receive_buffer();
 				break;
 			default:
@@ -309,12 +313,16 @@ int cw_easy_rec_poll_character(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 		case ENOENT:
 			fprintf(stderr, "ENOENT\n");
 			/* Invalid character in receiver's buffer. */
+
+			// This clears representation buffer and clears receiver state
 			cw_clear_receive_buffer();
 			break;
 
 		case EINVAL:
 			fprintf(stderr, "EINVAL\n");
 			/* Timestamp error. */
+
+			// This clears representation buffer and clears receiver state
 			cw_clear_receive_buffer();
 			break;
 
@@ -366,7 +374,9 @@ static int cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_data_t
 	if (data->is_iws) {
 		//fprintf(stderr, "[DD] Character at inter-word-space: '%c'\n", data->character);
 
+		// This clears representation buffer and clears receiver state
 		cw_clear_receive_buffer();
+
 		easy_rec->is_pending_iws = false;
 		return CW_SUCCESS; /* Inter-word-space has been polled. */
 	} else {
@@ -412,9 +422,16 @@ bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec)
 
 
 
-void cw_easy_rec_clear(cw_easy_rec_t * easy_rec)
+void cw_easy_rec_clear_buffer_and_state(cw_easy_rec_t * easy_rec)
 {
+	if (NULL == easy_rec) {
+		fprintf(stderr, "[ERROR] %s:%d: NULL argument\n", __func__, __LINE__);
+		return;
+	}
+
+	// This clears representation buffer and clears receiver state
 	cw_clear_receive_buffer();
+
 	easy_rec->is_pending_iws = false;
 	easy_rec->libcw_receive_errno = 0;
 	easy_rec->tracked_key_state = false;
