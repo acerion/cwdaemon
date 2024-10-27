@@ -20,7 +20,7 @@ extern "C"
 
 
 
-#if 0
+#if 1
 /* TODO: move this type to libcw_rec.h and use it to pass arguments to
    functions such as cw_rec_poll_representation_ics_internal(). */
 #define REPRESENTATION_SIZE 20 /* TODO 2024.03.02: move the define to libcw.h? */
@@ -47,7 +47,7 @@ void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec);
 
 
 cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *));
-cw_ret_t cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
+cw_ret_t cw_easy_rec_poll(cw_easy_rec_t * easy_rec, cw_rec_data_t * data);
 
 
 int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec);

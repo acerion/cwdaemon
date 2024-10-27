@@ -230,10 +230,7 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 
 
 
-/**
-   \brief Poll the CW library receive buffer and handle anything found in the
-   buffer
-*/
+/// @brief Poll the easy receiver for data. Call callback on successful poll.
 cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
 {
 	easy_rec->libcw_receive_errno = 0;
@@ -277,11 +274,8 @@ cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callbac
 
 
 
-/**
-   \brief Poll the CW library receive buffer and handle anything found in the
-   buffer
-*/
-cw_ret_t cw_easy_rec_poll_data(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
+/// @brief Poll the easy receiver for data. Return results through @p data on successful poll.
+cw_ret_t cw_easy_rec_poll(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	easy_rec->libcw_receive_errno = 0;
 
@@ -551,14 +545,15 @@ cw_ret_t cw_easy_rec_set_tolerance(cw_easy_rec_t * easy_rec, int tolerance)
 
 
 
+
 cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * tolerance)
 {
-	if (NULL == easy_rec) {
+	if (NULL == easy_rec || NULL == tolerance) {
 		fprintf(stderr, "[EE] %s:%d: NULL argument\n", __func__, __LINE__);
 		return CW_FAILURE;
 	}
 
-	*tolerance = cw_rec_get_tolerance(easy_rec->rec);;
+	*tolerance = cw_rec_get_tolerance(easy_rec->rec);
 	return CW_SUCCESS;
 }
 
