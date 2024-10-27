@@ -83,7 +83,7 @@ typedef struct cwdevice_observer_t {
 
 	/// User-provided callback function that is called by observer each time
 	/// the state of key pin of cwdevice changes between up and down.
-	int (* new_key_state_cb)(void * new_key_state_cb_arg, bool key_is_down);
+	int (* new_key_state_cb)(void * new_key_state_cb_arg, int key_state);
 
 	/// Pointer that will be passed as first argument of new_key_state_cb on
 	/// each call to the function.
@@ -176,7 +176,7 @@ typedef struct cwdevice_observer_t {
 /// @param[in] obj First argument to the @cb callback
 ///
 /// @return 0
-int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool key_is_down), void * obj);
+int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, int key_state), void * obj);
 
 
 

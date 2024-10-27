@@ -187,7 +187,7 @@ void cwdevice_observer_configure_polling(cwdevice_observer_t * observer, unsigne
 
 
 
-int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, bool key_is_down), void * obj)
+int cwdevice_observer_set_key_change_handler(cwdevice_observer_t * observer, int (* cb)(void * obj, int key_state), void * obj)
 {
 	observer->new_key_state_cb     = cb;
 	observer->new_key_state_cb_arg = obj;

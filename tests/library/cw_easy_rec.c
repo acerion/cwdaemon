@@ -75,23 +75,17 @@ struct cw_easy_rec_t {
 
 	cw_rec_t * rec;
 
-	/* Safety flag to ensure that we keep the library in sync with keyer
-	   events. Without it, there's a chance that of a on-off event, one half
-	   will go to one application instance, and the other to another
-	   instance.
-
-	   TODO (acerion) 2023.08.12: this struct is used outside of xcwcp and
-	   its instances, and is meant to be thread-safe. Does the above comment
-	   about instances still make sense? Do we still need this member? */
-	volatile int tracked_key_state;
+	// Variable used to filter out two same key states coming from client
+	// code.
+	int tracked_key_state;
 
 	/* Flag indicating if receive polling has received a character, and
 	   may need to augment it with a word space on a later poll. */
-	volatile bool is_pending_iws;
+	bool is_pending_iws;
 
 	/* Flag indicating possible receive errno detected in signal handler
 	   context and needing to be passed to the foreground. */
-	volatile int libcw_receive_errno;
+	int libcw_receive_errno;
 };
 
 
@@ -103,17 +97,18 @@ static cw_ret_t cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_d
 
 
 
+// @reviewed_on{2024.10.27}
 cw_easy_rec_t * cw_easy_rec_new(void)
 {
 	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) calloc(1, sizeof (cw_easy_rec_t));
 	if (NULL == easy_rec) {
-		fprintf(stderr, "[ERROR] Failed to allocate new easy rec\n");
+		fprintf(stderr, "[EE] Failed to allocate new easy rec\n");
 		return NULL;
 	}
 	easy_rec->rec = cw_rec_new();
 	if (NULL == easy_rec->rec) {
 		free(easy_rec);
-		fprintf(stderr, "[ERROR] Failed to allocate new receiver in easy rec\n");
+		fprintf(stderr, "[EE] Failed to allocate new libcw receiver in easy rec's constructor\n");
 		return NULL;
 	}
 
@@ -123,6 +118,7 @@ cw_easy_rec_t * cw_easy_rec_new(void)
 
 
 
+/// @reviewed_on{2024.10.27}
 void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec)
 {
 	if (NULL == easy_rec) {
@@ -141,6 +137,7 @@ void cw_easy_rec_delete(cw_easy_rec_t ** easy_rec)
 
 
 
+/// @reviewed_on{2023.08.12}
 int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 {
 	if (NULL == easy_receiver) {
@@ -230,7 +227,71 @@ int cw_easy_rec_handle_keying_event(void * easy_receiver, int key_state)
 
 
 
-/// @brief Poll the easy receiver for data. Call callback on successful poll.
+#if 0
+/**
+   @brief Main polling loop of a receiver
+
+   The loop tries to periodically poll data from easy receiver. On successful
+   poll, a call to cw_easy_rec_t::callback is performed.
+
+   The loop is running as long as cw_easy_rec_t::run_thread is true.
+
+   @reviewedon 2023.08.21
+
+   @param[in/out] arg Easy receiver
+*/
+static void * thread_fn(void * arg)
+{
+	cw_easy_rec_t * easy_rec = (cw_easy_rec_t *) arg;
+	while (easy_rec->run_thread) {
+		/* This program is polling a receiver for data. Polling
+		   happens at given interval. */
+		cw_millisleep_internal(CW_REC_MINIMAL_POLL_PERIOD_MSECS);
+
+		cw_rec_data_t data = { 0 };
+		if (CW_SUCCESS == cw_easy_rec_poll(easy_rec, &data)) {
+			if (easy_rec->receive_callback) {
+				/* This may pass the data to application that is using the
+				   receiver. */
+				easy_rec->receive_callback(easy_rec->receive_callback_data, &data);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+
+
+
+void cw_easy_rec_start(cw_easy_rec_t * easy_rec)
+{
+	if (NULL == easy_rec) {
+		fprintf(stderr, "[ERROR] %s:%d: NULL argument\n", __func__, __LINE__);
+		return;
+	}
+
+	easy_rec->run_thread = true;
+	pthread_create(&easy_rec->thread, NULL, thread_fn, (void *) easy_rec);
+}
+
+
+
+
+void cw_easy_rec_stop(cw_easy_rec_t * easy_rec)
+{
+	if (NULL == easy_rec) {
+		fprintf(stderr, "[ERROR] %s:%d: NULL argument\n", __func__, __LINE__);
+		return;
+	}
+	easy_rec->run_thread = false;
+	pthread_join(easy_rec->thread, NULL);
+}
+#endif
+
+
+
+
 cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callback)(const cw_rec_data_t *))
 {
 	easy_rec->libcw_receive_errno = 0;
@@ -274,7 +335,6 @@ cw_ret_t cw_easy_rec_poll_with_callback(cw_easy_rec_t * easy_rec, int (* callbac
 
 
 
-/// @brief Poll the easy receiver for data. Return results through @p data on successful poll.
 cw_ret_t cw_easy_rec_poll(cw_easy_rec_t * easy_rec, cw_rec_data_t * data)
 {
 	easy_rec->libcw_receive_errno = 0;
@@ -467,9 +527,14 @@ static cw_ret_t cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_d
 
 
 
-int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec)
+cw_ret_t cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec, int * err)
 {
-	return easy_rec->libcw_receive_errno;
+	if (NULL == err) {
+		return CW_FAILURE;
+	}
+
+	*err = easy_rec->libcw_receive_errno;
+	return CW_SUCCESS;
 }
 
 
@@ -478,14 +543,6 @@ int cw_easy_rec_get_libcw_errno(const cw_easy_rec_t * easy_rec)
 void cw_easy_rec_clear_libcw_errno(cw_easy_rec_t * easy_rec)
 {
 	easy_rec->libcw_receive_errno = 0;
-}
-
-
-
-
-bool cw_easy_rec_is_pending_inter_word_space(const cw_easy_rec_t * easy_rec)
-{
-	return easy_rec->is_pending_iws;
 }
 
 
@@ -559,6 +616,7 @@ cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * toleran
 
 
 
+
 #if 0
 void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t cb, void * data)
 {
@@ -566,6 +624,7 @@ void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec
 	easy_rec->receive_callback_data = data;
 }
 #endif
+
 
 
 
