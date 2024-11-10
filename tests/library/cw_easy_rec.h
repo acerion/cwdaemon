@@ -4,8 +4,6 @@
 
 
 
-#include <stdbool.h>
-
 #include <libcw2.h>
 
 
@@ -14,22 +12,6 @@
 #if defined(__cplusplus)
 extern "C"
 {
-#endif
-
-
-
-
-#if 0
-/* TODO: move this type to libcw_rec.h and use it to pass arguments to
-   functions such as cw_rec_poll_representation_ics_internal(). */
-#define REPRESENTATION_SIZE 20 /* TODO 2024.03.02: move the define to libcw.h? */
-typedef struct cw_rec_data_t {
-	char character;
-	char representation[REPRESENTATION_SIZE];
-	int errno_val;
-	bool is_iws;             /* Is receiver in 'found inter-word-space' state? */
-	bool is_error;
-} cw_rec_data_t;
 #endif
 
 
