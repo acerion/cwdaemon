@@ -231,10 +231,10 @@ cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * toleran
    @reviewedon 2023.08.12
 
    @param[in/out] easy_rec Easy receiver with which to register a callback
-   @param[in] cb Callback to be registered - function that will be called on each successful receive
-   @param[in] data Pointer to client-side variable that will be passed to @p cb
+   @param[in] callback Callback to be registered - function that will be called on each successful receive
+   @param[in] data Pointer to client-side variable that will be passed to @p callback
 */
-void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t cb, void * data);
+void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t callback, void * data);
 #endif
 
 

@@ -64,8 +64,8 @@
 	do { \
 		struct timespec clockval = { 0 }; \
 		clock_gettime(CLOCK_MONOTONIC, &clockval); \
-		timer.tv_sec  = clockval.tv_sec; \
-		timer.tv_usec = clockval.tv_nsec / NANOSECS_PER_MICROSEC; \
+		(timer).tv_sec  = clockval.tv_sec; \
+		(timer).tv_usec = clockval.tv_nsec / NANOSECS_PER_MICROSEC; \
 	} while (0);
 
 
@@ -418,47 +418,46 @@ static cw_ret_t cw_easy_rec_poll_character_internal(cw_easy_rec_t * easy_rec, cw
 		//fprintf(stderr, "[DD] Received character '%c', is_iws = %d\n", data->character, data->is_iws);
 
 		return CW_SUCCESS;
-
-	} else {
-		/* Handle receive error detected on trying to read a character. */
-		switch (data->errno_val) {
-		case EAGAIN:
-			//fprintf(stderr, "EAGAIN\n");
-			/* Call made too early, receiver hasn't
-			   received a full character yet. Try next
-			   time. */
-			break;
-
-		case ERANGE:
-			//fprintf(stderr, "ERANGE\n");
-			/* Call made not in time, or not in proper
-			   sequence. Receiver hasn't received any
-			   character (yet). Try harder. */
-			break;
-
-		case ENOENT:
-			fprintf(stderr, "ENOENT\n");
-			/* Invalid character in receiver's buffer. */
-
-			// This clears representation buffer and clears receiver state
-			cw_rec_reset_state(easy_rec->rec);
-			break;
-
-		case EINVAL:
-			fprintf(stderr, "EINVAL\n");
-			/* Timestamp error. */
-
-			// This clears representation buffer and clears receiver state
-			cw_rec_reset_state(easy_rec->rec);
-			break;
-
-		default:
-			perror("cw_rec_poll_character");
-			break;
-		}
-
-		return CW_FAILURE;
 	}
+
+	/* Handle receive error detected on trying to read a character. */
+	switch (data->errno_val) {
+	case EAGAIN:
+		//fprintf(stderr, "EAGAIN\n");
+		/* Call made too early, receiver hasn't
+		   received a full character yet. Try next
+		   time. */
+		break;
+
+	case ERANGE:
+		//fprintf(stderr, "ERANGE\n");
+		/* Call made not in time, or not in proper
+		   sequence. Receiver hasn't received any
+		   character (yet). Try harder. */
+		break;
+
+	case ENOENT:
+		fprintf(stderr, "ENOENT\n");
+		/* Invalid character in receiver's buffer. */
+
+		// This clears representation buffer and clears receiver state
+		cw_rec_reset_state(easy_rec->rec);
+		break;
+
+	case EINVAL:
+		fprintf(stderr, "EINVAL\n");
+		/* Timestamp error. */
+
+		// This clears representation buffer and clears receiver state
+		cw_rec_reset_state(easy_rec->rec);
+		break;
+
+	default:
+		perror("cw_rec_poll_character");
+		break;
+	}
+
+	return CW_FAILURE;
 }
 
 
@@ -508,20 +507,20 @@ static cw_ret_t cw_easy_rec_poll_iws_internal(cw_easy_rec_t * easy_rec, cw_rec_d
 
 		easy_rec->is_pending_iws = false;
 		return CW_SUCCESS; /* Inter-word-space has been polled. */
-	} else {
-		/* We don't reset easy_rec->is_pending_iws. The
-		   space that currently lasts, and isn't long enough
-		   to be considered inter-word space, may grow to
-		   become the inter-word space. Or not.
-
-		   This growing of inter-character space into
-		   inter-word space may be terminated by incoming next
-		   tone (key down event) - the tone will mark
-		   beginning of new character within the same
-		   word. And since a new character begins, the flag
-		   will be reset (elsewhere). */
-		return CW_FAILURE; /* Inter-word-space has not been polled. */
 	}
+
+	/* We don't reset easy_rec->is_pending_iws. The
+	   space that currently lasts, and isn't long enough
+	   to be considered inter-word space, may grow to
+	   become the inter-word space. Or not.
+
+	   This growing of inter-character space into
+	   inter-word space may be terminated by incoming next
+	   tone (key down event) - the tone will mark
+	   beginning of new character within the same
+	   word. And since a new character begins, the flag
+	   will be reset (elsewhere). */
+	return CW_FAILURE; /* Inter-word-space has not been polled. */
 }
 
 
@@ -618,9 +617,9 @@ cw_ret_t cw_easy_rec_get_tolerance(const cw_easy_rec_t * easy_rec, int * toleran
 
 
 #if 0
-void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t cb, void * data)
+void cw_easy_rec_register_receive_callback(cw_easy_rec_t * easy_rec, cw_easy_rec_receive_callback_t callback, void * data)
 {
-	easy_rec->receive_callback = cb;
+	easy_rec->receive_callback = callback;
 	easy_rec->receive_callback_data = data;
 }
 #endif
